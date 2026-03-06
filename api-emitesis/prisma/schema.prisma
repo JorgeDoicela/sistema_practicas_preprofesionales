@@ -1,0 +1,107 @@
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  COORDINADOR
+  TUTOR
+  ESTUDIANTE
+}
+
+enum DocumentStatus {
+  PENDIENTE
+  EN_REVISION_TUTOR
+  APROBADO_TUTOR
+  RECHAZADO_TUTOR
+  APROBADO_DEFINITIVO
+  RECHAZADO_COORDINADOR
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password      String
+  fullName      String
+  role          Role
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  
+  // Relaciones
+  assignmentsAsStudent Internship[] @relation("StudentInternship")
+  assignmentsAsTutor   Internship[] @relation("TutorInternship")
+}
+
+model Company {
+  id            String      @id @default(uuid())
+  ruc           String      @unique
+  name          String
+  address       String
+  representative String
+  email         String
+  agreements    Agreement[]
+  internships   Internship[]
+}
+
+model Agreement {
+  id          String   @id @default(uuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
+  startDate   DateTime
+  filePath    String   // URL o path del PDF firmado
+  status      String   @default("Activo")
+  createdAt   DateTime @default(now())
+}
+
+model Internship {
+  id            String   @id @default(uuid())
+  studentId     String
+  student       User     @relation("StudentInternship", fields: [studentId], references: [id])
+  tutorId       String
+  tutor         User     @relation("TutorInternship", fields: [tutorId], references: [id])
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id])
+  
+  startDate     DateTime
+  endDate       DateTime?
+  totalHours    Int
+  location      String   // Ubicación para validación GPS
+  lat           Float?
+  lng           Float?
+  
+  status        String   @default("En Proceso") // En Proceso, Completado
+  
+  documents     Document[]
+  attendances   Attendance[]
+  createdAt     DateTime @default(now())
+}
+
+model Document {
+  id            String         @id @default(uuid())
+  internshipId  String
+  internship    Internship     @relation(fields: [internshipId], references: [id])
+  name          String         // Ej: "Planificación de prácticas"
+  filePath      String?
+  status        DocumentStatus @default(PENDIENTE)
+  observations  String?
+  dueDate       DateTime?
+  submittedAt   DateTime?
+  reviewedAt    DateTime?
+  createdAt     DateTime       @default(now())
+}
+
+model Attendance {
+  id            String     @id @default(uuid())
+  internshipId  String
+  internship    Internship @relation(fields: [internshipId], references: [id])
+  checkIn       DateTime
+  checkOut      DateTime?
+  lat           Float
+  lng           Float
+  distanceKm    Float?     // Para auditoría de los 200m
+}
