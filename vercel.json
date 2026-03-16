@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "web-emitesis/next.config.ts",
+      "use": "@vercel/next"
+    },
+    {
+      "src": "api-emitesis/src/main.ts",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["api-emitesis/prisma/schema.prisma"]
+      }
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "api-emitesis/src/main.ts"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "web-emitesis/$1"
+    }
+  ]
+}
