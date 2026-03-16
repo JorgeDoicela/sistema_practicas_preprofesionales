@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException, ForbiddenException, ConflictExceptio
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../notifications/email.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterCompanyDto } from './dto/register-company.dto';
 import * as bcrypt from 'bcrypt';
@@ -13,6 +14,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private emailService: EmailService,
   ) {}
 
   private async verifyRecaptcha(token: string) {
@@ -165,6 +167,14 @@ export class AuthService {
     });
 
     console.log('Registro completado con éxito');
+    
+    // Enviar email de bienvenida de forma asíncrona (sin bloquear el registro)
+    this.emailService.sendWelcomeEmail(user.email, user.fullName)
+      .then(res => {
+        if (res.success) console.log('Email de bienvenida enviado con éxito');
+        else console.error('Error enviando email de bienvenida:', res.error);
+      });
+
     return this.login(user);
   }
 
