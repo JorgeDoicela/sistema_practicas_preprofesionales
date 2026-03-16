@@ -1,41 +1,54 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { put, del, list } from '@vercel/blob';
 
 @Injectable()
 export class StorageService {
-  private readonly token: string;
+  private readonly token: string | undefined;
   private readonly isProduction: boolean;
 
   constructor(private configService: ConfigService) {
     this.token = this.configService.get<string>('BLOB_READ_WRITE_TOKEN');
-    this.isProduction = !!this.token;
+    this.isProduction = !!this.token && process.env.NODE_ENV === 'production';
   }
 
-  async upload(path: string, file: Buffer | ReadableStream | string, options?: any) {
+  async upload(path: string, file: any, options?: any) {
     if (!this.isProduction) {
-      console.log(`[StorageService] Dev Mode: Simulating upload to ${path}`);
+      console.log(`[StorageService] Local Mode: Archivo listo para ${path}`);
       return { url: `/uploads/${path}` };
     }
 
-    const { url } = await put(path, file, {
-      access: 'public',
-      token: this.token,
-      ...options,
-    });
-    return { url };
+    try {
+      // Importación dinámica para evitar errores si la librería no está instalada
+      const { put } = await import('@vercel/blob');
+      const { url } = await put(path, file, {
+        access: 'public',
+        token: this.token,
+        ...options,
+      });
+      return { url };
+    } catch (error) {
+      console.error('[StorageService] Error en Vercel Blob:', error.message);
+      return { url: `/uploads/${path}` };
+    }
   }
 
   async delete(url: string) {
-    if (!this.isProduction) {
-      console.log(`[StorageService] Dev Mode: Simulating delete of ${url}`);
-      return;
+    if (!this.isProduction || !url.includes('public.blob.vercel-storage.com')) return;
+    try {
+      const { del } = await import('@vercel/blob');
+      await del(url, { token: this.token });
+    } catch (error) {
+      console.error('[StorageService] Error al eliminar en Vercel:', error.message);
     }
-    await del(url, { token: this.token });
   }
 
-  async listFiles() {
+  async listFiles(): Promise<{ blobs: Array<{ pathname: string; url: string }> }> {
     if (!this.isProduction) return { blobs: [] };
-    return list({ token: this.token });
+    try {
+      const { list } = await import('@vercel/blob');
+      return await list({ token: this.token }) as any;
+    } catch (error) {
+      return { blobs: [] };
+    }
   }
 }

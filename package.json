@@ -2,16 +2,24 @@
   "name": "sistema-practicas-preprofesionales",
   "version": "1.0.0",
   "description": "Sistema de Gestión de Prácticas Preprofesionales ISTPET",
+  "workspaces": [
+    "api-emitesis",
+    "web-emitesis"
+  ],
   "scripts": {
-    "dev:back": "cd api-emitesis && npm run start:dev",
-    "dev:front": "cd web-emitesis && npm run dev",
-    "info": "powershell -Command \"Start-Sleep -s 12; Write-Host '' ; Write-Host '===================================================' -ForegroundColor Gray; Write-Host '   SISTEMA EMITESIS - ACCESOS DIRECTOS (LOCAL)   ' -ForegroundColor Yellow; Write-Host '===================================================' -ForegroundColor Gray; Write-Host ' FRONTEND: http://localhost:3005' -ForegroundColor Cyan; Write-Host ' BACKEND:  http://localhost:5000' -ForegroundColor Cyan; Write-Host '===================================================' -ForegroundColor Gray; Write-Host ''\"",
-    "dev": "npx concurrently \"npm run dev:back\" \"npm run dev:front\" \"npm run info\""
+    "dev:back": "npm run start:dev -w api-emitesis",
+    "dev:front": "npm run dev -w web-emitesis",
+    "info": "powershell -Command \"Start-Sleep -s 8; Write-Host '' ; Write-Host '===================================================' -ForegroundColor Gray; Write-Host '   SISTEMA EMITESIS - ACCESOS DIRECTOS (LOCAL)   ' -ForegroundColor Yellow; Write-Host '===================================================' -ForegroundColor Gray; Write-Host ' FRONTEND: http://localhost:3005' -ForegroundColor Cyan; Write-Host ' BACKEND:  http://localhost:5000' -ForegroundColor Cyan; Write-Host '===================================================' -ForegroundColor Gray; Write-Host ''\"",
+    "dev": "concurrently \"npm run dev:back\" \"npm run dev:front\" \"npm run info\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "concurrently": "^9.1.2"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.3.1",
+    "dotenv": "^17.3.1"
   }
 }
