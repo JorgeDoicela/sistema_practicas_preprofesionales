@@ -18,9 +18,15 @@ export class InternshipsController {
   }
 
   @Get()
-  @Roles(Role.COORDINADOR, Role.ADMIN, Role.TUTOR)
+  @Roles(Role.COORDINADOR, Role.ADMIN)
   findAll() {
     return this.internshipsService.findAll();
+  }
+
+  @Get('tutor/:id')
+  @Roles(Role.TUTOR, Role.ADMIN)
+  findByTutor(@Param('id') id: string) {
+    return this.internshipsService.findByTutor(id);
   }
 
   @Get(':id')

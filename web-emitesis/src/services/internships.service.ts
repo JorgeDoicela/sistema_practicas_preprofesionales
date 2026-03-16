@@ -34,5 +34,37 @@ export const internshipsService = {
     }
 
     return response.json();
+  },
+
+  async findByTutor(tutorId: string) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/internships/tutor/${tutorId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al obtener las asignaciones del tutor');
+    }
+
+    return response.json();
+  },
+
+  async findOne(id: string) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/internships/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al obtener el detalle de la asignación');
+    }
+
+    return response.json();
   }
 };

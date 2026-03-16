@@ -47,21 +47,45 @@ export class InternshipsService {
     }
 
     try {
-      const internship = await this.prisma.internship.create({
-        data: {
-          studentId,
-          companyId,
-          tutorId,
-          startDate: start,
-          totalHours,
-          location,
-          status: 'En Proceso'
-        },
-        include: {
-          student: true,
-          company: true,
-          tutor: true
-        }
+      const internship = await this.prisma.$transaction(async (tx) => {
+        const newInternship = await tx.internship.create({
+          data: {
+            studentId,
+            companyId,
+            tutorId,
+            startDate: start,
+            totalHours,
+            location,
+            status: 'En Proceso'
+          },
+          include: {
+            student: true,
+            company: true,
+            tutor: true
+          }
+        });
+
+        // RF-DOC-001: Inicializar los 8 documentos obligatorios
+        const mandatoryDocuments = [
+          'Solicitud de prácticas',
+          'Plan de rotación',
+          'Informe de actividades',
+          'Registro de asistencia',
+          'Evaluación del tutor académico',
+          'Evaluación del representante de la empresa',
+          'Informe final de prácticas',
+          'Certificado de culminación'
+        ];
+
+        await tx.document.createMany({
+          data: mandatoryDocuments.map(name => ({
+            internshipId: newInternship.id,
+            name,
+            status: 'PENDIENTE'
+          }))
+        });
+
+        return newInternship;
       });
 
       // 7. Enviar correo al estudiante
@@ -88,6 +112,17 @@ export class InternshipsService {
         student: true,
         company: true,
         tutor: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
+  async findByTutor(tutorId: string) {
+    return this.prisma.internship.findMany({
+      where: { tutorId },
+      include: {
+        student: true,
+        company: true
       },
       orderBy: { createdAt: 'desc' }
     });

@@ -74,7 +74,8 @@ model Document {
   filePath     String?
   status       DocumentStatus @default(PENDIENTE)
   observations String?
-  dueDate      DateTime?
+  startDate    DateTime?      // Fecha de apertura (RF-DOC-001)
+  dueDate      DateTime?      // Fecha límite (RF-DOC-001)
   submittedAt  DateTime?
   reviewedAt   DateTime?
   createdAt    DateTime       @default(now())
