@@ -98,6 +98,8 @@ export class AuthService {
   }
 
   async registerCompany(dto: RegisterCompanyDto) {
+    console.log('--- BACKEND DEBUG: registerCompany iniciado ---');
+    console.log('DTO recibido:', JSON.stringify(dto));
     const { 
       email, 
       password, 

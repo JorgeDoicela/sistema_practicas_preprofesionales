@@ -13,7 +13,14 @@ export const authService = {
       body: JSON.stringify({ email, password, recaptchaToken }),
     });
 
-    const data = await response.json();
+    let data;
+    const text = await response.text();
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error('Error al parsear JSON en login. Texto recibido:', text);
+      throw new Error(`Error del servidor (no JSON): ${text.substring(0, 100)}`);
+    }
     console.log('Respuesta de login:', response.status, data);
 
     if (!response.ok) {
@@ -35,7 +42,15 @@ export const authService = {
       body: JSON.stringify({ ...formData, recaptchaToken }),
     });
 
-    const data = await response.json();
+    let data;
+    const text = await response.text();
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error('Error al parsear JSON. Texto recibido:', text);
+      throw new Error(`Error del servidor (no JSON): ${text.substring(0, 100)}`);
+    }
+
     console.log('Respuesta de registro:', response.status, data);
 
     if (!response.ok) {
