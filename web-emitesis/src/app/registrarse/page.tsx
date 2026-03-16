@@ -23,6 +23,7 @@ import {
 import { authService } from "@/services/auth.service";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useRef } from "react";
+import { sanitizeInput } from "@/utils/security";
 
 export default function RegisterCompanyPage() {
     const router = useRouter();
@@ -64,7 +65,13 @@ export default function RegisterCompanyPage() {
         setError(null);
 
         try {
-            const data = await authService.registerCompany(formData, recaptchaToken);
+            // Sanitización masiva de todos los campos contra SQL Injection
+            const cleanData = Object.keys(formData).reduce((acc: any, key) => {
+                acc[key] = sanitizeInput((formData as any)[key]);
+                return acc;
+            }, {});
+
+            const data = await authService.registerCompany(cleanData, recaptchaToken);
             localStorage.setItem("token", data.access_token);
             localStorage.setItem("user", JSON.stringify(data.user));
             router.push("/empresa/dashboard");

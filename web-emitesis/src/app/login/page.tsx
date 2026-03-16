@@ -17,6 +17,7 @@ import {
 import { authService } from "@/services/auth.service";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useRef } from "react";
+import { sanitizeInput } from "@/utils/security";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -39,7 +40,11 @@ export default function LoginPage() {
                 return;
             }
 
-            const data = await authService.login(email, password, recaptchaToken);
+            // Sanitización contra SQL Injection
+            const cleanEmail = sanitizeInput(email);
+            const cleanPassword = sanitizeInput(password);
+
+            const data = await authService.login(cleanEmail, cleanPassword, recaptchaToken);
             localStorage.setItem("token", data.access_token);
             localStorage.setItem("user", JSON.stringify(data.user));
 

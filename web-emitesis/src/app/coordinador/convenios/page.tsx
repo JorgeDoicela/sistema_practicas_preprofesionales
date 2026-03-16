@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { agreementsService } from "@/services/agreements.service";
 import { useRouter } from "next/navigation";
+import { sanitizeInput } from "@/utils/security";
 
 export default function RegistrarConvenioPage() {
     const router = useRouter();
@@ -77,8 +78,14 @@ export default function RegistrarConvenioPage() {
         setError(null);
 
         try {
+            // Sanitización contra SQL Injection
+            const cleanForm = Object.keys(form).reduce((acc: any, key) => {
+                acc[key] = sanitizeInput((form as any)[key]);
+                return acc;
+            }, {});
+
             const formData = new FormData();
-            Object.entries(form).forEach(([key, value]) => formData.append(key, value));
+            Object.entries(cleanForm).forEach(([key, value]) => formData.append(key, value as string));
             formData.append("file", file);
 
             await agreementsService.create(formData);

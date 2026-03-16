@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import Link from 'next/link';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { authService } from '@/services/auth.service';
+import { sanitizeInput } from '@/utils/security';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -24,7 +25,8 @@ export default function ForgotPasswordPage() {
     }
 
     try {
-      await authService.forgotPassword(email, token);
+      const cleanEmail = sanitizeInput(email);
+      await authService.forgotPassword(cleanEmail, token);
       setMessage({ 
         type: 'success', 
         text: 'Si el correo está registrado, recibirás un enlace de recuperación en los próximos minutos.' 
