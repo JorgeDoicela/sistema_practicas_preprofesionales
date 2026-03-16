@@ -1,10 +1,14 @@
 import { Injectable, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAgreementDto } from './dto/create-agreement.dto';
+import { EmailService } from '../notifications/email.service';
 
 @Injectable()
 export class AgreementsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailService: EmailService,
+  ) {}
 
   async create(createAgreementDto: CreateAgreementDto, filePath: string) {
     const { ruc, companyName, address, representative, email, startDate } = createAgreementDto;
@@ -45,6 +49,18 @@ export class AgreementsService {
           include: {
             company: true
           }
+        });
+
+        // RF-CON-002: Notificar a empresa sobre convenio por correo
+        // Se dispara después de que la transacción fue exitosa
+        this.emailService.sendAgreementNotification(
+          company.email,
+          company.name,
+          filePath,
+          { agreementId: agreement.id, companyId: company.id }
+        ).catch(err => {
+          // Loggear error si el proceso de envío falla (pero el convenio ya se guardó)
+          console.error('Error disparando notificación de convenio:', err.message);
         });
 
         return agreement;

@@ -92,6 +92,16 @@ model Attendance {
   internship   Internship @relation(fields: [internshipId], references: [id])
 }
 
+model EmailLog {
+  id        String   @id @default(uuid())
+  to        String
+  subject   String
+  status    String   // EXITO, FALLIDO
+  error     String?
+  sentAt    DateTime @default(now())
+  metadata  Json?    // Para guardar IDs relacionados (empresaId, convenioId, etc)
+}
+
 enum Role {
   ADMIN
   COORDINADOR

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../prisma/prisma.service';
 import * as nodemailer from 'nodemailer';
 
 @Injectable()
@@ -7,7 +8,10 @@ export class EmailService {
   private transporter: nodemailer.Transporter;
   private readonly logger = new Logger(EmailService.name);
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private prisma: PrismaService, // Inyectar Prisma para los logs
+  ) {
     this.transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 587,
@@ -104,6 +108,94 @@ export class EmailService {
     } catch (err) {
       this.logger.error('Error enviando email de recuperación:', err.message);
       return { success: false, error: err.message };
+    }
+  }
+
+  /**
+   * RF-CON-002: Notificar a empresa sobre convenio por correo
+   * Incluye adjunto y reintentos automáticos
+   */
+  async sendAgreementNotification(email: string, companyName: string, filePath: string, metadata: any = {}) {
+    const subject = 'Nuevo Convenio de Prácticas Preprofesionales - ISTPET';
+    const maxRetries = 3;
+    let attempt = 0;
+    let lastError = '';
+
+    const mailOptions = {
+      from: `"Coordinación de Prácticas ISTPET" <${this.configService.get<string>('MAIL_USER')}>`,
+      to: email,
+      subject: subject,
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h1 style="color: #003366;">Nuevo Convenio de Prácticas</h1>
+          </div>
+          <p>Estimados representantes de <strong>${companyName}</strong>,</p>
+          <p>Se ha generado un nuevo convenio de prácticas preprofesionales en nuestro sistema.</p>
+          <p>Adjunto a este correo encontrarán el documento correspondiente para su revisión y firma.</p>
+          <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p style="margin: 0;"><strong>Próximos pasos:</strong></p>
+            <ul style="margin: 10px 0 0 20px; padding: 0;">
+              <li>Revisar el PDF adjunto.</li>
+              <li>Imprimir y firmar el documento.</li>
+              <li>Subir el documento firmado a través del portal de empresas.</li>
+            </ul>
+          </div>
+          <p style="font-size: 12px; color: #777;">Si tiene alguna duda, por favor contacte con la coordinación de prácticas.</p>
+          <hr style="border: 0; border-top: 1px solid #eee;" />
+          <p style="text-align: center; font-size: 12px; color: #999;">&copy; 2026 Instituto Superior Tecnológico "Mayor Pedro Traversari"</p>
+        </div>
+      `,
+      attachments: [
+        {
+          filename: 'Convenio_ISTPET.pdf',
+          path: filePath.startsWith('http') ? filePath : require('path').join(process.cwd(), filePath),
+        }
+      ]
+    };
+
+    while (attempt < maxRetries) {
+      try {
+        attempt++;
+        this.logger.log(`Intento ${attempt} de enviar convenio a: ${email}`);
+        
+        const info = await this.transporter.sendMail(mailOptions);
+        
+        // Registrar éxito en la BD
+        await this.logEmail(email, subject, 'EXITO', null, metadata);
+        
+        this.logger.log(`Convenio enviado con éxito en el intento ${attempt}`);
+        return { success: true, messageId: info.messageId };
+      } catch (err) {
+        lastError = err.message;
+        this.logger.warn(`Fallo intento ${attempt} de enviar convenio: ${lastError}`);
+        
+        if (attempt >= maxRetries) {
+          // Registrar fallo definitivo en la BD
+          await this.logEmail(email, subject, 'FALLIDO', lastError, metadata);
+          return { success: false, error: lastError };
+        }
+        
+        // Esperar un poco antes del reintento (1s, 2s, 4s...)
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+      }
+    }
+  }
+
+  // Método privado para registrar en la base de datos (RF-CON-002: Punto 4)
+  private async logEmail(to: string, subject: string, status: string, error: string | null, metadata: any) {
+    try {
+      await this.prisma.emailLog.create({
+        data: {
+          to,
+          subject,
+          status,
+          error,
+          metadata,
+        }
+      });
+    } catch (logErr) {
+      this.logger.error('Error guardando log de email en BD:', logErr.message);
     }
   }
 }
