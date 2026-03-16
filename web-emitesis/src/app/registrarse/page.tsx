@@ -24,6 +24,8 @@ import { authService } from "@/services/auth.service";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useRef } from "react";
 import { sanitizeInput } from "@/utils/security";
+import { validateRUC, isInstitutionalEmail } from "@/utils/ecuador-validators";
+import { cn } from "@/lib/utils";
 
 export default function RegisterCompanyPage() {
     const router = useRouter();
@@ -58,6 +60,11 @@ export default function RegisterCompanyPage() {
         if (!recaptchaToken) {
             setError("Por favor, completa el reCAPTCHA.");
             setIsLoading(false);
+            return;
+        }
+
+        if (!validateRUC(formData.ruc)) {
+            setError("El RUC ingresado no es válido.");
             return;
         }
 
@@ -119,7 +126,16 @@ export default function RegisterCompanyPage() {
                                 ) : (
                                     <div className="space-y-6">
                                         <div className="grid md:grid-cols-2 gap-6">
-                                            <InputField label="RUC" name="ruc" icon={<FileText className="w-5 h-5" />} placeholder="1790000000001" value={formData.ruc} onChange={handleChange} />
+                                            <InputField 
+                                                label="RUC" 
+                                                name="ruc" 
+                                                icon={<FileText className="w-5 h-5" />} 
+                                                placeholder="1790000000001" 
+                                                value={formData.ruc} 
+                                                onChange={handleChange}
+                                                maxLength={13}
+                                                error={formData.ruc && !validateRUC(formData.ruc) ? "RUC inválido (SRI)" : null}
+                                            />
                                             <InputField label="Razón Social" name="companyName" icon={<Building2 className="w-5 h-5" />} placeholder="Tech Corp" value={formData.companyName} onChange={handleChange} />
                                         </div>
                                         <InputField label="Dirección" name="address" icon={<MapPin className="w-5 h-5" />} placeholder="Av. Amazonas" value={formData.address} onChange={handleChange} />
@@ -140,7 +156,7 @@ export default function RegisterCompanyPage() {
                                             />
                                         </div>
 
-                                        {error && <p className="text-red-500 text-xs font-bold text-center">{error}</p>}
+                                        {error && <p className="text-red-500 text-xs font-bold text-center bg-red-50 py-3 rounded-xl border border-red-100">{error}</p>}
 
                                         <div className="grid grid-cols-2 gap-4">
                                             <button type="button" onClick={() => setStep(1)} className="bg-slate-50 text-slate-400 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest">Atrás</button>
@@ -159,14 +175,30 @@ export default function RegisterCompanyPage() {
     );
 }
 
-function InputField({ label, icon, ...props }: any) {
+function InputField({ label, icon, error, ...props }: any) {
     return (
         <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{label}</label>
             <div className="relative">
-                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400">{icon}</div>
-                <input {...props} className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 text-sm focus:ring-2 focus:ring-blue-900/5 outline-none" />
+                <div className={cn(
+                    "absolute left-5 top-1/2 -translate-y-1/2 transition-colors",
+                    error ? "text-red-400" : "text-slate-400"
+                )}>{icon}</div>
+                <input 
+                    {...props} 
+                    className={cn(
+                        "w-full bg-slate-50 border rounded-2xl py-4 pl-12 text-sm outline-none transition-all",
+                        error 
+                            ? "border-red-200 focus:ring-red-500/10 focus:border-red-400" 
+                            : "border-slate-200 focus:ring-blue-900/5 focus:border-[#003366]"
+                    )} 
+                />
             </div>
+            {error && (
+                <p className="text-[9px] text-red-500 font-bold ml-1 uppercase tracking-tighter">
+                    {error}
+                </p>
+            )}
         </div>
     );
 }

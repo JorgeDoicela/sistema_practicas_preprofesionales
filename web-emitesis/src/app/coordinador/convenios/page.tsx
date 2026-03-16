@@ -21,6 +21,8 @@ import {
 import { agreementsService } from "@/services/agreements.service";
 import { useRouter } from "next/navigation";
 import { sanitizeInput } from "@/utils/security";
+import { validateRUC } from "@/utils/ecuador-validators";
+import { cn } from "@/lib/utils";
 
 export default function RegistrarConvenioPage() {
     const router = useRouter();
@@ -71,6 +73,11 @@ export default function RegistrarConvenioPage() {
         // A1: Datos incompletos
         if (!file) {
             setError("El documento del convenio firmado es obligatorio.");
+            return;
+        }
+
+        if (!validateRUC(form.ruc)) {
+            setError("El RUC ingresado no es válido según los estándares del SRI.");
             return;
         }
 
@@ -143,17 +150,30 @@ export default function RegistrarConvenioPage() {
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">RUC de la Empresa</label>
                                 <div className="relative">
-                                    <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                    <Hash className={cn(
+                                        "absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors",
+                                        form.ruc && !validateRUC(form.ruc) ? "text-red-400" : "text-slate-300"
+                                    )} />
                                     <input 
                                         name="ruc"
                                         value={form.ruc}
                                         onChange={handleInputChange}
                                         placeholder="Ej: 1790000000001"
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
+                                        className={cn(
+                                            "w-full bg-slate-50 border rounded-xl py-3 pl-11 text-sm outline-none transition-all",
+                                            form.ruc && !validateRUC(form.ruc) 
+                                                ? "border-red-200 focus:ring-red-500/10 focus:border-red-400" 
+                                                : "border-slate-200 focus:ring-[#003366]/5 focus:border-[#003366]"
+                                        )}
                                         required 
                                         maxLength={13}
                                     />
                                 </div>
+                                {form.ruc && !validateRUC(form.ruc) && (
+                                    <p className="text-[10px] text-red-500 font-bold mt-1 ml-1 animate-pulse">
+                                        RUC Inválido: Debe tener 13 dígitos y terminar en 001.
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-2">
