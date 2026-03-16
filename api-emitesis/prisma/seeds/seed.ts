@@ -27,7 +27,7 @@ async function main() {
             ruc: '1790000000001',
             name: 'ISTPET Corativo',
             address: 'Quito, Sector El Calzado',
-            representative: 'Ing. Jorge Doicela',
+            representative: 'Ing. Cristhofer  Parreño',
             email: 'institucion@istpet.edu.ec',
         },
     });
