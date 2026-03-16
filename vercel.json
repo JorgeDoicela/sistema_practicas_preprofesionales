@@ -19,7 +19,7 @@
       "destination": "api-emitesis/src/main.ts"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "web-emitesis/$1"
     }
   ]
