@@ -1,23 +1,30 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Resend } from 'resend';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class EmailService {
-  private resend: Resend;
+  private transporter: nodemailer.Transporter;
   private readonly logger = new Logger(EmailService.name);
 
   constructor(private configService: ConfigService) {
-    const apiKey = this.configService.get<string>('RESEND_API_KEY');
-    this.resend = new Resend(apiKey);
+    this.transporter = nodemailer.createTransport({
+      host: this.configService.get<string>('MAIL_HOST') || 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: this.configService.get<string>('MAIL_USER'),
+        pass: this.configService.get<string>('MAIL_PASS'),
+      },
+    });
   }
 
   async sendWelcomeEmail(email: string, fullName: string) {
     try {
-      this.logger.log(`Enviando email de bienvenida a: ${email}`);
-      const { data, error } = await this.resend.emails.send({
-        from: 'ISTPET <onboarding@resend.dev>', // Usar este dominio por defecto para pruebas
-        to: [email],
+      this.logger.log(`Enviando email de bienvenida via Gmail a: ${email}`);
+      const mailOptions = {
+        from: `"ISTPET" <${this.configService.get<string>('MAIL_USER')}>`,
+        to: email,
         subject: '¡Bienvenido al Sistema de Prácticas Preprofesionales ISTPET!',
         html: `
           <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
@@ -37,16 +44,13 @@ export class EmailService {
             <p style="text-align: center; font-size: 12px; color: #999;">&copy; 2026 Instituto Superior Tecnológico "Mayor Pedro Traversari"</p>
           </div>
         `,
-      });
+      };
 
-      if (error) {
-        this.logger.error('Error de Resend:', error);
-        return { success: false, error };
-      }
-
-      return { success: true, data };
+      const info = await this.transporter.sendMail(mailOptions);
+      this.logger.log('Email enviado exitosamente: ' + info.messageId);
+      return { success: true, data: info };
     } catch (err) {
-      this.logger.error('Error inesperado enviando email:', err.message);
+      this.logger.error('Error enviando email via Gmail:', err.message);
       return { success: false, error: err.message };
     }
   }
