@@ -3,7 +3,10 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
+  const app = await NestFactory.create(AppModule, {
+    logger: isProduction ? ['error', 'warn'] : ['error', 'warn', 'log'],
+  });
   app.enableCors();
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe());
