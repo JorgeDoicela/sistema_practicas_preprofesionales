@@ -14,7 +14,8 @@ import {
   LogOut,
   ChevronRight,
   ShieldCheck,
-  Briefcase
+  Briefcase,
+  FileStack
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -22,7 +23,8 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Tablero", href: "/dashboard" },
   { icon: Users, label: "Pasantes", href: "/dashboard/pasantes" },
   { icon: Building2, label: "Empresas", href: "/dashboard/empresas" },
-  { icon: FileText, label: "Documentos", href: "/dashboard/documentos" },
+  { icon: FileText, label: "Convenios", href: "/coordinador/convenios" },
+  { icon: FileStack, label: "Documentos", href: "/dashboard/documentos" },
   { icon: CalendarCheck, label: "Asistencia", href: "/dashboard/asistencia" },
   { icon: Award, label: "Certificaciones", href: "/dashboard/certificaciones" },
 ];
