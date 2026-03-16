@@ -1,0 +1,9 @@
+@echo off
+echo Stopping Node processes...
+taskkill /F /IM node.exe /T 2>nul
+echo Deleting .next cache...
+if exist .next rd /s /q .next
+echo Deleting problematic folders if any...
+if exist "src\app\(dashboard)" rd /s /q "src\app\(dashboard)"
+if exist "src\app\(public)" rd /s /q "src\app\(public)"
+echo Done. You can now run: npm run dev

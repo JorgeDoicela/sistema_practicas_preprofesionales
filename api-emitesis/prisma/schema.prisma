@@ -14,7 +14,11 @@ model User {
   fullName             String
   role                 Role
   isActive             Boolean      @default(true)
+  failedAttempts       Int          @default(0)
+  lockoutUntil         DateTime?
   createdAt            DateTime     @default(now())
+  companyId            String?
+  company              Company?     @relation(fields: [companyId], references: [id])
   assignmentsAsStudent Internship[] @relation("StudentInternship")
   assignmentsAsTutor   Internship[] @relation("TutorInternship")
 }
@@ -26,6 +30,7 @@ model Company {
   address        String
   representative String
   email          String
+  users          User[]
   agreements     Agreement[]
   internships    Internship[]
 }

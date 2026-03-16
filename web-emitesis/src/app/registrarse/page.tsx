@@ -1,0 +1,144 @@
+"use client";
+
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+    Building2,
+    Mail,
+    Lock,
+    User,
+    FileText,
+    MapPin,
+    Briefcase,
+    ArrowRight,
+    ChevronLeft,
+    AlertCircle,
+    Loader2,
+    CheckCircle2,
+    ShieldCheck
+} from "lucide-react";
+import { authService } from "@/services/auth.service";
+
+export default function RegisterCompanyPage() {
+    const router = useRouter();
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [step, setStep] = useState(1);
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
+        fullName: "",
+        ruc: "",
+        companyName: "",
+        address: "",
+        representative: ""
+    });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!acceptedTerms) {
+            setError("Debe aceptar los términos.");
+            return;
+        }
+
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const data = await authService.registerCompany(formData);
+            localStorage.setItem("token", data.access_token);
+            localStorage.setItem("user", JSON.stringify(data.user));
+            router.push("/empresa/dashboard");
+        } catch (err: any) {
+            setError(err.message || "Error en el registro.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-[#FDFDFD] flex flex-col font-body">
+             <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 p-5">
+              <div className="max-w-7xl mx-auto flex items-center justify-between">
+                <Link href="/" className="flex items-center gap-2">
+                   <div className="bg-[#003366] p-1.5 rounded-lg">
+                      <Image src="/images/ISTPET_sin_fondo.png" alt="Logo" width={100} height={25} className="brightness-0 invert h-6 w-auto" />
+                   </div>
+                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cooperación Institucional</span>
+                </Link>
+                <Link href="/login" className="text-[10px] font-black uppercase tracking-widest text-[#003366] hover:text-[#C5A059] transition-colors">Ya tengo cuenta</Link>
+              </div>
+            </header>
+
+            <div className="flex-1 flex items-center justify-center p-6">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl w-full">
+                    <div className="bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden relative">
+                        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#003366] to-[#C5A059]" />
+                        <div className="p-10 md:p-16">
+                            <h1 className="text-3xl font-black text-[#003366] tracking-tight mb-8">Registro de Empresa</h1>
+                            
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                {step === 1 ? (
+                                    <div className="space-y-6">
+                                        <div className="grid md:grid-cols-2 gap-6">
+                                            <InputField label="Nombre Completo" name="fullName" icon={<User className="w-5 h-5" />} placeholder="Responsable" value={formData.fullName} onChange={handleChange} />
+                                            <InputField label="Correo Corporativo" name="email" icon={<Mail className="w-5 h-5" />} placeholder="empresa@ejemplo.com" value={formData.email} onChange={handleChange} />
+                                        </div>
+                                        <InputField label="Contraseña" name="password" type="password" icon={<Lock className="w-5 h-5" />} placeholder="Mínimo 8 caracteres" value={formData.password} onChange={handleChange} />
+                                        <button type="button" onClick={() => setStep(2)} className="w-full bg-[#003366] text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest">Siguiente Paso</button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-6">
+                                        <div className="grid md:grid-cols-2 gap-6">
+                                            <InputField label="RUC" name="ruc" icon={<FileText className="w-5 h-5" />} placeholder="1790000000001" value={formData.ruc} onChange={handleChange} />
+                                            <InputField label="Razón Social" name="companyName" icon={<Building2 className="w-5 h-5" />} placeholder="Tech Corp" value={formData.companyName} onChange={handleChange} />
+                                        </div>
+                                        <InputField label="Dirección" name="address" icon={<MapPin className="w-5 h-5" />} placeholder="Av. Amazonas" value={formData.address} onChange={handleChange} />
+                                        <InputField label="Representante Legal" name="representative" icon={<Briefcase className="w-5 h-5" />} placeholder="Ing. Juan Pérez" value={formData.representative} onChange={handleChange} />
+                                        
+                                        <div className="py-2">
+                                            <label className="flex items-center gap-3 cursor-pointer">
+                                                <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="w-4 h-4" />
+                                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Acepto los términos y condiciones.</span>
+                                            </label>
+                                        </div>
+
+                                        {error && <p className="text-red-500 text-xs font-bold text-center">{error}</p>}
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <button type="button" onClick={() => setStep(1)} className="bg-slate-50 text-slate-400 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest">Atrás</button>
+                                            <button type="submit" disabled={isLoading} className="bg-[#003366] text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl">
+                                                {isLoading ? "Creando..." : "Registrar"}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </form>
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
+        </div>
+    );
+}
+
+function InputField({ label, icon, ...props }: any) {
+    return (
+        <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{label}</label>
+            <div className="relative">
+                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400">{icon}</div>
+                <input {...props} className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 text-sm focus:ring-2 focus:ring-blue-900/5 outline-none" />
+            </div>
+        </div>
+    );
+}
