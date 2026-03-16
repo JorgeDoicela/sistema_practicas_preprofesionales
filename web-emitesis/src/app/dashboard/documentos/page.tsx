@@ -11,12 +11,18 @@ import {
   Clock,
   LayoutGrid,
   List as ListIcon,
-  Filter
+  Filter,
+  Download,
+  AlertCircle,
+  CheckCircle2,
+  Lock,
+  FileText
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { internshipsService } from "@/services/internships.service";
+import { documentsService } from "@/services/documents.service";
 
 export default function DocumentosPage() {
   const [internships, setInternships] = useState<any[]>([]);
@@ -24,6 +30,9 @@ export default function DocumentosPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filterStatus, setFilterStatus] = useState("Todos");
+  const [userRole, setUserRole] = useState<string>("");
+  const [userDocuments, setUserDocuments] = useState<any[]>([]);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadInternships();
@@ -34,10 +43,17 @@ export default function DocumentosPage() {
       const userStr = localStorage.getItem("user");
       if (!userStr) return;
       const user = JSON.parse(userStr);
+      setUserRole(user.role);
       
       let data;
       if (user.role === "TUTOR") {
         data = await internshipsService.findByTutor(user.id);
+      } else if (user.role === "ESTUDIANTE") {
+        data = await internshipsService.findByStudent(user.id);
+        if (data.length > 0) {
+          const docs = await documentsService.findByInternship(data[0].id);
+          setUserDocuments(docs);
+        }
       } else {
         data = await internshipsService.findAll();
       }
@@ -46,6 +62,17 @@ export default function DocumentosPage() {
       console.error("Error loading internships:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownloadTemplate = async (doc: any) => {
+    setDownloadingId(doc.id);
+    try {
+      await documentsService.downloadTemplate(doc.id, doc.name);
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -100,39 +127,120 @@ export default function DocumentosPage() {
 
       <div className="max-w-[1600px] mx-auto px-6 mt-8">
         {/* Search and Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="relative flex-1">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-            <input 
-              type="text" 
-              placeholder="Buscar por estudiante o empresa..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-14 pr-6 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-[#003366]/10 focus:border-[#003366] transition-all outline-none font-medium text-slate-700"
-            />
-          </div>
-          
-          <div className="flex gap-4">
-            <div className="relative">
-              <Filter className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-              <select 
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="pl-12 pr-10 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-[#003366]/10 outline-none appearance-none font-semibold text-slate-600 cursor-pointer"
-              >
-                <option>Todos</option>
-                <option>En Proceso</option>
-                <option>Activo</option>
-                <option>Finalizado</option>
-              </select>
+        {userRole !== 'ESTUDIANTE' && (
+          <div className="flex flex-col md:flex-row gap-4 mb-8">
+            <div className="relative flex-1">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+              <input 
+                type="text" 
+                placeholder="Buscar por estudiante o empresa..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-14 pr-6 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-[#003366]/10 focus:border-[#003366] transition-all outline-none font-medium text-slate-700"
+              />
+            </div>
+            
+            <div className="flex gap-4">
+              <div className="relative">
+                <Filter className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <select 
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="pl-12 pr-10 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-[#003366]/10 outline-none appearance-none font-semibold text-slate-600 cursor-pointer"
+                >
+                  <option>Todos</option>
+                  <option>En Proceso</option>
+                  <option>Activo</option>
+                  <option>Finalizado</option>
+                </select>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {loading ? (
           <div className="flex flex-col items-center justify-center h-96 gap-4">
             <div className="w-12 h-12 border-4 border-slate-200 border-t-[#003366] rounded-full animate-spin" />
             <p className="text-slate-500 font-bold animate-pulse">Cargando expedientes...</p>
+          </div>
+        ) : userRole === 'ESTUDIANTE' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {userDocuments.map((doc, idx) => {
+              const isLocked = !doc.startDate || new Date() < new Date(doc.startDate);
+              const isApproved = doc.status === 'APROBADO_DEFINITIVO';
+              
+              return (
+                <motion.div
+                  key={doc.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className={cn(
+                    "bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm transition-all relative overflow-hidden group",
+                    isLocked ? "bg-slate-50 opacity-80" : "hover:shadow-xl hover:shadow-[#003366]/5"
+                  )}
+                >
+                  <div className="flex items-start justify-between mb-6">
+                    <div className={cn(
+                      "w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110",
+                      isApproved ? "bg-emerald-50 text-emerald-600" : 
+                      isLocked ? "bg-slate-100 text-slate-400" : "bg-blue-50 text-blue-600"
+                    )}>
+                      {isApproved ? <CheckCircle2 className="w-7 h-7" /> : 
+                       isLocked ? <Lock className="w-7 h-7" /> : <FileText className="w-7 h-7" />}
+                    </div>
+                    <div className={cn(
+                       "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest",
+                       isApproved ? "bg-emerald-100 text-emerald-700" : 
+                       isLocked ? "bg-slate-200 text-slate-500" : "bg-blue-100 text-blue-700"
+                    )}>
+                      {doc.status}
+                    </div>
+                  </div>
+
+                  <h3 className="text-lg font-black text-[#003366] mb-2 leading-tight group-hover:text-[#C5A059] transition-colors">{doc.name}</h3>
+                  <div className="space-y-2 mb-8">
+                    <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                      <Calendar className="w-3.5 h-3.5" />
+                      Disponible desde: <span className="text-slate-600 font-black">{doc.startDate ? new Date(doc.startDate).toLocaleDateString() : 'Por definir'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                      <Clock className="w-3.5 h-3.5" />
+                      Fecha límite: <span className="text-slate-600 font-black">{doc.dueDate ? new Date(doc.dueDate).toLocaleDateString() : 'Por definir'}</span>
+                    </div>
+                  </div>
+
+                  {!isApproved && (
+                    <button
+                      onClick={() => handleDownloadTemplate(doc)}
+                      disabled={isLocked || downloadingId === doc.id}
+                      className={cn(
+                        "w-full py-4 rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.98]",
+                        isLocked 
+                          ? "bg-slate-200 text-slate-400 cursor-not-allowed" 
+                          : "bg-[#003366] text-white hover:bg-[#003366]/90 shadow-lg shadow-blue-900/10"
+                      )}
+                    >
+                      {downloadingId === doc.id ? (
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Download className="w-4 h-4" />
+                      )}
+                      {isLocked ? "No disponible aún" : "Descargar Formato"}
+                    </button>
+                  )}
+
+                  {isLocked && doc.startDate && (
+                    <div className="mt-4 p-4 bg-orange-50 rounded-xl flex gap-3">
+                      <AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
+                      <p className="text-[10px] text-orange-700 font-bold leading-relaxed uppercase">
+                        El formato estará habilitado el {new Date(doc.startDate).toLocaleDateString()}
+                      </p>
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
         ) : filteredInternships.length > 0 ? (
           viewMode === 'grid' ? (

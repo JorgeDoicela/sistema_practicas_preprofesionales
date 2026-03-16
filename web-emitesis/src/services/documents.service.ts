@@ -31,5 +31,29 @@ export const documentsService = {
       throw new Error(error.message || 'Error al actualizar las fechas');
     }
     return response.json();
+  },
+
+  async downloadTemplate(id: string, fileName: string) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/documents/${id}/template`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'No se pudo descargar el formato');
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName.endsWith('.docx') ? fileName : `${fileName}.docx`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   }
 };

@@ -128,6 +128,18 @@ export class InternshipsService {
     });
   }
 
+  async findByStudent(studentId: string) {
+    return this.prisma.internship.findMany({
+      where: { studentId },
+      include: {
+        student: true,
+        company: true,
+        tutor: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
   async findOne(id: string) {
     const internship = await this.prisma.internship.findUnique({
       where: { id },

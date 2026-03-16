@@ -29,6 +29,12 @@ export class InternshipsController {
     return this.internshipsService.findByTutor(id);
   }
 
+  @Get('student/:id')
+  @Roles(Role.ESTUDIANTE, Role.ADMIN)
+  findByStudent(@Param('id') id: string) {
+    return this.internshipsService.findByStudent(id);
+  }
+
   @Get(':id')
   @Roles(Role.COORDINADOR, Role.ADMIN, Role.TUTOR, Role.ESTUDIANTE)
   findOne(@Param('id') id: string) {

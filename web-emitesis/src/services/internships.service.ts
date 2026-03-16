@@ -66,5 +66,21 @@ export const internshipsService = {
     }
 
     return response.json();
+  },
+
+  async findByStudent(studentId: string) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/internships/student/${studentId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al obtener las asignaciones del estudiante');
+    }
+
+    return response.json();
   }
 };
