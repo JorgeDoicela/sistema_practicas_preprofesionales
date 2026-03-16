@@ -58,5 +58,41 @@ export const authService = {
     }
 
     return data;
-  }
+  },
+
+  async forgotPassword(email: string, recaptchaToken: string) {
+    const response = await fetch(`${API_URL}/auth/forgot-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, recaptchaToken }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Error al solicitar el cambio de contraseña');
+    }
+
+    return data;
+  },
+
+  async resetPassword(token: string, password: any) {
+    const response = await fetch(`${API_URL}/auth/reset-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ token, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Error al restablecer la contraseña');
+    }
+
+    return data;
+  },
 };

@@ -4,8 +4,11 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { LoginDto } from './dto/login.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { RegisterCompanyDto } from './dto/register-company.dto';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import axios from 'axios';
 
 @Injectable()
@@ -201,5 +204,74 @@ export class AuthService {
         role: user.role,
       }
     };
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const { email, recaptchaToken } = dto;
+
+    // Verificar reCAPTCHA
+    const isRecaptchaValid = await this.verifyRecaptcha(recaptchaToken);
+    if (!isRecaptchaValid) {
+      throw new BadRequestException('Validación de reCAPTCHA fallida');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      // Por seguridad, no revelamos si el usuario existe o no
+      return { message: 'Si el correo está registrado, recibirás un enlace de recuperación.' };
+    }
+
+    // Generar token único de 32 bytes
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date();
+    expires.setHours(expires.getHours() + 1); // Expiración en 1 hora
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetToken: token,
+        resetTokenExpires: expires,
+      },
+    });
+
+    // Enviar email
+    await this.emailService.sendPasswordResetEmail(user.email, user.fullName, token);
+
+    return { message: 'Si el correo está registrado, recibirás un enlace de recuperación.' };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const { token, password } = dto;
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        resetToken: token,
+        resetTokenExpires: {
+          gt: new Date(),
+        },
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('El enlace de recuperación es inválido o ha expirado');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetToken: null,
+        resetTokenExpires: null,
+        failedAttempts: 0,
+        lockoutUntil: null,
+      },
+    });
+
+    return { message: 'Contraseña actualizada con éxito' };
   }
 }

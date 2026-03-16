@@ -18,6 +18,8 @@ model User {
   lockoutUntil         DateTime?
   createdAt            DateTime     @default(now())
   companyId            String?
+  resetToken           String?      @unique
+  resetTokenExpires    DateTime?
   company              Company?     @relation(fields: [companyId], references: [id])
   assignmentsAsStudent Internship[] @relation("StudentInternship")
   assignmentsAsTutor   Internship[] @relation("TutorInternship")

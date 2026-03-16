@@ -98,7 +98,19 @@ export default function LoginPage() {
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Contraseña</label>
                                     <div className="relative">
                                         <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
-                                        <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 text-sm focus:ring-2 focus:ring-blue-900/5 outline-none" placeholder="••••••••" />
+                                        <input 
+                                            type="password" 
+                                            required 
+                                            value={password} 
+                                            onChange={(e) => setPassword(e.target.value)} 
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 text-sm focus:ring-2 focus:ring-blue-900/5 outline-none" 
+                                            placeholder="••••••••" 
+                                        />
+                                    </div>
+                                    <div className="flex justify-end mt-1 px-1">
+                                        <Link href="/olvido-password" className="text-[10px] font-bold uppercase tracking-widest text-[#C5A059] hover:text-[#003366] transition-colors">
+                                            ¿Olvidaste tu contraseña?
+                                        </Link>
                                     </div>
                                 </div>
 
