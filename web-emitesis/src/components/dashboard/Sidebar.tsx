@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, 
@@ -35,6 +36,21 @@ const secondaryItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const isAdmin = user?.role === "ADMIN";
+
+  const allMenuItems = [
+    ...menuItems,
+    ...(isAdmin ? [{ icon: Users, label: "Usuarios", href: "/admin/usuarios" }] : [])
+  ];
 
   return (
     <aside className="w-72 bg-[#003366] text-white flex flex-col h-screen sticky top-0 border-r border-white/5 shadow-2xl z-40">
@@ -52,11 +68,11 @@ export function Sidebar() {
       </div>
 
       {/* Main Navigation */}
-      <nav className="flex-1 px-4 space-y-8">
+      <nav className="flex-1 px-4 space-y-8 overflow-y-auto">
         <div>
           <p className="px-4 text-[9px] font-black uppercase tracking-[0.3em] text-white/30 mb-6">Menú Principal</p>
           <div className="space-y-1.5">
-            {menuItems.map((item) => (
+            {allMenuItems.map((item) => (
               <SidebarItem 
                 key={item.href} 
                 {...item} 

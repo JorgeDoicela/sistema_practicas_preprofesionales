@@ -1,0 +1,62 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { UsersService } from './users.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
+import { RolesGuard } from '../auth/strategies/roles.guard';
+import { Roles } from '../auth/strategies/roles.decorator';
+import { Role } from '@prisma/client';
+
+@Controller('users')
+@UseGuards(JwtAuthGuard, RolesGuard)
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
+  @Post()
+  @Roles(Role.ADMIN)
+  create(@Body() createUserDto: CreateUserDto, @Req() req: any) {
+    const currentUserId = req.user?.sub;
+    return this.usersService.create(createUserDto, currentUserId);
+  }
+
+  @Get()
+  @Roles(Role.ADMIN)
+  findAll() {
+    return this.usersService.findAll();
+  }
+
+  @Get(':id')
+  @Roles(Role.ADMIN)
+  findOne(@Param('id') id: string) {
+    return this.usersService.findOne(id);
+  }
+
+  @Patch(':id')
+  @Roles(Role.ADMIN)
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @Req() req: any,
+  ) {
+    const currentUserId = req.user?.sub;
+    return this.usersService.update(id, updateUserDto, currentUserId);
+  }
+
+  @Delete(':id')
+  @Roles(Role.ADMIN)
+  remove(@Param('id') id: string, @Req() req: any) {
+    const currentUserId = req.user?.sub;
+    return this.usersService.remove(id, currentUserId);
+  }
+}
+
