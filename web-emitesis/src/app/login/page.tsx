@@ -15,6 +15,8 @@ import {
     ChevronLeft
 } from "lucide-react";
 import { authService } from "@/services/auth.service";
+import ReCAPTCHA from "react-google-recaptcha";
+import { useRef } from "react";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -22,6 +24,8 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+    const recaptchaRef = useRef<ReCAPTCHA>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,7 +33,13 @@ export default function LoginPage() {
         setError(null);
 
         try {
-            const data = await authService.login(email, password);
+            if (!recaptchaToken) {
+                setError("Por favor, completa el reCAPTCHA.");
+                setIsLoading(false);
+                return;
+            }
+
+            const data = await authService.login(email, password, recaptchaToken);
             localStorage.setItem("token", data.access_token);
             localStorage.setItem("user", JSON.stringify(data.user));
 
@@ -44,6 +54,9 @@ export default function LoginPage() {
             }
         } catch (err: any) {
             setError(err.message || "Credenciales incorrectas.");
+            // Reset reCAPTCHA on error
+            setRecaptchaToken(null);
+            recaptchaRef.current?.reset();
         } finally {
             setIsLoading(false);
         }
@@ -87,6 +100,14 @@ export default function LoginPage() {
                                         <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
                                         <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 text-sm focus:ring-2 focus:ring-blue-900/5 outline-none" placeholder="••••••••" />
                                     </div>
+                                </div>
+
+                                <div className="flex justify-center py-2">
+                                    <ReCAPTCHA
+                                        ref={recaptchaRef}
+                                        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+                                        onChange={(token: string | null) => setRecaptchaToken(token)}
+                                    />
                                 </div>
 
                                 {error && <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-bold text-center border border-red-100">{error}</div>}

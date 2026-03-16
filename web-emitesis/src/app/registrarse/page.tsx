@@ -21,6 +21,8 @@ import {
     ShieldCheck
 } from "lucide-react";
 import { authService } from "@/services/auth.service";
+import ReCAPTCHA from "react-google-recaptcha";
+import { useRef } from "react";
 
 export default function RegisterCompanyPage() {
     const router = useRouter();
@@ -28,6 +30,8 @@ export default function RegisterCompanyPage() {
     const [error, setError] = useState<string | null>(null);
     const [step, setStep] = useState(1);
     const [acceptedTerms, setAcceptedTerms] = useState(false);
+    const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+    const recaptchaRef = useRef<ReCAPTCHA>(null);
 
     const [formData, setFormData] = useState({
         email: "",
@@ -50,16 +54,25 @@ export default function RegisterCompanyPage() {
             return;
         }
 
+        if (!recaptchaToken) {
+            setError("Por favor, completa el reCAPTCHA.");
+            setIsLoading(false);
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
 
         try {
-            const data = await authService.registerCompany(formData);
+            const data = await authService.registerCompany(formData, recaptchaToken);
             localStorage.setItem("token", data.access_token);
             localStorage.setItem("user", JSON.stringify(data.user));
             router.push("/empresa/dashboard");
         } catch (err: any) {
             setError(err.message || "Error en el registro.");
+            // Reset reCAPTCHA on error
+            setRecaptchaToken(null);
+            recaptchaRef.current?.reset();
         } finally {
             setIsLoading(false);
         }
@@ -110,6 +123,14 @@ export default function RegisterCompanyPage() {
                                                 <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="w-4 h-4" />
                                                 <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Acepto los términos y condiciones.</span>
                                             </label>
+                                        </div>
+
+                                        <div className="flex justify-center py-2">
+                                            <ReCAPTCHA
+                                                ref={recaptchaRef}
+                                                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+                                                onChange={(token: string | null) => setRecaptchaToken(token)}
+                                            />
                                         </div>
 
                                         {error && <p className="text-red-500 text-xs font-bold text-center">{error}</p>}

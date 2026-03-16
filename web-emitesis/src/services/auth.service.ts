@@ -1,13 +1,13 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export const authService = {
-  async login(email: string, password: string) {
+  async login(email: string, password: string, recaptchaToken: string) {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, recaptchaToken }),
     });
 
     const data = await response.json();
@@ -19,13 +19,13 @@ export const authService = {
     return data;
   },
 
-  async registerCompany(formData: any) {
+  async registerCompany(formData: any, recaptchaToken: string) {
     const response = await fetch(`${API_URL}/auth/register-company`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(formData),
+      body: JSON.stringify({ ...formData, recaptchaToken }),
     });
 
     const data = await response.json();

@@ -11,6 +11,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   imports: [
     PrismaModule,
     PassportModule,
+    ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

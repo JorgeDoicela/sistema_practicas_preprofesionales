@@ -30,4 +30,7 @@ export class RegisterCompanyDto {
   @IsNotEmpty({ message: 'El nombre del representante es requerido' })
   @IsString()
   representative: string;
+
+  @IsNotEmpty({ message: 'El token de reCAPTCHA es requerido' })
+  recaptchaToken: string;
 }

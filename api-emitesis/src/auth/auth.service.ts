@@ -1,19 +1,49 @@
-import { Injectable, UnauthorizedException, ForbiddenException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ForbiddenException, ConflictException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterCompanyDto } from './dto/register-company.dto';
 import * as bcrypt from 'bcrypt';
+import axios from 'axios';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
+  private async verifyRecaptcha(token: string) {
+    const secretKey = this.configService.get<string>('RECAPTCHA_SECRET_KEY');
+    
+    // Si no hay clave configurada, saltamos la validación (para dev/test)
+    if (!secretKey || secretKey === 'PONER_AQUI_TU_CLAVE_SECRETA_DE_GOOGLE') {
+      console.warn('reCAPTCHA Secret Key no configurada. Saltando validación.');
+      return true;
+    }
+
+    try {
+      const response = await axios.post(
+        `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${token}`
+      );
+      
+      return response.data.success;
+    } catch (error) {
+      console.error('Error verificando reCAPTCHA:', error);
+      return false;
+    }
+  }
+
   async validateUser(loginDto: LoginDto) {
-    const { email, password } = loginDto;
+    const { email, password, recaptchaToken } = loginDto;
+
+    // Verificar reCAPTCHA
+    const isRecaptchaValid = await this.verifyRecaptcha(recaptchaToken);
+    if (!isRecaptchaValid) {
+      throw new BadRequestException('Validación de reCAPTCHA fallida');
+    }
 
     const user = await this.prisma.user.findUnique({
       where: { email },
@@ -73,8 +103,15 @@ export class AuthService {
       ruc, 
       companyName, 
       address, 
-      representative 
+      representative,
+      recaptchaToken
     } = dto;
+
+    // Verificar reCAPTCHA
+    const isRecaptchaValid = await this.verifyRecaptcha(recaptchaToken);
+    if (!isRecaptchaValid) {
+      throw new BadRequestException('Validación de reCAPTCHA fallida');
+    }
 
     // Check if user already exists
     const existingUser = await this.prisma.user.findUnique({
