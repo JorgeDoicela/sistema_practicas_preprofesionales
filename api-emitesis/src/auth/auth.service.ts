@@ -25,13 +25,15 @@ export class AuthService {
     }
 
     try {
+      console.log('Validando token con Google...');
       const response = await axios.post(
         `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${token}`
       );
       
+      console.log('Resultado de Google:', response.data);
       return response.data.success;
     } catch (error) {
-      console.error('Error verificando reCAPTCHA:', error);
+      console.error('Error verificando reCAPTCHA:', error.message);
       return false;
     }
   }
@@ -108,10 +110,14 @@ export class AuthService {
     } = dto;
 
     // Verificar reCAPTCHA
+    console.log('Iniciando registro para:', email);
     const isRecaptchaValid = await this.verifyRecaptcha(recaptchaToken);
     if (!isRecaptchaValid) {
+      console.error('Fallo de reCAPTCHA para registro');
       throw new BadRequestException('Validación de reCAPTCHA fallida');
     }
+
+    console.log('Buscando usuario existente...');
 
     // Check if user already exists
     const existingUser = await this.prisma.user.findUnique({
@@ -145,6 +151,7 @@ export class AuthService {
     });
 
     // Create User linked to the Company
+    console.log('Creando usuario vinculado a empresa...');
     const user = await this.prisma.user.create({
       data: {
         email,
@@ -155,6 +162,7 @@ export class AuthService {
       },
     });
 
+    console.log('Registro completado con éxito');
     return this.login(user);
   }
 
