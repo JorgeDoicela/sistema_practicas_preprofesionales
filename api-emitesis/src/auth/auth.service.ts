@@ -168,12 +168,18 @@ export class AuthService {
 
     console.log('Registro completado con éxito');
     
-    // Enviar email de bienvenida de forma asíncrona (sin bloquear el registro)
-    this.emailService.sendWelcomeEmail(user.email, user.fullName)
-      .then(res => {
-        if (res.success) console.log('Email de bienvenida enviado con éxito');
-        else console.error('Error enviando email de bienvenida:', res.error);
-      });
+    // Enviar email de bienvenida
+    try {
+      console.log('Intentando enviar email a:', user.email);
+      const emailRes = await this.emailService.sendWelcomeEmail(user.email, user.fullName);
+      if (emailRes.success) {
+        console.log('Email enviado correctamente');
+      } else {
+        console.error('El servicio de email devolvió error:', emailRes.error);
+      }
+    } catch (emailError) {
+      console.error('Error fatal disparando el envío de email:', emailError.message);
+    }
 
     return this.login(user);
   }

@@ -9,13 +9,25 @@ export class EmailService {
 
   constructor(private configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
-      host: this.configService.get<string>('MAIL_HOST') || 'smtp.gmail.com',
-      port: 465,
-      secure: true,
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false, // true for 465, false for 587 (TLS)
       auth: {
         user: this.configService.get<string>('MAIL_USER'),
         pass: this.configService.get<string>('MAIL_PASS'),
       },
+      tls: {
+        rejectUnauthorized: false // Helps in some restricted environments
+      }
+    });
+
+    // Verificar la conexión al iniciar el servicio
+    this.transporter.verify((error, success) => {
+      if (error) {
+        this.logger.error('Error de configuración de Gmail:', error.message);
+      } else {
+        this.logger.log('Servidor de correo listo para enviar mensajes');
+      }
     });
   }
 
