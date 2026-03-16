@@ -2,15 +2,15 @@
   "version": 2,
   "builds": [
     {
-      "src": "web-emitesis/next.config.ts",
-      "use": "@vercel/next"
-    },
-    {
       "src": "api-emitesis/src/main.ts",
       "use": "@vercel/node",
       "config": {
         "includeFiles": ["api-emitesis/prisma/schema.prisma"]
       }
+    },
+    {
+      "src": "web-emitesis/package.json",
+      "use": "@vercel/next"
     }
   ],
   "rewrites": [
