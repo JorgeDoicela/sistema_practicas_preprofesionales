@@ -16,7 +16,8 @@ import {
   ChevronRight,
   ShieldCheck,
   Briefcase,
-  FileStack
+  FileStack,
+  UserPlus
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -46,10 +47,12 @@ export function Sidebar() {
   }, []);
 
   const isAdmin = user?.role === "ADMIN";
+  const isCoordinador = user?.role === "COORDINADOR";
 
   const allMenuItems = [
     ...menuItems,
-    ...(isAdmin ? [{ icon: Users, label: "Usuarios", href: "/admin/usuarios" }] : [])
+    ...(isAdmin ? [{ icon: Users, label: "Usuarios", href: "/admin/usuarios" }] : []),
+    ...(isAdmin || isCoordinador ? [{ icon: UserPlus, label: "Asignación", href: "/coordinador/asignacion" }] : [])
   ];
 
   return (

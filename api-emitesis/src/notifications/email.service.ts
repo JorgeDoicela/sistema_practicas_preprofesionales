@@ -182,6 +182,59 @@ export class EmailService {
     }
   }
 
+  /**
+   * RF-ASG-001: Notificar a estudiante sobre asignación de prácticas
+   */
+  async sendAssignmentEmail(
+    email: string, 
+    studentName: string, 
+    companyName: string, 
+    startDate: string, 
+    hours: number, 
+    location: string
+  ) {
+    const subject = 'Información de Asignación de Prácticas Preprofesionales - ISTPET';
+    const metadata = { studentName, companyName, type: 'ASSIGNMENT' };
+
+    const mailOptions = {
+      from: `"Coordinación de Prácticas ISTPET" <${this.configService.get<string>('MAIL_USER')}>`,
+      to: email,
+      subject: subject,
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h1 style="color: #003366;">¡Tienes una nueva asignación!</h1>
+          </div>
+          <p>Hola <strong>${studentName}</strong>,</p>
+          <p>Se te ha asignado formalmente para realizar tus prácticas preprofesionales.</p>
+          <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p><strong>Detalles de la asignación:</strong></p>
+            <ul style="margin: 10px 0 0 20px; padding: 0;">
+              <li><strong>Empresa:</strong> ${companyName}</li>
+              <li><strong>Fecha de Inicio:</strong> ${new Date(startDate).toLocaleDateString()}</li>
+              <li><strong>Horas a cumplir:</strong> ${hours} horas</li>
+              <li><strong>Ubicación:</strong> ${location}</li>
+            </ul>
+          </div>
+          <p>Por favor, ponte en contacto con tu tutor académico asignado para iniciar el proceso de inducción.</p>
+          <p style="font-size: 12px; color: #777;">Este es un correo automático, por favor no respondas a este mensaje.</p>
+          <hr style="border: 0; border-top: 1px solid #eee;" />
+          <p style="text-align: center; font-size: 12px; color: #999;">&copy; 2026 Instituto Superior Tecnológico "Mayor Pedro Traversari"</p>
+        </div>
+      `
+    };
+
+    try {
+      const info = await this.transporter.sendMail(mailOptions);
+      await this.logEmail(email, subject, 'EXITO', null, metadata);
+      return { success: true, messageId: info.messageId };
+    } catch (err) {
+      this.logger.error('Error enviando email de asignación:', err.message);
+      await this.logEmail(email, subject, 'FALLIDO', err.message, metadata);
+      return { success: false, error: err.message };
+    }
+  }
+
   // Método privado para registrar en la base de datos (RF-CON-002: Punto 4)
   private async logEmail(to: string, subject: string, status: string, error: string | null, metadata: any) {
     try {

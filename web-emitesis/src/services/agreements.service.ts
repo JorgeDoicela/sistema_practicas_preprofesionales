@@ -19,7 +19,7 @@ export const agreementsService = {
     return response.json();
   },
 
-  async getAll() {
+  async findAll() {
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/agreements`, {
       headers: {
