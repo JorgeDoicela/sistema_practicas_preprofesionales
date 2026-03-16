@@ -1,10 +1,14 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateDocumentDatesDto } from './dto/update-document-dates.dto';
+import { StorageService } from '../infrastructure/storage/storage.service';
 
 @Injectable()
 export class DocumentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private storageService: StorageService
+  ) {}
 
   async updateDates(id: string, dto: UpdateDocumentDatesDto) {
     const { startDate, dueDate } = dto;
@@ -83,6 +87,13 @@ export class DocumentsService {
       throw new NotFoundException('No existe un formato oficial para este documento');
     }
 
-    return fileName;
+    // Si estamos en Vercel Blob (Producción), intentamos buscar la URL del archivo
+    const listResult = await this.storageService.listFiles();
+    const blob = listResult.blobs?.find(b => b.pathname.includes(fileName));
+
+    return { 
+      fileName, 
+      url: blob?.url 
+    };
   }
 }

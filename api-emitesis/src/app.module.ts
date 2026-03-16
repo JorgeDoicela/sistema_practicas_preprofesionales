@@ -12,6 +12,7 @@ import { DocumentsModule } from './documents/documents.module';
 import { AttendanceModule } from './attendance/attendance.module';
 import { CertificationModule } from './certification/certification.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { StorageModule } from './infrastructure/storage/storage.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     AttendanceModule,
     CertificationModule,
     NotificationsModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

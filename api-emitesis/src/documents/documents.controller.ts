@@ -30,12 +30,18 @@ export class DocumentsController {
 
   @Get(':id/template')
   @Roles(Role.ESTUDIANTE, Role.ADMIN)
-  async downloadTemplate(@Param('id') id: string) {
-    const fileName = await this.documentsService.getTemplatePath(id);
+  async downloadTemplate(@Param('id') id: string, @Res() res) {
+    const { fileName, url } = await this.documentsService.getTemplatePath(id);
+
+    if (url) {
+      return res.redirect(url);
+    }
+
     const file = createReadStream(join(process.cwd(), 'uploads/templates', fileName));
-    return new StreamableFile(file, {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      disposition: `attachment; filename="${fileName}"`,
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'Content-Disposition': `attachment; filename="${fileName}"`,
     });
+    file.pipe(res);
   }
 }
