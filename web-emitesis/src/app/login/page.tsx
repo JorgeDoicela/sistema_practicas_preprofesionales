@@ -8,9 +8,6 @@ import { motion } from "framer-motion";
 import {
     Lock,
     Mail,
-    ArrowRight,
-    AlertCircle,
-    Loader2,
     ShieldCheck,
     ChevronLeft
 } from "lucide-react";

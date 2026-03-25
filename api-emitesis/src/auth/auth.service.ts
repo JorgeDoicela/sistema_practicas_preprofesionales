@@ -10,6 +10,8 @@ import { RegisterCompanyDto } from './dto/register-company.dto';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import axios from 'axios';
+import { UserPayload } from './interfaces/user-payload.interface';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -31,13 +33,13 @@ export class AuthService {
 
     try {
       console.log('Validando token con Google...');
-      const response = await axios.post(
+      const response = await axios.post<{ success: boolean; 'error-codes'?: string[] }>(
         `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${token}`
       );
       
       console.log('Resultado de Google:', response.data);
       return response.data.success;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error verificando reCAPTCHA:', error.message);
       return false;
     }
@@ -74,7 +76,7 @@ export class AuthService {
 
     if (!isPasswordValid) {
       const newFailedAttempts = user.failedAttempts + 1;
-      const updateData: any = { failedAttempts: newFailedAttempts };
+      const updateData: Prisma.UserUpdateInput = { failedAttempts: newFailedAttempts };
 
       if (newFailedAttempts >= 5) {
         // Bloquear por 15 minutos
@@ -178,16 +180,16 @@ export class AuthService {
       if (emailRes.success) {
         console.log('Email enviado correctamente');
       } else {
-        console.error('El servicio de email devolvió error:', emailRes.error);
+        console.error('El servicio de email devolvió error:', (emailRes as any).error);
       }
-    } catch (emailError) {
+    } catch (emailError: any) {
       console.error('Error fatal disparando el envío de email:', emailError.message);
     }
 
     return this.login(user);
   }
 
-  async login(user: any) {
+  login(user: UserPayload) {
     const payload = { 
       email: user.email, 
       sub: user.id, 

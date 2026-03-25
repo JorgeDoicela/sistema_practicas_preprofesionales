@@ -5,8 +5,6 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { motion } from 'framer-motion';
 import {
   UserPlus,
-  Search,
-  Building2,
   Calendar,
   Clock,
   MapPin,
@@ -16,12 +14,13 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle2,
-  Users
 } from 'lucide-react';
 import { usersService } from '@/services/users.service';
 import { agreementsService } from '@/services/agreements.service';
 import { internshipsService } from '@/services/internships.service';
 import { useRouter } from 'next/navigation';
+import { User } from '@/types/user';
+import { Agreement } from '@/types/agreement';
 
 export default function AsignacionPage() {
   const router = useRouter();
@@ -31,9 +30,9 @@ export default function AsignacionPage() {
   const [success, setSuccess] = useState(false);
 
   // Data subsets
-  const [students, setStudents] = useState<any[]>([]);
-  const [tutors, setTutors] = useState<any[]>([]);
-  const [agreements, setAgreements] = useState<any[]>([]);
+  const [students, setStudents] = useState<User[]>([]);
+  const [tutors, setTutors] = useState<User[]>([]);
+  const [agreements, setAgreements] = useState<Agreement[]>([]);
 
   // Form state
   const [form, setForm] = useState({
@@ -53,10 +52,11 @@ export default function AsignacionPage() {
           agreementsService.findAll()
         ]);
 
-        setStudents(allUsers.filter((u: any) => u.role === 'ESTUDIANTE' && u.isActive));
-        setTutors(allUsers.filter((u: any) => u.role === 'TUTOR' && u.isActive));
-        setAgreements(allAgreements.filter((a: any) => a.status === 'Activo'));
-      } catch (err: any) {
+        setStudents(allUsers.filter((u: User) => u.role === 'ESTUDIANTE' && u.isActive));
+        setTutors(allUsers.filter((u: User) => u.role === 'TUTOR' && u.isActive));
+        setAgreements(allAgreements.filter((a: Agreement) => a.status === 'Activo'));
+      } catch (err: unknown) {
+        console.error('Fetch error:', err);
         setError('Error al cargar datos necesarios para la asignación.');
       } finally {
         setLoading(false);

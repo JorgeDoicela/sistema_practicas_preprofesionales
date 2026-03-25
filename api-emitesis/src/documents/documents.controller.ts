@@ -1,4 +1,6 @@
-import { Controller, Get, Patch, Param, Body, UseGuards, Res, StreamableFile } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Body, UseGuards, Res } from '@nestjs/common';
+import type { Response } from 'express';
+
 import { DocumentsService } from './documents.service';
 import { UpdateDocumentDatesDto } from './dto/update-document-dates.dto';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
@@ -30,7 +32,7 @@ export class DocumentsController {
 
   @Get(':id/template')
   @Roles(Role.ESTUDIANTE, Role.ADMIN)
-  async downloadTemplate(@Param('id') id: string, @Res() res) {
+  async downloadTemplate(@Param('id') id: string, @Res() res: Response) {
     const { fileName, url } = await this.documentsService.getTemplatePath(id);
 
     if (url) {

@@ -46,4 +46,8 @@ async function uploadInitialTemplates() {
   console.log('✨ Proceso finalizado.');
 }
 
-uploadInitialTemplates();
+uploadInitialTemplates().catch((err) => {
+  console.error('Fatal error in upload script:', err);
+  process.exit(1);
+});
+

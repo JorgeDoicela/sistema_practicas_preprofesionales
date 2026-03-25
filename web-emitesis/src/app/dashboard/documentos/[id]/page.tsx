@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { 
   ArrowLeft, 
@@ -37,13 +37,7 @@ export default function DocumentDetailPage() {
   const [startDate, setStartDate] = useState("");
   const [dueDate, setDueDate] = useState("");
 
-  useEffect(() => {
-    if (id) {
-      loadData();
-    }
-  }, [id]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const internshipData = await internshipsService.findOne(id as string);
       setInternship(internshipData);
@@ -55,7 +49,13 @@ export default function DocumentDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      loadData();
+    }
+  }, [id, loadData]);
 
   const handleEditClick = (doc: any) => {
     if (doc.status === 'APROBADO_DEFINITIVO') {

@@ -26,7 +26,7 @@ export class StorageService {
         ...options,
       });
       return { url };
-    } catch (error) {
+    } catch (error: any) {
       console.error('[StorageService] Error en Vercel Blob:', error.message);
       return { url: `/uploads/${path}` };
     }
@@ -37,7 +37,7 @@ export class StorageService {
     try {
       const { del } = await import('@vercel/blob');
       await del(url, { token: this.token });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[StorageService] Error al eliminar en Vercel:', error.message);
     }
   }

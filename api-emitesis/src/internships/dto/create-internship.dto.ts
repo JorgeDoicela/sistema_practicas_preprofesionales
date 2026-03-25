@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsInt, IsDateString, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsInt, IsDateString } from 'class-validator';
 
 export class CreateInternshipDto {
   @IsString()

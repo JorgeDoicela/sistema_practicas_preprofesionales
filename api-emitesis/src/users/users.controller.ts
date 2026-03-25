@@ -27,9 +27,9 @@ export class UsersController {
 
   @Post()
   @Roles(Role.ADMIN)
-  create(@Body() createUserDto: CreateUserDto, @Req() req: any) {
-    const currentUserId = req.user?.sub;
-    return this.usersService.create(createUserDto, currentUserId);
+  create(@Body() createUserDto: CreateUserDto, @Req() req: { user: { userId: string } }) {
+    const currentUserId = req.user.userId;
+    return this.usersService.create(createUserDto);
   }
 
   @Get()
@@ -49,16 +49,16 @@ export class UsersController {
   update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-    @Req() req: any,
+    @Req() req: { user: { userId: string } },
   ) {
-    const currentUserId = req.user?.sub;
+    const currentUserId = req.user.userId;
     return this.usersService.update(id, updateUserDto, currentUserId);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
-  remove(@Param('id') id: string, @Req() req: any) {
-    const currentUserId = req.user?.sub;
+  remove(@Param('id') id: string, @Req() req: { user: { userId: string } }) {
+    const currentUserId = req.user.userId;
     return this.usersService.remove(id, currentUserId);
   }
 }

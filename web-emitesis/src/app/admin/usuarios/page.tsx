@@ -7,7 +7,6 @@ import {
   Users,
   Search,
   Plus,
-  MoreVertical,
   UserPlus,
   UserCheck,
   UserX,
@@ -17,13 +16,13 @@ import {
   Shield,
   Loader2,
   AlertCircle,
-  CheckCircle2,
   X
 } from 'lucide-react';
 import { usersService } from '@/services/users.service';
+import { User, UserRole } from '@/types/user';
 
-const RoleBadge = ({ role }: { role: string }) => {
-  const styles: any = {
+const RoleBadge = ({ role }: { role: UserRole | string }) => {
+  const styles: Record<string, string> = {
     ADMIN: 'bg-red-50 text-red-700 border-red-100',
     COORDINADOR: 'bg-blue-50 text-blue-700 border-blue-100',
     TUTOR: 'bg-green-50 text-green-700 border-green-100',
@@ -39,11 +38,11 @@ const RoleBadge = ({ role }: { role: string }) => {
 };
 
 export default function UsuariosManagementPage() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<any>(null);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     fullName: '',
@@ -69,7 +68,7 @@ export default function UsuariosManagementPage() {
     fetchData();
   }, []);
 
-  const handleOpenModal = (user: any = null) => {
+  const handleOpenModal = (user: User | null = null) => {
     if (user) {
       setEditingUser(user);
       setForm({
@@ -109,7 +108,7 @@ export default function UsuariosManagementPage() {
     }
   };
 
-  const handleToggleStatus = async (user: any) => {
+  const handleToggleStatus = async (user: User) => {
     try {
       await usersService.update(user.id, { isActive: !user.isActive });
       fetchData();

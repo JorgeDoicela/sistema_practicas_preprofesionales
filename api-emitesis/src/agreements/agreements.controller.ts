@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname, join } from 'path';
+import { extname } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import { tmpdir } from 'os';
 import { AgreementsService } from './agreements.service';
@@ -58,7 +58,7 @@ export class AgreementsController {
   )
   async create(
     @Body() createAgreementDto: CreateAgreementDto,
-    @UploadedFile() file: any,
+    @UploadedFile() file: Express.Multer.File,
   ) {
     if (!file) {
       throw new BadRequestException('El documento del convenio (PDF) es obligatorio');
