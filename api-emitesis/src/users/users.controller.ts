@@ -17,6 +17,9 @@ import { RolesGuard } from '../auth/strategies/roles.guard';
 import { Roles } from '../auth/strategies/roles.decorator';
 import { Role } from '@prisma/client';
 
+import { ApiTags } from '@nestjs/swagger';
+
+@ApiTags('Users')
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {

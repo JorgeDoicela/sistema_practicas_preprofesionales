@@ -5,7 +5,9 @@ import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
 import { RolesGuard } from '../auth/strategies/roles.guard';
 import { Roles } from '../auth/strategies/roles.decorator';
 import { Role } from '@prisma/client';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Internships')
 @Controller('internships')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class InternshipsController {
