@@ -20,6 +20,14 @@ import { RolesGuard } from '../auth/strategies/roles.guard';
 import { Roles } from '../auth/strategies/roles.decorator';
 import { Role } from '@prisma/client';
 import { ApiTags } from '@nestjs/swagger';
+ 
+interface MulterFile {
+  filename: string;
+  originalname: string;
+  mimetype: string;
+  size: number;
+}
+
 
 @ApiTags('Agreements')
 @Controller('agreements')
@@ -58,7 +66,7 @@ export class AgreementsController {
   )
   async create(
     @Body() createAgreementDto: CreateAgreementDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: MulterFile,
   ) {
     if (!file) {
       throw new BadRequestException('El documento del convenio (PDF) es obligatorio');
