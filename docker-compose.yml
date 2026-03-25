@@ -1,0 +1,61 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: emitesis-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: emitesis_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d emitesis_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - emitesis-network
+
+  api:
+    build:
+      context: ./api-emitesis
+      dockerfile: Dockerfile
+    container_name: emitesis-api
+    restart: always
+    environment:
+      DATABASE_URL: "postgresql://postgres:password@db:5432/emitesis_db?schema=public"
+      PORT: 5000
+      JWT_SECRET: "EmitesisSecretKey2026!"
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - emitesis-network
+
+  web:
+    build:
+      context: ./web-emitesis
+      dockerfile: Dockerfile
+    container_name: emitesis-web
+    restart: always
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:5000"
+      PORT: 3005
+    ports:
+      - "3005:3005"
+    depends_on:
+      - api
+    networks:
+      - emitesis-network
+
+networks:
+  emitesis-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
