@@ -45,17 +45,17 @@ async function bootstrap() {
 
 // For local running
 if (!process.env.VERCEL) {
-  bootstrap().catch((err) => {
-    console.error('Failed to start server:', err);
+  bootstrap().catch((err: Error) => {
+    console.error('Failed to start server:', err.message);
     process.exit(1);
   });
 }
 
 // Export for Vercel
-export default async (req: any, res: any) => {
+export default async (req: unknown, res: unknown) => {
   const app = await bootstrap();
   if (typeof app === 'function') {
-    app(req, res);
+    (app as (req: unknown, res: unknown) => void)(req, res);
   } else {
     // If we're here, it might be a configuration error on Vercel
     console.error('Bootstrap did not return a function for Vercel handler');

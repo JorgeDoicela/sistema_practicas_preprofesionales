@@ -96,13 +96,13 @@ export class InternshipsService {
         startDate,
         totalHours,
         location
-      ).catch(err => {
+      ).catch((err: Error) => {
         console.error('Error al enviar correo de asignación:', err.message);
       });
 
       return internship;
-    } catch (error) {
-      throw new BadRequestException('Error al crear la asignación: ' + error.message);
+    } catch (error: unknown) {
+      throw new BadRequestException('Error al crear la asignación: ' + (error as Error).message);
     }
   }
 

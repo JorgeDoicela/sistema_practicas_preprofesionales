@@ -180,7 +180,7 @@ export class AuthService {
       if (emailRes.success) {
         console.log('Email enviado correctamente');
       } else {
-        console.error('El servicio de email devolvió error:', (emailRes as any).error);
+        console.error('El servicio de email devolvió error:', (emailRes as { error: string }).error);
       }
     } catch (emailError: unknown) {
       console.error('Error fatal disparando el envío de email:', (emailError as Error).message);

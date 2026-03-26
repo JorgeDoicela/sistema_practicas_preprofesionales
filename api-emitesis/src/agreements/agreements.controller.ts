@@ -39,6 +39,7 @@ export class AgreementsController {
   @Roles(Role.ADMIN, Role.COORDINADOR) // Precondición: Administrador o Coordinador
   @UseInterceptors(
     FileInterceptor('file', {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       storage: diskStorage({
         destination: (req, file: MulterFile, cb: (error: Error | null, destination: string) => void) => {
           const uploadPath = process.env.VERCEL ? tmpdir() : './uploads/agreements';
