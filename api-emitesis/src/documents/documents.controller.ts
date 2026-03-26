@@ -1,9 +1,10 @@
-import { Controller, Get, Patch, Param, Body, UseGuards, Res } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Body, UseGuards, Res, UseInterceptors, UploadedFile, Req, BadRequestException } from '@nestjs/common';
 import type { Response } from 'express';
 
 import { DocumentsService } from './documents.service';
 import { UpdateDocumentDatesDto } from './dto/update-document-dates.dto';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { RolesGuard } from '../auth/strategies/roles.guard';
 import { Roles } from '../auth/strategies/roles.decorator';
 import { Role } from '@prisma/client';
@@ -45,5 +46,32 @@ export class DocumentsController {
       'Content-Disposition': `attachment; filename="${fileName}"`,
     });
     file.pipe(res);
+  }
+
+  @Patch(':id/upload')
+  @Roles(Role.ESTUDIANTE) // RF-DOC-003: Actor Estudiante
+  @UseInterceptors(
+    FileInterceptor('file', {
+      fileFilter: (req, file, cb) => {
+        // Regla de Negocio: Solo archivos PDF
+        if (!file.originalname.match(/\.(pdf)$/)) {
+          return cb(new BadRequestException('Solo se permiten archivos en formato PDF'), false);
+        }
+        cb(null, true);
+      },
+      limits: {
+        fileSize: 10 * 1024 * 1024, // Regla de Negocio: Máximo 10MB
+      },
+    }),
+  )
+  upload(
+    @Param('id') id: string,
+    @UploadedFile() file: any, // Usamos any aquí para evitar conflictos de tipos de Multer local/global
+    @Req() req: any,
+  ) {
+    if (!file) {
+      throw new BadRequestException('El archivo PDF es obligatorio');
+    }
+    return this.documentsService.uploadDocument(id, file, req.user.id);
   }
 }

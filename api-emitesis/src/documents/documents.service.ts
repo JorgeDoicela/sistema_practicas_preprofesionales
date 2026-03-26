@@ -2,12 +2,15 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateDocumentDatesDto } from './dto/update-document-dates.dto';
 import { StorageService } from '../infrastructure/storage/storage.service';
+import { EmailService } from '../notifications/email.service';
+import { MulterFile } from '../shared/interfaces/multer-file.interface';
 
 @Injectable()
 export class DocumentsService {
   constructor(
     private prisma: PrismaService,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private emailService: EmailService,
   ) {}
 
   async updateDates(id: string, dto: UpdateDocumentDatesDto) {
@@ -95,5 +98,79 @@ export class DocumentsService {
       fileName, 
       url: blob?.url 
     };
+  }
+
+  async uploadDocument(id: string, file: MulterFile, studentId: string) {
+    const document = await this.prisma.document.findUnique({
+      where: { id },
+      include: {
+        internship: {
+          include: {
+            student: true,
+            tutor: true,
+          }
+        }
+      }
+    });
+
+    if (!document) {
+      throw new NotFoundException('Documento no encontrado');
+    }
+
+    // Precondición: El estudiante es el dueño del documento
+    if (document.internship.studentId !== studentId) {
+      throw new BadRequestException('No tienes permisos para subir este documento');
+    }
+
+    // Precondición: No aprobado definitivamente
+    if (document.status === 'APROBADO_DEFINITIVO') {
+      throw new BadRequestException('Este documento ya ha sido aprobado definitivamente y no puede ser modificado');
+    }
+
+    // Regla de Negocio: Dentro del periodo de entrega (A2)
+    const now = new Date();
+    if (!document.startDate || !document.dueDate) {
+        throw new BadRequestException('El tutor aún no ha configurado el periodo de entrega para este documento');
+    }
+
+    if (now < document.startDate) {
+      throw new BadRequestException(`El periodo de entrega inicia el ${document.startDate.toLocaleDateString()}`);
+    }
+
+    if (now > document.dueDate) {
+      // Excepción A2: Plazo vencido -> Marcar como INCUMPLIDO
+      await this.prisma.document.update({
+        where: { id },
+        data: { status: 'INCUMPLIDO' as any }
+      });
+      throw new BadRequestException('El plazo de entrega ha vencido. El documento ha sido marcado como Incumplido.');
+    }
+
+    // Subir archivo
+    const fileName = `documents/${document.internshipId}/${Date.now()}-${file.originalname}`;
+    const uploadResult = await this.storageService.upload(fileName, file.buffer, {
+        contentType: file.mimetype,
+    });
+
+    // Actualizar documento
+    const updatedDocument = await this.prisma.document.update({
+      where: { id },
+      data: {
+        filePath: uploadResult.url,
+        submittedAt: now,
+        status: 'EN_REVISION_TUTOR',
+      }
+    });
+
+    // Notificar al tutor (Punto 5 Happy Path)
+    if (document.internship.tutor?.email) {
+      await this.emailService.sendDocumentNotificationToTutor(
+        document.internship.tutor.email,
+        document.internship.student.fullName,
+        document.name,
+      );
+    }
+
+    return updatedDocument;
   }
 }

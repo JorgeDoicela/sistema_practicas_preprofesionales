@@ -16,7 +16,8 @@ import {
   AlertCircle,
   CheckCircle2,
   Lock,
-  FileText
+  FileText,
+  FileCheck
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,7 @@ export default function DocumentosPage() {
   const [userRole, setUserRole] = useState<string>("");
   const [userDocuments, setUserDocuments] = useState<any[]>([]);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadInternships();
@@ -76,6 +78,34 @@ export default function DocumentosPage() {
     }
   };
 
+  const handleUpload = async (docId: string, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Regla de Negocio: Solo PDF
+    if (file.type !== "application/pdf") {
+      alert("Solo se permiten archivos en formato PDF");
+      return;
+    }
+
+    // Regla de Negocio: Máximo 10MB
+    if (file.size > 10 * 1024 * 1024) {
+      alert("El archivo no debe exceder los 10MB");
+      return;
+    }
+
+    setUploadingId(docId);
+    try {
+      await documentsService.uploadDocument(docId, file);
+      alert("Documento subido con éxito");
+      loadInternships(); // Recargar para ver el nuevo estado
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setUploadingId(null);
+    }
+  };
+
   const filteredInternships = internships.filter(item => {
     const matchesSearch = 
       item.student.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -84,6 +114,25 @@ export default function DocumentosPage() {
     if (filterStatus === "Todos") return matchesSearch;
     return matchesSearch && item.status === filterStatus;
   });
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'PENDIENTE': return 'bg-slate-100 text-slate-500';
+      case 'EN_REVISION_TUTOR': return 'bg-blue-100 text-blue-700';
+      case 'APROBADO_TUTOR': 
+      case 'APROBADO_DEFINITIVO': return 'bg-emerald-100 text-emerald-700';
+      case 'RECHAZADO_TUTOR':
+      case 'RECHAZADO_COORDINADOR': return 'bg-red-100 text-red-700';
+      case 'INCUMPLIDO': return 'bg-rose-100 text-rose-700';
+      default: return 'bg-slate-100 text-slate-500';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    if (status === 'EN_REVISION_TUTOR') return 'En revisión por tutor';
+    if (status === 'APROBADO_TUTOR') return 'Aprobado por tutor';
+    return status.replace(/_/g, ' ');
+  };
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20">
@@ -164,10 +213,13 @@ export default function DocumentosPage() {
             <p className="text-slate-500 font-bold animate-pulse">Cargando expedientes...</p>
           </div>
         ) : userRole === 'ESTUDIANTE' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {userDocuments.map((doc, idx) => {
-              const isLocked = !doc.startDate || new Date() < new Date(doc.startDate);
+              const now = new Date();
+              const isLocked = !doc.startDate || now < new Date(doc.startDate);
+              const isExpired = doc.dueDate && now > new Date(doc.dueDate);
               const isApproved = doc.status === 'APROBADO_DEFINITIVO';
+              const isUnderReview = doc.status === 'EN_REVISION_TUTOR' || doc.status === 'APROBADO_TUTOR';
               
               return (
                 <motion.div
@@ -182,7 +234,7 @@ export default function DocumentosPage() {
                 >
                   <div className="flex items-start justify-between mb-6">
                     <div className={cn(
-                      "w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110",
+                      "w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-inner",
                       isApproved ? "bg-emerald-50 text-emerald-600" : 
                       isLocked ? "bg-slate-100 text-slate-400" : "bg-blue-50 text-blue-600"
                     )}>
@@ -190,45 +242,76 @@ export default function DocumentosPage() {
                        isLocked ? <Lock className="w-7 h-7" /> : <FileText className="w-7 h-7" />}
                     </div>
                     <div className={cn(
-                       "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest",
-                       isApproved ? "bg-emerald-100 text-emerald-700" : 
-                       isLocked ? "bg-slate-200 text-slate-500" : "bg-blue-100 text-blue-700"
+                       "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm",
+                       getStatusColor(doc.status)
                     )}>
-                      {doc.status}
+                      {getStatusLabel(doc.status)}
                     </div>
                   </div>
 
-                  <h3 className="text-lg font-black text-[#003366] mb-2 leading-tight group-hover:text-[#C5A059] transition-colors">{doc.name}</h3>
+                  <h3 className="text-lg font-black text-[#003366] mb-2 leading-tight group-hover:text-[#C5A059] transition-colors line-clamp-2 min-h-[3rem]">{doc.name}</h3>
                   <div className="space-y-2 mb-8">
                     <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                       <Calendar className="w-3.5 h-3.5" />
-                      Disponible desde: <span className="text-slate-600 font-black">{doc.startDate ? new Date(doc.startDate).toLocaleDateString() : 'Por definir'}</span>
+                      Desde: <span className="text-slate-600 font-black">{doc.startDate ? new Date(doc.startDate).toLocaleDateString() : 'Por definir'}</span>
                     </div>
                     <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                       <Clock className="w-3.5 h-3.5" />
-                      Fecha límite: <span className="text-slate-600 font-black">{doc.dueDate ? new Date(doc.dueDate).toLocaleDateString() : 'Por definir'}</span>
+                      Límite: <span className={cn("font-black", isExpired ? "text-red-500" : "text-slate-600")}>
+                        {doc.dueDate ? new Date(doc.dueDate).toLocaleDateString() : 'Por definir'}
+                      </span>
                     </div>
                   </div>
 
-                  {!isApproved && (
-                    <button
-                      onClick={() => handleDownloadTemplate(doc)}
-                      disabled={isLocked || downloadingId === doc.id}
-                      className={cn(
-                        "w-full py-4 rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.98]",
-                        isLocked 
-                          ? "bg-slate-200 text-slate-400 cursor-not-allowed" 
-                          : "bg-[#003366] text-white hover:bg-[#003366]/90 shadow-lg shadow-blue-900/10"
-                      )}
-                    >
-                      {downloadingId === doc.id ? (
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        <Download className="w-4 h-4" />
-                      )}
-                      {isLocked ? "No disponible aún" : "Descargar Formato"}
-                    </button>
-                  )}
+                  <div className="grid grid-cols-2 gap-3">
+                    {!isApproved && (
+                      <button
+                        onClick={() => handleDownloadTemplate(doc)}
+                        disabled={isLocked || downloadingId === doc.id}
+                        className={cn(
+                          "py-4 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98]",
+                          isLocked 
+                            ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
+                            : "bg-slate-100 text-[#003366] hover:bg-slate-200"
+                        )}
+                      >
+                        {downloadingId === doc.id ? (
+                          <div className="w-3 h-3 border-2 border-[#003366]/30 border-t-[#003366] rounded-full animate-spin" />
+                        ) : (
+                          <Download className="w-3.5 h-3.5" />
+                        )}
+                        Formato
+                      </button>
+                    )}
+
+                    {!isApproved && (
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={(e) => handleUpload(doc.id, e)}
+                          disabled={isLocked || isExpired || isUnderReview || uploadingId === doc.id}
+                          className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                        />
+                        <button
+                          disabled={isLocked || isExpired || isUnderReview || uploadingId === doc.id}
+                          className={cn(
+                            "w-full py-4 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98] shadow-lg shadow-blue-900/10",
+                            isLocked || isExpired || isUnderReview
+                              ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none" 
+                              : "bg-[#003366] text-white hover:bg-[#003366]/90"
+                          )}
+                        >
+                          {uploadingId === doc.id ? (
+                            <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          ) : (
+                            <FileCheck className="w-3.5 h-3.5" />
+                          )}
+                          Subir PDF
+                        </button>
+                      </div>
+                    )}
+                  </div>
 
                   {isLocked && doc.startDate && (
                     <div className="mt-4 p-4 bg-orange-50 rounded-xl flex gap-3">
