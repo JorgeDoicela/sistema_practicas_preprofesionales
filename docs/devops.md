@@ -1,21 +1,29 @@
 # Manual de DevOps y Despliegue Continuo
 
-Este documento detalla la infraestructura automatizada que se ha diseñado para garantizar que el sistema EmiTesis sea portable, seguro y fácil de actualizar.
+Este documento detalla la infraestructura automatizada y el entorno de ejecución diseñado para garantizar que el sistema EmiTesis sea portable, seguro y eficiente, utilizando tecnologías de vanguardia como Node.js 22.
+
+## 0. Entorno de Ejecución
+*   **Lenguaje:** TypeScript 5.0+
+*   **Entorno:** Node.js 22 LTS (Estándar del proyecto).
+*   **Gestor de Dependencias:** npm con uso de `--legacy-peer-deps` para resolución de conflictos.
+*   **Docker Engine:** 24.0+
+*   **Docker Compose:** 2.20+
 
 ## 1. Pipeline Automático de Integración (CI/CD)
 
 Se ha implementado un flujo de trabajo en GitHub Actions (`ci.yml`) que actúa como control de calidad y despliegue automatizado. El proceso se divide en dos fases fundamentales:
 
-### 1.1 Validación Estricta
-Cada vez que se sube código a la rama principal, el sistema ejecuta automáticamente una serie de defensas:
-*   **Auditoría de Seguridad:** Escaneamos las dependencias para detectar vulnerabilidades conocidas antes de avanzar.
-*   **Entorno Efímero de Pruebas:** Levantamos una base de datos PostgreSQL temporal dentro del pipeline para validar que las migraciones y los datos maestros (seeds) funcionen perfectamente.
-*   **Compilación Robusta:** Verificamos que tanto el Frontend como el Backend compilen sin errores, asegurando que el despliegue nunca falle por fallos de sintaxis o tipos.
+### 1.1 Validación Inteligente
+Cada vez que se realiza un push o pull request a la rama `main`, el sistema ejecuta una serie de validaciones diseñadas para ser informativas y no bloqueantes en fases preliminares, asegurando agilidad en el desarrollo:
+*   **Auditoría de Seguridad:** Escaneo de dependencias para detectar vulnerabilidades críticas.
+*   **Entorno de Pruebas Efímero:** Levantamiento automatizado de una base de datos PostgreSQL 15 temporal para validar migraciones y esquemas de Prisma.
+*   **Calidad de Código (Linting):** Verificación de estándares de código (ESLint) reportando advertencias sin detener el flujo si son menores.
+*   **Compilación de Producción:** Validación de que tanto el Frontend (Next.js) como el Backend (NestJS) compilan perfectamente.
 
-### 1.2 Construcción y Publicación (Trabajo: build-and-push)
-Se ejecuta solo tras el éxito de la validación en la rama `main`:
-*   **Docker Build:** Crea imágenes optimizadas de producción.
-*   **GitHub Container Registry (GHCR):** Etiqueta y sube las imágenes a `ghcr.io`.
+### 1.2 Construcción y Publicación Optimista
+Tras la validación, el pipeline procede a la generación de artefactos finales:
+*   **Docker Build Optimizado:** Se utiliza `npm install --legacy-peer-deps` para garantizar la resolución de dependencias complejas y asegurar una construcción exitosa en entornos aislados.
+*   **GitHub Container Registry (GHCR):** Publicación automática de imágenes etiquetadas a `ghcr.io` para su posterior despliegue.
 *   **Seguridad de Acceso:** Utiliza el secreto nativo `GITHUB_TOKEN` para autenticarse, eliminando la necesidad de gestionar claves externas de Docker Hub.
 
 ## 2. Orquestación con Docker Compose

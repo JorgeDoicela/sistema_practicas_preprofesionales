@@ -5,6 +5,7 @@ Este documento es una referencia para desarrolladores que deseen contribuir o re
 ## 1. Estándares de Código
 
 *   **Lenguaje:** TypeScript obligatorio en todo el proyecto.
+*   **Entorno:** Node.js 22 LTS (Estándar del proyecto).
 *   **Formato:** Uso de Prettier configurado para comillas simples y punto y coma.
 *   **Naming:** 
     *   Variables y funciones: `camelCase`.

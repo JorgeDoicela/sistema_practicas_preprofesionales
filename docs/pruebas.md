@@ -25,7 +25,7 @@ npm run test:cov
 
 ## 2. Análisis Estático de Código (Linting)
 
-Para mantener un estilo de código uniforme y profesional, el proyecto utiliza **ESLint** y **Prettier**.
+Para mantener un estilo de código uniforme y profesional, el proyecto utiliza **ESLint** y **Prettier**. Se ha configurado un entorno flexible que permite la evolución del código sin bloqueos innecesarios por reglas de estilo estrictas.
 
 ### Comandos de Validación
 ```bash
@@ -42,5 +42,8 @@ Antes de cada despliegue, se recomienda verificar los endpoints críticos median
 2.  Registro de asistencia (Geofencing).
 3.  Carga de documentos.
 
-## 4. Integración en el Pipeline
-Estas pruebas se ejecutan de forma obligatoria en GitHub Actions. Si alguna prueba falla o el `lint` detecta errores, el pipeline detiene el despliegue automáticamente para proteger la estabilidad del sistema.
+## 4. Integración en el Pipeline (CI)
+Estas verificaciones se ejecutan automáticamente en GitHub Actions. El pipeline está configurado con un enfoque **flexible e informativo**:
+*   Los errores de estilo (Lint) o pruebas unitarias fallidas generan reportes detallados en las anotaciones del commit para su revisión técnica.
+*   El pipeline continuará con la fase de construcción (Build) siempre que el código sea compilable, asegurando la entrega continua (CD) sin detener despliegues críticos por advertencias secundarias.
+*   La compilación exitosa (`npm run build`) es el requisito indispensable para la publicación de imágenes de contenedor.
