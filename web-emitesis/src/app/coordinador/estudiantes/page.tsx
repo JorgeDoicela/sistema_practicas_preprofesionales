@@ -38,6 +38,7 @@ export default function GestionEstudiantesPage() {
   const [expandedInternshipId, setExpandedInternshipId] = useState<string | null>(null);
 
   const [attendanceData, setAttendanceData] = useState<Record<string, { summary: any, history: any[] }>>({});
+  const [attendanceFilters, setAttendanceFilters] = useState<Record<string, { startDate: string, endDate: string }>>({});
   const [eligibilityData, setEligibilityData] = useState<Record<string, EligibilityResponse>>({});
   const [generatingCertId, setGeneratingCertId] = useState<string | null>(null);
 
@@ -53,12 +54,11 @@ export default function GestionEstudiantesPage() {
     }
   }, []);
 
-  const loadInternshipDetails = async (id: string) => {
-    if (attendanceData[id] && eligibilityData[id]) return;
+  const loadInternshipDetails = async (id: string, f?: { startDate: string, endDate: string }) => {
     try {
       const [summary, history, eligibility] = await Promise.all([
         attendancesService.getSummary(id),
-        attendancesService.findByInternship(id),
+        attendancesService.findByInternship(id, f?.startDate, f?.endDate),
         certificationService.checkEligibility(id)
       ]);
       setAttendanceData(prev => ({ ...prev, [id]: { summary, history } }));
@@ -174,6 +174,9 @@ export default function GestionEstudiantesPage() {
                 internship={internship}
                 attendance={attendanceData[internship.id]}
                 eligibility={eligibilityData[internship.id]}
+                attendanceFilters={attendanceFilters[internship.id] || { startDate: "", endDate: "" }}
+                setAttendanceFilters={(f: any) => setAttendanceFilters(prev => ({ ...prev, [internship.id]: f }))}
+                onApplyAttendanceFilter={() => loadInternshipDetails(internship.id, attendanceFilters[internship.id])}
                 isExpanded={expandedInternshipId === internship.id}
                 generating={generatingCertId === internship.id}
                 onToggle={() => setExpandedInternshipId(expandedInternshipId === internship.id ? null : internship.id)}
@@ -281,7 +284,19 @@ export default function GestionEstudiantesPage() {
   );
 }
 
-function StudentInternshipCard({ internship, attendance, eligibility, isExpanded, generating, onToggle, onReviewClick, onGenerateCertificate }: any) {
+function StudentInternshipCard({ 
+  internship, 
+  attendance, 
+  eligibility, 
+  attendanceFilters,
+  setAttendanceFilters,
+  onApplyAttendanceFilter,
+  isExpanded, 
+  generating, 
+  onToggle, 
+  onReviewClick, 
+  onGenerateCertificate 
+}: any) {
   const pendingDocs = internship.documents.filter((d: any) => d.status === 'APROBADO_TUTOR').length;
 
   return (
@@ -474,6 +489,33 @@ function StudentInternshipCard({ internship, attendance, eligibility, isExpanded
                        <Clock className="w-4 h-4" />
                        Vista de Asistencia
                      </h4>
+
+                     <div className="flex items-end gap-3 bg-white p-4 rounded-2xl border border-slate-100 mb-4 shadow-sm">
+                        <div className="space-y-1 flex-1">
+                           <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Desde</label>
+                           <input 
+                              type="date" 
+                              value={attendanceFilters.startDate}
+                              onChange={(e) => setAttendanceFilters({...attendanceFilters, startDate: e.target.value})}
+                              className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold outline-none focus:ring-1 focus:ring-blue-500"
+                           />
+                        </div>
+                        <div className="space-y-1 flex-1">
+                           <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Hasta</label>
+                           <input 
+                              type="date" 
+                              value={attendanceFilters.endDate}
+                              onChange={(e) => setAttendanceFilters({...attendanceFilters, endDate: e.target.value})}
+                              className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold outline-none focus:ring-1 focus:ring-blue-500"
+                           />
+                        </div>
+                        <button 
+                           onClick={onApplyAttendanceFilter}
+                           className="px-4 py-2 bg-[#003366] text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-[#004488] transition-colors h-[33px]"
+                        >
+                           <Search className="w-3 h-3" />
+                        </button>
+                     </div>
                      
                      {!attendance ? (
                         <div className="py-10 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-slate-300" /></div>
