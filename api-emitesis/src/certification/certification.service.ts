@@ -2,6 +2,7 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { AttendanceService } from '../attendance/attendance.service';
 import { StorageService } from '../infrastructure/storage/storage.service';
+import { EmailService } from '../notifications/email.service';
 import * as puppeteer from 'puppeteer';
 import * as handlebars from 'handlebars';
 import * as fs from 'fs';
@@ -13,6 +14,7 @@ export class CertificationService {
     private prisma: PrismaService,
     private attendanceService: AttendanceService,
     private storageService: StorageService,
+    private emailService: EmailService,
   ) {}
 
   async checkEligibility(internshipId: string) {
@@ -151,6 +153,13 @@ export class CertificationService {
         where: { id: internshipId },
         data: { status: 'Finalizado' }
     });
+
+    // Enviar notificación al estudiante (RF-NOT-001)
+    await this.emailService.sendCertificateNotification(
+        internship.student.email,
+        internship.student.fullName,
+        uploadResult.url
+    );
 
     return {
       url: uploadResult.url,

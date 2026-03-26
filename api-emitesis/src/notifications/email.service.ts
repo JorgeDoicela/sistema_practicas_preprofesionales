@@ -378,6 +378,91 @@ export class EmailService {
         }
     }
 
+    async sendCertificateNotification(email: string, studentName: string, downloadUrl: string) {
+        const subject = 'Tu Certificado de Prácticas Preprofesionales está listo - ISTPET';
+        const metadata = { studentName, type: 'CERTIFICATE_READY' };
+        const maxRetries = 3;
+        let attempt = 0;
+
+        const mailOptions = {
+            from: `"Sistema EmiTesis ISTPET" <${this.configService.get<string>('MAIL_USER')}>`,
+            to: email,
+            subject: subject,
+            html: `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h1 style="color: #003366;">¡Felicidades, ${studentName}!</h1>
+          </div>
+          <p>Has completado exitosamente tu periodo de prácticas preprofesionales.</p>
+          <p>Tu certificado oficial ha sido generado y está disponible para su descarga.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${downloadUrl}"
+               style="background-color: #C5A059; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+              Descargar Certificado
+            </a>
+          </div>
+          <p style="font-size: 12px; color: #777;">También puedes encontrar este documento en tu sección de "Documentos" dentro del portal.</p>
+          <hr style="border: 0; border-top: 1px solid #eee;" />
+          <p style="text-align: center; font-size: 12px; color: #999;">&copy; 2026 Instituto Superior Tecnológico "Mayor Pedro Traversari"</p>
+        </div>
+      `
+        };
+
+        while (attempt < maxRetries) {
+            try {
+                attempt++;
+                const info = await this.transporter.sendMail(mailOptions);
+                await this.logEmail(email, subject, 'EXITO', null, metadata);
+                return { success: true, messageId: info.messageId };
+            } catch (err: any) {
+                if (attempt >= maxRetries) {
+                    await this.logEmail(email, subject, 'FALLIDO', err.message, metadata);
+                    return { success: false, error: err.message };
+                }
+                await new Promise(resolve => setTimeout(resolve, 1000 * 60 * 5)); // 5 min
+            }
+        }
+    }
+
+    async sendDeadlineReminder(email: string, studentName: string, documentName: string, dueDate: Date) {
+        const subject = `Recordatorio: Plazo de entrega de ${documentName} pronto a vencer`;
+        const metadata = { studentName, documentName, type: 'DEADLINE_REMINDER' };
+
+        const mailOptions = {
+            from: `"Recordatorios EmiTesis" <${this.configService.get<string>('MAIL_USER')}>`,
+            to: email,
+            subject: subject,
+            html: `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h1 style="color: #d32f2f;">Recordatorio de Entrega</h1>
+          </div>
+          <p>Hola <strong>${studentName}</strong>,</p>
+          <p>Te recordamos que el plazo para la entrega del documento <strong>${documentName}</strong> vence mañana, <strong>${dueDate.toLocaleDateString()}</strong>.</p>
+          <p>Por favor, asegúrate de subir el documento firmado a tiempo para evitar retrasos en tu proceso de certificación.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://sistema-practicas-preprofesionales.vercel.app/dashboard/documentos"
+               style="background-color: #003366; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+              Subir Documento
+            </a>
+          </div>
+          <hr style="border: 0; border-top: 1px solid #eee;" />
+          <p style="text-align: center; font-size: 12px; color: #999;">&copy; 2026 Instituto Superior Tecnológico "Mayor Pedro Traversari"</p>
+        </div>
+      `
+        };
+
+        try {
+            const info = await this.transporter.sendMail(mailOptions);
+            await this.logEmail(email, subject, 'EXITO', null, metadata);
+            return { success: true, messageId: info.messageId };
+        } catch (err: any) {
+            this.logger.error('Error enviando recordatorio:', err.message);
+            await this.logEmail(email, subject, 'FALLIDO', err.message, metadata);
+            return { success: false, error: err.message };
+        }
+    }
+
     // Método privado para registrar en la base de datos (RF-CON-002: Punto 4)
     private async logEmail(to: string, subject: string, status: string, error: string | null, metadata: Prisma.InputJsonValue) {
         try {
