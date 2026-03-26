@@ -5,23 +5,20 @@ import {
   Users, 
   Building2, 
   FileCheck, 
-  ArrowUpRight, 
-  ArrowDownRight, 
   Clock, 
-  CheckCircle2,
-  Briefcase,
-  TrendingUp,
-  BarChart3,
-  ArrowRight
+  CheckCircle2
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { User as UserType } from "@/types/user";
 
 export function DashboardMain() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserType | null>(null);
 
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
-    if (savedUser) setUser(JSON.parse(savedUser));
+    if (savedUser) {
+      setTimeout(() => setUser(JSON.parse(savedUser)), 0);
+    }
   }, []);
 
   return (
@@ -115,12 +112,21 @@ export function DashboardMain() {
   );
 }
 
-function StatCard({ title, value, trend, trendUp, icon, color }: any) {
+interface StatCardProps {
+  title: string;
+  value: string;
+  trend: string;
+  trendUp: boolean;
+  icon: React.ReactElement;
+  color: string;
+}
+
+function StatCard({ title, value, trend, trendUp, icon, color }: StatCardProps) {
   return (
     <motion.div whileHover={{ y: -8 }} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl relative overflow-hidden">
       <div className="flex items-start justify-between mb-8">
         <div className={`p-4 rounded-2xl ${color} bg-opacity-10 text-slate-800`}>
-          {React.cloneElement(icon, { className: `w-6 h-6 ${color.replace('bg-', 'text-')}` })}
+          {React.cloneElement(icon as React.ReactElement<any>, { className: `w-6 h-6 ${color.replace('bg-', 'text-')}` })}
         </div>
         <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full ${trendUp ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
           <span className="text-[10px] font-black">{trend}</span>
@@ -132,7 +138,14 @@ function StatCard({ title, value, trend, trendUp, icon, color }: any) {
   );
 }
 
-function ActivityRow({ name, company, status, time }: any) {
+interface ActivityRowProps {
+  name: string;
+  company: string;
+  status: string;
+  time: string;
+}
+
+function ActivityRow({ name, company, status, time }: ActivityRowProps) {
   return (
     <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all">
       <div className="flex items-center gap-4">

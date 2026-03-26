@@ -20,6 +20,7 @@ import {
   UserPlus
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { User as UserType } from "@/types/user";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Tablero", href: "/dashboard" },
@@ -37,12 +38,12 @@ const secondaryItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserType | null>(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      setTimeout(() => setUser(JSON.parse(storedUser)), 0);
     }
   }, []);
 
@@ -128,7 +129,14 @@ export function Sidebar() {
   );
 }
 
-function SidebarItem({ icon: Icon, label, href, active }: any) {
+interface SidebarItemProps {
+  icon: React.ElementType;
+  label: string;
+  href: string;
+  active: boolean;
+}
+
+function SidebarItem({ icon: Icon, label, href, active }: SidebarItemProps) {
   return (
     <Link 
       href={href}

@@ -8,8 +8,10 @@ import { motion } from "framer-motion";
 import {
     Lock,
     Mail,
-    ShieldCheck,
-    ChevronLeft
+    User as UserIcon,
+    FileText,
+    MapPin,
+    Briefcase
 } from "lucide-react";
 import { authService } from "@/services/auth.service";
 import ReCAPTCHA from "react-google-recaptcha";
@@ -54,8 +56,8 @@ export default function LoginPage() {
                 case "EMPRESA": router.push("/empresa/dashboard"); break;
                 default: router.push("/dashboard");
             }
-        } catch (err: any) {
-            setError(err.message || "Credenciales incorrectas.");
+        } catch (err: unknown) {
+            setError((err as Error).message || "Credenciales inválidas.");
             // Reset reCAPTCHA on error
             setRecaptchaToken(null);
             recaptchaRef.current?.reset();

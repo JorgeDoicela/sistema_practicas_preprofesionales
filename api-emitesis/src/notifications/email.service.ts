@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import * as nodemailer from 'nodemailer';
 
@@ -28,7 +29,7 @@ export class EmailService {
     // Verificar la conexión al iniciar el servicio
     this.transporter.verify((error, success) => {
       if (error) {
-        this.logger.error('Error de configuración de Gmail:', error.message);
+        this.logger.error('Error de configuración de Gmail:', (error as any).message);
       } else {
         this.logger.log('Servidor de correo listo para enviar mensajes');
       }
@@ -65,9 +66,9 @@ export class EmailService {
       const info = await this.transporter.sendMail(mailOptions);
       this.logger.log('Email enviado exitosamente: ' + info.messageId);
       return { success: true, data: info };
-    } catch (err) {
-      this.logger.error('Error enviando email via Gmail:', err.message);
-      return { success: false, error: err.message };
+    } catch (err: any) {
+      this.logger.error('Error enviando email via Gmail:', (err as any).message);
+      return { success: false, error: (err as any).message };
     }
   }
 
@@ -105,9 +106,9 @@ export class EmailService {
       const info = await this.transporter.sendMail(mailOptions);
       this.logger.log('Email de recuperación enviado: ' + info.messageId);
       return { success: true };
-    } catch (err) {
-      this.logger.error('Error enviando email de recuperación:', err.message);
-      return { success: false, error: err.message };
+    } catch (err: any) {
+      this.logger.error('Error enviando email de recuperación:', (err as any).message);
+      return { success: false, error: (err as any).message };
     }
   }
 
@@ -115,7 +116,7 @@ export class EmailService {
    * RF-CON-002: Notificar a empresa sobre convenio por correo
    * Incluye adjunto y reintentos automáticos
    */
-  async sendAgreementNotification(email: string, companyName: string, filePath: string, metadata: any = {}) {
+  async sendAgreementNotification(email: string, companyName: string, filePath: string, metadata: Prisma.InputJsonValue = {}) {
     const subject = 'Nuevo Convenio de Prácticas Preprofesionales - ISTPET';
     const maxRetries = 3;
     let attempt = 0;
@@ -166,8 +167,8 @@ export class EmailService {
         
         this.logger.log(`Convenio enviado con éxito en el intento ${attempt}`);
         return { success: true, messageId: info.messageId };
-      } catch (err) {
-        lastError = err.message;
+      } catch (err: any) {
+        lastError = (err as any).message;
         this.logger.warn(`Fallo intento ${attempt} de enviar convenio: ${lastError}`);
         
         if (attempt >= maxRetries) {
@@ -228,15 +229,15 @@ export class EmailService {
       const info = await this.transporter.sendMail(mailOptions);
       await this.logEmail(email, subject, 'EXITO', null, metadata);
       return { success: true, messageId: info.messageId };
-    } catch (err) {
-      this.logger.error('Error enviando email de asignación:', err.message);
-      await this.logEmail(email, subject, 'FALLIDO', err.message, metadata);
-      return { success: false, error: err.message };
+    } catch (err: any) {
+      this.logger.error('Error enviando email de asignación:', (err as any).message);
+      await this.logEmail(email, subject, 'FALLIDO', (err as any).message, metadata);
+      return { success: false, error: (err as any).message };
     }
   }
 
   // Método privado para registrar en la base de datos (RF-CON-002: Punto 4)
-  private async logEmail(to: string, subject: string, status: string, error: string | null, metadata: any) {
+  private async logEmail(to: string, subject: string, status: string, error: string | null, metadata: Prisma.InputJsonValue) {
     try {
       await this.prisma.emailLog.create({
         data: {
@@ -244,11 +245,11 @@ export class EmailService {
           subject,
           status,
           error,
-          metadata,
+          metadata: metadata ?? Prisma.JsonNull,
         }
       });
-    } catch (logErr) {
-      this.logger.error('Error guardando log de email en BD:', logErr.message);
+    } catch (logErr: any) {
+      this.logger.error('Error guardando log de email en BD:', (logErr as any).message);
     }
   }
 }

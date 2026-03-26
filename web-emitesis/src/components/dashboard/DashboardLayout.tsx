@@ -18,10 +18,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
     if (!token || !user) {
       router.push("/login");
-    } else {
-      setIsAuthorized(true);
     }
-    setTimeout(() => setIsLoading(false), 500);
+
+    const timer = setTimeout(() => {
+      if (token && user) {
+        setIsAuthorized(true);
+      }
+      setIsLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
   }, [router]);
 
   if (isLoading) {

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { put, del, list, PutBlobResult, PutCommandOptions } from '@vercel/blob';
 
 @Injectable()
 export class StorageService {
@@ -11,43 +12,39 @@ export class StorageService {
     this.isProduction = !!this.token && process.env.NODE_ENV === 'production';
   }
 
-  async upload(path: string, file: any, options?: any) {
+  async upload(path: string, file: any, options?: Partial<PutCommandOptions>): Promise<PutBlobResult> {
     if (!this.isProduction) {
       console.log(`[StorageService] Local Mode: Archivo listo para ${path}`);
-      return { url: `/uploads/${path}` };
+      return { url: `/uploads/${path}`, downloadUrl: `/uploads/${path}`, pathname: path, contentType: '', contentDisposition: '', size: 0 } as PutBlobResult;
     }
 
     try {
-      // Importación dinámica para evitar errores si la librería no está instalada
-      const { put } = await import('@vercel/blob');
-      const { url } = await put(path, file, {
+      return await put(path, file, {
         access: 'public',
         token: this.token,
         ...options,
       });
-      return { url };
     } catch (error: any) {
-      console.error('[StorageService] Error en Vercel Blob:', error.message);
-      return { url: `/uploads/${path}` };
+      console.error('[StorageService] Error en Vercel Blob:', (error as any).message);
+      return { url: `/uploads/${path}`, downloadUrl: `/uploads/${path}`, pathname: path, contentType: '', contentDisposition: '', size: 0 } as PutBlobResult;
     }
   }
 
   async delete(url: string) {
     if (!this.isProduction || !url.includes('public.blob.vercel-storage.com')) return;
     try {
-      const { del } = await import('@vercel/blob');
       await del(url, { token: this.token });
     } catch (error: any) {
-      console.error('[StorageService] Error al eliminar en Vercel:', error.message);
+      console.error('[StorageService] Error al eliminar en Vercel:', (error as any).message);
     }
   }
 
   async listFiles(): Promise<{ blobs: Array<{ pathname: string; url: string }> }> {
     if (!this.isProduction) return { blobs: [] };
     try {
-      const { list } = await import('@vercel/blob');
-      return await list({ token: this.token }) as any;
-    } catch (error) {
+      return await list({ token: this.token });
+    } catch (error: any) {
+      console.error('[StorageService] Error al listar en Vercel:', (error as any).message);
       return { blobs: [] };
     }
   }

@@ -40,21 +40,21 @@ export class AgreementsController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: (req, file, cb) => {
+        destination: (req, file: MulterFile | any, cb) => {
           const uploadPath = process.env.VERCEL ? tmpdir() : './uploads/agreements';
           if (!process.env.VERCEL && !existsSync(uploadPath)) {
             mkdirSync(uploadPath, { recursive: true });
           }
           cb(null, uploadPath);
         },
-        filename: (req, file, cb) => {
+        filename: (req, file: MulterFile | any, cb) => {
           const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
+          cb(null, `${uniqueSuffix}${extname((file as any).originalname)}`);
         },
       }),
-      fileFilter: (req, file, cb) => {
+      fileFilter: (req, file: MulterFile | any, cb) => {
         // Regla de Negocio: Solo se aceptan archivos en formato PDF
-        if (!file.originalname.match(/\.(pdf)$/)) {
+        if (!(file as any).originalname.match(/\.(pdf)$/)) {
           return cb(new BadRequestException('Solo se permiten archivos PDF'), false);
         }
         cb(null, true);

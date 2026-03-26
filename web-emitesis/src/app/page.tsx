@@ -10,16 +10,9 @@ import {
     Users,
     GraduationCap,
     Building2,
-    CheckCircle2,
-    ArrowRight,
     BarChart3,
     Lock,
     Globe2,
-    Briefcase,
-    FileSearch,
-    UserCheck,
-    Smartphone,
-    Layout,
     Award
 } from "lucide-react";
 
@@ -234,7 +227,7 @@ export default function Home() {
                                 <span className="text-sm font-bold uppercase tracking-[0.2em] text-[#C5A059]">Emitesis</span>
                             </div>
                             <p className="text-white/60 text-sm max-w-sm leading-relaxed mb-8">
-                                Sistema de Gestión de Prácticas Preprofesionales del Instituto Superior Tecnológico "Mayor Pedro Traversari". Compromiso con la formación de calidad.
+                                Sistema de Gestión de Prácticas Preprofesionales del Instituto Superior Tecnológico &quot;Mayor Pedro Traversari&quot;. Compromiso con la formación de calidad.
                             </p>
                             <div className="flex gap-3">
                                 {[Globe2, MapPin].map((Icon, i) => (

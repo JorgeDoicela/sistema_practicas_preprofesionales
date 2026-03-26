@@ -17,7 +17,7 @@ export const authService = {
     const text = await response.text();
     try {
       data = JSON.parse(text);
-    } catch (e) {
+    } catch {
       console.error('Error al parsear JSON en login. Texto recibido:', text);
       throw new Error(`Error del servidor (no JSON): ${text.substring(0, 100)}`);
     }
@@ -30,7 +30,7 @@ export const authService = {
     return data;
   },
 
-  async registerCompany(formData: any, recaptchaToken: string) {
+  async registerCompany(formData: Record<string, any>, recaptchaToken: string) {
     console.log('Registrando empresa...', formData.companyName);
     console.log('URL de API:', `${API_URL}/auth/register-company`);
 
@@ -46,7 +46,7 @@ export const authService = {
     const text = await response.text();
     try {
       data = JSON.parse(text);
-    } catch (e) {
+    } catch {
       console.error('Error al parsear JSON. Texto recibido:', text);
       throw new Error(`Error del servidor (no JSON): ${text.substring(0, 100)}`);
     }
@@ -78,7 +78,7 @@ export const authService = {
     return data;
   },
 
-  async resetPassword(token: string, password: any) {
+  async resetPassword(token: string, password: string) {
     const response = await fetch(`${API_URL}/auth/reset-password`, {
       method: 'POST',
       headers: {

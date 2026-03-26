@@ -1,7 +1,7 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export const internshipsService = {
-  async create(data: any) {
+  async create(data: Record<string, unknown>) {
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/internships`, {
       method: 'POST',

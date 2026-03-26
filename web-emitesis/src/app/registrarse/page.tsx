@@ -12,20 +12,20 @@ import {
     User,
     FileText,
     MapPin,
-    Briefcase,
-    ArrowRight,
-    ChevronLeft,
-    AlertCircle,
-    Loader2,
-    CheckCircle2,
-    ShieldCheck
+    Briefcase
 } from "lucide-react";
 import { authService } from "@/services/auth.service";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useRef } from "react";
 import { sanitizeInput } from "@/utils/security";
-import { validateRUC, isInstitutionalEmail } from "@/utils/ecuador-validators";
+import { validateRUC } from "@/utils/ecuador-validators";
 import { cn } from "@/lib/utils";
+import { User } from "@/types/user";
+
+interface RegisterCompanyResponse {
+    access_token: string;
+    user: User;
+}
 
 export default function RegisterCompanyPage() {
     const router = useRouter();
@@ -73,17 +73,17 @@ export default function RegisterCompanyPage() {
 
         try {
             // Sanitización masiva de todos los campos contra SQL Injection
-            const cleanData = Object.keys(formData).reduce((acc: any, key) => {
+            const cleanData: Record<string, string> = Object.keys(formData).reduce((acc: Record<string, string>, key) => {
                 acc[key] = sanitizeInput((formData as any)[key]);
                 return acc;
             }, {});
 
-            const data = await authService.registerCompany(cleanData, recaptchaToken);
+            const data: RegisterCompanyResponse = await authService.registerCompany(cleanData, recaptchaToken);
             localStorage.setItem("token", data.access_token);
             localStorage.setItem("user", JSON.stringify(data.user));
             router.push("/empresa/dashboard");
-        } catch (err: any) {
-            setError(err.message || "Error en el registro.");
+        } catch (err: unknown) {
+            setError((err as Error).message || "Error en el registro.");
             // Reset reCAPTCHA on error
             setRecaptchaToken(null);
             recaptchaRef.current?.reset();
@@ -175,7 +175,13 @@ export default function RegisterCompanyPage() {
     );
 }
 
-function InputField({ label, icon, error, ...props }: any) {
+interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
+    label: string;
+    icon: React.ReactNode;
+    error?: string | null;
+}
+
+function InputField({ label, icon, error, ...props }: InputFieldProps) {
     return (
         <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{label}</label>

@@ -60,13 +60,13 @@ export class AgreementsService {
           { agreementId: agreement.id, companyId: company.id }
         ).catch((err: any) => {
           // Loggear error si el proceso de envío falla (pero el convenio ya se guardó)
-          console.error('Error disparando notificación de convenio:', err.message);
+          console.error('Error disparando notificación de convenio:', (err as any).message);
         });
 
         return agreement;
       });
     } catch (error: any) {
-      throw new BadRequestException('Error al registrar el convenio: ' + error.message);
+      throw new BadRequestException('Error al registrar el convenio: ' + (error as any).message);
     }
   }
 

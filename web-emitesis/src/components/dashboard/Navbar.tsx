@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, Search, ChevronDown, User, ShieldCheck, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { User as UserType } from "@/types/user";
 
 export function Navbar() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserType | null>(null);
   const [scrolled, setScrolled] = useState(false);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -14,7 +15,9 @@ export function Navbar() {
 
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
-    if (savedUser) setUser(JSON.parse(savedUser));
+    if (savedUser) {
+      setTimeout(() => setUser(JSON.parse(savedUser)), 0);
+    }
 
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);

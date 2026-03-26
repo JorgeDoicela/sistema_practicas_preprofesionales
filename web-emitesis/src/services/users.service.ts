@@ -1,4 +1,5 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+import { User } from "@/types/user";
 
 export const usersService = {
   async findAll() {
@@ -17,7 +18,7 @@ export const usersService = {
     return response.json();
   },
 
-  async create(userData: any) {
+  async create(userData: Partial<User & { password?: string }>) {
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/users`, {
       method: 'POST',
@@ -36,7 +37,7 @@ export const usersService = {
     return response.json();
   },
 
-  async update(id: string, userData: any) {
+  async update(id: string, userData: Partial<User & { password?: string }>) {
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/users/${id}`, {
       method: 'PATCH',

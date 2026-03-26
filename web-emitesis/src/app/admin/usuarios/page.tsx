@@ -19,7 +19,8 @@ import {
   X
 } from 'lucide-react';
 import { usersService } from '@/services/users.service';
-import { User, UserRole } from '@/types/user';
+import { User, UserRole } from "@/types/user";
+import { Agreement } from "@/types/agreement";
 
 const RoleBadge = ({ role }: { role: UserRole | string }) => {
   const styles: Record<string, string> = {
@@ -44,7 +45,13 @@ export default function UsuariosManagementPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    fullName: string;
+    email: string;
+    password?: string;
+    role: UserRole;
+    isActive: boolean;
+  }>({
     fullName: '',
     email: '',
     password: '',
@@ -56,9 +63,9 @@ export default function UsuariosManagementPage() {
     try {
       setLoading(true);
       const data = await usersService.findAll();
-      setUsers(data);
-    } catch (err: any) {
-      setError(err.message);
+      setUsers(data as User[]);
+    } catch (err: unknown) {
+      setError((err as Error).message);
     } finally {
       setLoading(false);
     }
@@ -103,8 +110,8 @@ export default function UsuariosManagementPage() {
       }
       setIsModalOpen(false);
       fetchData();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as Error).message);
     }
   };
 
@@ -112,8 +119,8 @@ export default function UsuariosManagementPage() {
     try {
       await usersService.update(user.id, { isActive: !user.isActive });
       fetchData();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      alert((err as Error).message);
     }
   };
 
@@ -122,8 +129,8 @@ export default function UsuariosManagementPage() {
       try {
         await usersService.remove(id);
         fetchData();
-      } catch (err: any) {
-        alert(err.message);
+      } catch (err: unknown) {
+        alert((err as Error).message);
       }
     }
   };
@@ -349,7 +356,7 @@ export default function UsuariosManagementPage() {
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Rol del Usuario</label>
                   <select 
                     value={form.role}
-                    onChange={(e) => setForm({...form, role: e.target.value})}
+                    onChange={(e) => setForm({...form, role: e.target.value as UserRole})}
                     className="w-full bg-slate-50 border-none rounded-2xl py-4 px-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none appearance-none"
                   >
                     <option value="ESTUDIANTE">Estudiante</option>
