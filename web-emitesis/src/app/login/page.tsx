@@ -7,11 +7,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
     Lock,
-    Mail,
-    User as UserIcon,
-    FileText,
-    MapPin,
-    Briefcase
+    Mail
 } from "lucide-react";
 import { authService } from "@/services/auth.service";
 import ReCAPTCHA from "react-google-recaptcha";

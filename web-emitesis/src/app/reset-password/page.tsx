@@ -96,6 +96,13 @@ function ResetPasswordForm() {
       >
         {loading ? 'Actualizando...' : 'Actualizar Contraseña'}
       </button>
+      {message && (
+        <div className={`p-4 rounded-xl text-xs font-bold text-center border mt-4 ${
+          message.type === 'success' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-600 border-red-100'
+        }`}>
+          {message.text}
+        </div>
+      )}
     </form>
   );
 }

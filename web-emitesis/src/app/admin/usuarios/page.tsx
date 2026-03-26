@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import { usersService } from '@/services/users.service';
 import { User, UserRole } from "@/types/user";
-import { Agreement } from "@/types/agreement";
 
 const RoleBadge = ({ role }: { role: UserRole | string }) => {
   const styles: Record<string, string> = {
