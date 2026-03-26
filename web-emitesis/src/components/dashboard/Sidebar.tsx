@@ -53,6 +53,7 @@ export function Sidebar() {
   const allMenuItems = [
     ...menuItems,
     ...(isAdmin ? [{ icon: Users, label: "Usuarios", href: "/admin/usuarios" }] : []),
+    ...(isCoordinador ? [{ icon: Users, label: "Gestión Estudiantes", href: "/coordinador/estudiantes" }] : []),
     ...(isAdmin || isCoordinador ? [{ icon: UserPlus, label: "Asignación", href: "/coordinador/asignacion" }] : [])
   ];
 

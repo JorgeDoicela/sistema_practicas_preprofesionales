@@ -224,4 +224,55 @@ export class DocumentsService {
 
     return updatedDoc;
   }
+
+  async reviewByCoordinator(id: string, reviewDto: ReviewDocumentDto, coordinatorId: string) {
+    const document = await this.prisma.document.findUnique({
+      where: { id },
+      include: {
+        internship: {
+          include: {
+            tutor: true,
+            student: true,
+          },
+        },
+      },
+    });
+
+    if (!document) {
+      throw new NotFoundException('Documento no encontrado');
+    }
+
+    // Regla de Negocio: Solo documentos aprobados por el tutor (Excepción A1)
+    if (document.status !== 'APROBADO_TUTOR') {
+      throw new BadRequestException('El coordinador solo puede revisar documentos previamente aprobados por el tutor');
+    }
+
+    // Regla de Negocio: Observaciones obligatorias si hay rechazo (Excepción A2)
+    if (reviewDto.status === 'RECHAZADO_COORDINADOR' && !reviewDto.observations?.trim()) {
+      throw new BadRequestException('Las observaciones del coordinador son obligatorias para rechazar el documento');
+    }
+
+    const updatedDoc = await this.prisma.document.update({
+      where: { id },
+      data: {
+        status: reviewDto.status,
+        observations: reviewDto.observations,
+        reviewedAt: new Date(),
+      },
+    });
+
+    // Notificar a Estudiante y Tutor
+    if (document.internship.student?.email && document.internship.tutor?.email) {
+      await this.emailService.sendCoordinatorReviewResult(
+        document.internship.student.email,
+        document.internship.tutor.email,
+        document.internship.student.fullName,
+        document.name,
+        reviewDto.status,
+        reviewDto.observations,
+      );
+    }
+
+    return updatedDoc;
+  }
 }

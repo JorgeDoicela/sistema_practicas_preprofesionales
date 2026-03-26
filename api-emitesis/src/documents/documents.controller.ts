@@ -27,6 +27,16 @@ export class DocumentsController {
     return this.documentsService.reviewDocument(id, reviewDto, req.user.id);
   }
 
+  @Patch(':id/coordinator-review')
+  @Roles(Role.COORDINADOR)
+  coordinatorReview(
+    @Param('id') id: string,
+    @Body() reviewDto: ReviewDocumentDto,
+    @Req() req: any,
+  ) {
+    return this.documentsService.reviewByCoordinator(id, reviewDto, req.user.id);
+  }
+
   @Get('internship/:id')
   @Roles(Role.TUTOR, Role.COORDINADOR, Role.ADMIN, Role.ESTUDIANTE)
   findByInternship(@Param('id') id: string) {

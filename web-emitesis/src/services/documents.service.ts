@@ -93,5 +93,23 @@ export const documentsService = {
       throw new Error(error.message || 'Error al procesar la revisión');
     }
     return response.json();
+  },
+
+  async coordinatorReviewDocument(id: string, review: { status: string, observations: string }) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/documents/${id}/coordinator-review`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(review),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al procesar la revisión del coordinador');
+    }
+    return response.json();
   }
 };

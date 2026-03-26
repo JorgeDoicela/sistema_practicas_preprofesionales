@@ -325,6 +325,59 @@ export class EmailService {
         }
     }
 
+    async sendCoordinatorReviewResult(
+        studentEmail: string,
+        tutorEmail: string,
+        studentName: string,
+        documentName: string,
+        status: string,
+        observations: string
+    ) {
+        const isApproved = status === 'APROBADO_DEFINITIVO';
+        const subject = `Resultado Final de Revisión: ${documentName} - ${isApproved ? 'Aprobado Definitivo' : 'Rechazado por Coordinador'}`;
+        const metadata = { studentName, documentName, status, type: 'COORDINATOR_REVIEW_RESULT' };
+
+        const htmlContent = `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h1 style="color: ${isApproved ? '#2e7d32' : '#d32f2f'};">${isApproved ? 'Aprobación Definitiva' : 'Corrección Requerida por Coordinación'}</h1>
+          </div>
+          <p>Hola,</p>
+          <p>El coordinador de prácticas ha realizado la revisión final del documento <strong>${documentName}</strong> para el estudiante <strong>${studentName}</strong>.</p>
+          <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid ${isApproved ? '#2e7d32' : '#d32f2f'};">
+            <p><strong>Resultado Final:</strong> ${isApproved ? 'Aprobado Definitivo (Documento Bloqueado)' : 'Rechazado por Coordinador - Requiere nueva revisión'}</p>
+            ${observations ? `<p><strong>Observaciones del Coordinador:</strong> ${observations}</p>` : ''}
+          </div>
+          ${!isApproved ? '<p style="color: #d32f2f; font-weight: bold;">Tutor y Estudiante: Por favor coordinen las correcciones necesarias para reiniciar el ciclo de aprobación.</p>' : ''}
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://sistema-practicas-preprofesionales.vercel.app/dashboard"
+               style="background-color: #003366; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+              Acceder al Sistema
+            </a>
+          </div>
+          <hr style="border: 0; border-top: 1px solid #eee;" />
+          <p style="text-align: center; font-size: 12px; color: #999;">&copy; 2026 Instituto Superior Tecnológico "Mayor Pedro Traversari"</p>
+        </div>
+      `;
+
+        const mailOptions = {
+            from: `"Sistema EmiTesis" <${this.configService.get<string>('MAIL_USER')}>`,
+            to: [studentEmail, tutorEmail],
+            subject: subject,
+            html: htmlContent
+        };
+
+        try {
+            const info = await this.transporter.sendMail(mailOptions);
+            await this.logEmail(studentEmail, subject, 'EXITO', null, metadata);
+            return { success: true, messageId: info.messageId };
+        } catch (err: unknown) {
+            this.logger.error('Error enviando resultado de revisión de coordinador:', (err as Error).message);
+            await this.logEmail(studentEmail, subject, 'FALLIDO', (err as Error).message, metadata);
+            return { success: false, error: (err as Error).message };
+        }
+    }
+
     // Método privado para registrar en la base de datos (RF-CON-002: Punto 4)
     private async logEmail(to: string, subject: string, status: string, error: string | null, metadata: Prisma.InputJsonValue) {
         try {
