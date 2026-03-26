@@ -24,6 +24,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
 import { documentsService } from "@/services/documents.service";
+import { attendancesService } from "@/services/attendances.service";
 
 export default function DocumentDetailPage() {
   const { id } = useParams();
@@ -43,14 +44,23 @@ export default function DocumentDetailPage() {
   const [isReviewDrawerOpen, setIsReviewDrawerOpen] = useState(false);
   const [observations, setObservations] = useState("");
   const [previewedIds, setPreviewedIds] = useState<Set<string>>(new Set());
+  const [attendanceSummary, setAttendanceSummary] = useState<any>(null);
+  const [attendanceHistory, setAttendanceHistory] = useState<any[]>([]);
 
   const loadData = useCallback(async () => {
     try {
       const internshipData = await internshipsService.findOne(id as string);
       setInternship(internshipData);
       
-      const docsData = await documentsService.findByInternship(id as string);
+      const [docsData, summary, history] = await Promise.all([
+        documentsService.findByInternship(id as string),
+        attendancesService.getSummary(id as string),
+        attendancesService.findByInternship(id as string) // Trae últimos registros
+      ]);
+      
       setDocuments(docsData);
+      setAttendanceSummary(summary);
+      setAttendanceHistory(history);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
@@ -206,6 +216,51 @@ export default function DocumentDetailPage() {
                 </div>
               </div>
             </div>
+
+            {/* Attendance Progress Section */}
+            {attendanceSummary && (
+              <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm">
+                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#C5A059] mb-6 flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Progreso Asistencia
+                </h3>
+                
+                <div className="space-y-6">
+                  <div className="relative h-4 bg-slate-100 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${attendanceSummary.progressPercentage}%` }}
+                      className="absolute inset-y-0 left-0 bg-emerald-500"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Completadas</p>
+                      <p className="text-xl font-black text-[#003366]">{attendanceSummary.totalHours}h</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Porcentaje</p>
+                      <p className="text-xl font-black text-emerald-600">{attendanceSummary.progressPercentage}%</p>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-100">
+                    <p className="text-[10px] text-slate-400 font-bold mb-3 uppercase tracking-widest">Últimos Registros</p>
+                    <div className="space-y-3">
+                      {attendanceHistory.slice(0, 3).map((h: any) => (
+                        <div key={h.id} className="flex items-center justify-between text-[11px] font-bold text-[#003366]">
+                          <span>{new Date(h.checkIn).toLocaleDateString()}</span>
+                          <span className="text-emerald-600">
+                            {new Date(h.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="bg-[#003366] rounded-[2rem] p-8 text-white relative overflow-hidden group">
                <div className="absolute inset-0 opacity-10 pointer-events-none">

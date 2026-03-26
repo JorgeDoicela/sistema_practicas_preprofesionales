@@ -23,9 +23,11 @@ export default function AsistenciaPage() {
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
   const [status, setStatus] = useState<any>(null);
+  const [summary, setSummary] = useState<any>(null);
   const [internship, setInternship] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState({ startDate: "", endDate: "" });
 
   // Update clock every second
   useEffect(() => {
@@ -33,23 +35,24 @@ export default function AsistenciaPage() {
     return () => clearInterval(timer);
   }, []);
 
-  const loadData = async () => {
+  const loadData = async (f?: typeof filters) => {
     try {
       setLoading(true);
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       
-      // Get active internship
       const internships = await internshipsService.findByStudent(user.id);
       const active = internships.find((i: any) => i.status === 'Activo' || i.status === 'En Proceso');
       
       if (active) {
         setInternship(active);
-        const [todayStatus, attendanceHistory] = await Promise.all([
+        const [todayStatus, attendanceHistory, attendanceSummary] = await Promise.all([
           attendancesService.getTodayStatus(),
-          attendancesService.findByInternship(active.id)
+          attendancesService.findByInternship(active.id, f?.startDate, f?.endDate),
+          attendancesService.getSummary(active.id)
         ]);
         setStatus(todayStatus);
         setHistory(attendanceHistory);
+        setSummary(attendanceSummary);
       }
     } catch (err: any) {
       console.error(err);
@@ -62,6 +65,11 @@ export default function AsistenciaPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleFilter = (e: React.FormEvent) => {
+    e.preventDefault();
+    loadData(filters);
+  };
 
   const handleAttendance = async (type: 'IN' | 'OUT') => {
     if (!navigator.geolocation) {
@@ -131,6 +139,51 @@ export default function AsistenciaPage() {
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Precisión requerida: &lt; 200m</p>
            </div>
         </section>
+
+        {/* Summary Cards Integration */}
+        {summary && (
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-lg flex items-center gap-5">
+              <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
+                <Clock className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Horas Totales</p>
+                <p className="text-xl font-black text-[#003366]">{summary.totalHours}h / {summary.requiredHours}h</p>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-lg flex items-center gap-5">
+              <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Progreso</p>
+                <p className="text-xl font-black text-[#003366]">{summary.progressPercentage}%</p>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-lg flex items-center gap-5">
+              <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
+                <Calendar className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Registros</p>
+                <p className="text-xl font-black text-[#003366]">{summary.totalRecords}</p>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-lg flex items-center gap-5">
+              <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-600">
+                <AlertCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Pendientes</p>
+                <p className="text-xl font-black text-[#003366]">{summary.remainingHours}h</p>
+              </div>
+            </div>
+          </section>
+        )}
 
         {loading ? (
              <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -235,14 +288,55 @@ export default function AsistenciaPage() {
 
             {/* History Table */}
             <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden flex flex-col">
-               <div className="p-8 border-b border-slate-100 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                     <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-[#003366]">
-                        <History className="w-5 h-5" />
-                     </div>
-                     <h3 className="text-sm font-black text-[#003366] uppercase tracking-[0.2em]">Historial Reciente</h3>
+               <div className="p-8 border-b border-slate-100 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-[#003366]">
+                          <History className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-sm font-black text-[#003366] uppercase tracking-[0.2em]">Historial de Asistencia</h3>
+                    </div>
                   </div>
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Últimos 30 días</span>
+
+                  {/* Filters Form */}
+                  <form onSubmit={handleFilter} className="flex flex-wrap items-end gap-4 bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Desde</label>
+                      <input 
+                        type="date" 
+                        value={filters.startDate}
+                        onChange={(e) => setFilters({...filters, startDate: e.target.value})}
+                        className="block w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-[#003366] focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Hasta</label>
+                      <input 
+                        type="date" 
+                        value={filters.endDate}
+                        onChange={(e) => setFilters({...filters, endDate: e.target.value})}
+                        className="block w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-[#003366] focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                      />
+                    </div>
+                    <button 
+                      type="submit"
+                      className="px-6 py-2 bg-[#003366] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#004488] transition-colors h-[38px]"
+                    >
+                      Filtrar
+                    </button>
+                    {(filters.startDate || filters.endDate) && (
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          setFilters({ startDate: "", endDate: "" });
+                          loadData({ startDate: "", endDate: "" });
+                        }}
+                        className="px-4 py-2 text-slate-400 hover:text-[#003366] text-[10px] font-black uppercase tracking-widest transition-colors h-[38px]"
+                      >
+                        Limpiar
+                      </button>
+                    )}
+                  </form>
                </div>
 
                <div className="flex-1 overflow-y-auto max-h-[600px]">

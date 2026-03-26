@@ -21,12 +21,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
 import { documentsService } from "@/services/documents.service";
+import { attendancesService } from "@/services/attendances.service";
 
 export default function GestionEstudiantesPage() {
   const [internships, setInternships] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
   
   // Review states
   const [selectedDoc, setSelectedDoc] = useState<any>(null);
@@ -34,6 +34,8 @@ export default function GestionEstudiantesPage() {
   const [observations, setObservations] = useState("");
   const [saving, setSaving] = useState(false);
   const [expandedInternshipId, setExpandedInternshipId] = useState<string | null>(null);
+
+  const [attendanceData, setAttendanceData] = useState<Record<string, { summary: any, history: any[] }>>({});
 
   const loadData = useCallback(async () => {
     try {
@@ -47,9 +49,28 @@ export default function GestionEstudiantesPage() {
     }
   }, []);
 
+  const loadAttendanceForInternship = async (id: string) => {
+    if (attendanceData[id]) return;
+    try {
+      const [summary, history] = await Promise.all([
+        attendancesService.getSummary(id),
+        attendancesService.findByInternship(id)
+      ]);
+      setAttendanceData(prev => ({ ...prev, [id]: { summary, history } }));
+    } catch (error) {
+      console.error("Error loading attendance:", error);
+    }
+  };
+
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    if (expandedInternshipId) {
+      loadAttendanceForInternship(expandedInternshipId);
+    }
+  }, [expandedInternshipId]);
 
   const filteredInternships = internships.filter(i => {
     const matchesSearch = i.student.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -120,6 +141,7 @@ export default function GestionEstudiantesPage() {
               <StudentInternshipCard 
                 key={internship.id}
                 internship={internship}
+                attendance={attendanceData[internship.id]}
                 isExpanded={expandedInternshipId === internship.id}
                 onToggle={() => setExpandedInternshipId(expandedInternshipId === internship.id ? null : internship.id)}
                 onReviewClick={handleReviewClick}
@@ -225,7 +247,7 @@ export default function GestionEstudiantesPage() {
   );
 }
 
-function StudentInternshipCard({ internship, isExpanded, onToggle, onReviewClick }: any) {
+function StudentInternshipCard({ internship, attendance, isExpanded, onToggle, onReviewClick }: any) {
   const pendingDocs = internship.documents.filter((d: any) => d.status === 'APROBADO_TUTOR').length;
 
   return (
@@ -256,6 +278,11 @@ function StudentInternshipCard({ internship, isExpanded, onToggle, onReviewClick
                     <Users className="w-3.5 h-3.5" />
                     Tutor: <span className="text-[#003366]">{internship.tutor.fullName}</span>
                  </div>
+                 {/* Mini progreso de asistencia */}
+                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
+                    <Clock className="w-3.5 h-3.5" />
+                    Progreso: {attendance?.summary?.progressPercentage || 0}%
+                 </div>
               </div>
            </div>
         </div>
@@ -284,65 +311,94 @@ function StudentInternshipCard({ internship, isExpanded, onToggle, onReviewClick
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden bg-slate-50/50 border-t border-slate-100"
           >
-            <div className="p-8 space-y-4">
-               <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6 pl-2">Expediente de Documentos</h4>
-               <div className="grid gap-4">
-                  {internship.documents.map((doc: any) => (
-                    <div 
-                      key={doc.id}
-                      className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex items-center justify-between hover:border-[#003366]/20 transition-all group"
-                    >
-                       <div className="flex items-center gap-6">
-                          <div className={cn(
-                            "w-12 h-12 rounded-[1.25rem] flex items-center justify-center transition-all",
-                            doc.status === 'APROBADO_DEFINITIVO' ? "bg-emerald-50 text-emerald-600" :
-                            doc.status === 'APROBADO_TUTOR' ? "bg-blue-50 text-blue-600 shadow-sm" : "bg-slate-50 text-slate-400"
-                          )}>
-                             {doc.status === 'APROBADO_DEFINITIVO' ? <CheckCircle2 className="w-6 h-6" /> : <FileText className="w-6 h-6" />}
-                          </div>
-                          
-                          <div>
-                             <p className="font-bold text-[#003366] mb-1">{doc.name}</p>
-                             <div className="flex items-center gap-3">
-                                <span className={cn(
-                                  "text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border shadow-sm",
-                                  doc.status === 'APROBADO_DEFINITIVO' ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
-                                  doc.status === 'APROBADO_TUTOR' ? "bg-blue-50 text-blue-700 border-blue-100" : "bg-slate-50 text-slate-500 border-slate-200"
-                                )}>
-                                   {doc.status.replace(/_/g, ' ')}
-                                </span>
-                                {doc.submittedAt && (
-                                   <span className="text-[9px] font-medium text-slate-400 flex items-center gap-1.5">
-                                      <Clock className="w-3 h-3" />
-                                      {new Date(doc.submittedAt).toLocaleDateString()}
-                                   </span>
-                                )}
+            <div className="p-8 grid lg:grid-cols-2 gap-10">
+               {/* Columna Izquierda: Documentos */}
+               <div className="space-y-4">
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6 pl-2 flex items-center gap-3">
+                    <FileText className="w-4 h-4" />
+                    Expediente Digital
+                  </h4>
+                  <div className="grid gap-3">
+                     {internship.documents.map((doc: any) => (
+                       <div 
+                         key={doc.id}
+                         className="bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm flex items-center justify-between group"
+                       >
+                          <div className="flex items-center gap-4">
+                             <div className={cn(
+                               "w-10 h-10 rounded-xl flex items-center justify-center",
+                               doc.status === 'APROBADO_DEFINITIVO' ? "bg-emerald-50 text-emerald-600" :
+                               doc.status === 'APROBADO_TUTOR' ? "bg-blue-50 text-blue-600" : "bg-slate-50 text-slate-400"
+                             )}>
+                                {doc.status === 'APROBADO_DEFINITIVO' ? <CheckCircle2 className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
                              </div>
+                             <div>
+                                <p className="text-[11px] font-bold text-[#003366] line-clamp-1">{doc.name}</p>
+                                <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">{doc.status.replace(/_/g, ' ')}</span>
+                             </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                             {doc.status === 'APROBADO_TUTOR' && (
+                                <button onClick={() => onReviewClick(doc, internship.id)} className="p-2 bg-amber-50 text-[#C5A059] rounded-lg hover:bg-amber-500 hover:text-white transition-all"><FileCheck className="w-4 h-4" /></button>
+                             )}
+                             {doc.filePath && <a href={doc.filePath} target="_blank" className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-[#003366] hover:text-white transition-all"><ChevronRight className="w-4 h-4" /></a>}
+                          </div>
+                       </div>
+                     ))}
+                  </div>
+               </div>
+
+               {/* Columna Derecha: Asistencia */}
+               <div className="space-y-4">
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6 pl-2 flex items-center gap-3">
+                    <Clock className="w-4 h-4" />
+                    Control de Asistencia
+                  </h4>
+                  
+                  {!attendance ? (
+                     <div className="py-10 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-slate-300" /></div>
+                  ) : (
+                    <div className="space-y-6">
+                       <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-white p-5 rounded-2xl border border-slate-200">
+                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Horas Totales</p>
+                             <p className="text-xl font-black text-[#003366]">{attendance.summary.totalHours}h / {attendance.summary.requiredHours}h</p>
+                          </div>
+                          <div className="bg-white p-5 rounded-2xl border border-slate-200">
+                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Marcajes</p>
+                             <p className="text-xl font-black text-[#003366]">{attendance.summary.totalRecords} días</p>
                           </div>
                        </div>
 
-                       <div className="flex items-center gap-4">
-                          {doc.status === 'APROBADO_TUTOR' && (
-                             <button 
-                                onClick={() => onReviewClick(doc, internship.id)}
-                                className="px-6 py-3 bg-[#C5A059] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#003366] transition-all hover:scale-105 active:scale-95 shadow-lg shadow-amber-900/10"
-                             >
-                                <FileCheck className="w-4 h-4" />
-                             </button>
-                          )}
-                          {doc.filePath && (
-                             <a 
-                                href={doc.filePath}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-10 h-10 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:bg-[#003366] hover:text-white transition-all shadow-sm"
-                             >
-                                <ChevronRight className="w-4 h-4" />
-                             </a>
+                       <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden">
+                          <table className="w-full text-[10px]">
+                             <thead className="bg-slate-50 border-b">
+                                <tr>
+                                   <th className="px-4 py-3 text-left font-black uppercase text-slate-400">Fecha</th>
+                                   <th className="px-4 py-3 text-left font-black uppercase text-slate-400">Entrada</th>
+                                   <th className="px-4 py-3 text-left font-black uppercase text-slate-400">Salida</th>
+                                   <th className="px-4 py-3 text-right font-black uppercase text-slate-400">Dist.</th>
+                                </tr>
+                             </thead>
+                             <tbody className="divide-y">
+                                {attendance.history.slice(0, 5).map((h: any) => (
+                                   <tr key={h.id} className="hover:bg-slate-50 transition-colors">
+                                      <td className="px-4 py-3 font-bold">{new Date(h.checkIn).toLocaleDateString()}</td>
+                                      <td className="px-4 py-3 text-emerald-600 font-bold">{new Date(h.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                                      <td className="px-4 py-3 text-rose-600 font-bold">{h.checkOut ? new Date(h.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</td>
+                                      <td className="px-4 py-3 text-right text-slate-400">{(h.distanceKm * 1000).toFixed(0)}m</td>
+                                   </tr>
+                                ))}
+                             </tbody>
+                          </table>
+                          {attendance.history.length > 5 && (
+                             <div className="p-3 text-center border-t bg-slate-50">
+                                <span className="text-[9px] font-black text-[#C5A059] uppercase">+{attendance.history.length - 5} registros adicionales</span>
+                             </div>
                           )}
                        </div>
                     </div>
-                  ))}
+                  )}
                </div>
             </div>
           </motion.div>

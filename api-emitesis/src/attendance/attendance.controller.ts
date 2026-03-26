@@ -31,7 +31,17 @@ export class AttendanceController {
 
   @Get('internship/:id')
   @Roles(Role.TUTOR, Role.COORDINADOR, Role.ADMIN, Role.ESTUDIANTE)
-  findByInternship(@Param('id') id: string) {
-    return this.attendanceService.findByInternship(id);
+  findByInternship(
+    @Param('id') id: string,
+    @Req() req: any
+  ) {
+    const { startDate, endDate } = req.query;
+    return this.attendanceService.findByInternship(id, startDate, endDate);
+  }
+
+  @Get('internship/:id/summary')
+  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ADMIN, Role.ESTUDIANTE)
+  getSummary(@Param('id') id: string) {
+    return this.attendanceService.getSummary(id);
   }
 }

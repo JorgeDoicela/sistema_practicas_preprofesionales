@@ -143,11 +143,55 @@ export class AttendanceService {
     });
   }
 
-  async findByInternship(internshipId: string) {
+  async findByInternship(internshipId: string, startDate?: string, endDate?: string) {
+    const where: any = { internshipId };
+
+    if (startDate || endDate) {
+      where.checkIn = {};
+      if (startDate) where.checkIn.gte = new Date(startDate);
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        where.checkIn.lte = end;
+      }
+    }
+
     return this.prisma.attendance.findMany({
-      where: { internshipId },
+      where,
       orderBy: { checkIn: 'desc' },
-      take: 30 // Últimos 30 registros
     });
+  }
+
+  async getSummary(internshipId: string) {
+    const internship = await this.prisma.internship.findUnique({
+      where: { id: internshipId },
+      include: {
+        attendances: true,
+      },
+    });
+
+    if (!internship) throw new NotFoundException('Asignación no encontrada');
+
+    let totalMinutes = 0;
+    internship.attendances.forEach((att) => {
+      if (att.checkIn && att.checkOut) {
+        const diff = att.checkOut.getTime() - att.checkIn.getTime();
+        totalMinutes += Math.floor(diff / (1000 * 60));
+      }
+    });
+
+    const totalHours = Number((totalMinutes / 60).toFixed(2));
+    const requiredHours = internship.totalHours || 0;
+    const progressPercentage = requiredHours > 0 
+      ? Math.min(100, Number(((totalHours / requiredHours) * 100).toFixed(1)))
+      : 0;
+
+    return {
+      totalHours,
+      requiredHours,
+      progressPercentage,
+      remainingHours: Math.max(0, requiredHours - totalHours),
+      totalRecords: internship.attendances.length,
+    };
   }
 }

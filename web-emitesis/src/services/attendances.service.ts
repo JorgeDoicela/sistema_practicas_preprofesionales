@@ -55,9 +55,19 @@ export const attendancesService = {
     return response.json();
   },
 
-  async findByInternship(internshipId: string) {
+  async findByInternship(internshipId: string, startDate?: string, endDate?: string) {
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/attendance/internship/${internshipId}`, {
+    let url = `${API_URL}/attendance/internship/${internshipId}`;
+    
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+
+    const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -66,6 +76,22 @@ export const attendancesService = {
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || 'Error al obtener el historial de asistencia');
+    }
+
+    return response.json();
+  },
+
+  async getSummary(internshipId: string) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/attendance/internship/${internshipId}/summary`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al obtener el resumen de asistencia');
     }
 
     return response.json();
