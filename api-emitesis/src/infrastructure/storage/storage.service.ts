@@ -12,7 +12,7 @@ export class StorageService {
     this.isProduction = !!this.token && process.env.NODE_ENV === 'production';
   }
 
-  async upload(path: string, file: any, options?: Partial<PutCommandOptions>): Promise<PutBlobResult> {
+  async upload(path: string, file: string | Buffer | Blob | ReadableStream | ArrayBuffer, options?: Partial<PutCommandOptions>): Promise<PutBlobResult> {
     if (!this.isProduction) {
       console.log(`[StorageService] Local Mode: Archivo listo para ${path}`);
       return { url: `/uploads/${path}`, downloadUrl: `/uploads/${path}`, pathname: path, contentType: '', contentDisposition: '', size: 0 } as PutBlobResult;
@@ -24,8 +24,8 @@ export class StorageService {
         token: this.token,
         ...options,
       });
-    } catch (error: any) {
-      console.error('[StorageService] Error en Vercel Blob:', (error).message);
+    } catch (error: unknown) {
+      console.error('[StorageService] Error en Vercel Blob:', (error as Error).message);
       return { url: `/uploads/${path}`, downloadUrl: `/uploads/${path}`, pathname: path, contentType: '', contentDisposition: '', size: 0 } as PutBlobResult;
     }
   }
@@ -34,8 +34,8 @@ export class StorageService {
     if (!this.isProduction || !url.includes('public.blob.vercel-storage.com')) return;
     try {
       await del(url, { token: this.token });
-    } catch (error: any) {
-      console.error('[StorageService] Error al eliminar en Vercel:', (error).message);
+    } catch (error: unknown) {
+      console.error('[StorageService] Error al eliminar en Vercel:', (error as Error).message);
     }
   }
 
@@ -43,8 +43,8 @@ export class StorageService {
     if (!this.isProduction) return { blobs: [] };
     try {
       return await list({ token: this.token });
-    } catch (error: any) {
-      console.error('[StorageService] Error al listar en Vercel:', (error).message);
+    } catch (error: unknown) {
+      console.error('[StorageService] Error al listar en Vercel:', (error as Error).message);
       return { blobs: [] };
     }
   }

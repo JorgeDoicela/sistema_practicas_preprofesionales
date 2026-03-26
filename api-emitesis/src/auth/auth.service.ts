@@ -39,8 +39,8 @@ export class AuthService {
       
       console.log('Resultado de Google:', response.data);
       return response.data.success;
-    } catch (error: any) {
-      console.error('Error verificando reCAPTCHA:', (error).message);
+    } catch (error: unknown) {
+      console.error('Error verificando reCAPTCHA:', (error as Error).message);
       return false;
     }
   }
@@ -182,8 +182,8 @@ export class AuthService {
       } else {
         console.error('El servicio de email devolvió error:', (emailRes as any).error);
       }
-    } catch (emailError: any) {
-      console.error('Error fatal disparando el envío de email:', (emailError).message);
+    } catch (emailError: unknown) {
+      console.error('Error fatal disparando el envío de email:', (emailError as Error).message);
     }
 
     return this.login(user);
