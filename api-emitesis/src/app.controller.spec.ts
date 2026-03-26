@@ -15,8 +15,8 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return API greeting', () => {
+      expect(appController.getHello()).toBe('Emitesis API v1.0.0 - Ecosistema de Gestión ISTPET');
     });
   });
 });
