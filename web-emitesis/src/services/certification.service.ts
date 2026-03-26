@@ -1,3 +1,5 @@
+"use client";
+
 import { api } from "./auth.service";
 
 export interface EligibilityDetails {
