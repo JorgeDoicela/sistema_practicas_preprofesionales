@@ -49,12 +49,12 @@ export class AgreementsController {
         },
         filename: (req, file: MulterFile | any, cb) => {
           const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `${uniqueSuffix}${extname((file as any).originalname)}`);
+          cb(null, `${uniqueSuffix}${extname((file).originalname)}`);
         },
       }),
       fileFilter: (req, file: MulterFile | any, cb) => {
         // Regla de Negocio: Solo se aceptan archivos en formato PDF
-        if (!(file as any).originalname.match(/\.(pdf)$/)) {
+        if (!(file).originalname.match(/\.(pdf)$/)) {
           return cb(new BadRequestException('Solo se permiten archivos PDF'), false);
         }
         cb(null, true);

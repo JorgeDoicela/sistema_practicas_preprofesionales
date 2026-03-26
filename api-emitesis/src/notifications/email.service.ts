@@ -67,8 +67,8 @@ export class EmailService {
       this.logger.log('Email enviado exitosamente: ' + info.messageId);
       return { success: true, data: info };
     } catch (err: any) {
-      this.logger.error('Error enviando email via Gmail:', (err as any).message);
-      return { success: false, error: (err as any).message };
+      this.logger.error('Error enviando email via Gmail:', (err).message);
+      return { success: false, error: (err).message };
     }
   }
 
@@ -107,8 +107,8 @@ export class EmailService {
       this.logger.log('Email de recuperación enviado: ' + info.messageId);
       return { success: true };
     } catch (err: any) {
-      this.logger.error('Error enviando email de recuperación:', (err as any).message);
-      return { success: false, error: (err as any).message };
+      this.logger.error('Error enviando email de recuperación:', (err).message);
+      return { success: false, error: (err).message };
     }
   }
 
@@ -168,7 +168,7 @@ export class EmailService {
         this.logger.log(`Convenio enviado con éxito en el intento ${attempt}`);
         return { success: true, messageId: info.messageId };
       } catch (err: any) {
-        lastError = (err as any).message;
+        lastError = (err).message;
         this.logger.warn(`Fallo intento ${attempt} de enviar convenio: ${lastError}`);
         
         if (attempt >= maxRetries) {
@@ -230,9 +230,9 @@ export class EmailService {
       await this.logEmail(email, subject, 'EXITO', null, metadata);
       return { success: true, messageId: info.messageId };
     } catch (err: any) {
-      this.logger.error('Error enviando email de asignación:', (err as any).message);
-      await this.logEmail(email, subject, 'FALLIDO', (err as any).message, metadata);
-      return { success: false, error: (err as any).message };
+      this.logger.error('Error enviando email de asignación:', (err).message);
+      await this.logEmail(email, subject, 'FALLIDO', (err).message, metadata);
+      return { success: false, error: (err).message };
     }
   }
 
@@ -249,7 +249,7 @@ export class EmailService {
         }
       });
     } catch (logErr: any) {
-      this.logger.error('Error guardando log de email en BD:', (logErr as any).message);
+      this.logger.error('Error guardando log de email en BD:', (logErr).message);
     }
   }
 }

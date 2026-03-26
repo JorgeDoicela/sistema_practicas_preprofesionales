@@ -9,7 +9,7 @@ import {
     Building2,
     Mail,
     Lock,
-    User,
+    User as UserIcon,
     FileText,
     MapPin,
     Briefcase
@@ -117,7 +117,7 @@ export default function RegisterCompanyPage() {
                                 {step === 1 ? (
                                     <div className="space-y-6">
                                         <div className="grid md:grid-cols-2 gap-6">
-                                            <InputField label="Nombre Completo" name="fullName" icon={<User className="w-5 h-5" />} placeholder="Responsable" value={formData.fullName} onChange={handleChange} />
+                                            <InputField label="Nombre Completo" name="fullName" icon={<UserIcon className="w-5 h-5" />} placeholder="Responsable" value={formData.fullName} onChange={handleChange} />
                                             <InputField label="Correo Corporativo" name="email" icon={<Mail className="w-5 h-5" />} placeholder="empresa@ejemplo.com" value={formData.email} onChange={handleChange} />
                                         </div>
                                         <InputField label="Contraseña" name="password" type="password" icon={<Lock className="w-5 h-5" />} placeholder="Mínimo 8 caracteres" value={formData.password} onChange={handleChange} />

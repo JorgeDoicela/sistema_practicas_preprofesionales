@@ -25,7 +25,7 @@ export class StorageService {
         ...options,
       });
     } catch (error: any) {
-      console.error('[StorageService] Error en Vercel Blob:', (error as any).message);
+      console.error('[StorageService] Error en Vercel Blob:', (error).message);
       return { url: `/uploads/${path}`, downloadUrl: `/uploads/${path}`, pathname: path, contentType: '', contentDisposition: '', size: 0 } as PutBlobResult;
     }
   }
@@ -35,7 +35,7 @@ export class StorageService {
     try {
       await del(url, { token: this.token });
     } catch (error: any) {
-      console.error('[StorageService] Error al eliminar en Vercel:', (error as any).message);
+      console.error('[StorageService] Error al eliminar en Vercel:', (error).message);
     }
   }
 
@@ -44,7 +44,7 @@ export class StorageService {
     try {
       return await list({ token: this.token });
     } catch (error: any) {
-      console.error('[StorageService] Error al listar en Vercel:', (error as any).message);
+      console.error('[StorageService] Error al listar en Vercel:', (error).message);
       return { blobs: [] };
     }
   }
