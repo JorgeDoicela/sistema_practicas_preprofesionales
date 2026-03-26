@@ -8,7 +8,7 @@ El sistema emplea un conjunto de tecnologías seleccionadas para maximizar la se
 
 | Categoría | Tecnología | Implementación y Valor Técnico |
 | :--- | :--- | :--- |
-| **Lenguaje** | TypeScript | Garantiza la integridad del código mediante tipado estático, eliminando errores comunes de JavaScript y facilitando refactorizaciones seguras en el futuro. |
+| **Lenguaje** | TypeScript / Node 22 | Garantiza la integridad del código mediante tipado estático sobre el entorno de ejecución Node.js 22 LTS, facilitando refactorizaciones seguras. |
 | **Frontend** | Next.js 14+ | Se utiliza el App Router y Server Components para optimizar el rendimiento y asegurar una carga de página instantánea mediante Renderizado del Lado del Servidor (SSR). |
 | **Backend** | NestJS 11+ | Proporciona una arquitectura modular y escalable, permitiendo una separación clara de responsabilidades y facilitando el crecimiento del sistema sin generar deuda técnica. |
 | **ORM** | Prisma | Actúa como el puente seguro entre el código y los datos, automatizando las migraciones y asegurando que el modelo de datos sea siempre consistente. |
