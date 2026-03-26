@@ -75,5 +75,23 @@ export const documentsService = {
       throw new Error(error.message || 'Error al subir el documento');
     }
     return response.json();
+  },
+
+  async reviewDocument(id: string, review: { status: string, observations: string }) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/documents/${id}/review`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(review),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al procesar la revisión');
+    }
+    return response.json();
   }
 };

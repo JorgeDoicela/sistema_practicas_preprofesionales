@@ -3,6 +3,7 @@ import type { Response } from 'express';
 
 import { DocumentsService } from './documents.service';
 import { UpdateDocumentDatesDto } from './dto/update-document-dates.dto';
+import { ReviewDocumentDto } from './dto/review-document.dto';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RolesGuard } from '../auth/strategies/roles.guard';
@@ -15,6 +16,16 @@ import { createReadStream } from 'fs';
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
+
+  @Patch(':id/review')
+  @Roles(Role.TUTOR)
+  review(
+    @Param('id') id: string,
+    @Body() reviewDto: ReviewDocumentDto,
+    @Req() req: any,
+  ) {
+    return this.documentsService.reviewDocument(id, reviewDto, req.user.id);
+  }
 
   @Get('internship/:id')
   @Roles(Role.TUTOR, Role.COORDINADOR, Role.ADMIN, Role.ESTUDIANTE)

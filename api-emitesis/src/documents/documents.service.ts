@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateDocumentDatesDto } from './dto/update-document-dates.dto';
+import { ReviewDocumentDto } from './dto/review-document.dto';
 import { StorageService } from '../infrastructure/storage/storage.service';
 import { EmailService } from '../notifications/email.service';
 import { MulterFile } from '../shared/interfaces/multer-file.interface';
@@ -172,5 +173,55 @@ export class DocumentsService {
     }
 
     return updatedDocument;
+  }
+
+  async reviewDocument(id: string, reviewDto: ReviewDocumentDto, tutorId: string) {
+    const document = await this.prisma.document.findUnique({
+      where: { id },
+      include: {
+        internship: {
+          include: {
+            tutor: true,
+            student: true,
+          },
+        },
+      },
+    });
+
+    if (!document) {
+      throw new NotFoundException('Documento no encontrado');
+    }
+
+    // Regla de Negocio: Solo el tutor asignado puede revisar
+    if (document.internship.tutorId !== tutorId) {
+      throw new BadRequestException('No tienes permisos para revisar este documento');
+    }
+
+    // Regla de Negocio: No se puede aprobar un documento bloqueado (aprobado definitivamente)
+    if (document.status === 'APROBADO_DEFINITIVO') {
+      throw new BadRequestException('Este documento ya ha sido aprobado por el coordinador y no puede ser modificado');
+    }
+
+    const updatedDoc = await this.prisma.document.update({
+      where: { id },
+      data: {
+        status: reviewDto.status,
+        observations: reviewDto.observations,
+        reviewedAt: new Date(),
+      },
+    });
+
+    // Notificar al estudiante
+    if (document.internship.student?.email) {
+      await this.emailService.sendDocumentReviewResultToStudent(
+        document.internship.student.email,
+        document.internship.student.fullName,
+        document.name,
+        reviewDto.status,
+        reviewDto.observations,
+      );
+    }
+
+    return updatedDoc;
   }
 }

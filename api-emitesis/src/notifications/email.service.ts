@@ -275,6 +275,56 @@ export class EmailService {
         }
     }
 
+    async sendDocumentReviewResultToStudent(
+        email: string,
+        studentName: string,
+        documentName: string,
+        status: string,
+        observations: string
+    ) {
+        const isApproved = status === 'APROBADO_TUTOR';
+        const subject = `Resultado de Revisión: ${documentName} - ${isApproved ? 'Aprobado' : 'Rechazado'}`;
+        const metadata = { studentName, documentName, status, type: 'DOCUMENT_REVIEW_RESULT' };
+
+        const mailOptions = {
+            from: `"Sistema EmiTesis" <${this.configService.get<string>('MAIL_USER')}>`,
+            to: email,
+            subject: subject,
+            html: `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h1 style="color: ${isApproved ? '#2e7d32' : '#d32f2f'};">${isApproved ? 'Documento Aprobado' : 'Documento Rechazado'}</h1>
+          </div>
+          <p>Hola <strong>${studentName}</strong>,</p>
+          <p>Tu documento <strong>${documentName}</strong> ha sido revisado por tu tutor académico.</p>
+          <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid ${isApproved ? '#2e7d32' : '#d32f2f'};">
+            <p><strong>Resultado:</strong> ${isApproved ? 'Aprobado por tutor (Pendiente de Coordinador)' : 'Rechazado - Requiere corrección'}</p>
+            ${observations ? `<p><strong>Observaciones:</strong> ${observations}</p>` : ''}
+          </div>
+          <p>Por favor, accede al portal para realizar las acciones correspondientes.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://sistema-practicas-preprofesionales.vercel.app/dashboard/documentos"
+               style="background-color: #003366; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+              Ver en el Portal
+            </a>
+          </div>
+          <hr style="border: 0; border-top: 1px solid #eee;" />
+          <p style="text-align: center; font-size: 12px; color: #999;">&copy; 2026 Instituto Superior Tecnológico "Mayor Pedro Traversari"</p>
+        </div>
+      `
+        };
+
+        try {
+            const info = await this.transporter.sendMail(mailOptions);
+            await this.logEmail(email, subject, 'EXITO', null, metadata);
+            return { success: true, messageId: info.messageId };
+        } catch (err: unknown) {
+            this.logger.error('Error enviando resultado de revisión:', (err as Error).message);
+            await this.logEmail(email, subject, 'FALLIDO', (err as Error).message, metadata);
+            return { success: false, error: (err as Error).message };
+        }
+    }
+
     // Método privado para registrar en la base de datos (RF-CON-002: Punto 4)
     private async logEmail(to: string, subject: string, status: string, error: string | null, metadata: Prisma.InputJsonValue) {
         try {

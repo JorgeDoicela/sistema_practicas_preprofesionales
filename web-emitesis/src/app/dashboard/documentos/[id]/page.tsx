@@ -16,7 +16,9 @@ import {
   CalendarDays,
   Save,
   Loader2,
-  FileStack
+  FileStack,
+  FileCheck,
+  FileText
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -36,6 +38,11 @@ export default function DocumentDetailPage() {
   // Form states for dates
   const [startDate, setStartDate] = useState("");
   const [dueDate, setDueDate] = useState("");
+
+  // Review states
+  const [isReviewDrawerOpen, setIsReviewDrawerOpen] = useState(false);
+  const [observations, setObservations] = useState("");
+  const [previewedIds, setPreviewedIds] = useState<Set<string>>(new Set());
 
   const loadData = useCallback(async () => {
     try {
@@ -78,8 +85,44 @@ export default function DocumentDetailPage() {
     setSaving(true);
     try {
       await documentsService.updateDates(selectedDoc.id, startDate, dueDate);
-      await loadData(); // Reload to see changes
+      await loadData();
       setIsDrawerOpen(false);
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleReviewClick = (doc: any) => {
+    setSelectedDoc(doc);
+    setObservations(doc.observations || "");
+    setIsReviewDrawerOpen(true);
+  };
+
+  const handlePreviewFile = (doc: any) => {
+    setPreviewedIds(prev => new Set(prev).add(doc.id));
+    window.open(doc.filePath, '_blank');
+  };
+
+  const handleReviewSubmit = async (status: 'APROBADO_TUTOR' | 'RECHAZADO_TUTOR') => {
+    if (status === 'RECHAZADO_TUTOR' && !observations.trim()) {
+      alert("Las observaciones son obligatorias para rechazar el documento.");
+      return;
+    }
+
+    if (status === 'APROBADO_TUTOR' && !previewedIds.has(selectedDoc.id)) {
+      if (!confirm("Se recomienda visualizar el documento antes de aprobarlo. ¿Desea continuar con la aprobación?")) {
+        return;
+      }
+    }
+
+    setSaving(true);
+    try {
+      await documentsService.reviewDocument(selectedDoc.id, { status, observations });
+      alert(status === 'APROBADO_TUTOR' ? "Documento aprobado con éxito" : "Documento rechazado");
+      await loadData();
+      setIsReviewDrawerOpen(false);
     } catch (error: any) {
       alert(error.message);
     } finally {
@@ -207,7 +250,7 @@ export default function DocumentDetailPage() {
                       >
                          <div className="flex items-center gap-6 flex-1">
                             <div className={cn(
-                              "w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110",
+                              "w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-inner",
                               doc.status === 'APROBADO_DEFINITIVO' ? "bg-emerald-50 text-emerald-600" : 
                               doc.status === 'PENDIENTE' ? "bg-slate-50 text-slate-400" : "bg-blue-50 text-blue-600"
                             )}>
@@ -226,28 +269,51 @@ export default function DocumentDetailPage() {
                                      Vence: <span className="text-slate-600 font-black">{doc.dueDate ? new Date(doc.dueDate).toLocaleDateString() : 'No definido'}</span>
                                   </div>
                                   <div className={cn(
-                                    "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.15em]",
-                                    doc.status === 'APROBADO_DEFINITIVO' ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
+                                    "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.15em] shadow-sm",
+                                    doc.status === 'APROBADO_DEFINITIVO' ? "bg-emerald-100 text-emerald-700" : 
+                                    doc.status === 'EN_REVISION_TUTOR' ? "bg-blue-100 text-blue-700" :
+                                    "bg-slate-100 text-slate-500"
                                   )}>
-                                     {doc.status}
+                                     {doc.status.replace(/_/g, ' ')}
                                   </div>
+                                  {doc.filePath && (
+                                    <button 
+                                      onClick={() => handlePreviewFile(doc)}
+                                      className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#C5A059] hover:underline"
+                                    >
+                                      <FileText className="w-3 h-3" />
+                                      Ver Entrega
+                                    </button>
+                                  )}
                                </div>
                             </div>
                          </div>
 
-                         <button 
-                          onClick={() => handleEditClick(doc)}
-                          disabled={doc.status === 'APROBADO_DEFINITIVO'}
-                          className={cn(
-                            "flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all",
-                            doc.status === 'APROBADO_DEFINITIVO' 
-                              ? "opacity-50 cursor-not-allowed text-slate-400" 
-                              : "bg-[#003366] text-white hover:bg-[#003366]/90 shadow-lg shadow-blue-900/10 active:scale-95"
-                          )}
-                         >
-                            <Edit3 className="w-4 h-4" />
-                            Configurar Fechas
-                         </button>
+                         <div className="flex items-center gap-3">
+                           {doc.status === 'EN_REVISION_TUTOR' && (
+                             <button 
+                               onClick={() => handleReviewClick(doc)}
+                               className="flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest bg-[#C5A059] text-white hover:bg-[#C5A059]/90 shadow-lg shadow-amber-900/10 active:scale-95 transition-all"
+                             >
+                                <FileCheck className="w-4 h-4" />
+                                Revisar
+                             </button>
+                           )}
+                           
+                           <button 
+                            onClick={() => handleEditClick(doc)}
+                            disabled={doc.status === 'APROBADO_DEFINITIVO'}
+                            className={cn(
+                              "flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all",
+                              doc.status === 'APROBADO_DEFINITIVO' 
+                                ? "opacity-50 cursor-not-allowed text-slate-400" 
+                                : "bg-[#003366] text-white hover:bg-[#003366]/90 shadow-lg shadow-blue-900/10 active:scale-95"
+                            )}
+                           >
+                              <Edit3 className="w-4 h-4" />
+                              Fechas
+                           </button>
+                         </div>
                       </motion.div>
                    ))}
                 </div>
@@ -355,6 +421,93 @@ export default function DocumentDetailPage() {
                       Guardar Cambios
                     </>
                   )}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Review Drawer */}
+      <AnimatePresence>
+        {isReviewDrawerOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsReviewDrawerOpen(false)}
+              className="fixed inset-0 bg-[#003366]/40 backdrop-blur-[2px] z-[100]"
+            />
+            <motion.div 
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 200 }}
+              className="fixed top-0 right-0 w-full max-w-md h-full bg-white shadow-2xl z-[101] flex flex-col"
+            >
+              <div className="p-10 border-b border-slate-100 flex items-center justify-between bg-emerald-50/30">
+                <div className="flex items-center gap-5">
+                   <div className="w-12 h-12 bg-[#003366] rounded-2xl flex items-center justify-center shadow-lg shadow-blue-900/10">
+                      <FileCheck className="text-[#C5A059] w-6 h-6" />
+                   </div>
+                   <div>
+                      <h2 className="text-xl font-black text-[#003366] tracking-tight">Revisión Documental</h2>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Evaluar entrega</p>
+                   </div>
+                </div>
+                <button 
+                  onClick={() => setIsReviewDrawerOpen(false)}
+                  className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 transition-colors text-slate-400"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex-1 p-10 space-y-8 overflow-y-auto">
+                <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200/60">
+                   <h4 className="text-[11px] font-black uppercase tracking-widest text-[#C5A059] mb-3">Documento a Revisar</h4>
+                   <p className="font-bold text-[#003366] text-lg leading-tight">{selectedDoc?.name}</p>
+                   
+                   <button 
+                      onClick={() => handlePreviewFile(selectedDoc)}
+                      className="mt-6 w-full py-3 bg-white border border-slate-200 rounded-xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest text-[#003366] hover:bg-slate-50 transition-all shadow-sm"
+                   >
+                      <FileText className="w-4 h-4" />
+                      Visualizar Archivo
+                   </button>
+                </div>
+
+                <div className="space-y-4">
+                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Observaciones / Feedback</label>
+                   <textarea 
+                      value={observations}
+                      onChange={(e) => setObservations(e.target.value)}
+                      placeholder="Ingrese los comentarios para el estudiante..."
+                      className="w-full h-40 p-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:ring-2 focus:ring-[#003366]/5 focus:border-[#003366] outline-none transition-all font-medium text-slate-700 resize-none hover:bg-white"
+                   />
+                   <p className="text-[10px] text-slate-400 font-medium px-4">
+                      {observations.trim() ? "Comentarios listos." : "Las observaciones son obligatorias en caso de rechazo."}
+                   </p>
+                </div>
+              </div>
+
+              <div className="p-10 border-t border-slate-100 bg-white grid grid-cols-2 gap-4">
+                <button 
+                  onClick={() => handleReviewSubmit('RECHAZADO_TUTOR')}
+                  disabled={saving || !observations.trim()}
+                  className="h-14 bg-white border-2 border-rose-100 text-rose-600 rounded-2xl font-black uppercase tracking-widest hover:bg-rose-50 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <XCircle className="w-5 h-5" />}
+                  Rechazar
+                </button>
+                <button 
+                  onClick={() => handleReviewSubmit('APROBADO_TUTOR')}
+                  disabled={saving}
+                  className="h-14 bg-[#003366] text-white rounded-2xl font-black uppercase tracking-widest hover:bg-[#003366]/90 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl shadow-blue-900/20"
+                >
+                  {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
+                  Aprobar
                 </button>
               </div>
             </motion.div>
