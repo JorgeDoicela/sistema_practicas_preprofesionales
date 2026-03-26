@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #003366;
+            margin: 0;
+            padding: 0;
+        }
+        .certificate-container {
+            width: 800px;
+            height: 550px;
+            padding: 50px;
+            border: 20px solid #C5A059;
+            background-color: white;
+            position: relative;
+            margin: auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-size: 42px;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: #003366;
+        }
+        .header p {
+            font-size: 14px;
+            color: #C5A059;
+            font-weight: bold;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .content {
+            text-align: center;
+            margin-top: 50px;
+            line-height: 1.6;
+        }
+        .content p {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        .student-name {
+            font-size: 32px;
+            font-weight: 900;
+            color: #003366;
+            margin: 20px 0;
+            text-decoration: underline;
+        }
+        .details {
+            font-weight: bold;
+            color: #444;
+        }
+        .footer {
+            margin-top: 80px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        .signature {
+            width: 200px;
+            border-top: 2px solid #003366;
+            padding-top: 10px;
+            font-size: 14px;
+        }
+        .footer-info {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+        }
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 150px;
+            opacity: 0.05;
+            z-index: -1;
+            font-weight: 900;
+            color: #003366;
+        }
+    </style>
+</head>
+<body>
+    <div class="certificate-container">
+        <div class="watermark">EMITESIS</div>
+        <div class="header">
+            <h1>Certificado</h1>
+            <p>De culminación de prácticas preprofesionales</p>
+        </div>
+
+        <div class="content">
+            <p>Se otorga el presente reconocimiento institucional a:</p>
+            <div class="student-name">{{studentName}}</div>
+            <p>Por haber completado satisfactoriamente su periodo de prácticas en:</p>
+            <p class="details">{{companyName}}</p>
+            <p>Cumpliendo un total de <span class="details">{{totalHours}} horas</span> reglamentarias,</p>
+            <p>bajo la supervisión académica del Tutor <span class="details">{{tutorName}}</span>.</p>
+            <p>Periodo: <span class="details">{{startDate}}</span> al <span class="details">{{endDate}}</span></p>
+        </div>
+
+        <div class="footer">
+            <div class="signature">
+                <strong>Coordinador de Prácticas</strong><br>
+                EmiTesis Institutional
+            </div>
+            <div class="signature">
+                <strong>Sello Institucional</strong><br>
+                Validación Digital: {{certificateId}}
+            </div>
+        </div>
+
+        <div class="footer-info">
+            Generado automáticamente por el Sistema EmiTesis el {{issueDate}}
+        </div>
+    </div>
+</body>
+</html>

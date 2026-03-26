@@ -15,13 +15,15 @@ import {
   Loader2,
   Building2,
   Calendar,
-  Filter
+  Filter,
+  FileBadge
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
 import { documentsService } from "@/services/documents.service";
 import { attendancesService } from "@/services/attendances.service";
+import { certificationService, EligibilityResponse } from "@/services/certification.service";
 
 export default function GestionEstudiantesPage() {
   const [internships, setInternships] = useState<any[]>([]);
@@ -36,6 +38,8 @@ export default function GestionEstudiantesPage() {
   const [expandedInternshipId, setExpandedInternshipId] = useState<string | null>(null);
 
   const [attendanceData, setAttendanceData] = useState<Record<string, { summary: any, history: any[] }>>({});
+  const [eligibilityData, setEligibilityData] = useState<Record<string, EligibilityResponse>>({});
+  const [generatingCertId, setGeneratingCertId] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -49,16 +53,18 @@ export default function GestionEstudiantesPage() {
     }
   }, []);
 
-  const loadAttendanceForInternship = async (id: string) => {
-    if (attendanceData[id]) return;
+  const loadInternshipDetails = async (id: string) => {
+    if (attendanceData[id] && eligibilityData[id]) return;
     try {
-      const [summary, history] = await Promise.all([
+      const [summary, history, eligibility] = await Promise.all([
         attendancesService.getSummary(id),
-        attendancesService.findByInternship(id)
+        attendancesService.findByInternship(id),
+        certificationService.checkEligibility(id)
       ]);
       setAttendanceData(prev => ({ ...prev, [id]: { summary, history } }));
+      setEligibilityData(prev => ({ ...prev, [id]: eligibility }));
     } catch (error) {
-      console.error("Error loading attendance:", error);
+      console.error("Error loading details:", error);
     }
   };
 
@@ -68,7 +74,7 @@ export default function GestionEstudiantesPage() {
 
   useEffect(() => {
     if (expandedInternshipId) {
-      loadAttendanceForInternship(expandedInternshipId);
+      loadInternshipDetails(expandedInternshipId);
     }
   }, [expandedInternshipId]);
 
@@ -94,12 +100,37 @@ export default function GestionEstudiantesPage() {
     try {
       await documentsService.coordinatorReviewDocument(selectedDoc.id, { status, observations });
       alert(status === 'APROBADO_DEFINITIVO' ? "Aprobación definitiva exitosa" : "Documento rechazado por coordinación");
+      
+      // Recargar datos para actualizar elegibilidad
       await loadData();
+      if (expandedInternshipId) {
+         const eligibility = await certificationService.checkEligibility(expandedInternshipId);
+         setEligibilityData(prev => ({ ...prev, [expandedInternshipId]: eligibility }));
+      }
+      
       setIsReviewDrawerOpen(false);
     } catch (error: any) {
       alert(error.message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleGenerateCertificate = async (internshipId: string) => {
+    if (!confirm("¿Está seguro de generar el certificado oficial? Esta acción finalizará la pasantía del estudiante.")) {
+      return;
+    }
+
+    setGeneratingCertId(internshipId);
+    try {
+      const result = await certificationService.generateCertificate(internshipId);
+      alert("Certificado generado con éxito.");
+      window.open(result.url, '_blank');
+      await loadData();
+    } catch (error: any) {
+      alert(error.response?.data?.message || "Error al generar certificado");
+    } finally {
+      setGeneratingCertId(null);
     }
   };
 
@@ -142,9 +173,12 @@ export default function GestionEstudiantesPage() {
                 key={internship.id}
                 internship={internship}
                 attendance={attendanceData[internship.id]}
+                eligibility={eligibilityData[internship.id]}
                 isExpanded={expandedInternshipId === internship.id}
+                generating={generatingCertId === internship.id}
                 onToggle={() => setExpandedInternshipId(expandedInternshipId === internship.id ? null : internship.id)}
                 onReviewClick={handleReviewClick}
+                onGenerateCertificate={() => handleGenerateCertificate(internship.id)}
               />
             ))}
           </div>
@@ -247,7 +281,7 @@ export default function GestionEstudiantesPage() {
   );
 }
 
-function StudentInternshipCard({ internship, attendance, isExpanded, onToggle, onReviewClick }: any) {
+function StudentInternshipCard({ internship, attendance, eligibility, isExpanded, generating, onToggle, onReviewClick, onGenerateCertificate }: any) {
   const pendingDocs = internship.documents.filter((d: any) => d.status === 'APROBADO_TUTOR').length;
 
   return (
@@ -278,17 +312,22 @@ function StudentInternshipCard({ internship, attendance, isExpanded, onToggle, o
                     <Users className="w-3.5 h-3.5" />
                     Tutor: <span className="text-[#003366]">{internship.tutor.fullName}</span>
                  </div>
-                 {/* Mini progreso de asistencia */}
                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
                     <Clock className="w-3.5 h-3.5" />
                     Progreso: {attendance?.summary?.progressPercentage || 0}%
                  </div>
+                 {internship.status === 'Finalizado' && (
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Completado
+                    </div>
+                 )}
               </div>
            </div>
         </div>
 
         <div className="flex items-center gap-10">
-           {pendingDocs > 0 && (
+           {pendingDocs > 0 && internship.status !== 'Finalizado' && (
              <div className="px-4 py-2 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-3 animate-pulse">
                 <div className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-900/20" />
                 <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest">{pendingDocs} Revisión Pendiente</span>
@@ -311,65 +350,134 @@ function StudentInternshipCard({ internship, attendance, isExpanded, onToggle, o
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden bg-slate-50/50 border-t border-slate-100"
           >
-            <div className="p-8 grid lg:grid-cols-2 gap-10">
-               {/* Columna Izquierda: Documentos */}
-               <div className="space-y-4">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6 pl-2 flex items-center gap-3">
-                    <FileText className="w-4 h-4" />
-                    Expediente Digital
-                  </h4>
-                  <div className="grid gap-3">
-                     {internship.documents.map((doc: any) => (
-                       <div 
-                         key={doc.id}
-                         className="bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm flex items-center justify-between group"
-                       >
-                          <div className="flex items-center gap-4">
-                             <div className={cn(
-                               "w-10 h-10 rounded-xl flex items-center justify-center",
-                               doc.status === 'APROBADO_DEFINITIVO' ? "bg-emerald-50 text-emerald-600" :
-                               doc.status === 'APROBADO_TUTOR' ? "bg-blue-50 text-blue-600" : "bg-slate-50 text-slate-400"
-                             )}>
-                                {doc.status === 'APROBADO_DEFINITIVO' ? <CheckCircle2 className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
-                             </div>
-                             <div>
-                                <p className="text-[11px] font-bold text-[#003366] line-clamp-1">{doc.name}</p>
-                                <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">{doc.status.replace(/_/g, ' ')}</span>
-                             </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                             {doc.status === 'APROBADO_TUTOR' && (
-                                <button onClick={() => onReviewClick(doc, internship.id)} className="p-2 bg-amber-50 text-[#C5A059] rounded-lg hover:bg-amber-500 hover:text-white transition-all"><FileCheck className="w-4 h-4" /></button>
+            <div className="p-8 space-y-10">
+               {/* Dashboard de Requisitos */}
+               {eligibility && (
+                 <div className="grid md:grid-cols-3 gap-6 bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
+                    <div className="space-y-4 border-r border-slate-100 pr-4">
+                       <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Documentación</h4>
+                       <div className="flex items-end gap-3">
+                          <span className="text-3xl font-black text-[#003366]">{eligibility.details.approvedDocsCount < 7 ? (
+                             <span className="text-rose-500">{eligibility.details.approvedDocsCount}</span>
+                          ) : (
+                             <span className="text-emerald-500">7</span>
+                          )}/7</span>
+                          <span className="text-[10px] font-bold text-slate-400 mb-2 uppercase">Aprobados</span>
+                       </div>
+                       <p className="text-[11px] font-medium text-slate-500 leading-tight">
+                          {eligibility.details.missingDocs.length > 0 
+                            ? `Pendiente: ${eligibility.details.missingDocs.join(', ')}`
+                            : 'Todos los documentos obligatorios han sido aprobadas.'}
+                       </p>
+                    </div>
+
+                    <div className="space-y-4 border-r border-slate-100 pr-4 pl-4">
+                       <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Asistencia Total</h4>
+                       <div className="flex items-end gap-3">
+                          <span className={cn(
+                             "text-3xl font-black",
+                             eligibility.details.hoursMet ? "text-emerald-500" : "text-rose-500"
+                          )}>{eligibility.details.totalHours}h</span>
+                          <span className="text-[10px] font-bold text-slate-400 mb-2 uppercase">de {eligibility.details.requiredHours}h</span>
+                       </div>
+                       <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div 
+                             className={cn(
+                                "h-full transition-all duration-1000",
+                                eligibility.details.hoursMet ? "bg-emerald-500" : "bg-rose-500"
                              )}
-                             {doc.filePath && <a href={doc.filePath} target="_blank" className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-[#003366] hover:text-white transition-all"><ChevronRight className="w-4 h-4" /></a>}
-                          </div>
+                             style={{ width: `${Math.min(100, (eligibility.details.totalHours / eligibility.details.requiredHours) * 100)}%` }}
+                          />
                        </div>
-                     ))}
+                    </div>
+
+                    <div className="flex flex-col justify-center pl-4">
+                       {internship.status === 'Finalizado' ? (
+                          <div className="text-center p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
+                             <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                             <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Pasantía Culminada</p>
+                             <button 
+                                onClick={(e) => { e.stopPropagation(); const doc = internship.documents.find((d:any) => d.name === 'Certificado de culminación'); if(doc?.filePath) window.open(doc.filePath, '_blank') }}
+                                className="mt-2 text-[10px] font-bold text-[#003366] hover:underline"
+                             >
+                                Descargar Certificado
+                             </button>
+                          </div>
+                       ) : (
+                          <button 
+                            disabled={!eligibility.eligible || generating}
+                            onClick={(e) => { e.stopPropagation(); onGenerateCertificate(); }}
+                            className={cn(
+                               "w-full h-16 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-xl",
+                               eligibility.eligible 
+                                 ? "bg-[#003366] text-white hover:bg-[#003366]/90 shadow-blue-900/20" 
+                                 : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
+                            )}
+                          >
+                             {generating ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                             ) : (
+                                <FileBadge className="w-6 h-6 text-[#C5A059]" />
+                             )}
+                             <span className="text-[11px] font-black uppercase tracking-[0.2em]">Generar Certificado</span>
+                          </button>
+                       )}
+                       {!eligibility.eligible && internship.status !== 'Finalizado' && (
+                          <p className="text-[9px] text-center mt-3 text-rose-500 font-bold uppercase tracking-widest animate-pulse">
+                             Requisitos incompletos
+                          </p>
+                       )}
+                    </div>
+                 </div>
+               )}
+
+               <div className="grid lg:grid-cols-2 gap-10 opacity-80 filter grayscale-[0.3]">
+                  {/* Columna Izquierda: Documentos */}
+                  <div className="space-y-4">
+                     <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6 pl-2 flex items-center gap-3">
+                       <FileText className="w-4 h-4" />
+                       Expediente Digital
+                     </h4>
+                     <div className="grid gap-3">
+                        {internship.documents.map((doc: any) => (
+                          <div 
+                            key={doc.id}
+                            className="bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm flex items-center justify-between group"
+                          >
+                             <div className="flex items-center gap-4">
+                                <div className={cn(
+                                  "w-10 h-10 rounded-xl flex items-center justify-center",
+                                  doc.status === 'APROBADO_DEFINITIVO' ? "bg-emerald-50 text-emerald-600" :
+                                  doc.status === 'APROBADO_TUTOR' ? "bg-blue-50 text-blue-600" : "bg-slate-50 text-slate-400"
+                                )}>
+                                   {doc.status === 'APROBADO_DEFINITIVO' ? <CheckCircle2 className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
+                                </div>
+                                <div>
+                                   <p className="text-[11px] font-bold text-[#003366] line-clamp-1">{doc.name}</p>
+                                   <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">{doc.status.replace(/_/g, ' ')}</span>
+                                </div>
+                             </div>
+                             <div className="flex items-center gap-2">
+                                {doc.status === 'APROBADO_TUTOR' && internship.status !== 'Finalizado' && (
+                                   <button onClick={() => onReviewClick(doc, internship.id)} className="p-2 bg-amber-50 text-[#C5A059] rounded-lg hover:bg-amber-500 hover:text-white transition-all"><FileCheck className="w-4 h-4" /></button>
+                                )}
+                                {doc.filePath && <a href={doc.filePath} target="_blank" className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-[#003366] hover:text-white transition-all"><ChevronRight className="w-4 h-4" /></a>}
+                             </div>
+                          </div>
+                        ))}
+                     </div>
                   </div>
-               </div>
 
-               {/* Columna Derecha: Asistencia */}
-               <div className="space-y-4">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6 pl-2 flex items-center gap-3">
-                    <Clock className="w-4 h-4" />
-                    Control de Asistencia
-                  </h4>
-                  
-                  {!attendance ? (
-                     <div className="py-10 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-slate-300" /></div>
-                  ) : (
-                    <div className="space-y-6">
-                       <div className="grid grid-cols-2 gap-4">
-                          <div className="bg-white p-5 rounded-2xl border border-slate-200">
-                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Horas Totales</p>
-                             <p className="text-xl font-black text-[#003366]">{attendance.summary.totalHours}h / {attendance.summary.requiredHours}h</p>
-                          </div>
-                          <div className="bg-white p-5 rounded-2xl border border-slate-200">
-                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Marcajes</p>
-                             <p className="text-xl font-black text-[#003366]">{attendance.summary.totalRecords} días</p>
-                          </div>
-                       </div>
-
+                  {/* Columna Derecha: Asistencia */}
+                  <div className="space-y-4">
+                     <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6 pl-2 flex items-center gap-3">
+                       <Clock className="w-4 h-4" />
+                       Vista de Asistencia
+                     </h4>
+                     
+                     {!attendance ? (
+                        <div className="py-10 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-slate-300" /></div>
+                     ) : (
                        <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden">
                           <table className="w-full text-[10px]">
                              <thead className="bg-slate-50 border-b">
@@ -377,28 +485,21 @@ function StudentInternshipCard({ internship, attendance, isExpanded, onToggle, o
                                    <th className="px-4 py-3 text-left font-black uppercase text-slate-400">Fecha</th>
                                    <th className="px-4 py-3 text-left font-black uppercase text-slate-400">Entrada</th>
                                    <th className="px-4 py-3 text-left font-black uppercase text-slate-400">Salida</th>
-                                   <th className="px-4 py-3 text-right font-black uppercase text-slate-400">Dist.</th>
                                 </tr>
                              </thead>
-                             <tbody className="divide-y">
+                             <tbody className="divide-y text-slate-400">
                                 {attendance.history.slice(0, 5).map((h: any) => (
                                    <tr key={h.id} className="hover:bg-slate-50 transition-colors">
                                       <td className="px-4 py-3 font-bold">{new Date(h.checkIn).toLocaleDateString()}</td>
-                                      <td className="px-4 py-3 text-emerald-600 font-bold">{new Date(h.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                                      <td className="px-4 py-3 text-rose-600 font-bold">{h.checkOut ? new Date(h.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</td>
-                                      <td className="px-4 py-3 text-right text-slate-400">{(h.distanceKm * 1000).toFixed(0)}m</td>
+                                      <td className="px-4 py-3 font-bold">{new Date(h.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                                      <td className="px-4 py-3 font-bold">{h.checkOut ? new Date(h.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</td>
                                    </tr>
                                 ))}
                              </tbody>
                           </table>
-                          {attendance.history.length > 5 && (
-                             <div className="p-3 text-center border-t bg-slate-50">
-                                <span className="text-[9px] font-black text-[#C5A059] uppercase">+{attendance.history.length - 5} registros adicionales</span>
-                             </div>
-                          )}
                        </div>
-                    </div>
-                  )}
+                     )}
+                  </div>
                </div>
             </div>
           </motion.div>
