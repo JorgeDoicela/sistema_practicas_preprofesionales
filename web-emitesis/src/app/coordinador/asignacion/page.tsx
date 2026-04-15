@@ -41,7 +41,9 @@ export default function AsignacionPage() {
     tutorId: '',
     startDate: new Date().toISOString().split('T')[0],
     totalHours: 240,
-    location: ''
+    location: '',
+    businessTutorName: '',
+    businessTutorEmail: ''
   });
 
   useEffect(() => {
@@ -217,6 +219,28 @@ export default function AsignacionPage() {
                       onChange={(e) => setForm({...form, location: e.target.value})}
                     />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tutor Empresarial (Nombre)</label>
+                  <input 
+                    type="text"
+                    placeholder="Nombre del supervisor en empresa"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
+                    value={form.businessTutorName}
+                    onChange={(e) => setForm({...form, businessTutorName: e.target.value})}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tutor Empresarial (Email)</label>
+                  <input 
+                    type="email"
+                    placeholder="email@empresa.com"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
+                    value={form.businessTutorEmail}
+                    onChange={(e) => setForm({...form, businessTutorEmail: e.target.value})}
+                  />
                 </div>
               </div>
             </div>

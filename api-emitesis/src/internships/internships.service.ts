@@ -11,7 +11,7 @@ export class InternshipsService {
   ) {}
 
   async create(dto: CreateInternshipDto) {
-    const { studentId, companyId, tutorId, startDate, totalHours, location } = dto;
+    const { studentId, companyId, tutorId, startDate, totalHours, location, businessTutorName, businessTutorEmail } = dto;
 
     // A1: Estudiante ya asignado
     const activeInternship = await this.prisma.internship.findFirst({
@@ -56,6 +56,8 @@ export class InternshipsService {
             startDate: start,
             totalHours,
             location,
+            businessTutorName,
+            businessTutorEmail,
             status: 'En Proceso'
           },
           include: {
@@ -88,16 +90,30 @@ export class InternshipsService {
         return newInternship;
       });
 
-      // 7. Enviar correo al estudiante
+      // RF-ASG-001: Enviar correo al estudiante
       this.emailService.sendAssignmentEmail(
         internship.student.email,
         internship.student.fullName,
         internship.company.name,
         startDate,
         totalHours,
-        location
+        location,
+        businessTutorName
       ).catch((err: Error) => {
-        console.error('Error al enviar correo de asignación:', err.message);
+        console.error('Error al enviar correo de asignación al estudiante:', err.message);
+      });
+
+      // RF-ASG-002: Enviar correo al tutor académico
+      this.emailService.sendTutorAssignmentEmail(
+        internship.tutor.email,
+        internship.tutor.fullName,
+        internship.student.fullName,
+        internship.company.name,
+        startDate,
+        totalHours,
+        businessTutorName
+      ).catch((err: Error) => {
+        console.error('Error al enviar correo de asignación al tutor:', err.message);
       });
 
       return internship;
@@ -137,6 +153,31 @@ export class InternshipsService {
         tutor: true
       },
       orderBy: { createdAt: 'desc' }
+    });
+  }
+
+  async findByCompany(companyId: string) {
+    return this.prisma.internship.findMany({
+      where: { companyId },
+      include: {
+        student: true,
+        company: true,
+        tutor: true,
+        evaluation: true,
+        attendances: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async toggleTest(id: string) {
+    const internship = await this.prisma.internship.findUnique({ where: { id } });
+    if (!internship) {
+      throw new NotFoundException('Asignación no encontrada');
+    }
+    return this.prisma.internship.update({
+      where: { id },
+      data: { testEnabled: !internship.testEnabled },
     });
   }
 

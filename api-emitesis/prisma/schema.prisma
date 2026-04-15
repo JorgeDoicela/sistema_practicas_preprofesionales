@@ -60,15 +60,34 @@ model Internship {
   endDate     DateTime?
   totalHours  Int
   location    String
+  businessTutorName  String?
+  businessTutorEmail String?
   lat         Float?
   lng         Float?
+  testEnabled Boolean      @default(false)
   status      String       @default("En Proceso")
   createdAt   DateTime     @default(now())
   attendances Attendance[]
   documents   Document[]
+  evaluation  Evaluation?
   company     Company      @relation(fields: [companyId], references: [id])
   student     User         @relation("StudentInternship", fields: [studentId], references: [id])
   tutor       User         @relation("TutorInternship", fields: [tutorId], references: [id])
+}
+
+model Evaluation {
+  id              String     @id @default(uuid())
+  internshipId    String     @unique
+  punctuality     Int        @default(0)
+  teamwork        Int        @default(0)
+  technicalSkills Int        @default(0)
+  proactivity     Int        @default(0)
+  attitude        Int        @default(0)
+  observations    String?
+  status          String     @default("PENDIENTE") // PENDIENTE, COMPLETADO
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  internship      Internship @relation(fields: [internshipId], references: [id])
 }
 
 model Document {

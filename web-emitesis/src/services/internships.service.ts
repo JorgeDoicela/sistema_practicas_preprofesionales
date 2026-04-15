@@ -82,5 +82,38 @@ export const internshipsService = {
     }
 
     return response.json();
+  },
+
+  async findByCompany(companyId: string) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/internships/company/${companyId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al obtener los estudiantes de la empresa');
+    }
+
+    return response.json();
+  },
+
+  async toggleTest(id: string) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/internships/${id}/toggle-test`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al cambiar el estado del test');
+    }
+
+    return response.json();
   }
 };

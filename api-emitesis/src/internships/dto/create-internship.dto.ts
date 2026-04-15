@@ -24,4 +24,10 @@ export class CreateInternshipDto {
   @IsString()
   @IsNotEmpty()
   location: string;
+
+  @IsString()
+  businessTutorName?: string;
+
+  @IsString()
+  businessTutorEmail?: string;
 }

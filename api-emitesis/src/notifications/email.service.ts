@@ -199,7 +199,8 @@ export class EmailService {
         companyName: string,
         startDate: string,
         hours: number,
-        location: string
+        location: string,
+        businessTutorName?: string
     ) {
         const subject = 'Información de Asignación de Prácticas Preprofesionales - ISTPET';
         const metadata = { studentName, companyName, type: 'ASSIGNMENT' };
@@ -222,6 +223,7 @@ export class EmailService {
               <li><strong>Fecha de Inicio:</strong> ${new Date(startDate).toLocaleDateString()}</li>
               <li><strong>Horas a cumplir:</strong> ${hours} horas</li>
               <li><strong>Ubicación:</strong> ${location}</li>
+              ${businessTutorName ? `<li><strong>Tutor Empresarial:</strong> ${businessTutorName}</li>` : ''}
             </ul>
           </div>
           <p>Por favor, ponte en contacto con tu tutor académico asignado para iniciar el proceso de inducción.</p>
@@ -238,6 +240,60 @@ export class EmailService {
             return { success: true, messageId: info.messageId };
         } catch (err: any) {
             this.logger.error('Error enviando email de asignación:', (err).message);
+            await this.logEmail(email, subject, 'FALLIDO', (err).message, metadata);
+            return { success: false, error: (err).message };
+        }
+    }
+
+    /**
+     * RF-ASG-002: Notificar a tutor académico sobre nueva carga tutorial
+     */
+    async sendTutorAssignmentEmail(
+        email: string,
+        tutorName: string,
+        studentName: string,
+        companyName: string,
+        startDate: string,
+        hours: number,
+        businessTutorName?: string
+    ) {
+        const subject = `Nueva Asignación de Tutoría: ${studentName} - ISTPET`;
+        const metadata = { tutorName, studentName, companyName, type: 'TUTOR_ASSIGNMENT' };
+
+        const mailOptions = {
+            from: `"Coordinación de Prácticas ISTPET" <${this.configService.get<string>('MAIL_USER')}>`,
+            to: email,
+            subject: subject,
+            html: `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h1 style="color: #003366;">Nueva Carga de Tutoría</h1>
+          </div>
+          <p>Estimado(a) <strong>${tutorName}</strong>,</p>
+          <p>Se le ha asignado como tutor académico para el siguiente estudiante:</p>
+          <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p><strong>Detalles de la tutoría:</strong></p>
+            <ul style="margin: 10px 0 0 20px; padding: 0;">
+              <li><strong>Estudiante:</strong> ${studentName}</li>
+              <li><strong>Empresa:</strong> ${companyName}</li>
+              <li><strong>Fecha de Inicio:</strong> ${new Date(startDate).toLocaleDateString()}</li>
+              <li><strong>Horas asignadas:</strong> ${hours} horas</li>
+              ${businessTutorName ? `<li><strong>Tutor Empresarial (Contraparte):</strong> ${businessTutorName}</li>` : ''}
+            </ul>
+          </div>
+          <p>Por favor, coordine con el estudiante el inicio del proceso de prácticas y la planificación de las visitas correspondientes.</p>
+          <hr style="border: 0; border-top: 1px solid #eee;" />
+          <p style="text-align: center; font-size: 12px; color: #999;">&copy; 2026 Instituto Superior Tecnológico "Mayor Pedro Traversari"</p>
+        </div>
+      `
+        };
+
+        try {
+            const info = await this.transporter.sendMail(mailOptions);
+            await this.logEmail(email, subject, 'EXITO', null, metadata);
+            return { success: true, messageId: info.messageId };
+        } catch (err: any) {
+            this.logger.error('Error enviando email de tutoría:', (err).message);
             await this.logEmail(email, subject, 'FALLIDO', (err).message, metadata);
             return { success: false, error: (err).message };
         }

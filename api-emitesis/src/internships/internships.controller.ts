@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, UseGuards } from '@nestjs/common';
 import { InternshipsService } from './internships.service';
 import { CreateInternshipDto } from './dto/create-internship.dto';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
@@ -37,8 +37,20 @@ export class InternshipsController {
     return this.internshipsService.findByStudent(id);
   }
 
+  @Get('company/:id')
+  @Roles(Role.EMPRESA, Role.ADMIN, Role.COORDINADOR)
+  findByCompany(@Param('id') id: string) {
+    return this.internshipsService.findByCompany(id);
+  }
+
+  @Patch(':id/toggle-test')
+  @Roles(Role.EMPRESA, Role.ADMIN, Role.COORDINADOR)
+  toggleTest(@Param('id') id: string) {
+    return this.internshipsService.toggleTest(id);
+  }
+
   @Get(':id')
-  @Roles(Role.COORDINADOR, Role.ADMIN, Role.TUTOR, Role.ESTUDIANTE)
+  @Roles(Role.COORDINADOR, Role.ADMIN, Role.TUTOR, Role.ESTUDIANTE, Role.EMPRESA)
   findOne(@Param('id') id: string) {
     return this.internshipsService.findOne(id);
   }

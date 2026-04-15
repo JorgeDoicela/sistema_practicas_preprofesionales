@@ -17,7 +17,9 @@ import {
   ChevronRight,
   Briefcase,
   FileStack,
-  UserPlus
+  UserPlus,
+  GraduationCap,
+  FlaskConical,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { User as UserType } from "@/types/user";
@@ -51,13 +53,22 @@ export function Sidebar() {
 
   const isManager = canManageSystem(user?.role);
   const isCoordinador = hasRole(user?.role, ROLES.COORDINADOR);
+  const isEmpresa = hasRole(user?.role, ROLES.EMPRESA);
 
-  const allMenuItems = [
-    ...menuItems,
-    ...(hasRole(user?.role, ROLES.ADMIN) ? [{ icon: Users, label: "Usuarios", href: "/admin/usuarios" }] : []),
-    ...(isCoordinador ? [{ icon: Users, label: "Gestión Estudiantes", href: "/coordinador/estudiantes" }] : []),
-    ...(isManager ? [{ icon: UserPlus, label: "Asignación", href: "/coordinador/asignacion" }] : [])
+  const empresaMenuItems = [
+    { icon: LayoutDashboard, label: "Tablero", href: "/empresa/dashboard" },
+    { icon: GraduationCap, label: "Mis Pasantes", href: "/empresa/dashboard" },
+    { icon: FlaskConical, label: "Tests de Aptitud", href: "/empresa/dashboard" },
   ];
+
+  const allMenuItems = isEmpresa
+    ? empresaMenuItems
+    : [
+        ...menuItems,
+        ...(hasRole(user?.role, ROLES.ADMIN) ? [{ icon: Users, label: "Usuarios", href: "/admin/usuarios" }] : []),
+        ...(isCoordinador ? [{ icon: Users, label: "Gestión Estudiantes", href: "/coordinador/estudiantes" }] : []),
+        ...(isManager ? [{ icon: UserPlus, label: "Asignación", href: "/coordinador/asignacion" }] : []),
+      ];
 
   return (
     <aside className="w-72 bg-[#003366] text-white flex flex-col h-screen sticky top-0 border-r border-white/5 shadow-2xl z-40">

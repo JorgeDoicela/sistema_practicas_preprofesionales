@@ -37,7 +37,8 @@ export default function RegistrarConvenioPage() {
         address: "",
         representative: "",
         email: "",
-        startDate: new Date().toISOString().split('T')[0]
+        startDate: new Date().toISOString().split('T')[0],
+        acessVerified: false
     });
     const [file, setFile] = useState<File | null>(null);
 
@@ -244,6 +245,22 @@ export default function RegistrarConvenioPage() {
                         <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
                             <ShieldCheck className="text-[#C5A059]" size={20} />
                             <h3 className="font-bold text-[#003366] uppercase tracking-widest text-sm">Formalización del Acuerdo</h3>
+                        </div>
+
+                        <div className="space-y-6 mb-8">
+                            <div className="flex items-start gap-3 p-4 bg-[#003366]/5 rounded-2xl border border-[#003366]/10">
+                                <input 
+                                    type="checkbox" 
+                                    id="acessVerified"
+                                    required
+                                    className="mt-1 w-4 h-4 rounded border-slate-300 text-[#003366] focus:ring-[#003366]/20"
+                                    checked={form.acessVerified}
+                                    onChange={(e) => setForm(prev => ({ ...prev, acessVerified: e.target.checked }))}
+                                />
+                                <label htmlFor="acessVerified" className="text-xs text-slate-600 leading-relaxed cursor-pointer">
+                                    <span className="font-bold text-[#003366]">Declaración de Cumplimiento:</span> Confirmo que esta empresa cumple con todos los estándares y requisitos legales exigidos por el <span className="font-bold">ACESS (Ecuador)</span> para la recepción de estudiantes en prácticas preprofesionales.
+                                </label>
+                            </div>
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-8">
