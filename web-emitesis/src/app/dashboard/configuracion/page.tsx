@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { Shield, Smartphone, CheckCircle, XCircle, AlertCircle, Loader2, ArrowLeft } from "lucide-react";
 import { authService } from "@/services/auth.service";
 import Image from "next/image";
@@ -243,6 +244,21 @@ export default function ConfigurationPage() {
                    </p>
                 </div>
              </div>
+          </div>
+
+          <div className="p-8 bg-white rounded-[2rem] border border-slate-100 shadow-sm">
+            <h3 className="text-sm font-black text-[#003366] uppercase tracking-widest mb-2">
+              Datos personales (LOPDP Ecuador)
+            </h3>
+            <p className="text-xs text-slate-500 leading-relaxed mb-4">
+              Información sobre finalidades, conservación y cómo ejercer tus derechos sobre los datos tratados en Emitesis.
+            </p>
+            <Link
+              href="/privacidad"
+              className="inline-flex text-xs font-black uppercase tracking-widest text-[#C5A059] hover:text-[#003366] underline-offset-4 hover:underline"
+            >
+              Ver aviso de privacidad
+            </Link>
           </div>
         </div>
       </div>

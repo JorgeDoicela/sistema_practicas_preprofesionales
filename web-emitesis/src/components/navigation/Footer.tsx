@@ -58,6 +58,7 @@ export function Footer() {
                                 { name: 'Sobre Emitesis', path: '/nosotros' },
                                 { name: 'Servicios Académicos', path: '/servicios' },
                                 { name: 'Portal Empresas', path: '/empresas' },
+                                { name: 'Datos personales (LOPDP)', path: '/privacidad' },
                                 { name: 'Soporte Técnico', path: '#' }
                             ].map(item => (
                                 <li key={item.name}>
@@ -87,9 +88,13 @@ export function Footer() {
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
                         © 2026 ISTPET – Emitesis. Desarrollado por Cristhofer Steve Parreño Poma.
                     </p>
-                    <div className="flex items-center gap-8">
-
-
+                    <div className="flex flex-wrap items-center justify-center gap-6">
+                        <Link
+                            href="/privacidad"
+                            className="text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-brand-blue transition-colors"
+                        >
+                            Privacidad
+                        </Link>
                     </div>
                 </div>
             </div>

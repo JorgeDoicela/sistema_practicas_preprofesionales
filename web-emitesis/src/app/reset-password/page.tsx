@@ -56,6 +56,11 @@ function ResetPasswordForm() {
         <Link href="/olvido-password" className="text-[#003366] hover:underline">
           Solicitar un nuevo enlace
         </Link>
+        <p className="pt-4">
+          <Link href="/privacidad" className="text-xs text-slate-500 hover:text-[#003366] underline-offset-2 hover:underline">
+            Aviso de privacidad
+          </Link>
+        </p>
       </div>
     );
   }
@@ -119,6 +124,12 @@ export default function ResetPasswordPage() {
         <Suspense fallback={<div className="text-center">Cargando...</div>}>
           <ResetPasswordForm />
         </Suspense>
+
+        <p className="text-center text-xs text-slate-500 pt-4">
+          <Link href="/privacidad" className="text-[#003366] font-semibold hover:underline underline-offset-2">
+            Aviso de privacidad (LOPDP)
+          </Link>
+        </p>
       </div>
     </div>
   );

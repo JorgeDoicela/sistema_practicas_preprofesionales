@@ -207,6 +207,15 @@ export default function LoginPage() {
                     </div>
                 </motion.div>
             </div>
+
+            <footer className="py-6 px-4 text-center border-t border-slate-100 bg-white/60">
+                <p className="text-[10px] text-slate-500 font-medium leading-relaxed max-w-md mx-auto">
+                    Al usar el portal usted puede ejercer sus derechos sobre datos personales según la ley ecuatoriana.{" "}
+                    <Link href="/privacidad" className="text-[#003366] font-bold underline-offset-2 hover:underline">
+                        Aviso de privacidad
+                    </Link>
+                </p>
+            </footer>
         </div>
     );
 }

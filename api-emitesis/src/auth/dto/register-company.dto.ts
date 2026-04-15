@@ -1,4 +1,13 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength, Matches, MaxLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  MinLength,
+  Matches,
+  MaxLength,
+  Equals,
+} from 'class-validator';
 import {
   SanitizeEmailField,
   SanitizePasswordField,
@@ -53,4 +62,11 @@ export class RegisterCompanyDto {
   @MaxLength(4096)
   @IsNotEmpty({ message: 'El token de reCAPTCHA es requerido' })
   recaptchaToken: string;
+
+  /** Consentimiento informado para el tratamiento de datos (LOPDP Ecuador). */
+  @IsBoolean({ message: 'Debe indicar si acepta el tratamiento de datos personales' })
+  @Equals(true, {
+    message: 'Debe aceptar el aviso de privacidad y el tratamiento de datos personales para registrarse',
+  })
+  acceptDataTreatment: boolean;
 }

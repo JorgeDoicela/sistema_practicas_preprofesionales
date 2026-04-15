@@ -105,9 +105,12 @@ export default function ForgotPasswordPage() {
             </button>
           </div>
 
-          <div className="text-center">
-            <Link href="/login" className="text-sm font-medium text-[#c5a059] hover:text-[#b08d4b] transition-colors">
+          <div className="text-center space-y-3">
+            <Link href="/login" className="text-sm font-medium text-[#c5a059] hover:text-[#b08d4b] transition-colors block">
               Volver al inicio de sesión
+            </Link>
+            <Link href="/privacidad" className="text-xs text-slate-500 hover:text-[#003366] underline-offset-2 hover:underline">
+              Aviso de privacidad (LOPDP)
             </Link>
           </div>
         </form>

@@ -34,6 +34,12 @@ export default function EmpresasPage() {
                                 Acceder al Portal
                                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                             </Link>
+                            <p className="mt-6 text-xs text-slate-500 font-medium">
+                                Tratamiento de datos personales:{" "}
+                                <Link href="/privacidad" className="text-brand-blue font-bold hover:underline underline-offset-2">
+                                    aviso de privacidad
+                                </Link>
+                            </p>
                         </motion.div>
                     </div>
                     <div className="flex-1 hidden lg:block">

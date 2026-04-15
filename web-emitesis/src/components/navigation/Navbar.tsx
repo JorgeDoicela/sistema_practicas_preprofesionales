@@ -32,6 +32,7 @@ export function Navbar() {
         { name: "Servicios", path: "/servicios" },
         { name: "Empresas", path: "/empresas" },
         { name: "Nosotros", path: "/nosotros" },
+        { name: "Privacidad", path: "/privacidad" },
     ];
 
     return (
