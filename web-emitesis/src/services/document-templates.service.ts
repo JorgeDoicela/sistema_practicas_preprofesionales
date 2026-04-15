@@ -12,11 +12,15 @@ export interface DocumentTemplate {
   updatedAt: string;
 }
 
-async function authHeaders(): Promise<HeadersInit> {
+async function authBearer(): Promise<HeadersInit> {
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function authHeaders(): Promise<HeadersInit> {
   return {
     "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(await authBearer()),
   };
 }
 
@@ -40,6 +44,24 @@ export const documentTemplatesService = {
     if (!res.ok) return [];
     const data = await res.json();
     return data.keys ?? [];
+  },
+
+  /** Sube un .docx a la carpeta de formatos; devuelve la clave (nombre de archivo) para asignarla a una plantilla. */
+  async uploadBlankDocx(file: File): Promise<{ key: string }> {
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch(`${API_URL}/document-templates/upload-blank`, {
+      method: "POST",
+      headers: await authBearer(),
+      body: fd,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(
+        Array.isArray(err.message) ? err.message.join(", ") : err.message || "Error al subir el archivo",
+      );
+    }
+    return res.json();
   },
 
   async create(body: Partial<DocumentTemplate>): Promise<DocumentTemplate> {

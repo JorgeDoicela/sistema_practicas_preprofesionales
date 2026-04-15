@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,8 +8,11 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
@@ -17,6 +21,7 @@ import { Roles } from '../auth/strategies/roles.decorator';
 import { DocumentTemplatesService } from './document-templates.service';
 import { CreateDocumentTemplateDto } from './dto/create-document-template.dto';
 import { UpdateDocumentTemplateDto } from './dto/update-document-template.dto';
+import type { MulterFile } from '../shared/interfaces/multer-file.interface';
 
 @ApiTags('Document templates')
 @Controller('document-templates')
@@ -26,8 +31,33 @@ export class DocumentTemplatesController {
 
   @Get('blank-format-keys')
   @Roles(Role.COORDINADOR, Role.ADMIN)
-  knownFormats() {
-    return { keys: this.documentTemplatesService.knownBlankFormatKeys() };
+  async knownFormats() {
+    const keys = await this.documentTemplatesService.resolveBlankFormatKeys();
+    return { keys };
+  }
+
+  @Post('upload-blank')
+  @Roles(Role.COORDINADOR, Role.ADMIN)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 20 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        const ok =
+          file.mimetype ===
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+          file.originalname.toLowerCase().endsWith('.docx');
+        if (!ok) {
+          return cb(new BadRequestException('Solo se permiten archivos .docx'), false);
+        }
+        cb(null, true);
+      },
+    }),
+  )
+  uploadBlank(@UploadedFile() file: MulterFile) {
+    if (!file) {
+      throw new BadRequestException('Seleccione un archivo .docx');
+    }
+    return this.documentTemplatesService.uploadBlankTemplate(file);
   }
 
   @Get()

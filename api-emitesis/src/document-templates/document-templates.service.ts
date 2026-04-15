@@ -4,13 +4,20 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { promises as fs } from 'fs';
+import * as path from 'path';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../infrastructure/storage/storage.service';
+import { MulterFile } from '../shared/interfaces/multer-file.interface';
 import { CreateDocumentTemplateDto } from './dto/create-document-template.dto';
 import { UpdateDocumentTemplateDto } from './dto/update-document-template.dto';
 
 @Injectable()
 export class DocumentTemplatesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storageService: StorageService,
+  ) {}
 
   async findAllForAdmin(includeInactive = false) {
     return this.prisma.documentTemplate.findMany({
@@ -26,8 +33,7 @@ export class DocumentTemplatesService {
     });
   }
 
-  /** Claves de .docx conocidas en uploads/templates (referencia para el coordinador). */
-  knownBlankFormatKeys(): string[] {
+  private defaultBlankFormatKeys(): string[] {
     return [
       'solicitud_practicas.docx',
       'plan_rotacion.docx',
@@ -38,6 +44,84 @@ export class DocumentTemplatesService {
       'informe_final.docx',
       'certificado_culminacion.docx',
     ];
+  }
+
+  /**
+   * Lista de archivos .docx disponibles como formato en blanco: plantillas por defecto,
+   * más los que existan en disco (uploads/templates) y en el almacenamiento (Blob).
+   */
+  async resolveBlankFormatKeys(): Promise<string[]> {
+    const set = new Set(this.defaultBlankFormatKeys());
+    const diskDir = path.join(process.cwd(), 'uploads', 'templates');
+    try {
+      const names = await fs.readdir(diskDir);
+      for (const n of names) {
+        if (n.toLowerCase().endsWith('.docx')) set.add(n);
+      }
+    } catch {
+      /* directorio ausente en algunos despliegues */
+    }
+    try {
+      const listResult = await this.storageService.listFiles();
+      for (const b of listResult.blobs ?? []) {
+        const p = (b.pathname || '').replace(/\\/g, '/');
+        if (!p.toLowerCase().endsWith('.docx')) continue;
+        if (p.includes('/templates/') || p.startsWith('templates/')) {
+          const base = path.basename(p);
+          if (base) set.add(base);
+        }
+      }
+    } catch {
+      /* listado no disponible */
+    }
+    return [...set].sort((a, b) => a.localeCompare(b));
+  }
+
+  /** Normaliza el nombre a clave segura *.docx (minúsculas, sin espacios raros). */
+  private toSafeDocxKey(original: string): string {
+    const base = path.basename(original || '').trim().toLowerCase();
+    if (!base.endsWith('.docx')) {
+      throw new BadRequestException('Solo se permiten archivos .docx');
+    }
+    const stem = base.slice(0, -5);
+    const slug = stem
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, '_')
+      .replace(/[^a-z0-9_-]/gi, '');
+    if (!slug || slug.length > 90) {
+      throw new BadRequestException('Nombre de archivo no válido o demasiado largo');
+    }
+    return `${slug}.docx`;
+  }
+
+  /**
+   * Sube un .docx de formato en blanco para poder asignarlo a plantillas del catálogo.
+   * En entorno local/Docker se guarda en uploads/templates; en Vercel, en Blob.
+   */
+  async uploadBlankTemplate(file: MulterFile): Promise<{ key: string }> {
+    if (!file?.buffer?.length) {
+      throw new BadRequestException('Archivo vacío o no recibido');
+    }
+    const max = 20 * 1024 * 1024;
+    if (file.size > max) {
+      throw new BadRequestException('El archivo supera el tamaño máximo (20 MB)');
+    }
+    const key = this.toSafeDocxKey(file.originalname);
+    const contentType =
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+    if (!process.env.VERCEL) {
+      const diskDir = path.join(process.cwd(), 'uploads', 'templates');
+      await fs.mkdir(diskDir, { recursive: true });
+      await fs.writeFile(path.join(diskDir, key), file.buffer);
+    }
+
+    await this.storageService.upload(`templates/${key}`, file.buffer, {
+      contentType,
+    });
+
+    return { key };
   }
 
   private async assertActiveCatalogHasCertificateSlot(excludeTemplateId?: string) {
