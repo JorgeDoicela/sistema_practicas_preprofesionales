@@ -13,6 +13,8 @@ import { attendancesService } from "@/services/attendances.service";
 import { internshipsService } from "@/services/internships.service";
 import { useWebAuthn } from "@/hooks/useWebAuthn";
 import { useCamera } from "@/hooks/useCamera";
+import { aiService } from "@/services/ai.service";
+import { Sparkles } from "lucide-react";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────
 type AttendanceAction = "IN" | "OUT";
@@ -51,6 +53,8 @@ export default function AsistenciaPage() {
   const [activityBlobTemp, setActivityBlobTemp] = useState<Blob | null>(null);
   const [activityPreviewTemp, setActivityPreviewTemp] = useState<string | null>(null);
   const [uploadingActivity, setUploadingActivity] = useState(false);
+  const [suggestingCaption, setSuggestingCaption] = useState(false);
+  const [aiAvailable, setAiAvailable] = useState(false);
   const [expandedRecord, setExpandedRecord] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -103,6 +107,11 @@ export default function AsistenciaPage() {
   }, []);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  // Verificar disponibilidad de IA al montar
+  useEffect(() => {
+    aiService.isAvailable().then(setAiAvailable).catch(() => setAiAvailable(false));
+  }, []);
 
   // ── Abrir modal de check-in/out ─────────────────────────────────────────
   const openAttendanceModal = (action: AttendanceAction) => {
@@ -244,6 +253,20 @@ export default function AsistenciaPage() {
     if (blob) {
       setActivityBlobTemp(blob);
       setActivityPreviewTemp(activityCamera.previewUrl);
+    }
+  };
+
+  /** RF-18: Solicitar al agente IA que analice la foto y sugiera una descripción */
+  const handleSuggestCaption = async () => {
+    if (!activityBlobTemp) return;
+    setSuggestingCaption(true);
+    try {
+      const suggestion = await aiService.suggestDescription(activityBlobTemp);
+      setActivityCaption(suggestion);
+    } catch (err) {
+      console.error("Error al sugerir descripción:", err);
+    } finally {
+      setSuggestingCaption(false);
     }
   };
 
@@ -844,13 +867,40 @@ export default function AsistenciaPage() {
                 ) : (
                   <>
                     <img src={activityPreviewTemp!} alt="Actividad" className="w-full aspect-video object-cover rounded-2xl" />
-                    <input
-                      type="text"
-                      value={activityCaption}
-                      onChange={(e) => setActivityCaption(e.target.value)}
-                      placeholder="Descripción de la actividad (opcional)"
-                      className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm text-[#003366] font-medium focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
+
+                    {/* RF-18: Campo de descripción + botón de IA */}
+                    <div className="space-y-2">
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={activityCaption}
+                          onChange={(e) => setActivityCaption(e.target.value)}
+                          placeholder="Descripción de la actividad (opcional)"
+                          className="w-full px-4 py-3 pr-36 border border-slate-200 rounded-2xl text-sm text-[#003366] font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
+                        {aiAvailable && (
+                          <button
+                            type="button"
+                            onClick={handleSuggestCaption}
+                            disabled={suggestingCaption}
+                            title="Sugerir descripción con IA (RF-18)"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:from-purple-600 hover:to-indigo-600 disabled:opacity-60 transition-all"
+                          >
+                            {suggestingCaption
+                              ? <Loader2 className="w-3 h-3 animate-spin" />
+                              : <Sparkles className="w-3 h-3" />
+                            }
+                            {suggestingCaption ? "Analizando..." : "Sugerir IA"}
+                          </button>
+                        )}
+                      </div>
+                      {aiAvailable && (
+                        <p className="text-[9px] text-slate-400 font-bold px-1">
+                          ✨ Agente IA disponible — analiza la imagen y sugiere una descripción automáticamente
+                        </p>
+                      )}
+                    </div>
+
                     <div className="flex gap-3">
                       <button
                         onClick={handleUploadActivity}

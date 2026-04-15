@@ -21,6 +21,7 @@ import {
 import { usersService } from '@/services/users.service';
 import { User, UserRole } from "@/types/user";
 import { TwoFactorModal } from '@/components/auth/TwoFactorModal';
+import { DoubleConfirmModal, useDoubleConfirm } from '@/components/ui/DoubleConfirmModal';
 
 const RoleBadge = ({ role }: { role: UserRole | string }) => {
   const styles: Record<string, string> = {
@@ -61,6 +62,8 @@ export default function UsuariosManagementPage() {
   const [is2faModalOpen, setIs2faModalOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [deletingUser, setDeletingUser] = useState(false);
+  const deleteConfirm = useDoubleConfirm<string>();
 
   const fetchData = async () => {
     try {
@@ -129,19 +132,29 @@ export default function UsuariosManagementPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.')) {
-      try {
-        if (currentUser?.isTwoFactorEnabled) {
-            setPendingDeleteId(id);
-            setIs2faModalOpen(true);
-            return;
-        }
-        await usersService.remove(id);
-        fetchData();
-      } catch (err: unknown) {
-        alert((err as Error).message);
+  const handleDelete = (id: string) => {
+    const user = users.find(u => u.id === id);
+    deleteConfirm.openFor(id, user?.fullName || id);
+  };
+
+  const executeDelete = async () => {
+    const id = deleteConfirm.pendingItem;
+    if (!id) return;
+    setDeletingUser(true);
+    try {
+      if (currentUser?.isTwoFactorEnabled) {
+        setPendingDeleteId(id);
+        deleteConfirm.close();
+        setIs2faModalOpen(true);
+        return;
       }
+      await usersService.remove(id);
+      deleteConfirm.close();
+      fetchData();
+    } catch (err: unknown) {
+      alert((err as Error).message);
+    } finally {
+      setDeletingUser(false);
     }
   };
 
@@ -423,6 +436,16 @@ export default function UsuariosManagementPage() {
         onConfirm={confirmDeleteWith2fa}
         title="Confirmar Eliminación de Usuario"
         description="Esta es una acción irreversible. Por seguridad, ingresa tu código 2FA para autorizar la eliminación del usuario."
+      />
+
+      {/* RF-19: Doble confirmación para eliminar usuario */}
+      <DoubleConfirmModal
+        {...deleteConfirm.modalProps}
+        onConfirm={executeDelete}
+        title="Eliminar Usuario"
+        description="¿Estás seguro de que deseas eliminar este usuario? Se eliminarán todos sus datos, asignaciones e historial del sistema."
+        confirmLabel="Sí, eliminar usuario"
+        loading={deletingUser}
       />
     </DashboardLayout>
   );

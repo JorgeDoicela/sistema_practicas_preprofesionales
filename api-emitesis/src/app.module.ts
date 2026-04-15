@@ -15,6 +15,7 @@ import { CertificationModule } from './certification/certification.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { StorageModule } from './infrastructure/storage/storage.module';
 import { WebauthnModule } from './webauthn/webauthn.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { WebauthnModule } from './webauthn/webauthn.module';
     NotificationsModule,
     StorageModule,
     WebauthnModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [AppService],
