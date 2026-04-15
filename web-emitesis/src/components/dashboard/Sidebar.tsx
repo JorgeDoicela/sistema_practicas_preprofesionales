@@ -17,6 +17,7 @@ import {
     GraduationCap,
     FlaskConical,
     Handshake,
+    ScrollText,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { User as UserType } from "@/types/user";
@@ -28,6 +29,7 @@ import { BRAND_LOGO_SRC } from "@/lib/brand";
 const MENUS: Record<string, Array<{ icon: React.ElementType; label: string; href: string }>> = {
     ADMIN: [
         { icon: LayoutDashboard, label: "Tablero",              href: "/dashboard" },
+        { icon: ScrollText,      label: "Registro de actividad", href: "/admin/logs" },
         { icon: Users,           label: "Usuarios",             href: "/admin/usuarios" },
         { icon: UserPlus,        label: "Asignaciones",         href: "/coordinador/asignacion" },
         { icon: Handshake,       label: "Convenios",            href: "/coordinador/convenios" },

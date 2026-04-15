@@ -15,6 +15,7 @@ async function bootstrap() {
     .setDescription('Documentación interactiva del Sistema de Gestión de Prácticas Preprofesionales ISTPET')
     .setVersion('1.0')
     .addTag('Auth', 'Endpoints de autenticación y acceso')
+    .addTag('System logs', 'Registro de actividad del sistema (solo administrador)')
     .addTag('Users', 'Gestión de usuarios del sistema')
     .addTag('Agreements', 'Gestión de convenios institucionales')
     .addTag('Internships', 'Gestión de solicitudes y procesos de prácticas')

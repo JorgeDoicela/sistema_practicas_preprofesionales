@@ -29,6 +29,29 @@ model User {
   assignmentsAsStudent Internship[] @relation("StudentInternship")
   assignmentsAsTutor   Internship[] @relation("TutorInternship")
   credential           UserCredential?
+  systemLogs           SystemLog[]
+}
+
+/// Registro de actividad del sistema (peticiones HTTP, eventos relevantes, etc.)
+model SystemLog {
+  id          String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  level       String   // INFO, WARN, ERROR
+  category    String   // HTTP, AUTH, SYSTEM
+  message     String
+  method      String?
+  path        String?
+  statusCode  Int?
+  userId      String?
+  actorEmail  String?
+  ip          String?
+  durationMs  Int?
+  metadata    Json?
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt(sort: Desc)])
+  @@index([category])
 }
 
 model Company {
