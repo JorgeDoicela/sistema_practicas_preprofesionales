@@ -139,11 +139,20 @@ export class DocumentsService {
     }
 
     if (now > document.dueDate) {
-      // Excepción A2: Plazo vencido -> Marcar como INCUMPLIDO
+      // Excepción A2: Plazo vencido -> Marcar como INCUMPLIDO (RF-09)
       await this.prisma.document.update({
         where: { id },
         data: { status: 'INCUMPLIDO' as any }
       });
+      // RF-09: Notificar al tutor inmediatamente
+      if (document.internship.tutor?.email) {
+        this.emailService.sendIncumplimientoAlertToTutor(
+          document.internship.tutor.email,
+          document.internship.tutor.fullName,
+          document.internship.student.fullName,
+          document.name,
+        ).catch(() => {});
+      }
       throw new BadRequestException('El plazo de entrega ha vencido. El documento ha sido marcado como Incumplido.');
     }
 

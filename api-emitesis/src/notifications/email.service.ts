@@ -487,6 +487,58 @@ export class EmailService {
         }
     }
 
+    /**
+     * RF-09: Notificar al tutor cuando un documento es marcado como INCUMPLIDO (plazo vencido sin entrega)
+     */
+    async sendIncumplimientoAlertToTutor(
+        tutorEmail: string,
+        tutorName: string,
+        studentName: string,
+        documentName: string,
+    ) {
+        const subject = `INCUMPLIMIENTO: ${studentName} no entregó "${documentName}"`;
+        const metadata = { tutorName, studentName, documentName, type: 'INCUMPLIMIENTO_ALERT' };
+
+        const mailOptions = {
+            from: `"Sistema EmiTesis ISTPET" <${this.configService.get<string>('MAIL_USER')}>`,
+            to: tutorEmail,
+            subject,
+            html: `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+          <div style="text-align: center; margin-bottom: 20px; background-color: #d32f2f; padding: 20px; border-radius: 8px;">
+            <h1 style="color: #ffffff; margin: 0;">⚠ Alerta de Incumplimiento</h1>
+          </div>
+          <p>Estimado(a) <strong>${tutorName}</strong>,</p>
+          <p>El sistema ha detectado que el estudiante <strong>${studentName}</strong> no entregó el documento requerido antes del plazo límite establecido.</p>
+          <div style="background-color: #fdecea; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #d32f2f;">
+            <p style="margin: 0;"><strong>Documento:</strong> ${documentName}</p>
+            <p style="margin: 8px 0 0;"><strong>Estado:</strong> INCUMPLIDO</p>
+            <p style="margin: 8px 0 0;"><strong>Estudiante:</strong> ${studentName}</p>
+          </div>
+          <p>El documento ha sido bloqueado automáticamente. Puede otorgar una nueva fecha límite desde el portal si lo considera pertinente.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${this.getPublicAppBase()}/dashboard/documentos"
+               style="background-color: #003366; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+              Ir al Portal
+            </a>
+          </div>
+          <hr style="border: 0; border-top: 1px solid #eee;" />
+          <p style="text-align: center; font-size: 12px; color: #999;">&copy; 2026 Instituto Superior Tecnológico "Mayor Pedro Traversari"</p>
+        </div>
+      `,
+        };
+
+        try {
+            const info = await this.transporter.sendMail(mailOptions);
+            await this.logEmail(tutorEmail, subject, 'EXITO', null, metadata);
+            return { success: true, messageId: info.messageId };
+        } catch (err: any) {
+            this.logger.error('Error enviando alerta de incumplimiento:', err.message);
+            await this.logEmail(tutorEmail, subject, 'FALLIDO', err.message, metadata);
+            return { success: false, error: err.message };
+        }
+    }
+
     async sendDeadlineReminder(email: string, studentName: string, documentName: string, dueDate: Date) {
         const subject = `Recordatorio: Plazo de entrega de ${documentName} pronto a vencer`;
         const metadata = { studentName, documentName, type: 'DEADLINE_REMINDER' };
