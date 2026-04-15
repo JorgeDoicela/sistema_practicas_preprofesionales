@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   },
 };
 
+import { Navbar } from "@/components/navigation/Navbar";
+import { Footer } from "@/components/navigation/Footer";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,7 +34,11 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${montserrat.variable} ${roboto.variable} font-body antialiased bg-slate-50 text-slate-900`}>
-        {children}
+        <Navbar />
+        <main className="min-h-screen">
+          {children}
+        </main>
+        <Footer />
       </body>
     </html>
   );
