@@ -7,8 +7,11 @@ import { Role, ROLES, ROLE_REDIRECTS } from "@/constants/roles";
 const RULES: { match: RegExp; allow: Role[] }[] = [
   { match: /^\/admin(\/|$)/, allow: [ROLES.ADMIN] },
   { match: /^\/coordinador(\/|$)/, allow: [ROLES.ADMIN, ROLES.COORDINADOR] },
+  { match: /^\/tutor-academico\/perfil/, allow: [ROLES.ADMIN, ROLES.TUTOR_ACADEMICO] },
   { match: /^\/tutor-academico(\/|$)/, allow: [ROLES.ADMIN, ROLES.TUTOR_ACADEMICO] },
+  { match: /^\/empresa\/perfil/, allow: [ROLES.ADMIN, ROLES.EMPRESA, ROLES.TUTOR_EMPRESARIAL] },
   { match: /^\/empresa(\/|$)/, allow: [ROLES.ADMIN, ROLES.EMPRESA, ROLES.TUTOR_EMPRESARIAL] },
+  { match: /^\/dashboard\/perfil/, allow: [ROLES.ADMIN, ROLES.COORDINADOR, ROLES.TUTOR_ACADEMICO, ROLES.ESTUDIANTE] },
   { match: /^\/dashboard\/documentos/, allow: [ROLES.ADMIN, ROLES.COORDINADOR, ROLES.TUTOR_ACADEMICO, ROLES.ESTUDIANTE] },
   { match: /^\/dashboard\/asistencia/, allow: [ROLES.ADMIN, ROLES.COORDINADOR, ROLES.TUTOR_ACADEMICO, ROLES.ESTUDIANTE] },
   { match: /^\/dashboard\/configuracion/, allow: [ROLES.ADMIN, ROLES.COORDINADOR, ROLES.TUTOR_ACADEMICO, ROLES.ESTUDIANTE] },

@@ -38,6 +38,19 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('me')
+  @Roles(
+    Role.ADMIN,
+    Role.COORDINADOR,
+    Role.TUTOR,
+    Role.TUTOR_EMPRESARIAL,
+    Role.ESTUDIANTE,
+    Role.EMPRESA,
+  )
+  findMe(@Req() req: { user: { userId: string } }) {
+    return this.usersService.findProfile(req.user.userId);
+  }
+
   @Get(':id')
   @Roles(Role.ADMIN)
   findOne(@Param('id') id: string) {

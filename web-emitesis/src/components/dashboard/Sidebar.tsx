@@ -12,6 +12,7 @@ import {
     Settings,
     LogOut,
     ChevronRight,
+    UserCircle,
     FileStack,
     FileText,
     UserPlus,
@@ -23,6 +24,7 @@ import {
 import { motion } from "framer-motion";
 import { User as UserType } from "@/types/user";
 import { BRAND_LOGO_SRC } from "@/lib/brand";
+import { getProfilePathForRole } from "@/lib/profile-route";
 
 // ── Menús por rol ──────────────────────────────────────────────────────────
 // Las claves deben coincidir exactamente con los valores de Role en el backend
@@ -82,6 +84,7 @@ export function Sidebar() {
     }, []);
 
     const role: string = user?.role ?? "";
+    const profileHref = getProfilePathForRole(role);
     const menuItems = MENUS[role] ?? MENUS["ESTUDIANTE"];
     const isEmpresaRole = role === "EMPRESA" || role === "TUTOR_EMPRESARIAL";
 
@@ -120,20 +123,28 @@ export function Sidebar() {
                     ))}
                 </div>
 
-                {/* Configuración solo si no es empresa/tutor empresarial */}
-                {!isEmpresaRole && (
-                    <div className="mt-8">
-                        <p className="px-4 text-[9px] font-black uppercase tracking-[0.3em] text-white/30 mb-4">Cuenta</p>
-                        <div className="space-y-1.5">
+                <div className="mt-8">
+                    <p className="px-4 text-[9px] font-black uppercase tracking-[0.3em] text-white/30 mb-4">Cuenta</p>
+                    <div className="space-y-1.5">
+                        <SidebarItem
+                            icon={UserCircle}
+                            label="Mi perfil"
+                            href={profileHref}
+                            active={
+                                pathname === profileHref ||
+                                pathname.startsWith(profileHref + "/")
+                            }
+                        />
+                        {!isEmpresaRole && (
                             <SidebarItem
                                 icon={Settings}
                                 label="Configuración"
                                 href="/dashboard/configuracion"
                                 active={pathname === "/dashboard/configuracion"}
                             />
-                        </div>
+                        )}
                     </div>
-                )}
+                </div>
             </nav>
 
             {/* User Badge + Logout */}

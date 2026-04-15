@@ -8,4 +8,20 @@ export interface User {
   isActive: boolean;
   createdAt: string;
   companyId?: string | null;
+  isTwoFactorEnabled?: boolean;
+}
+
+export interface UserCompanyProfile {
+  id: string;
+  name: string;
+  ruc: string;
+  address: string;
+  email: string;
+  representative: string;
+}
+
+/** Respuesta de GET /users/me */
+export interface UserProfile extends User {
+  isTwoFactorEnabled: boolean;
+  company?: UserCompanyProfile | null;
 }

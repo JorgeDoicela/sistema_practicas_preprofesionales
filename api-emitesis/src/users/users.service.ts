@@ -79,6 +79,39 @@ export class UsersService {
     return user;
   }
 
+  /** Perfil del usuario autenticado (sin datos sensibles). */
+  async findProfile(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        companyId: true,
+        isTwoFactorEnabled: true,
+        company: {
+          select: {
+            id: true,
+            name: true,
+            ruc: true,
+            address: true,
+            email: true,
+            representative: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    return user;
+  }
+
   async update(id: string, dto: UpdateUserDto, currentUserId: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
 

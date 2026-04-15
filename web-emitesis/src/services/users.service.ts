@@ -1,7 +1,23 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-import { User } from "@/types/user";
+import { User, UserProfile } from "@/types/user";
 
 export const usersService = {
+  async getProfile(): Promise<UserProfile> {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/users/me`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Error al cargar el perfil');
+    }
+
+    return response.json();
+  },
+
   async findAll() {
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/users`, {
