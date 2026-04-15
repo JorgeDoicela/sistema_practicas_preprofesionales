@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { internshipsService } from "@/services/internships.service";
 import { documentsService } from "@/services/documents.service";
+import { ROLES } from "@/constants/roles";
 import { TwoFactorModal } from "@/components/auth/TwoFactorModal";
 import { api } from "@/services/auth.service";
 
@@ -54,9 +55,9 @@ export default function DocumentosPage() {
       setUserRole(user.role);
       
       let data;
-      if (user.role === "TUTOR") {
+      if (user.role === ROLES.TUTOR_ACADEMICO || user.role === "TUTOR") {
         data = await internshipsService.findByTutor(user.id);
-      } else if (user.role === "ESTUDIANTE") {
+      } else if (user.role === ROLES.ESTUDIANTE) {
         data = await internshipsService.findByStudent(user.id);
         if (data.length > 0) {
           const docs = await documentsService.findByInternship(data[0].id);

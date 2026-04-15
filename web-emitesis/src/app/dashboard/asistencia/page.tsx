@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { attendancesService } from "@/services/attendances.service";
 import { internshipsService } from "@/services/internships.service";
+import { ROLES } from "@/constants/roles";
 import { useWebAuthn } from "@/hooks/useWebAuthn";
 import { useCamera } from "@/hooks/useCamera";
 import { aiService } from "@/services/ai.service";
@@ -37,6 +38,8 @@ export default function AsistenciaPage() {
   const [history, setHistory] = useState<Record<string, unknown>[]>([]);
   const [filters, setFilters] = useState({ startDate: "", endDate: "" });
   const [pageError, setPageError] = useState<string | null>(null);
+  /** Coordinador / tutor: la API de prácticas por estudiante solo aplica al rol ESTUDIANTE (y ADMIN). */
+  const [viewerHint, setViewerHint] = useState<string | null>(null);
 
   // Modal de check-in/out
   const [modalOpen, setModalOpen] = useState(false);
@@ -74,7 +77,28 @@ export default function AsistenciaPage() {
   const loadData = useCallback(async (f?: typeof filters) => {
     try {
       setLoading(true);
+      setViewerHint(null);
+      setPageError(null);
       const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const role = String(user.role ?? "");
+
+      const canLoadStudentInternships =
+        role === ROLES.ESTUDIANTE ||
+        role === "ESTUDIANTE" ||
+        role === ROLES.ADMIN;
+
+      if (!canLoadStudentInternships) {
+        setInternship(null);
+        setStatus(null);
+        setHistory([]);
+        setSummary(null);
+        setActivityPhotos([]);
+        setViewerHint(
+          "El check-in con foto, huella y GPS lo realiza el estudiante desde su cuenta. Como coordinador o tutor académico, revise el seguimiento desde Documentos o el panel de tutor.",
+        );
+        return;
+      }
+
       const internships = await internshipsService.findByStudent(user.id);
       const active = internships.find(
         (i: Record<string, unknown>) => i.status === "Activo" || i.status === "En Proceso"
@@ -364,11 +388,19 @@ export default function AsistenciaPage() {
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Verificando estado...</p>
           </div>
         ) : !internship ? (
-          <div className="bg-amber-50 p-12 rounded-[2.5rem] text-center border border-amber-100">
-            <AlertCircle className="w-16 h-16 text-amber-500 mx-auto mb-6" />
-            <h3 className="text-xl font-black text-amber-900 uppercase">Sin Asignación Activa</h3>
-            <p className="text-amber-700 mt-2 font-medium">No puedes registrar asistencia sin una práctica en proceso.</p>
-          </div>
+          viewerHint ? (
+            <div className="bg-slate-50 p-12 rounded-[2.5rem] text-center border border-slate-200">
+              <Info className="w-16 h-16 text-[#003366] mx-auto mb-6" />
+              <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">Vista de estudiante</h3>
+              <p className="text-slate-600 mt-3 font-medium max-w-lg mx-auto leading-relaxed">{viewerHint}</p>
+            </div>
+          ) : (
+            <div className="bg-amber-50 p-12 rounded-[2.5rem] text-center border border-amber-100">
+              <AlertCircle className="w-16 h-16 text-amber-500 mx-auto mb-6" />
+              <h3 className="text-xl font-black text-amber-900 uppercase">Sin Asignación Activa</h3>
+              <p className="text-amber-700 mt-2 font-medium">No puedes registrar asistencia sin una práctica en proceso.</p>
+            </div>
+          )
         ) : (
           <div className="space-y-10">
             {/* ── Botones de Control ───────────────────────────────────── */}
