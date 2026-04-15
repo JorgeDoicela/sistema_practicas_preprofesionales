@@ -19,11 +19,11 @@ export const ROLE_LABELS: Record<Role, string> = {
 };
 
 export const ROLE_REDIRECTS: Record<Role, string> = {
-  [ROLES.ADMIN]: '/admin/dashboard',
-  [ROLES.COORDINADOR]: '/coordinador/dashboard',
+  [ROLES.ADMIN]: '/dashboard',
+  [ROLES.COORDINADOR]: '/dashboard',
   [ROLES.TUTOR_ACADEMICO]: '/tutor-academico/dashboard',
-  [ROLES.TUTOR_EMPRESARIAL]: '/tutor-empresarial/dashboard',
-  [ROLES.ESTUDIANTE]: '/estudiante/dashboard',
+  [ROLES.TUTOR_EMPRESARIAL]: '/empresa/dashboard',
+  [ROLES.ESTUDIANTE]: '/dashboard',
   [ROLES.EMPRESA]: '/empresa/dashboard',
 };
 

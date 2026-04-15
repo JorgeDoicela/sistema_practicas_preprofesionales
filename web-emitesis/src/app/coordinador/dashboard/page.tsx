@@ -1,11 +1,9 @@
 "use client";
-import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { DashboardMain } from "@/components/dashboard/DashboardMain";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-export default function CoordinadorDashboard() {
-  return (
-    <DashboardLayout>
-      <DashboardMain />
-    </DashboardLayout>
-  );
+export default function CoordinadorDashboardRedirect() {
+  const router = useRouter();
+  useEffect(() => { router.replace("/dashboard"); }, [router]);
+  return null;
 }
