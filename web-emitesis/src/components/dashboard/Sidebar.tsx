@@ -89,7 +89,7 @@ export function Sidebar() {
     const isEmpresaRole = role === "EMPRESA" || role === "TUTOR_EMPRESARIAL";
 
     return (
-        <aside className="w-72 bg-[#003366] text-white flex flex-col h-screen sticky top-0 border-r border-white/5 shadow-2xl z-40">
+        <aside data-tour="sidebar" className="w-72 bg-[#003366] text-white flex flex-col h-screen sticky top-0 border-r border-white/5 shadow-2xl z-40">
             {/* Brand Header */}
             <div className="p-8 pb-12">
                 <div className="flex items-center gap-3 group">
@@ -111,7 +111,7 @@ export function Sidebar() {
             </div>
 
             {/* Main Navigation */}
-            <nav className="flex-1 px-4 overflow-y-auto">
+            <nav data-tour="sidebar-navigation" className="flex-1 px-4 overflow-y-auto">
                 <p className="px-4 text-[9px] font-black uppercase tracking-[0.3em] text-white/30 mb-4">Menú Principal</p>
                 <div className="space-y-1.5">
                     {menuItems.map((item) => (
@@ -148,7 +148,7 @@ export function Sidebar() {
             </nav>
 
             {/* User Badge + Logout */}
-            <div className="p-6">
+            <div data-tour="sidebar-footer" className="p-6">
                 {user && (
                     <div className="bg-white/5 rounded-3xl p-5 border border-white/10 mb-4">
                         <div className="flex items-center gap-3">

@@ -31,7 +31,7 @@ export function Navbar() {
   };
 
   return (
-    <header className={`sticky top-0 z-30 transition-all duration-300 ${
+    <header data-tour="navbar" className={`sticky top-0 z-30 transition-all duration-300 ${
       scrolled ? "bg-white/80 backdrop-blur-xl shadow-lg py-3" : "bg-transparent py-6"
     } px-10`}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">

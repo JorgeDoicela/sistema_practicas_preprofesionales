@@ -135,17 +135,6 @@ export default function PlantillasDocumentosPage() {
     }
   };
 
-  const formatSelectOptions = (
-    <select className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold">
-      <option value="">— Sin formato descargable —</option>
-      {knownKeys.map((k) => (
-        <option key={k} value={k}>
-          {labelForDocxKey(k)} ({k})
-        </option>
-      ))}
-    </select>
-  );
-
   return (
     <DashboardLayout>
       <div className="mx-auto max-w-5xl space-y-8 px-4 py-8">
@@ -329,7 +318,8 @@ export default function PlantillasDocumentosPage() {
               Catálogo ({items.length})
             </h2>
             <p className="mt-1 text-[11px] text-slate-500">
-              Cambie el formato en la columna «Word en blanco» y el valor se guarda al elegir otra opción.
+              Cambie el formato en «Word en blanco» al elegir otra opción. Use <strong>Eliminar</strong> para quitar una
+              plantilla del catálogo (no aplica a la ranura de certificado ni si hay prácticas que ya la usan).
             </p>
           </div>
           {loading ? (
@@ -356,7 +346,12 @@ export default function PlantillasDocumentosPage() {
                       Ranura certificado
                     </th>
                     <th className="px-4 py-3">Activo</th>
-                    <th className="w-24 px-4 py-3" />
+                    <th
+                      className="min-w-[120px] px-4 py-3 text-rose-700/90"
+                      title="Quitar la plantilla del catálogo si no tiene documentos de prácticas vinculados"
+                    >
+                      Eliminar
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -441,15 +436,25 @@ export default function PlantillasDocumentosPage() {
                         />
                       </td>
                       <td className="px-4 py-3">
-                        <button
-                          type="button"
-                          onClick={() => void handleDelete(t)}
-                          disabled={t.isCertificateSlot}
-                          className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-30 disabled:hover:text-slate-400"
-                          title={t.isCertificateSlot ? "Use desactivar en lugar de eliminar" : "Eliminar"}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        {t.isCertificateSlot ? (
+                          <span
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-100 px-2.5 py-2 text-[10px] font-bold uppercase tracking-wide text-slate-400"
+                            title="La ranura de certificado no se elimina; desactívela o sustitúyala con otra plantilla marcada como certificado."
+                          >
+                            <Trash2 className="h-3.5 w-3.5 shrink-0 opacity-50" />
+                            No eliminable
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => void handleDelete(t)}
+                            className="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-wider text-rose-600 shadow-sm transition hover:bg-rose-50 hover:border-rose-300"
+                            title="Eliminar esta plantilla del catálogo (solo si no está vinculada a documentos de prácticas)"
+                          >
+                            <Trash2 className="h-4 w-4 shrink-0" />
+                            Eliminar
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
