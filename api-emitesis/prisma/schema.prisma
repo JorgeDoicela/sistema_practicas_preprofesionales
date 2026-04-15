@@ -100,6 +100,22 @@ model Internship {
   tutor       User         @relation("TutorInternship", fields: [tutorId], references: [id])
 }
 
+/// Catálogo institucional: qué documentos se crean por cada práctica (obligatorios/opcionales, orden, certificado).
+model DocumentTemplate {
+  id                  String   @id @default(uuid())
+  name                String
+  sortOrder           Int      @default(0)
+  isActive            Boolean  @default(true)
+  isRequired          Boolean  @default(true)
+  isCertificateSlot   Boolean  @default(false)
+  blankFileKey        String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  documents           Document[]
+
+  @@index([isActive, sortOrder])
+}
+
 model Evaluation {
   id              String     @id @default(uuid())
   internshipId    String     @unique
@@ -116,18 +132,27 @@ model Evaluation {
 }
 
 model Document {
-  id           String         @id @default(uuid())
-  internshipId String
-  name         String
-  filePath     String?
-  status       DocumentStatus @default(PENDIENTE)
-  observations String?
-  startDate    DateTime?      // Fecha de apertura (RF-DOC-001)
-  dueDate      DateTime?      // Fecha límite (RF-DOC-001)
-  submittedAt  DateTime?
-  reviewedAt   DateTime?
-  createdAt    DateTime       @default(now())
-  internship   Internship     @relation(fields: [internshipId], references: [id])
+  id                String            @id @default(uuid())
+  internshipId      String
+  name              String
+  filePath          String?
+  status            DocumentStatus    @default(PENDIENTE)
+  observations      String?
+  startDate         DateTime? // Fecha de apertura (RF-DOC-001)
+  dueDate           DateTime? // Fecha límite (RF-DOC-001)
+  submittedAt       DateTime?
+  reviewedAt        DateTime?
+  createdAt         DateTime          @default(now())
+  templateId        String?
+  isRequired        Boolean           @default(true)
+  isCertificateSlot Boolean           @default(false)
+  blankFileKey      String?
+  sortOrder         Int               @default(0)
+  internship        Internship        @relation(fields: [internshipId], references: [id])
+  template          DocumentTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@index([internshipId, sortOrder])
+  @@index([templateId])
 }
 
 model Attendance {

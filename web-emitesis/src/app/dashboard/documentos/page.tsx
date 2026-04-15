@@ -250,6 +250,8 @@ export default function DocumentosPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {userDocuments.map((doc, idx) => {
               const now = new Date();
+              const isCertSlot = Boolean(doc.isCertificateSlot);
+              const isOptional = doc.isRequired === false;
               const isLocked = !doc.startDate || now < new Date(doc.startDate);
               const isExpired = doc.dueDate && now > new Date(doc.dueDate);
               const isApproved = doc.status === 'APROBADO_DEFINITIVO';
@@ -284,6 +286,18 @@ export default function DocumentosPage() {
                   </div>
 
                   <h3 className="text-lg font-black text-[#003366] mb-2 leading-tight group-hover:text-[#C5A059] transition-colors line-clamp-2 min-h-[3rem]">{doc.name}</h3>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {isCertSlot && (
+                      <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-violet-100 text-violet-800 border border-violet-200">
+                        Certificado (sistema)
+                      </span>
+                    )}
+                    {isOptional && !isCertSlot && (
+                      <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                        Opcional
+                      </span>
+                    )}
+                  </div>
                   <div className="space-y-2 mb-8">
                     <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                       <Calendar className="w-3.5 h-3.5" />
@@ -297,55 +311,61 @@ export default function DocumentosPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    {!isApproved && (
-                      <button
-                        onClick={() => handleDownloadTemplate(doc)}
-                        disabled={isLocked || downloadingId === doc.id}
-                        className={cn(
-                          "py-4 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98]",
-                          isLocked 
-                            ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
-                            : "bg-slate-100 text-[#003366] hover:bg-slate-200"
-                        )}
-                      >
-                        {downloadingId === doc.id ? (
-                          <div className="w-3 h-3 border-2 border-[#003366]/30 border-t-[#003366] rounded-full animate-spin" />
-                        ) : (
-                          <Download className="w-3.5 h-3.5" />
-                        )}
-                        Formato
-                      </button>
-                    )}
-
-                    {!isApproved && (
-                      <div className="relative">
-                        <input
-                          type="file"
-                          accept=".pdf"
-                          onChange={(e) => handleUpload(doc.id, e)}
-                          disabled={isLocked || isExpired || isUnderReview || uploadingId === doc.id}
-                          className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                        />
+                  {isCertSlot ? (
+                    <p className="text-[11px] text-slate-500 font-semibold leading-relaxed mb-2">
+                      Este documento se completa automáticamente cuando culminas la práctica y se emite el certificado.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      {!isApproved && (
                         <button
-                          disabled={isLocked || isExpired || isUnderReview || uploadingId === doc.id}
+                          onClick={() => handleDownloadTemplate(doc)}
+                          disabled={isLocked || downloadingId === doc.id}
                           className={cn(
-                            "w-full py-4 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98] shadow-lg shadow-blue-900/10",
-                            isLocked || isExpired || isUnderReview
-                              ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none" 
-                              : "bg-[#003366] text-white hover:bg-[#003366]/90"
+                            "py-4 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98]",
+                            isLocked 
+                              ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
+                              : "bg-slate-100 text-[#003366] hover:bg-slate-200"
                           )}
                         >
-                          {uploadingId === doc.id ? (
-                            <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          {downloadingId === doc.id ? (
+                            <div className="w-3 h-3 border-2 border-[#003366]/30 border-t-[#003366] rounded-full animate-spin" />
                           ) : (
-                            <FileCheck className="w-3.5 h-3.5" />
+                            <Download className="w-3.5 h-3.5" />
                           )}
-                          Subir PDF
+                          Formato
                         </button>
-                      </div>
-                    )}
-                  </div>
+                      )}
+
+                      {!isApproved && (
+                        <div className="relative">
+                          <input
+                            type="file"
+                            accept=".pdf"
+                            onChange={(e) => handleUpload(doc.id, e)}
+                            disabled={isLocked || isExpired || isUnderReview || uploadingId === doc.id}
+                            className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                          />
+                          <button
+                            disabled={isLocked || isExpired || isUnderReview || uploadingId === doc.id}
+                            className={cn(
+                              "w-full py-4 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98] shadow-lg shadow-blue-900/10",
+                              isLocked || isExpired || isUnderReview
+                                ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none" 
+                                : "bg-[#003366] text-white hover:bg-[#003366]/90"
+                            )}
+                          >
+                            {uploadingId === doc.id ? (
+                              <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            ) : (
+                              <FileCheck className="w-3.5 h-3.5" />
+                            )}
+                            Subir PDF
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {isLocked && doc.startDate && (
                     <div className="mt-4 p-4 bg-orange-50 rounded-xl flex gap-3">

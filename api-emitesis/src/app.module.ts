@@ -17,6 +17,7 @@ import { StorageModule } from './infrastructure/storage/storage.module';
 import { WebauthnModule } from './webauthn/webauthn.module';
 import { AiModule } from './ai/ai.module';
 import { SystemLogsModule } from './system-logs/system-logs.module';
+import { DocumentTemplatesModule } from './document-templates/document-templates.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { SystemLogsModule } from './system-logs/system-logs.module';
     WebauthnModule,
     AiModule,
     SystemLogsModule,
+    DocumentTemplatesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

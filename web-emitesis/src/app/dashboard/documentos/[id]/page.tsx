@@ -328,7 +328,7 @@ export default function DocumentDetailPage() {
                    </div>
                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
                       <div className="w-2 h-2 rounded-full bg-[#C5A059]" />
-                      {documents.length} Obligatorios
+                      {documents.length} ítem(s) en expediente
                    </div>
                 </div>
 
@@ -351,7 +351,15 @@ export default function DocumentDetailPage() {
                             </div>
 
                             <div className="flex-1">
-                               <h4 className="font-black text-[#003366] mb-1 group-hover:text-[#C5A059] transition-colors">{doc.name}</h4>
+                               <h4 className="font-black text-[#003366] mb-1 group-hover:text-[#C5A059] transition-colors flex flex-wrap items-center gap-2">
+                                 {doc.name}
+                                 {doc.isCertificateSlot && (
+                                   <span className="text-[8px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 font-black tracking-wider">Certificado</span>
+                                 )}
+                                 {doc.isRequired === false && !doc.isCertificateSlot && (
+                                   <span className="text-[8px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-black tracking-wider">Opcional</span>
+                                 )}
+                               </h4>
                                <div className="flex flex-wrap gap-4 items-center">
                                   <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                                      <Calendar className="w-3 h-3" />

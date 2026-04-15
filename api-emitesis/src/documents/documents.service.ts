@@ -47,7 +47,7 @@ export class DocumentsService {
   async findByInternship(internshipId: string) {
     return this.prisma.document.findMany({
       where: { internshipId },
-      orderBy: { createdAt: 'asc' }
+      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
     });
   }
 
@@ -58,6 +58,12 @@ export class DocumentsService {
 
     if (!document) {
       throw new NotFoundException('Documento no encontrado');
+    }
+
+    if (document.isCertificateSlot) {
+      throw new BadRequestException(
+        'El certificado de culminación no tiene formato descargable: lo genera el sistema al finalizar la práctica.',
+      );
     }
 
     // Regla de Negocio: Solo descargar si está dentro del periodo
@@ -86,9 +92,12 @@ export class DocumentsService {
       'Certificado de culminación': 'certificado_culminacion.docx',
     };
 
-    const fileName = templateMapping[document.name];
+    const fileName =
+      document.blankFileKey?.trim() || templateMapping[document.name];
     if (!fileName) {
-      throw new NotFoundException('No existe un formato oficial para este documento');
+      throw new NotFoundException(
+        'No existe un formato descargable para este documento (configure “Archivo .docx” en plantillas o use un nombre con plantilla predefinida).',
+      );
     }
 
     // Si estamos en Vercel Blob (Producción), intentamos buscar la URL del archivo
@@ -121,6 +130,12 @@ export class DocumentsService {
     // Precondición: El estudiante es el dueño del documento
     if (document.internship.studentId !== studentId) {
       throw new BadRequestException('No tienes permisos para subir este documento');
+    }
+
+    if (document.isCertificateSlot) {
+      throw new BadRequestException(
+        'Este documento lo genera el sistema al culminar la práctica; no debe subirse manualmente.',
+      );
     }
 
     // Precondición: No aprobado definitivamente

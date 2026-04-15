@@ -30,26 +30,19 @@ export class CertificationService {
       throw new NotFoundException('Asignación no encontrada');
     }
 
-    // 1. Verificar los 8 documentos obligatorios (deben estar APROBADO_DEFINITIVO)
-    // El "Certificado de culminación" es el 8avo, pero este se genera ahora.
-    // Los otros 7 deben estar aprobados.
-    const requiredDocs = [
-      'Solicitud de prácticas',
-      'Plan de rotación',
-      'Informe de actividades',
-      'Registro de asistencia',
-      'Evaluación del tutor académico',
-      'Evaluación del representante de la empresa',
-      'Informe final de prácticas',
-    ];
-
-    const approvedDocs = internship.documents.filter(
-      (doc) => requiredDocs.includes(doc.name) && doc.status === 'APROBADO_DEFINITIVO'
+    // 1. Documentos obligatorios (excluye ranura de certificado y opcionales isRequired=false)
+    const requiredSlots = internship.documents.filter(
+      (doc) =>
+        !doc.isCertificateSlot &&
+        doc.name !== 'Certificado de culminación' &&
+        doc.isRequired,
     );
 
-    const missingDocs = requiredDocs.filter(
-      (name) => !approvedDocs.find((doc) => doc.name === name)
-    );
+    const approvedDocs = requiredSlots.filter((doc) => doc.status === 'APROBADO_DEFINITIVO');
+
+    const missingDocs = requiredSlots
+      .filter((doc) => doc.status !== 'APROBADO_DEFINITIVO')
+      .map((doc) => doc.name);
 
     // 2. Verificar horas completadas
     const summary = await this.attendanceService.getSummary(internshipId);
@@ -59,7 +52,7 @@ export class CertificationService {
       eligible: missingDocs.length === 0 && hoursMet,
       details: {
         approvedDocsCount: approvedDocs.length,
-        totalRequiredDocs: requiredDocs.length,
+        totalRequiredDocs: requiredSlots.length,
         missingDocs,
         totalHours: summary.totalHours,
         requiredHours: internship.totalHours,
@@ -128,12 +121,11 @@ export class CertificationService {
         contentType: 'application/pdf',
     });
 
-    // Actualizar el documento "Certificado de culminación"
     const certDoc = await this.prisma.document.findFirst({
-        where: {
-            internshipId,
-            name: 'Certificado de culminación'
-        }
+      where: {
+        internshipId,
+        OR: [{ isCertificateSlot: true }, { name: 'Certificado de culminación' }],
+      },
     });
 
     if (certDoc) {

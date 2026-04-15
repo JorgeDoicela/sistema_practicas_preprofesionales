@@ -13,6 +13,7 @@ import {
     LogOut,
     ChevronRight,
     FileStack,
+    FileText,
     UserPlus,
     GraduationCap,
     FlaskConical,
@@ -29,6 +30,7 @@ import { BRAND_LOGO_SRC } from "@/lib/brand";
 const MENUS: Record<string, Array<{ icon: React.ElementType; label: string; href: string }>> = {
     ADMIN: [
         { icon: LayoutDashboard, label: "Tablero",              href: "/dashboard" },
+        { icon: FileText,        label: "Plantillas documentos", href: "/coordinador/plantillas-documentos" },
         { icon: ScrollText,      label: "Registro de actividad", href: "/admin/logs" },
         { icon: Users,           label: "Usuarios",             href: "/admin/usuarios" },
         { icon: UserPlus,        label: "Asignaciones",         href: "/coordinador/asignacion" },
@@ -38,6 +40,7 @@ const MENUS: Record<string, Array<{ icon: React.ElementType; label: string; href
     ],
     COORDINADOR: [
         { icon: LayoutDashboard, label: "Tablero",              href: "/dashboard" },
+        { icon: FileText,        label: "Plantillas documentos", href: "/coordinador/plantillas-documentos" },
         { icon: UserPlus,        label: "Asignaciones",         href: "/coordinador/asignacion" },
         { icon: Handshake,       label: "Convenios",            href: "/coordinador/convenios" },
         { icon: GraduationCap,   label: "Gestión Estudiantes",  href: "/coordinador/estudiantes" },

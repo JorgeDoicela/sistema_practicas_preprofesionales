@@ -2,6 +2,7 @@ import { Injectable, ConflictException, BadRequestException, NotFoundException }
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateInternshipDto } from './dto/create-internship.dto';
 import { EmailService } from '../notifications/email.service';
+import { FALLBACK_DOCUMENT_TEMPLATES } from '../document-templates/document-templates.constants';
 
 @Injectable()
 export class InternshipsService {
@@ -67,24 +68,55 @@ export class InternshipsService {
           }
         });
 
-        // RF-DOC-001: Inicializar los 8 documentos obligatorios
-        const mandatoryDocuments = [
-          'Solicitud de prácticas',
-          'Plan de rotación',
-          'Informe de actividades',
-          'Registro de asistencia',
-          'Evaluación del tutor académico',
-          'Evaluación del representante de la empresa',
-          'Informe final de prácticas',
-          'Certificado de culminación'
-        ];
+        // RF-DOC-001: documentos según plantillas activas (o lista de respaldo)
+        const templates = await tx.documentTemplate.findMany({
+          where: { isActive: true },
+          orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+        });
+
+        type Row = {
+          name: string;
+          sortOrder: number;
+          isRequired: boolean;
+          isCertificateSlot: boolean;
+          blankFileKey: string | null;
+          templateId: string | null;
+        };
+
+        let rows: Row[];
+        if (templates.length === 0) {
+          rows = FALLBACK_DOCUMENT_TEMPLATES.map((t) => ({
+            ...t,
+            templateId: null,
+          }));
+        } else {
+          const certSlots = templates.filter((t) => t.isCertificateSlot);
+          if (certSlots.length !== 1) {
+            throw new BadRequestException(
+              'El catálogo de plantillas activas debe incluir exactamente un documento de tipo “Certificado / cierre”. Revise coordinación → Plantillas de documentos.',
+            );
+          }
+          rows = templates.map((t) => ({
+            name: t.name,
+            sortOrder: t.sortOrder,
+            isRequired: t.isRequired,
+            isCertificateSlot: t.isCertificateSlot,
+            blankFileKey: t.blankFileKey ?? null,
+            templateId: t.id,
+          }));
+        }
 
         await tx.document.createMany({
-          data: mandatoryDocuments.map(name => ({
+          data: rows.map((r) => ({
             internshipId: newInternship.id,
-            name,
-            status: 'PENDIENTE'
-          }))
+            name: r.name,
+            status: 'PENDIENTE' as const,
+            templateId: r.templateId,
+            isRequired: r.isRequired,
+            isCertificateSlot: r.isCertificateSlot,
+            blankFileKey: r.blankFileKey,
+            sortOrder: r.sortOrder,
+          })),
         });
 
         return newInternship;
