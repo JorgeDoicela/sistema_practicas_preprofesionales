@@ -38,19 +38,19 @@ export class InternshipsController {
   }
 
   @Get('company/:id')
-  @Roles(Role.EMPRESA, Role.ADMIN, Role.COORDINADOR)
+  @Roles(Role.EMPRESA, Role.TUTOR_EMPRESARIAL, Role.ADMIN, Role.COORDINADOR)
   findByCompany(@Param('id') id: string) {
     return this.internshipsService.findByCompany(id);
   }
 
   @Patch(':id/toggle-test')
-  @Roles(Role.EMPRESA, Role.ADMIN, Role.COORDINADOR)
+  @Roles(Role.EMPRESA, Role.TUTOR_EMPRESARIAL, Role.ADMIN, Role.COORDINADOR)
   toggleTest(@Param('id') id: string) {
     return this.internshipsService.toggleTest(id);
   }
 
   @Get(':id')
-  @Roles(Role.COORDINADOR, Role.ADMIN, Role.TUTOR, Role.ESTUDIANTE, Role.EMPRESA)
+  @Roles(Role.COORDINADOR, Role.ADMIN, Role.TUTOR, Role.ESTUDIANTE, Role.EMPRESA, Role.TUTOR_EMPRESARIAL)
   findOne(@Param('id') id: string) {
     return this.internshipsService.findOne(id);
   }

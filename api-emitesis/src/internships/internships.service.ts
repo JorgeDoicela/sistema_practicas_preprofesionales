@@ -127,7 +127,8 @@ export class InternshipsService {
       include: {
         student: true,
         company: true,
-        tutor: true
+        tutor: true,
+        documents: true,
       },
       orderBy: { createdAt: 'desc' }
     });

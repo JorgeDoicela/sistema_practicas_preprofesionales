@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { User as UserType } from "@/types/user";
-import { Role, ROLES, hasRole, canManageSystem, ROLE_LABELS } from "@/constants/roles";
+import { Role, ROLES, hasRole, canManageSystem, ROLE_LABELS, normalizeApiRoleToAppRole } from "@/constants/roles";
 
 export function useAuth() {
   const [user, setUser] = useState<UserType | null>(null);
@@ -26,7 +26,8 @@ export function useAuth() {
   
   const getRoleLabel = () => {
     if (!user?.role) return "Usuario";
-    return ROLE_LABELS[user.role as Role] || user.role;
+    const r = normalizeApiRoleToAppRole(user.role);
+    return ROLE_LABELS[r] || user.role;
   };
 
   return {

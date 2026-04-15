@@ -41,7 +41,7 @@ export default function DocumentDetailPage() {
   const [startDate, setStartDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [is2faModalOpen, setIs2faModalOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<(() => Promise<void>) | null>(null);
+  const [pendingAction, setPendingAction] = useState<((code: string) => Promise<void>) | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Review states
@@ -101,7 +101,9 @@ export default function DocumentDetailPage() {
     setSaving(true);
     try {
       if (currentUser?.isTwoFactorEnabled) {
-          setPendingAction(() => (code: string) => documentsService.updateDates(selectedDoc.id, startDate, dueDate, code));
+          setPendingAction(async (code: string) => {
+            await documentsService.updateDates(selectedDoc.id, startDate, dueDate, code);
+          });
           setIs2faModalOpen(true);
           setSaving(false);
           return;
@@ -142,7 +144,9 @@ export default function DocumentDetailPage() {
     setSaving(true);
     try {
       if (currentUser?.isTwoFactorEnabled) {
-          setPendingAction(() => (code: string) => documentsService.reviewDocument(selectedDoc.id, { status, observations }, code));
+          setPendingAction(async (code: string) => {
+            await documentsService.reviewDocument(selectedDoc.id, { status, observations }, code);
+          });
           setIs2faModalOpen(true);
           setSaving(false);
           return;

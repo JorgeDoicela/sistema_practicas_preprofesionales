@@ -12,12 +12,20 @@ export class EvaluationsController {
   constructor(private readonly evaluationsService: EvaluationsService) {}
 
   @Post()
-  @Roles(Role.EMPRESA, Role.ADMIN, Role.COORDINADOR)
+  @Roles(Role.EMPRESA, Role.TUTOR_EMPRESARIAL, Role.ADMIN, Role.COORDINADOR)
   async createOrUpdate(@Body() dto: CreateEvaluationDto) {
     return this.evaluationsService.createOrUpdate(dto);
   }
 
   @Get('internship/:id')
+  @Roles(
+    Role.EMPRESA,
+    Role.TUTOR_EMPRESARIAL,
+    Role.ADMIN,
+    Role.COORDINADOR,
+    Role.TUTOR,
+    Role.ESTUDIANTE,
+  )
   async findByInternship(@Param('id') id: string) {
     return this.evaluationsService.findByInternship(id);
   }

@@ -1,33 +1,58 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Navbar } from "@/components/dashboard/Navbar";
 import { Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { normalizeApiRoleToAppRole, type Role } from "@/constants/roles";
+import { canRoleAccessPath, getHomePathForRole } from "@/lib/route-access";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const user = localStorage.getItem("user");
+    const userStr = localStorage.getItem("user");
 
-    if (!token || !user) {
-      router.push("/login");
+    if (!token || !userStr) {
+      router.replace("/login");
+      setIsAuthorized(false);
+      setIsLoading(false);
+      return;
     }
 
-    const timer = setTimeout(() => {
-      if (token && user) {
-        setIsAuthorized(true);
+    try {
+      const parsed = JSON.parse(userStr) as { role?: string } & Record<string, unknown>;
+      if (parsed.role == null || String(parsed.role).trim() === "") {
+        router.replace("/login");
+        setIsAuthorized(false);
+        setIsLoading(false);
+        return;
       }
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [router]);
+      const role = normalizeApiRoleToAppRole(String(parsed.role));
+      if (parsed.role !== role) {
+        localStorage.setItem("user", JSON.stringify({ ...parsed, role }));
+      }
+
+      if (!canRoleAccessPath(role as Role, pathname)) {
+        router.replace(getHomePathForRole(role as Role));
+        setIsAuthorized(false);
+        setIsLoading(false);
+        return;
+      }
+
+      setIsAuthorized(true);
+    } catch {
+      router.replace("/login");
+      setIsAuthorized(false);
+    }
+    setIsLoading(false);
+  }, [router, pathname]);
 
   if (isLoading) {
     return (

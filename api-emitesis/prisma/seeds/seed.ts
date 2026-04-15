@@ -217,6 +217,17 @@ async function main() {
     prisma.user.create({ data: { email: 'practicantes@educacion.gob.ec', password, fullName: 'Msc. Patricia Lema', role: Role.EMPRESA, companyId: empMineduc.id } }),
   ]);
 
+  // Tutor empresarial (misma empresa que RRHH; rol distinto para permisos y demo)
+  await prisma.user.create({
+    data: {
+      email: 'tutor.empresarial@bancopacifico.com',
+      password,
+      fullName: 'Ing. Roberto Méndez (Tutor Empresarial)',
+      role: Role.TUTOR_EMPRESARIAL,
+      companyId: empBanco.id,
+    },
+  });
+
   console.log('👥  Usuarios creados.');
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -727,9 +738,9 @@ async function main() {
   console.log('═'.repeat(60));
   console.log('\n📊  Resumen de datos creados:');
   console.log(`   🏢  Empresas        : 4 (Banco Pacífico, CNT, Municipio Q., Mineduc)`);
-  console.log(`   👥  Usuarios        : 18 total`);
-  console.log(`        1 ADMIN  |  2 COORDINADORES  |  3 TUTORES`);
-  console.log(`        8 ESTUDIANTES  |  4 EMPRESA`);
+  console.log(`   👥  Usuarios        : 19 total`);
+  console.log(`        1 ADMIN  |  2 COORDINADORES  |  3 TUTORES ACADÉMICOS`);
+  console.log(`        8 ESTUDIANTES  |  4 EMPRESA  |  1 TUTOR EMPRESARIAL`);
   console.log(`   📑  Convenios       : 4 (uno por empresa)`);
   console.log(`   🎓  Asignaciones    : 8 (6 activas + 1 completada + 1 reciente)`);
   console.log(`   📋  Documentos      : ${docSeeds.length}`);
@@ -750,6 +761,7 @@ async function main() {
   console.log('ESTUDIANTE 4  : v.torres@estudiante.istpet.edu.ec   (tiene documento INCUMPLIDO)');
   console.log('ESTUDIANTE 5  : l.quishpe@estudiante.istpet.edu.ec  (internship COMPLETADO)');
   console.log('EMPRESA       : practicas@bancopacífico.com          (Banco del Pacífico)');
+  console.log('TUTOR EMPRES. : tutor.empresarial@bancopacifico.com  (Banco Pacífico, evaluaciones / portal empresa)');
   console.log('─'.repeat(60) + '\n');
 }
 

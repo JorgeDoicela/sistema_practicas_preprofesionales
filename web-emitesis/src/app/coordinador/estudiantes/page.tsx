@@ -297,7 +297,8 @@ function StudentInternshipCard({
   onReviewClick, 
   onGenerateCertificate 
 }: any) {
-  const pendingDocs = internship.documents.filter((d: any) => d.status === 'APROBADO_TUTOR').length;
+  const documents = Array.isArray(internship.documents) ? internship.documents : [];
+  const pendingDocs = documents.filter((d: any) => d.status === 'APROBADO_TUTOR').length;
 
   return (
     <div className={cn(
@@ -412,7 +413,7 @@ function StudentInternshipCard({
                              <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
                              <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Pasantía Culminada</p>
                              <button 
-                                onClick={(e) => { e.stopPropagation(); const doc = internship.documents.find((d:any) => d.name === 'Certificado de culminación'); if(doc?.filePath) window.open(doc.filePath, '_blank') }}
+                                onClick={(e) => { e.stopPropagation(); const doc = documents.find((d:any) => d.name === 'Certificado de culminación'); if(doc?.filePath) window.open(doc.filePath, '_blank') }}
                                 className="mt-2 text-[10px] font-bold text-[#003366] hover:underline"
                              >
                                 Descargar Certificado
@@ -454,7 +455,7 @@ function StudentInternshipCard({
                        Expediente Digital
                      </h4>
                      <div className="grid gap-3">
-                        {internship.documents.map((doc: any) => (
+                        {documents.map((doc: any) => (
                           <div 
                             key={doc.id}
                             className="bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm flex items-center justify-between group"

@@ -134,7 +134,7 @@ export default function Home() {
                             Una Plataforma, Todos los Actores.
                         </motion.h2>
                         <p className="text-slate-500 max-w-2xl mx-auto font-medium">
-                            Diseñamos una experiencia específica para cada rol en el proceso de formación dual, asegurando transparencia y eficiencia.
+                            Diseñamos una experiencia específica para cada rol en el proceso de formación, asegurando transparencia y eficiencia.
                         </p>
                     </div>
 
@@ -252,7 +252,7 @@ export default function Home() {
             <section className="py-24 px-6 bg-white">
                 <div className="max-w-4xl mx-auto text-center glass rounded-[3rem] p-16 shadow-2xl border border-slate-100">
                     <h2 className="text-4xl font-black text-brand-blue mb-8 tracking-tighter">
-                        ¿Listo para dar el siguiente paso?
+                        ¿Listo para seguir adelante?
                     </h2>
                     <p className="text-slate-500 mb-12 font-medium max-w-xl mx-auto">
                         Únete a los cientos de estudiantes y empresas que ya están transformando la educación técnica en Ecuador.

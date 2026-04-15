@@ -55,7 +55,12 @@ export default function AsignacionPage() {
         ]);
 
         setStudents(allUsers.filter((u: User) => u.role === 'ESTUDIANTE' && u.isActive));
-        setTutors(allUsers.filter((u: User) => u.role === 'TUTOR' && u.isActive));
+        setTutors(
+          allUsers.filter((u: User) => {
+            const r = String(u.role);
+            return (r === "TUTOR" || r === "TUTOR_ACADEMICO") && u.isActive;
+          }),
+        );
         setAgreements(allAgreements.filter((a: Agreement) => a.status === 'Activo'));
       } catch (err: unknown) {
         console.error('Fetch error:', err);

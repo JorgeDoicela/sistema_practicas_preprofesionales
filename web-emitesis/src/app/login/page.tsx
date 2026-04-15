@@ -16,8 +16,7 @@ import { authService } from "@/services/auth.service";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useRef } from "react";
 import { sanitizeInput } from "@/utils/security";
-import { ROLE_REDIRECTS } from "@/constants/roles";
-import { Role } from "@/constants/roles";
+import { ROLE_REDIRECTS, Role, normalizeApiRoleToAppRole } from "@/constants/roles";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -58,9 +57,10 @@ export default function LoginPage() {
             }
 
             localStorage.setItem("token", data.access_token);
-            localStorage.setItem("user", JSON.stringify(data.user));
+            const user = { ...data.user, role: normalizeApiRoleToAppRole(String(data.user.role)) };
+            localStorage.setItem("user", JSON.stringify(user));
 
-            const role = data.user.role as Role;
+            const role = user.role as Role;
             const redirectPath = ROLE_REDIRECTS[role] || "/dashboard";
             router.push(redirectPath);
         } catch (err: unknown) {
@@ -83,9 +83,10 @@ export default function LoginPage() {
             const data = await authService.authenticate2FA(mfaUserId, mfaCode);
             
             localStorage.setItem("token", data.access_token);
-            localStorage.setItem("user", JSON.stringify(data.user));
+            const user = { ...data.user, role: normalizeApiRoleToAppRole(String(data.user.role)) };
+            localStorage.setItem("user", JSON.stringify(user));
 
-            const role = data.user.role as Role;
+            const role = user.role as Role;
             const redirectPath = ROLE_REDIRECTS[role] || "/dashboard";
             router.push(redirectPath);
         } catch (err: unknown) {
