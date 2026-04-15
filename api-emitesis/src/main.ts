@@ -42,7 +42,14 @@ async function bootstrap() {
     app.enableCors();
   }
   app.setGlobalPrefix('api');
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+      forbidNonWhitelisted: false,
+    }),
+  );
   
   if (process.env.VERCEL) {
     // On Vercel, we don't call listen, the handler is exported

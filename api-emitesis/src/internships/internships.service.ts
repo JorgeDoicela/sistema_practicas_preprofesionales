@@ -129,6 +129,10 @@ export class InternshipsService {
         company: true,
         tutor: true,
         documents: true,
+        attendances: {
+          orderBy: { checkIn: 'desc' },
+          take: 6,
+        },
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -139,7 +143,12 @@ export class InternshipsService {
       where: { tutorId },
       include: {
         student: true,
-        company: true
+        company: true,
+        documents: true,
+        attendances: {
+          orderBy: { checkIn: 'desc' },
+          take: 3,
+        },
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -151,7 +160,12 @@ export class InternshipsService {
       include: {
         student: true,
         company: true,
-        tutor: true
+        tutor: true,
+        documents: true,
+        attendances: {
+          orderBy: { checkIn: 'desc' },
+          take: 8,
+        },
       },
       orderBy: { createdAt: 'desc' }
     });

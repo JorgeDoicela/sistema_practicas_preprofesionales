@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { authService } from '@/services/auth.service';
-import { sanitizeInput } from '@/utils/security';
+import { sanitizePasswordClient } from '@/utils/security';
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -36,7 +36,7 @@ function ResetPasswordForm() {
     setMessage(null);
 
     try {
-      const cleanPassword = sanitizeInput(password);
+      const cleanPassword = sanitizePasswordClient(password);
       await authService.resetPassword(token, cleanPassword);
       setMessage({ type: 'success', text: 'Contraseña actualizada con éxito. Redirigiendo al login...' });
       setTimeout(() => {

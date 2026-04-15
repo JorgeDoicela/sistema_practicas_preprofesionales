@@ -15,7 +15,7 @@ import {
 import { authService } from "@/services/auth.service";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useRef } from "react";
-import { sanitizeInput } from "@/utils/security";
+import { sanitizeEmailClient, sanitizePasswordClient } from "@/utils/security";
 import { ROLE_REDIRECTS, Role, normalizeApiRoleToAppRole } from "@/constants/roles";
 
 export default function LoginPage() {
@@ -44,8 +44,8 @@ export default function LoginPage() {
             }
 
             // Sanitización contra SQL Injection
-            const cleanEmail = sanitizeInput(email);
-            const cleanPassword = sanitizeInput(password);
+            const cleanEmail = sanitizeEmailClient(email);
+            const cleanPassword = sanitizePasswordClient(password);
 
             const data = await authService.login(cleanEmail, cleanPassword, recaptchaToken);
             

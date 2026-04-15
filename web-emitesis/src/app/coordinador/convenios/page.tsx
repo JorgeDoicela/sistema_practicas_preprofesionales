@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { agreementsService } from "@/services/agreements.service";
 import { useRouter } from "next/navigation";
-import { sanitizeInput } from "@/utils/security";
+import { sanitizeFormText } from "@/utils/security";
 import { validateRUC } from "@/utils/ecuador-validators";
 import { cn } from "@/lib/utils";
 
@@ -77,21 +77,32 @@ export default function RegistrarConvenioPage() {
             return;
         }
 
-        if (!validateRUC(form.ruc)) {
+        setError(null);
+
+        const maxByKey: Record<string, number> = {
+            ruc: 13,
+            companyName: 300,
+            address: 500,
+            representative: 200,
+            email: 254,
+            startDate: 32,
+        };
+        const cleanForm = Object.keys(form).reduce((acc: Record<string, string>, key) => {
+            const v = (form as Record<string, unknown>)[key];
+            if (typeof v !== "string") return acc;
+            const max = maxByKey[key] ?? 2000;
+            acc[key] = sanitizeFormText(v, max);
+            return acc;
+        }, {});
+
+        if (!validateRUC(cleanForm.ruc ?? "")) {
             setError("El RUC ingresado no es válido según los estándares del SRI.");
             return;
         }
 
         setIsLoading(true);
-        setError(null);
 
         try {
-            // Sanitización contra SQL Injection
-            const cleanForm = Object.keys(form).reduce((acc: any, key) => {
-                acc[key] = sanitizeInput((form as any)[key]);
-                return acc;
-            }, {});
-
             const formData = new FormData();
             Object.entries(cleanForm).forEach(([key, value]) => formData.append(key, value as string));
             formData.append("file", file);

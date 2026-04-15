@@ -1,7 +1,8 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, MaxLength, IsUUID } from 'class-validator';
+import { StripControlChars } from '../../common/decorators/strip-control-chars.decorator';
 
 export class CreateEvaluationDto {
-  @IsString()
+  @IsUUID('4')
   @IsNotEmpty()
   internshipId: string;
 
@@ -30,8 +31,10 @@ export class CreateEvaluationDto {
   @Max(5)
   attitude: number;
 
-  @IsString()
   @IsOptional()
+  @StripControlChars()
+  @MaxLength(8000)
+  @IsString()
   observations?: string;
 }
 

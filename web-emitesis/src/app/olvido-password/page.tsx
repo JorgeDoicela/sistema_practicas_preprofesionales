@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import Link from 'next/link';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { authService } from '@/services/auth.service';
-import { sanitizeInput } from '@/utils/security';
+import { sanitizeEmailClient } from '@/utils/security';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
     }
 
     try {
-      const cleanEmail = sanitizeInput(email);
+      const cleanEmail = sanitizeEmailClient(email);
       await authService.forgotPassword(cleanEmail, token);
       setMessage({ 
         type: 'success', 

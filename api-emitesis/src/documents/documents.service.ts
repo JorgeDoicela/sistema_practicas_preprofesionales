@@ -215,7 +215,7 @@ export class DocumentsService {
       where: { id },
       data: {
         status: reviewDto.status,
-        observations: reviewDto.observations,
+        observations: reviewDto.observations ?? null,
         reviewedAt: new Date(),
       },
     });
@@ -227,7 +227,7 @@ export class DocumentsService {
         document.internship.student.fullName,
         document.name,
         reviewDto.status,
-        reviewDto.observations,
+        reviewDto.observations ?? '',
       );
     }
 
@@ -265,7 +265,7 @@ export class DocumentsService {
       where: { id },
       data: {
         status: reviewDto.status,
-        observations: reviewDto.observations,
+        observations: reviewDto.observations ?? null,
         reviewedAt: new Date(),
       },
     });
@@ -278,7 +278,7 @@ export class DocumentsService {
         document.internship.student.fullName,
         document.name,
         reviewDto.status,
-        reviewDto.observations,
+        reviewDto.observations ?? '',
       );
     }
 
