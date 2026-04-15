@@ -8,20 +8,28 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
     Lock,
-    Mail
+    Mail,
+    Eye,
+    EyeOff
 } from "lucide-react";
 import { authService } from "@/services/auth.service";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useRef } from "react";
 import { sanitizeInput } from "@/utils/security";
+import { ROLE_REDIRECTS } from "@/constants/roles";
+import { Role } from "@/constants/roles";
 
 export default function LoginPage() {
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+    const [isMfaRequired, setIsMfaRequired] = useState(false);
+    const [mfaCode, setMfaCode] = useState("");
+    const [mfaUserId, setMfaUserId] = useState<string | null>(null);
     const recaptchaRef = useRef<ReCAPTCHA>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -41,23 +49,47 @@ export default function LoginPage() {
             const cleanPassword = sanitizeInput(password);
 
             const data = await authService.login(cleanEmail, cleanPassword, recaptchaToken);
+            
+            if (data.mfaRequired) {
+                setIsMfaRequired(true);
+                setMfaUserId(data.userId);
+                setIsLoading(false);
+                return;
+            }
+
             localStorage.setItem("token", data.access_token);
             localStorage.setItem("user", JSON.stringify(data.user));
 
-            const role = data.user.role;
-            switch (role) {
-                case "ADMIN": router.push("/admin/dashboard"); break;
-                case "COORDINADOR": router.push("/coordinador/dashboard"); break;
-                case "TUTOR": router.push("/tutor/dashboard"); break;
-                case "ESTUDIANTE": router.push("/estudiante/dashboard"); break;
-                case "EMPRESA": router.push("/empresa/dashboard"); break;
-                default: router.push("/dashboard");
-            }
+            const role = data.user.role as Role;
+            const redirectPath = ROLE_REDIRECTS[role] || "/dashboard";
+            router.push(redirectPath);
         } catch (err: unknown) {
             setError((err as Error).message || "Credenciales inválidas.");
             // Reset reCAPTCHA on error
             setRecaptchaToken(null);
             recaptchaRef.current?.reset();
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleMfaSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            if (!mfaUserId) return;
+            const data = await authService.authenticate2FA(mfaUserId, mfaCode);
+            
+            localStorage.setItem("token", data.access_token);
+            localStorage.setItem("user", JSON.stringify(data.user));
+
+            const role = data.user.role as Role;
+            const redirectPath = ROLE_REDIRECTS[role] || "/dashboard";
+            router.push(redirectPath);
+        } catch (err: unknown) {
+            setError((err as Error).message || "Código inválido.");
         } finally {
             setIsLoading(false);
         }
@@ -87,48 +119,89 @@ export default function LoginPage() {
                                 <p className="text-slate-500 text-sm">Credenciales ISTPET</p>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Institucional</label>
-                                    <div className="relative">
-                                        <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
-                                        <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 text-sm focus:ring-2 focus:ring-blue-900/5 outline-none" placeholder="correo@istpet.edu.ec" />
+                            {!isMfaRequired ? (
+                                <form onSubmit={handleSubmit} className="space-y-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Institucional</label>
+                                        <div className="relative">
+                                            <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+                                            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 text-sm focus:ring-2 focus:ring-blue-900/5 outline-none" placeholder="correo@istpet.edu.ec" />
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Contraseña</label>
-                                    <div className="relative">
-                                        <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
-                                        <input 
-                                            type="password" 
-                                            required 
-                                            value={password} 
-                                            onChange={(e) => setPassword(e.target.value)} 
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 text-sm focus:ring-2 focus:ring-blue-900/5 outline-none" 
-                                            placeholder="••••••••" 
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Contraseña</label>
+                                        <div className="relative">
+                                            <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+                                            <input 
+                                                type={showPassword ? "text" : "password"} 
+                                                required 
+                                                value={password} 
+                                                onChange={(e) => setPassword(e.target.value)} 
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-12 text-sm focus:ring-2 focus:ring-blue-900/5 outline-none" 
+                                                placeholder="••••••••" 
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-brand-blue transition-colors focus:outline-none"
+                                            >
+                                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                            </button>
+                                        </div>
+                                        <div className="flex justify-end mt-1 px-1">
+                                            <Link href="/olvido-password" className="text-[10px] font-bold uppercase tracking-widest text-[#C5A059] hover:text-[#003366] transition-colors">
+                                                ¿Olvidaste tu contraseña?
+                                            </Link>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-center py-2">
+                                        <ReCAPTCHA
+                                            ref={recaptchaRef}
+                                            sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+                                            onChange={(token: string | null) => setRecaptchaToken(token)}
                                         />
                                     </div>
-                                    <div className="flex justify-end mt-1 px-1">
-                                        <Link href="/olvido-password" className="text-[10px] font-bold uppercase tracking-widest text-[#C5A059] hover:text-[#003366] transition-colors">
-                                            ¿Olvidaste tu contraseña?
-                                        </Link>
+
+                                    {error && <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-bold text-center border border-red-100">{error}</div>}
+
+                                    <button type="submit" disabled={isLoading} className="w-full bg-[#003366] text-white rounded-2xl py-4 text-[11px] font-black uppercase tracking-[0.2em] shadow-xl hover:translate-y-[-2px] transition-all">
+                                        {isLoading ? "Validando..." : "Entrar al Sistema"}
+                                    </button>
+                                </form>
+                            ) : (
+                                <form onSubmit={handleMfaSubmit} className="space-y-6">
+                                    <div className="text-center mb-6">
+                                        <p className="text-slate-500 text-xs">Ingresa el código de 6 dígitos de tu aplicación de autenticación.</p>
                                     </div>
-                                </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Código de Seguridad</label>
+                                        <div className="relative">
+                                            <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+                                            <input 
+                                                type="text" 
+                                                required 
+                                                autoFocus
+                                                maxLength={6}
+                                                value={mfaCode} 
+                                                onChange={(e) => setMfaCode(e.target.value)} 
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 text-sm focus:ring-2 focus:ring-blue-900/5 outline-none tracking-[0.5em] font-bold text-center" 
+                                                placeholder="000000" 
+                                            />
+                                        </div>
+                                    </div>
 
-                                <div className="flex justify-center py-2">
-                                    <ReCAPTCHA
-                                        ref={recaptchaRef}
-                                        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
-                                        onChange={(token: string | null) => setRecaptchaToken(token)}
-                                    />
-                                </div>
+                                    {error && <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-bold text-center border border-red-100">{error}</div>}
 
-                                {error && <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-bold text-center border border-red-100">{error}</div>}
-
-                                <button type="submit" disabled={isLoading} className="w-full bg-[#003366] text-white rounded-2xl py-4 text-[11px] font-black uppercase tracking-[0.2em] shadow-xl hover:translate-y-[-2px] transition-all">
-                                    {isLoading ? "Validando..." : "Entrar al Sistema"}
-                                </button>
-                            </form>
+                                    <button type="submit" disabled={isLoading} className="w-full bg-[#C5A059] text-white rounded-2xl py-4 text-[11px] font-black uppercase tracking-[0.2em] shadow-xl hover:translate-y-[-2px] transition-all">
+                                        {isLoading ? "Verificando..." : "Confirmar Acceso"}
+                                    </button>
+                                    
+                                    <button type="button" onClick={() => setIsMfaRequired(false)} className="w-full text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-[#003366] transition-colors">
+                                        Volver al Login
+                                    </button>
+                                </form>
+                            )}
                          </div>
                     </div>
                 </motion.div>

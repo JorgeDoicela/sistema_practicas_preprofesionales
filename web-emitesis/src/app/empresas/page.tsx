@@ -30,8 +30,8 @@ export default function EmpresasPage() {
                             <p className="text-slate-500 max-w-xl font-medium text-lg leading-relaxed mb-10">
                                 Únase a nuestra red de Entidades Receptoras y contribuya a la formación de los futuros profesionales del país mientras fortalece su equipo de trabajo.
                             </p>
-                            <Link href="/registrarse" className="bg-brand-blue text-white px-10 py-5 rounded-2xl text-xs font-black uppercase tracking-widest shadow-2xl hover:bg-brand-gold transition-all inline-flex items-center gap-4 group">
-                                Convertirse en Socio
+                            <Link href="/login" className="bg-brand-blue text-white px-10 py-5 rounded-2xl text-xs font-black uppercase tracking-widest shadow-2xl hover:bg-brand-gold transition-all inline-flex items-center gap-4 group">
+                                Acceder al Portal
                                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                             </Link>
                         </motion.div>
@@ -103,7 +103,7 @@ export default function EmpresasPage() {
                         <h3 className="text-3xl font-black text-brand-blue text-center mb-16 italic tracking-tight italic">Cómo Empezar</h3>
                         <div className="space-y-12">
                             {[
-                                { t: "Registro Inicial", d: "Cree su cuenta de empresa en nuestro portal de Emitesis." },
+                                { t: "Asignación de Credenciales", d: "Solicite sus accesos institucionales al departamento de Vinculación ISTPET." },
                                 { t: "Convenio Marco", d: "Suscripción del convenio de cooperación interinstitucional." },
                                 { t: "Publicación", d: "Defina las áreas y perfiles requeridos para los pasantes." },
                                 { t: "Inicio de Prácticas", d: "Acompañamiento técnico y validación digital." }

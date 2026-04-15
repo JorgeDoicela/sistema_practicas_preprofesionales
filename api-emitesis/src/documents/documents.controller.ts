@@ -11,6 +11,7 @@ import { Roles } from '../auth/strategies/roles.decorator';
 import { Role } from '@prisma/client';
 import { join } from 'path';
 import { createReadStream } from 'fs';
+import { TwoFactorGuard } from '../auth/strategies/two-factor.guard';
 
 @Controller('documents')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -19,6 +20,7 @@ export class DocumentsController {
 
   @Patch(':id/review')
   @Roles(Role.TUTOR)
+  @UseGuards(TwoFactorGuard)
   review(
     @Param('id') id: string,
     @Body() reviewDto: ReviewDocumentDto,
@@ -29,6 +31,7 @@ export class DocumentsController {
 
   @Patch(':id/coordinator-review')
   @Roles(Role.COORDINADOR)
+  @UseGuards(TwoFactorGuard)
   coordinatorReview(
     @Param('id') id: string,
     @Body() reviewDto: ReviewDocumentDto,
@@ -45,6 +48,7 @@ export class DocumentsController {
 
   @Patch(':id/dates')
   @Roles(Role.TUTOR, Role.ADMIN) // RF-DOC-001: Actor Tutor Académico
+  @UseGuards(TwoFactorGuard)
   updateDates(
     @Param('id') id: string,
     @Body() updateDocumentDatesDto: UpdateDocumentDatesDto,
@@ -71,6 +75,7 @@ export class DocumentsController {
 
   @Patch(':id/upload')
   @Roles(Role.ESTUDIANTE) // RF-DOC-003: Actor Estudiante
+  @UseGuards(TwoFactorGuard)
   @UseInterceptors(
     FileInterceptor('file', {
       fileFilter: (req, file, cb) => {

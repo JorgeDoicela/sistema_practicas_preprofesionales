@@ -24,6 +24,8 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { internshipsService } from "@/services/internships.service";
 import { documentsService } from "@/services/documents.service";
+import { TwoFactorModal } from "@/components/auth/TwoFactorModal";
+import { api } from "@/services/auth.service";
 
 export default function DocumentosPage() {
   const [internships, setInternships] = useState<any[]>([]);
@@ -35,6 +37,9 @@ export default function DocumentosPage() {
   const [userDocuments, setUserDocuments] = useState<any[]>([]);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [is2faModalOpen, setIs2faModalOpen] = useState(false);
+  const [pendingUpload, setPendingUpload] = useState<{id: string, file: File} | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     loadInternships();
@@ -45,6 +50,7 @@ export default function DocumentosPage() {
       const userStr = localStorage.getItem("user");
       if (!userStr) return;
       const user = JSON.parse(userStr);
+      setCurrentUser(user);
       setUserRole(user.role);
       
       let data;
@@ -96,6 +102,14 @@ export default function DocumentosPage() {
 
     setUploadingId(docId);
     try {
+      // Si el usuario tiene 2FA, abrimos el modal
+      if (currentUser?.isTwoFactorEnabled) {
+          setPendingUpload({ id: docId, file });
+          setIs2faModalOpen(true);
+          setUploadingId(null);
+          return;
+      }
+
       await documentsService.uploadDocument(docId, file);
       alert("Documento subido con éxito");
       loadInternships(); // Recargar para ver el nuevo estado
@@ -103,6 +117,26 @@ export default function DocumentosPage() {
       alert(error.message);
     } finally {
       setUploadingId(null);
+    }
+  };
+
+  const confirmUploadWith2fa = async (code: string) => {
+    if (!pendingUpload) return;
+    
+    // Configurar el header temporalmente para esta petición
+    // O pasarlo en el body si el backend lo acepta.
+    // Mi guard acepta body.twoFactorCode o x-2fa-code header.
+    // Usaremos un interceptor temporal o simplemente pasamos el código en el body si el service lo soporta.
+    // El uploadDocument usa FormData, así que lo añadiremos ahí.
+    
+    try {
+      await documentsService.uploadDocument(pendingUpload.id, pendingUpload.file, code);
+      alert("Documento subido con éxito con 2FA");
+      setIs2faModalOpen(false);
+      setPendingUpload(null);
+      loadInternships();
+    } catch (error: any) {
+      throw error; // El modal manejará el error
     }
   };
 
@@ -450,6 +484,16 @@ export default function DocumentosPage() {
           </div>
         )}
       </div>
+      <TwoFactorModal 
+        isOpen={is2faModalOpen}
+        onClose={() => {
+            setIs2faModalOpen(false);
+            setPendingUpload(null);
+        }}
+        onConfirm={confirmUploadWith2fa}
+        title="Confirmar Carga de Documento"
+        description="Esta es una operación crítica. Ingresa tu código 2FA para autorizar la subida del archivo."
+      />
     </div>
   );
 }

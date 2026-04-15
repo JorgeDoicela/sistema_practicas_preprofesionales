@@ -9,6 +9,24 @@ import { usePathname } from "next/navigation";
 export function Navbar() {
     const pathname = usePathname();
 
+    // Rutas donde NO debe aparecer el Navbar principal
+    const hiddenRoutes = [
+        "/login",
+        "/admin",
+        "/coordinador",
+        "/tutor",
+        "/estudiante",
+        "/empresa",
+        "/dashboard",
+        "/registrarse",
+        "/reset-password",
+        "/olvido-password"
+    ];
+
+    const isHidden = hiddenRoutes.some(route => pathname?.startsWith(route));
+
+    if (isHidden) return null;
+
     const navLinks = [
         { name: "Inicio", path: "/" },
         { name: "Servicios", path: "/servicios" },

@@ -1,9 +1,29 @@
+"use client";
 import Link from "next/link";
 import Image from "next/image";
 import { Globe2, Building2, ShieldCheck } from "lucide-react";
 import { BRAND_LOGO_SRC } from "@/lib/brand";
+import { usePathname } from "next/navigation";
 
 export function Footer() {
+    const pathname = usePathname();
+
+    const hiddenRoutes = [
+        "/login",
+        "/admin",
+        "/coordinador",
+        "/tutor",
+        "/estudiante",
+        "/empresa",
+        "/dashboard",
+        "/registrarse",
+        "/reset-password",
+        "/olvido-password"
+    ];
+
+    const isHidden = hiddenRoutes.some(route => pathname?.startsWith(route));
+
+    if (isHidden) return null;
     return (
         <footer className="bg-slate-50 py-20 px-6 border-t border-slate-200">
             <div className="max-w-7xl mx-auto">

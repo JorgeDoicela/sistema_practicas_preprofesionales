@@ -15,15 +15,16 @@ export const documentsService = {
     return response.json();
   },
 
-  async updateDates(id: string, startDate: string, dueDate: string) {
+  async updateDates(id: string, startDate: string, dueDate: string, twoFactorCode?: string) {
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/documents/${id}/dates`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
+        'x-2fa-code': twoFactorCode || '',
       },
-      body: JSON.stringify({ startDate, dueDate }),
+      body: JSON.stringify({ startDate, dueDate, twoFactorCode }),
     });
 
     if (!response.ok) {
@@ -57,15 +58,17 @@ export const documentsService = {
     document.body.removeChild(a);
   },
 
-  async uploadDocument(id: string, file: File) {
+  async uploadDocument(id: string, file: File, twoFactorCode?: string) {
     const token = localStorage.getItem('token');
     const formData = new FormData();
     formData.append('file', file);
+    if (twoFactorCode) formData.append('twoFactorCode', twoFactorCode);
 
     const response = await fetch(`${API_URL}/documents/${id}/upload`, {
       method: 'PATCH',
       headers: {
         'Authorization': `Bearer ${token}`,
+        'x-2fa-code': twoFactorCode || '',
       },
       body: formData,
     });
@@ -77,15 +80,16 @@ export const documentsService = {
     return response.json();
   },
 
-  async reviewDocument(id: string, review: { status: string, observations: string }) {
+  async reviewDocument(id: string, review: { status: string, observations: string }, twoFactorCode?: string) {
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/documents/${id}/review`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
+        'x-2fa-code': twoFactorCode || '',
       },
-      body: JSON.stringify(review),
+      body: JSON.stringify({ ...review, twoFactorCode }),
     });
 
     if (!response.ok) {
@@ -95,15 +99,16 @@ export const documentsService = {
     return response.json();
   },
 
-  async coordinatorReviewDocument(id: string, review: { status: string, observations: string }) {
+  async coordinatorReviewDocument(id: string, review: { status: string, observations: string }, twoFactorCode?: string) {
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/documents/${id}/coordinator-review`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
+        'x-2fa-code': twoFactorCode || '',
       },
-      body: JSON.stringify(review),
+      body: JSON.stringify({ ...review, twoFactorCode }),
     });
 
     if (!response.ok) {

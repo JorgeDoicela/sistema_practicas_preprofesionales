@@ -42,18 +42,18 @@ export default function Home() {
                     >
                         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-gold/20 border border-brand-gold/30 text-white text-[10px] font-black uppercase tracking-[0.2em] mb-8">
                             <Star className="w-3 h-3 fill-brand-gold" />
-                            Vinculación Académica - Ecuador
+                            Formación Tecnológica Superior - ISTPET
                         </div>
                         <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.1] mb-8 tracking-tighter">
                             Transformando las <br />
                             <span className="text-brand-gold italic">Prácticas</span> del <br /> Futuro.
                         </h1>
                         <p className="text-lg md:text-xl text-white/80 leading-relaxed mb-10 max-w-xl font-medium">
-                            La plataforma integral que conecta instituciones, empresas y estudiantes en el ecosistema productivo del Ecuador. Gestión, control y certificación en un solo lugar.
+                            La plataforma de vinculación que forma profesionales competitivos e íntegros. Conectando al ISTPET con el sector productivo para una gestión de prácticas eficiente y certificada.
                         </p>
                         <div className="flex flex-wrap gap-5">
                             <Link href="/login" className="bg-white text-brand-blue px-10 py-5 rounded-2xl text-xs font-black uppercase tracking-widest shadow-2xl hover:bg-brand-gold hover:text-white transition-all flex items-center gap-3 group">
-                                Iniciar Proceso
+                                Acceder al Sistema
                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                             </Link>
                             <Link href="/nosotros" className="glass text-white px-10 py-5 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all border border-white/30">
@@ -78,21 +78,21 @@ export default function Home() {
                                             <TrendingUp className="text-white w-6 h-6" />
                                         </div>
                                         <div>
-                                            <p className="text-xs font-black text-brand-gold uppercase tracking-tighter">Impacto 2026</p>
-                                            <p className="text-sm font-bold text-white uppercase italic">Crecimiento Profesional</p>
+                                            <p className="text-xs font-black text-brand-gold uppercase tracking-tighter">Excelencia ISTPET</p>
+                                            <p className="text-sm font-bold text-white uppercase italic">Formación Integral</p>
                                         </div>
                                     </div>
                                     <div className="h-px bg-white/10 w-full" />
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="p-4 rounded-2xl bg-brand-blue/30 border border-white/5 flex flex-col items-center">
-                                            <Users className="text-brand-gold w-6 h-6 mb-2" />
-                                            <p className="text-2xl font-black text-white">+5k</p>
-                                            <p className="text-[10px] font-bold text-white/50 uppercase">Alumnos</p>
+                                            <TrendingUp className="text-brand-gold w-6 h-6 mb-2" />
+                                            <p className="text-2xl font-black text-white">2 Años</p>
+                                            <p className="text-[10px] font-bold text-white/50 uppercase">De Estudio</p>
                                         </div>
                                         <div className="p-4 rounded-2xl bg-brand-blue/30 border border-white/5 flex flex-col items-center">
-                                            <Building2 className="text-brand-gold w-6 h-6 mb-2" />
-                                            <p className="text-2xl font-black text-white">+200</p>
-                                            <p className="text-[10px] font-bold text-white/50 uppercase">Empresas</p>
+                                            <GraduationCap className="text-brand-gold w-6 h-6 mb-2" />
+                                            <p className="text-2xl font-black text-white">+10</p>
+                                            <p className="text-[10px] font-bold text-white/50 uppercase">Carreras</p>
                                         </div>
                                     </div>
                                 </div>

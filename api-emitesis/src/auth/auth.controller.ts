@@ -14,8 +14,15 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
-    const user = await this.authService.validateUser(loginDto);
-    return this.authService.login(user);
+    const result = await this.authService.validateUser(loginDto);
+    
+    // Si se requiere MFA, devolvemos el objeto de desafío
+    if ('mfaRequired' in result) {
+      return result;
+    }
+    
+    // Si no, procedemos con el login normal (emisión de token)
+    return this.authService.login(result as any);
   }
 
   @Post('register-company')

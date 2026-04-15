@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
 import { documentsService } from "@/services/documents.service";
 import { attendancesService } from "@/services/attendances.service";
+import { TwoFactorModal } from "@/components/auth/TwoFactorModal";
 
 export default function DocumentDetailPage() {
   const { id } = useParams();
@@ -39,6 +40,9 @@ export default function DocumentDetailPage() {
   // Form states for dates
   const [startDate, setStartDate] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [is2faModalOpen, setIs2faModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => Promise<void>) | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Review states
   const [isReviewDrawerOpen, setIsReviewDrawerOpen] = useState(false);
@@ -61,6 +65,8 @@ export default function DocumentDetailPage() {
       setDocuments(docsData);
       setAttendanceSummary(summary);
       setAttendanceHistory(history);
+      const userStr = localStorage.getItem("user");
+      if (userStr) setCurrentUser(JSON.parse(userStr));
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
@@ -94,6 +100,12 @@ export default function DocumentDetailPage() {
 
     setSaving(true);
     try {
+      if (currentUser?.isTwoFactorEnabled) {
+          setPendingAction(() => (code: string) => documentsService.updateDates(selectedDoc.id, startDate, dueDate, code));
+          setIs2faModalOpen(true);
+          setSaving(false);
+          return;
+      }
       await documentsService.updateDates(selectedDoc.id, startDate, dueDate);
       await loadData();
       setIsDrawerOpen(false);
@@ -129,6 +141,12 @@ export default function DocumentDetailPage() {
 
     setSaving(true);
     try {
+      if (currentUser?.isTwoFactorEnabled) {
+          setPendingAction(() => (code: string) => documentsService.reviewDocument(selectedDoc.id, { status, observations }, code));
+          setIs2faModalOpen(true);
+          setSaving(false);
+          return;
+      }
       await documentsService.reviewDocument(selectedDoc.id, { status, observations });
       alert(status === 'APROBADO_TUTOR' ? "Documento aprobado con éxito" : "Documento rechazado");
       await loadData();
@@ -138,6 +156,22 @@ export default function DocumentDetailPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handle2faConfirm = async (code: string) => {
+      if (!pendingAction) return;
+      try {
+          const action = (pendingAction as any);
+          await action(code);
+          alert("Operación completada con éxito");
+          setIs2faModalOpen(false);
+          setPendingAction(null);
+          setIsDrawerOpen(false);
+          setIsReviewDrawerOpen(false);
+          await loadData();
+      } catch (error) {
+          throw error;
+      }
   };
 
   if (loading) {
@@ -569,6 +603,14 @@ export default function DocumentDetailPage() {
           </>
         )}
       </AnimatePresence>
+      <TwoFactorModal 
+        isOpen={is2faModalOpen}
+        onClose={() => {
+            setIs2faModalOpen(false);
+            setPendingAction(null);
+        }}
+        onConfirm={handle2faConfirm}
+      />
     </div>
   );
 }

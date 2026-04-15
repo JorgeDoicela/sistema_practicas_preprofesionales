@@ -7,6 +7,8 @@ import { AuthController } from './auth.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { TwoFactorAuthService } from './two-factor-auth.service';
+import { TwoFactorAuthController } from './two-factor-auth.controller';
 
 @Module({
   imports: [
@@ -23,9 +25,9 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, JwtStrategy],
-  controllers: [AuthController],
-  exports: [AuthService],
+  providers: [AuthService, JwtStrategy, TwoFactorAuthService],
+  controllers: [AuthController, TwoFactorAuthController],
+  exports: [AuthService, TwoFactorAuthService],
 })
 export class AuthModule {}
 

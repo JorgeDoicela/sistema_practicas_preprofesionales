@@ -22,6 +22,8 @@ model User {
   companyId            String?
   resetToken           String?      @unique
   resetTokenExpires    DateTime?
+  twoFactorSecret      String?
+  isTwoFactorEnabled   Boolean      @default(false)
   company              Company?     @relation(fields: [companyId], references: [id])
   assignmentsAsStudent Internship[] @relation("StudentInternship")
   assignmentsAsTutor   Internship[] @relation("TutorInternship")

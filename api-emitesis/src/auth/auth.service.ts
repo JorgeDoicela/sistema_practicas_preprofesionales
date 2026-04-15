@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
+import { TwoFactorAuthService } from './two-factor-auth.service';
 import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -20,6 +21,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private emailService: EmailService,
+    private twoFactorAuthService: TwoFactorAuthService,
   ) {}
 
   private async verifyRecaptcha(token: string) {
@@ -101,6 +103,15 @@ export class AuthService {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...result } = user;
+    
+    // Si tiene 2FA activado, no devolvemos el token todavía
+    if (user.isTwoFactorEnabled) {
+      return {
+        mfaRequired: true,
+        userId: user.id,
+      };
+    }
+
     return result;
   }
 
@@ -204,6 +215,7 @@ export class AuthService {
         email: user.email,
         fullName: user.fullName,
         role: user.role,
+        isTwoFactorEnabled: (user as any).isTwoFactorEnabled || false,
       }
     };
   }
@@ -274,6 +286,51 @@ export class AuthService {
       },
     });
 
-    return { message: 'Contraseña actualizada con éxito' };
+    return { message: 'Contraseña restablecida correctamente' };
+  }
+
+  async authenticateWith2FA(userId: string, code: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user || !user.twoFactorSecret) {
+      throw new UnauthorizedException('Usuario no válido para 2FA');
+    }
+
+    const isCodeValid = this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
+      code,
+      user.twoFactorSecret,
+    );
+
+    if (!isCodeValid) {
+      throw new UnauthorizedException('Código de verificación inválido');
+    }
+
+    return this.login(user as any);
+  }
+
+  async verifyCriticalOperation(userId: string, code: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user || !user.isTwoFactorEnabled || !user.twoFactorSecret) {
+      // Si no tiene 2FA activado, permitimos la operación por ahora si el plan dice que es opcional
+      // Pero si está activado, DEBE validar.
+      if (!user?.isTwoFactorEnabled) return true;
+      throw new UnauthorizedException('2FA es requerido para esta operación');
+    }
+
+    const isCodeValid = this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
+      code,
+      user.twoFactorSecret,
+    );
+
+    if (!isCodeValid) {
+      throw new UnauthorizedException('Código de verificación inválido para operación crítica');
+    }
+
+    return true;
   }
 }

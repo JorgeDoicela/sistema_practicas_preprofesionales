@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { usersService } from '@/services/users.service';
 import { User, UserRole } from "@/types/user";
+import { TwoFactorModal } from '@/components/auth/TwoFactorModal';
 
 const RoleBadge = ({ role }: { role: UserRole | string }) => {
   const styles: Record<string, string> = {
@@ -57,6 +58,9 @@ export default function UsuariosManagementPage() {
     role: 'ESTUDIANTE',
     isActive: true
   });
+  const [is2faModalOpen, setIs2faModalOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const fetchData = async () => {
     try {
@@ -72,6 +76,8 @@ export default function UsuariosManagementPage() {
 
   useEffect(() => {
     fetchData();
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) setCurrentUser(JSON.parse(storedUser));
   }, []);
 
   const handleOpenModal = (user: User | null = null) => {
@@ -126,11 +132,28 @@ export default function UsuariosManagementPage() {
   const handleDelete = async (id: string) => {
     if (confirm('¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.')) {
       try {
+        if (currentUser?.isTwoFactorEnabled) {
+            setPendingDeleteId(id);
+            setIs2faModalOpen(true);
+            return;
+        }
         await usersService.remove(id);
         fetchData();
       } catch (err: unknown) {
         alert((err as Error).message);
       }
+    }
+  };
+
+  const confirmDeleteWith2fa = async (code: string) => {
+    if (!pendingDeleteId) return;
+    try {
+      await usersService.remove(pendingDeleteId, code);
+      fetchData();
+      setIs2faModalOpen(false);
+      setPendingDeleteId(null);
+    } catch (err: unknown) {
+      throw err;
     }
   };
 
@@ -391,6 +414,16 @@ export default function UsuariosManagementPage() {
           </>
         )}
       </AnimatePresence>
+      <TwoFactorModal 
+        isOpen={is2faModalOpen}
+        onClose={() => {
+            setIs2faModalOpen(false);
+            setPendingDeleteId(null);
+        }}
+        onConfirm={confirmDeleteWith2fa}
+        title="Confirmar Eliminación de Usuario"
+        description="Esta es una acción irreversible. Por seguridad, ingresa tu código 2FA para autorizar la eliminación del usuario."
+      />
     </DashboardLayout>
   );
 }

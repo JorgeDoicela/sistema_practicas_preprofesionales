@@ -56,13 +56,14 @@ export const usersService = {
     return response.json();
   },
 
-  async remove(id: string) {
+  async remove(id: string, twoFactorCode?: string) {
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/users/${id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${token}`
-      }
+        'Authorization': `Bearer ${token}`,
+        'x-2fa-code': twoFactorCode || '',
+      },
     });
 
     if (!response.ok) {

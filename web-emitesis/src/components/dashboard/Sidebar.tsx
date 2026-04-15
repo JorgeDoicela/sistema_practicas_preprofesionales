@@ -22,6 +22,7 @@ import {
 import { motion } from "framer-motion";
 import { User as UserType } from "@/types/user";
 import { BRAND_LOGO_SRC } from "@/lib/brand";
+import { ROLES, canManageSystem, hasRole } from "@/constants/roles";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Tablero", href: "/dashboard" },
@@ -48,14 +49,14 @@ export function Sidebar() {
     }
   }, []);
 
-  const isAdmin = user?.role === "ADMIN";
-  const isCoordinador = user?.role === "COORDINADOR";
+  const isManager = canManageSystem(user?.role);
+  const isCoordinador = hasRole(user?.role, ROLES.COORDINADOR);
 
   const allMenuItems = [
     ...menuItems,
-    ...(isAdmin ? [{ icon: Users, label: "Usuarios", href: "/admin/usuarios" }] : []),
+    ...(hasRole(user?.role, ROLES.ADMIN) ? [{ icon: Users, label: "Usuarios", href: "/admin/usuarios" }] : []),
     ...(isCoordinador ? [{ icon: Users, label: "Gestión Estudiantes", href: "/coordinador/estudiantes" }] : []),
-    ...(isAdmin || isCoordinador ? [{ icon: UserPlus, label: "Asignación", href: "/coordinador/asignacion" }] : [])
+    ...(isManager ? [{ icon: UserPlus, label: "Asignación", href: "/coordinador/asignacion" }] : [])
   ];
 
   return (

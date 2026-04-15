@@ -114,4 +114,34 @@ export const authService = {
 
     return data;
   },
+  
+  async authenticate2FA(userId: string, code: string) {
+    const response = await fetch(`${API_URL}/auth/2fa/authenticate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId, code }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Código 2FA inválido");
+    }
+
+    return data;
+  },
+
+  async generate2FA() {
+    return api.get("/auth/2fa/generate").then(res => res.data);
+  },
+
+  async turnOn2FA(code: string) {
+    return api.post("/auth/2fa/turn-on", { code }).then(res => res.data);
+  },
+
+  async turnOff2FA(code: string) {
+    return api.post("/auth/2fa/turn-off", { code }).then(res => res.data);
+  },
 };
