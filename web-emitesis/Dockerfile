@@ -15,6 +15,12 @@ COPY . .
 # Desactivar telemetría de Next.js durante la construcción
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# URLs públicas inyectadas en el cliente (deben pasarse como build-args desde docker-compose / CI).
+ARG NEXT_PUBLIC_API_URL=http://127.0.0.1:5000/api
+ARG NEXT_PUBLIC_RECAPTCHA_SITE_KEY=
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_RECAPTCHA_SITE_KEY=$NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+
 # Construir la aplicación Next.js
 RUN npm run build
 
@@ -35,6 +41,7 @@ EXPOSE 3005
 
 # Desactivar telemetría en ejecución
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3005
 
-# Iniciar la aplicación
-CMD ["npm", "start"]
+# Escuchar en todas las interfaces (necesario dentro de Docker)
+CMD ["sh", "-c", "exec npx next start --hostname 0.0.0.0 -p ${PORT:-3005}"]

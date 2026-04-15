@@ -11,4 +11,9 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
+
+  @Get('health')
+  health(): { status: string; at: string } {
+    return { status: 'ok', at: new Date().toISOString() };
+  }
 }

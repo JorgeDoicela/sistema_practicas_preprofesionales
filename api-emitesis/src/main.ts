@@ -28,7 +28,19 @@ async function bootstrap() {
     },
   });
 
-  app.enableCors();
+  const corsOrigins = (process.env.CORS_ORIGINS ?? '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+  if (corsOrigins.length > 0) {
+    app.enableCors({
+      origin: corsOrigins,
+      credentials: true,
+      methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    });
+  } else {
+    app.enableCors();
+  }
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe());
   

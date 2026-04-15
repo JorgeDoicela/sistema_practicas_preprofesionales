@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { BRAND_LOGO_SRC } from "@/lib/brand";
 import {
     ShieldCheck,
     FileText,
@@ -25,11 +26,11 @@ export default function Home() {
                     <Link href="/" className="flex items-center gap-4">
                         <div className="p-1">
                             <Image
-                                src="/images/ISTPET_sin_fondo.png"
+                                src={BRAND_LOGO_SRC}
                                 alt="Logo ISTPET"
                                 width={140}
                                 height={35}
-                                className="h-8 w-auto brightness-0 invert"
+                                className="h-8 w-auto object-contain drop-shadow-sm"
                             />
                         </div>
                         <div className="hidden md:block border-l border-white/20 pl-4">
@@ -86,11 +87,11 @@ export default function Home() {
                             <div className="w-full h-80 bg-slate-50 rounded-xl flex flex-col items-center justify-center mb-6 relative overflow-hidden group">
                                 <div className="absolute top-0 left-0 w-full h-1.5 bg-[#003366]" />
                                 <Image
-                                    src="/images/ISTPET_sin_fondo.png"
+                                    src={BRAND_LOGO_SRC}
                                     alt="Preview Logo"
                                     width={300}
                                     height={100}
-                                    className="w-56 h-auto opacity-40 group-hover:opacity-100 transition-opacity"
+                                    className="w-56 h-auto opacity-40 group-hover:opacity-100 transition-opacity object-contain"
                                 />
                                 <div className="mt-8 flex flex-col items-center">
                                     <div className="h-1.5 w-32 bg-slate-200 rounded-full mb-3" />
@@ -217,11 +218,11 @@ export default function Home() {
                         <div className="col-span-2">
                             <div className="flex items-center gap-4 mb-8">
                                 <Image
-                                    src="/images/ISTPET_sin_fondo.png"
-                                    alt="ISTPET white"
+                                    src={BRAND_LOGO_SRC}
+                                    alt="Logo ISTPET"
                                     width={120}
                                     height={30}
-                                    className="h-8 w-auto brightness-0 invert"
+                                    className="h-8 w-auto object-contain drop-shadow-sm"
                                 />
                                 <div className="w-px h-6 bg-white/20" />
                                 <span className="text-sm font-bold uppercase tracking-[0.2em] text-[#C5A059]">Emitesis</span>

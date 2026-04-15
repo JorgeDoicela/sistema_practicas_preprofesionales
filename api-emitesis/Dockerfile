@@ -3,6 +3,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# OpenSSL en el builder para que `prisma generate` detecte bien la variante del motor.
+RUN apk add --no-cache openssl
+
 # Copiar archivos de dependencias
 COPY package*.json ./
 COPY prisma ./prisma/
@@ -39,4 +42,4 @@ COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main.js"]

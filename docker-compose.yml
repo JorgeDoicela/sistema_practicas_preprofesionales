@@ -1,18 +1,25 @@
+# Automático: migraciones + seed demo al iniciar la API (omitir seed: SKIP_PRISMA_SEED=true en el servicio api).
+# Un solo comando: npm run docker:up   (o: docker compose up --build -d)
+
 services:
   db:
     image: postgres:15-alpine
     container_name: emitesis-db
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: emitesis_db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-emitesis_db}
     ports:
-      - "5432:5432"
+      - "${DB_PUBLISH_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d emitesis_db"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-emitesis_db}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,14 +33,35 @@ services:
     container_name: emitesis-api
     restart: always
     environment:
-      DATABASE_URL: "postgresql://postgres:password@db:5432/emitesis_db?schema=public"
-      PORT: 5000
-      JWT_SECRET: "EmitesisSecretKey2026!"
+      NODE_ENV: production
+      PORT: ${API_PORT:-5000}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:password@db:5432/emitesis_db?schema=public}
+      JWT_SECRET: ${JWT_SECRET:-EmitesisSecretKey2026!}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:3005}
+      MAIL_USER: ${MAIL_USER:-}
+      MAIL_PASS: ${MAIL_PASS:-}
+      SKIP_PRISMA_SEED: ${SKIP_PRISMA_SEED:-}
     ports:
-      - "5000:5000"
+      - "${API_PUBLISH_PORT:-5000}:${API_PORT:-5000}"
+    volumes:
+      - api_uploads_agreements:/app/uploads/agreements
+      - api_uploads_documents:/app/uploads/documents
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:'+(process.env.PORT||5000)+'/api/health').then(r=>process.exit(r.status===200?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+      start_period: 180s
     networks:
       - emitesis-network
 
@@ -41,15 +69,19 @@ services:
     build:
       context: ./web-emitesis
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000/api}
+        NEXT_PUBLIC_RECAPTCHA_SITE_KEY: ${NEXT_PUBLIC_RECAPTCHA_SITE_KEY:-}
     container_name: emitesis-web
     restart: always
     environment:
-      NEXT_PUBLIC_API_URL: "http://localhost:5000"
-      PORT: 3005
+      NODE_ENV: production
+      PORT: ${WEB_PORT:-3005}
     ports:
-      - "3005:3005"
+      - "${WEB_PUBLISH_PORT:-3005}:${WEB_PORT:-3005}"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     networks:
       - emitesis-network
 
@@ -59,3 +91,5 @@ networks:
 
 volumes:
   postgres_data:
+  api_uploads_agreements:
+  api_uploads_documents:

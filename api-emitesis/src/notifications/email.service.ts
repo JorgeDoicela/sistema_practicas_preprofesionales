@@ -36,6 +36,13 @@ export class EmailService {
         });
     }
 
+    private getPublicAppBase(): string {
+        const raw = this.configService.get<string>('PUBLIC_APP_URL');
+        const trimmed = (raw ?? '').trim().replace(/\/$/, '');
+        if (trimmed) return trimmed;
+        return 'https://sistema-practicas-preprofesionales.vercel.app';
+    }
+
     async sendWelcomeEmail(email: string, fullName: string) {
         try {
             this.logger.log(`Enviando email de bienvenida via Gmail a: ${email}`);
@@ -51,7 +58,7 @@ export class EmailService {
             <p>Tu registro como empresa en el <strong>Sistema de Gestión de Prácticas Preprofesionales ISTPET</strong> ha sido exitoso.</p>
             <p>Ahora puedes acceder al portal para gestionar convenios y estudiantes.</p>
             <div style="text-align: center; margin: 30px 0;">
-              <a href="https://sistema-practicas-preprofesionales.vercel.app/login"
+              <a href="${this.getPublicAppBase()}/login"
                  style="background-color: #003366; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
                 Acceder al Portal
               </a>
@@ -75,7 +82,7 @@ export class EmailService {
     async sendPasswordResetEmail(email: string, fullName: string, token: string) {
         try {
             this.logger.log(`Enviando email de recuperación a: ${email}`);
-            const resetLink = `https://sistema-practicas-preprofesionales.vercel.app/reset-password?token=${token}`;
+            const resetLink = `${this.getPublicAppBase()}/reset-password?token=${token}`;
 
             const mailOptions = {
                 from: `"Soporte ISTPET" <${this.configService.get<string>('MAIL_USER')}>`,
@@ -253,7 +260,7 @@ export class EmailService {
           <p>El estudiante <strong>${studentName}</strong> ha subido el documento <strong>${documentName}</strong> para su revisión.</p>
           <p>Por favor, acceda al portal para revisar el documento y emitir su validación.</p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="https://sistema-practicas-preprofesionales.vercel.app/admin/practicas"
+            <a href="${this.getPublicAppBase()}/admin/practicas"
                style="background-color: #003366; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
               Revisar en el Portal
             </a>
@@ -303,7 +310,7 @@ export class EmailService {
           </div>
           <p>Por favor, accede al portal para realizar las acciones correspondientes.</p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="https://sistema-practicas-preprofesionales.vercel.app/dashboard/documentos"
+            <a href="${this.getPublicAppBase()}/dashboard/documentos"
                style="background-color: #003366; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
               Ver en el Portal
             </a>
@@ -350,7 +357,7 @@ export class EmailService {
           </div>
           ${!isApproved ? '<p style="color: #d32f2f; font-weight: bold;">Tutor y Estudiante: Por favor coordinen las correcciones necesarias para reiniciar el ciclo de aprobación.</p>' : ''}
           <div style="text-align: center; margin: 30px 0;">
-            <a href="https://sistema-practicas-preprofesionales.vercel.app/dashboard"
+            <a href="${this.getPublicAppBase()}/dashboard"
                style="background-color: #003366; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
               Acceder al Sistema
             </a>
@@ -441,7 +448,7 @@ export class EmailService {
           <p>Te recordamos que el plazo para la entrega del documento <strong>${documentName}</strong> vence mañana, <strong>${dueDate.toLocaleDateString()}</strong>.</p>
           <p>Por favor, asegúrate de subir el documento firmado a tiempo para evitar retrasos en tu proceso de certificación.</p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="https://sistema-practicas-preprofesionales.vercel.app/dashboard/documentos"
+            <a href="${this.getPublicAppBase()}/dashboard/documentos"
                style="background-color: #003366; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
               Subir Documento
             </a>

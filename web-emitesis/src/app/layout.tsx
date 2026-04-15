@@ -17,6 +17,10 @@ const roboto = Roboto({
 export const metadata: Metadata = {
   title: "Emitesis - Prácticas Preprofesionales",
   description: "Plataforma para la gestión integral de prácticas preprofesionales.",
+  icons: {
+    icon: "/images/Logo.png",
+    apple: "/images/Logo.png",
+  },
 };
 
 export default function RootLayout({

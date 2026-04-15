@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -14,13 +15,13 @@ import {
   Settings, 
   LogOut,
   ChevronRight,
-  ShieldCheck,
   Briefcase,
   FileStack,
   UserPlus
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { User as UserType } from "@/types/user";
+import { BRAND_LOGO_SRC } from "@/lib/brand";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Tablero", href: "/dashboard" },
@@ -62,8 +63,15 @@ export function Sidebar() {
       {/* Brand Header */}
       <div className="p-8 pb-12">
         <div className="flex items-center gap-3 group">
-          <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-            <ShieldCheck className="text-[#003366] w-7 h-7" />
+          <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform overflow-hidden p-1.5">
+            <Image
+              src={BRAND_LOGO_SRC}
+              alt="Emitesis"
+              width={40}
+              height={40}
+              className="object-contain w-full h-full"
+              priority
+            />
           </div>
           <div>
             <h1 className="text-xl font-black tracking-tight leading-none">EMITESIS</h1>

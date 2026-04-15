@@ -8,9 +8,13 @@ echo "Esperando a que la base de datos esté disponible..."
 echo "Ejecutando npx prisma migrate deploy..."
 npx prisma migrate deploy
 
-# Ejecutar semillas de Prisma (seeds)
-echo "Ejecutando npx prisma db seed..."
-npx prisma db seed
+# Semillas demo (destructivo: borra y recrea datos). Automático salvo SKIP_PRISMA_SEED=true.
+if [ "$SKIP_PRISMA_SEED" = "true" ]; then
+  echo "SKIP_PRISMA_SEED=true: se omite prisma db seed."
+else
+  echo "Ejecutando npx prisma db seed (datos de prueba)..."
+  npx prisma db seed
+fi
 
 # Iniciar la aplicación
 echo "Iniciando la aplicación..."

@@ -1,5 +1,7 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // Docker Alpine (node:20-alpine) usa OpenSSL 3; sin esto el seed y la API fallan en el contenedor.
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {

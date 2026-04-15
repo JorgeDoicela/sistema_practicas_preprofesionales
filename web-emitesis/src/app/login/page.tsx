@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { BRAND_LOGO_SRC } from "@/lib/brand";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -68,7 +69,7 @@ export default function LoginPage() {
               <div className="max-w-7xl mx-auto flex items-center justify-between">
                 <Link href="/" className="flex items-center gap-2">
                    <div className="bg-[#003366] p-1.5 rounded-lg">
-                      <Image src="/images/ISTPET_sin_fondo.png" alt="Logo" width={100} height={25} className="brightness-0 invert h-6 w-auto" />
+                      <Image src={BRAND_LOGO_SRC} alt="Logo" width={100} height={40} className="h-8 w-auto object-contain" />
                    </div>
                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Portal Académico</span>
                 </Link>
