@@ -24,9 +24,11 @@ model User {
   resetTokenExpires    DateTime?
   twoFactorSecret      String?
   isTwoFactorEnabled   Boolean      @default(false)
+  webauthnChallenge    String?
   company              Company?     @relation(fields: [companyId], references: [id])
   assignmentsAsStudent Internship[] @relation("StudentInternship")
   assignmentsAsTutor   Internship[] @relation("TutorInternship")
+  credential           UserCredential?
 }
 
 model Company {
@@ -106,14 +108,38 @@ model Document {
 }
 
 model Attendance {
+  id             String          @id @default(uuid())
+  internshipId   String
+  checkIn        DateTime
+  checkOut       DateTime?
+  lat            Float
+  lng            Float
+  distanceKm     Float?
+  checkInPhoto   String?         // RF-15: foto de entrada
+  checkOutPhoto  String?         // RF-15: foto de salida
+  activityPhotos ActivityPhoto[] // RF-17: fotos de actividades
+  internship     Internship      @relation(fields: [internshipId], references: [id])
+}
+
+// RF-17: Fotos de actividades diarias
+model ActivityPhoto {
   id           String     @id @default(uuid())
-  internshipId String
-  checkIn      DateTime
-  checkOut     DateTime?
-  lat          Float
-  lng          Float
-  distanceKm   Float?
-  internship   Internship @relation(fields: [internshipId], references: [id])
+  attendanceId String
+  photoUrl     String
+  caption      String?
+  createdAt    DateTime   @default(now())
+  attendance   Attendance @relation(fields: [attendanceId], references: [id])
+}
+
+// RF-14: Credencial WebAuthn (huella dactilar)
+model UserCredential {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  credentialId String   @unique
+  publicKey    String
+  counter      Int      @default(0)
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id])
 }
 
 model EmailLog {

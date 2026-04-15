@@ -1,4 +1,5 @@
-import { Controller, Post, Get, Body, UseGuards, Req, Param } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Req, Param, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AttendanceService } from './attendance.service';
 import { RegisterAttendanceDto } from './dto/register-attendance.dto';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
@@ -43,5 +44,52 @@ export class AttendanceController {
   @Roles(Role.TUTOR, Role.COORDINADOR, Role.ADMIN, Role.ESTUDIANTE)
   getSummary(@Param('id') id: string) {
     return this.attendanceService.getSummary(id);
+  }
+
+  /** RF-15: Subir foto de entrada o salida antes del check-in/out */
+  @Post('upload-photo')
+  @Roles(Role.ESTUDIANTE)
+  @UseInterceptors(FileInterceptor('file', {
+    fileFilter: (req, file, cb) => {
+      if (!file.originalname.match(/\.(jpg|jpeg|png|webp)$/i)) {
+        return cb(new BadRequestException('Solo se permiten imágenes (JPG, PNG, WebP)'), false);
+      }
+      cb(null, true);
+    },
+    limits: { fileSize: 5 * 1024 * 1024 },
+  }))
+  uploadPhoto(@UploadedFile() file: any, @Req() req: any) {
+    if (!file) throw new BadRequestException('El archivo de foto es obligatorio');
+    return this.attendanceService.uploadAttendancePhoto(file, req.user.id);
+  }
+
+  /** RF-17: Subir foto de actividad del día */
+  @Post('activity-photo')
+  @Roles(Role.ESTUDIANTE)
+  @UseInterceptors(FileInterceptor('file', {
+    fileFilter: (req, file, cb) => {
+      if (!file.originalname.match(/\.(jpg|jpeg|png|webp)$/i)) {
+        return cb(new BadRequestException('Solo se permiten imágenes'), false);
+      }
+      cb(null, true);
+    },
+    limits: { fileSize: 5 * 1024 * 1024 },
+  }))
+  uploadActivityPhoto(
+    @UploadedFile() file: any,
+    @Req() req: any,
+    @Body('attendanceId') attendanceId: string,
+    @Body('caption') caption?: string,
+  ) {
+    if (!file) throw new BadRequestException('La foto es obligatoria');
+    if (!attendanceId) throw new BadRequestException('El ID del registro de asistencia es obligatorio');
+    return this.attendanceService.uploadActivityPhoto(attendanceId, file, caption);
+  }
+
+  /** RF-17: Obtener fotos de actividades de un registro */
+  @Get('activity-photos/:attendanceId')
+  @Roles(Role.ESTUDIANTE, Role.TUTOR, Role.COORDINADOR, Role.ADMIN)
+  getActivityPhotos(@Param('attendanceId') attendanceId: string) {
+    return this.attendanceService.getActivityPhotos(attendanceId);
   }
 }

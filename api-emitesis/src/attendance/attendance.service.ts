@@ -1,10 +1,15 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../infrastructure/storage/storage.service';
 import { RegisterAttendanceDto } from './dto/register-attendance.dto';
+import { MulterFile } from '../shared/interfaces/multer-file.interface';
 
 @Injectable()
 export class AttendanceService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private storageService: StorageService,
+  ) {}
 
   private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 6371; // Radio de la Tierra en km
@@ -68,6 +73,7 @@ export class AttendanceService {
         lat,
         lng,
         distanceKm: distance,
+        checkInPhoto: dto.checkInPhotoUrl,
       },
     });
   }
@@ -116,7 +122,48 @@ export class AttendanceService {
       where: { id: attendance.id },
       data: {
         checkOut: new Date(),
+        checkOutPhoto: dto.checkOutPhotoUrl,
       },
+    });
+  }
+
+  /** RF-15: Subir foto de entrada/salida a Vercel Blob */
+  async uploadAttendancePhoto(file: MulterFile, studentId: string): Promise<{ url: string }> {
+    const fileName = `attendance/photos/${studentId}/${Date.now()}-${file.originalname}`;
+    const result = await this.storageService.upload(fileName, file.buffer, {
+      contentType: file.mimetype,
+    });
+    return { url: result.url };
+  }
+
+  /** RF-17: Subir foto de actividad diaria */
+  async uploadActivityPhoto(
+    attendanceId: string,
+    file: MulterFile,
+    caption?: string,
+  ) {
+    const attendance = await this.prisma.attendance.findUnique({ where: { id: attendanceId } });
+    if (!attendance) throw new NotFoundException('Registro de asistencia no encontrado');
+
+    const fileName = `attendance/activities/${attendanceId}/${Date.now()}-${file.originalname}`;
+    const result = await this.storageService.upload(fileName, file.buffer, {
+      contentType: file.mimetype,
+    });
+
+    return this.prisma.activityPhoto.create({
+      data: {
+        attendanceId,
+        photoUrl: result.url,
+        caption,
+      },
+    });
+  }
+
+  /** RF-17: Listar fotos de actividades de un registro de asistencia */
+  async getActivityPhotos(attendanceId: string) {
+    return this.prisma.activityPhoto.findMany({
+      where: { attendanceId },
+      orderBy: { createdAt: 'asc' },
     });
   }
 

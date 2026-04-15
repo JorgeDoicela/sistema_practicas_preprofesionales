@@ -14,6 +14,7 @@ import { AttendanceModule } from './attendance/attendance.module';
 import { CertificationModule } from './certification/certification.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { StorageModule } from './infrastructure/storage/storage.module';
+import { WebauthnModule } from './webauthn/webauthn.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { StorageModule } from './infrastructure/storage/storage.module';
     CertificationModule,
     NotificationsModule,
     StorageModule,
+    WebauthnModule,
   ],
   controllers: [AppController],
   providers: [AppService],
