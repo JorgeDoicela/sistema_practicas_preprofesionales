@@ -1,20 +1,18 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
-import * as otplib from 'otplib';
+import { Injectable } from '@nestjs/common';
+import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class TwoFactorAuthService {
+  private readonly totp = authenticator.clone({ window: 10, step: 30 });
+
   constructor(private prisma: PrismaService) {}
 
   public async generateTwoFactorAuthenticationSecret(user: { userId: string; email: string }) {
     console.log(`[2FA Debug] Generando secreto para userId: ${user.userId}`);
-    const secret = otplib.generateSecret();
-    const otpauthUrl = otplib.generateURI({
-        issuer: 'ISTPET_EMITESIS',
-        label: user.email,
-        secret: secret
-    });
+    const secret = this.totp.generateSecret();
+    const otpauthUrl = this.totp.keyuri(user.email, 'ISTPET_EMITESIS', secret);
 
     console.log(`[2FA Debug] Secreto generado: ${secret.substring(0, 4)}... URL: ${otpauthUrl.substring(0, 50)}...`);
 
@@ -35,19 +33,11 @@ export class TwoFactorAuthService {
 
   public isTwoFactorAuthenticationCodeValid(token: string, secret: string) {
     console.log(`[2FA Debug] Verificando token: ${token} con secreto: ${secret.substring(0, 4)}...`);
-    
-    // Usamos epochTolerance de 300 segundos (5 minutos) para eliminar cualquier duda sobre desincronización
-    const result = otplib.verifySync({
-      token,
-      secret,
-      epochTolerance: 300,
-      period: 30,
-      digits: 6,
-      algorithm: 'sha1'
-    });
-    
-    console.log(`[2FA Debug] Resultado: ${result.valid}`);
-    return result.valid;
+
+    const valid = this.totp.verify({ token, secret });
+
+    console.log(`[2FA Debug] Resultado: ${valid}`);
+    return valid;
   }
 
   public async enableTwoFactorAuthentication(userId: string) {
@@ -56,7 +46,6 @@ export class TwoFactorAuthService {
       data: { isTwoFactorEnabled: true },
     });
   }
-
 
   public async disableTwoFactorAuthentication(userId: string) {
     return this.prisma.user.update({
