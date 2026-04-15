@@ -232,6 +232,9 @@ export class DocumentsService {
         status: reviewDto.status,
         observations: reviewDto.observations ?? null,
         reviewedAt: new Date(),
+        ...(reviewDto.annotations !== undefined && {
+          reviewAnnotations: reviewDto.annotations as object,
+        }),
       },
     });
 
@@ -282,6 +285,9 @@ export class DocumentsService {
         status: reviewDto.status,
         observations: reviewDto.observations ?? null,
         reviewedAt: new Date(),
+        ...(reviewDto.annotations !== undefined && {
+          reviewAnnotations: reviewDto.annotations as object,
+        }),
       },
     });
 

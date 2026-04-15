@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { 
   ArrowLeft, 
   Calendar, 
@@ -26,6 +27,23 @@ import { internshipsService } from "@/services/internships.service";
 import { documentsService } from "@/services/documents.service";
 import { attendancesService } from "@/services/attendances.service";
 import { TwoFactorModal } from "@/components/auth/TwoFactorModal";
+import type { PdfReviewAnnotationsPayload } from "@/lib/pdf-review-annotations";
+import { parseReviewAnnotations } from "@/lib/pdf-review-annotations";
+
+const DocumentPdfReviewEditor = dynamic(
+  () =>
+    import("@/components/documents/DocumentPdfReviewEditor").then((m) => ({
+      default: m.DocumentPdfReviewEditor,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[200px] items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-sm text-slate-500">
+        Cargando visor PDF…
+      </div>
+    ),
+  },
+);
 
 export default function DocumentDetailPage() {
   const { id } = useParams();
@@ -50,6 +68,11 @@ export default function DocumentDetailPage() {
   const [previewedIds, setPreviewedIds] = useState<Set<string>>(new Set());
   const [attendanceSummary, setAttendanceSummary] = useState<any>(null);
   const [attendanceHistory, setAttendanceHistory] = useState<any[]>([]);
+
+  const reviewAnnotationsRef = useRef<PdfReviewAnnotationsPayload>({ version: 1, items: [] });
+  const handleReviewAnnotationsChange = useCallback((p: PdfReviewAnnotationsPayload) => {
+    reviewAnnotationsRef.current = p;
+  }, []);
 
   const loadData = useCallback(async () => {
     try {
@@ -121,6 +144,7 @@ export default function DocumentDetailPage() {
   const handleReviewClick = (doc: any) => {
     setSelectedDoc(doc);
     setObservations(doc.observations || "");
+    reviewAnnotationsRef.current = parseReviewAnnotations(doc.reviewAnnotations);
     setIsReviewDrawerOpen(true);
   };
 
@@ -145,13 +169,21 @@ export default function DocumentDetailPage() {
     try {
       if (currentUser?.isTwoFactorEnabled) {
           setPendingAction(async (code: string) => {
-            await documentsService.reviewDocument(selectedDoc.id, { status, observations }, code);
+            await documentsService.reviewDocument(
+              selectedDoc.id,
+              { status, observations, annotations: reviewAnnotationsRef.current },
+              code,
+            );
           });
           setIs2faModalOpen(true);
           setSaving(false);
           return;
       }
-      await documentsService.reviewDocument(selectedDoc.id, { status, observations });
+      await documentsService.reviewDocument(selectedDoc.id, {
+        status,
+        observations,
+        annotations: reviewAnnotationsRef.current,
+      });
       alert(status === 'APROBADO_TUTOR' ? "Documento aprobado con éxito" : "Documento rechazado");
       await loadData();
       setIsReviewDrawerOpen(false);
@@ -545,9 +577,9 @@ export default function DocumentDetailPage() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 200 }}
-              className="fixed top-0 right-0 w-full max-w-md h-full bg-white shadow-2xl z-[101] flex flex-col"
+              className="fixed top-0 right-0 z-[101] flex h-full min-h-0 w-full max-w-[min(100vw,1180px)] flex-col bg-white shadow-2xl"
             >
-              <div className="p-10 border-b border-slate-100 flex items-center justify-between bg-emerald-50/30">
+              <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-emerald-50/30 p-6 lg:p-10">
                 <div className="flex items-center gap-5">
                    <div className="w-12 h-12 bg-[#003366] rounded-2xl flex items-center justify-center shadow-lg shadow-blue-900/10">
                       <FileCheck className="text-[#C5A059] w-6 h-6" />
@@ -565,31 +597,51 @@ export default function DocumentDetailPage() {
                 </button>
               </div>
 
-              <div className="flex-1 p-10 space-y-8 overflow-y-auto">
-                <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200/60">
-                   <h4 className="text-[11px] font-black uppercase tracking-widest text-[#C5A059] mb-3">Documento a Revisar</h4>
-                   <p className="font-bold text-[#003366] text-lg leading-tight">{selectedDoc?.name}</p>
-                   
-                   <button 
+              <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden p-6 lg:flex-row lg:p-8">
+                <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/40 p-4">
+                  <div className="mb-3 shrink-0">
+                    <h4 className="text-[11px] font-black uppercase tracking-widest text-[#C5A059]">Documento a revisar</h4>
+                    <p className="font-bold text-[#003366]">{selectedDoc?.name}</p>
+                  </div>
+                  <div className="min-h-0 flex-1 overflow-auto">
+                    {selectedDoc && (
+                      <DocumentPdfReviewEditor
+                        key={selectedDoc.id}
+                        fileUrl={selectedDoc.filePath}
+                        initialItems={parseReviewAnnotations(selectedDoc.reviewAnnotations).items}
+                        onItemsChange={handleReviewAnnotationsChange}
+                      />
+                    )}
+                  </div>
+                  {selectedDoc?.filePath && (
+                    <button
+                      type="button"
                       onClick={() => handlePreviewFile(selectedDoc)}
-                      className="mt-6 w-full py-3 bg-white border border-slate-200 rounded-xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest text-[#003366] hover:bg-slate-50 transition-all shadow-sm"
-                   >
-                      <FileText className="w-4 h-4" />
-                      Visualizar Archivo
-                   </button>
+                      className="mt-3 shrink-0 w-full rounded-xl border border-slate-200 bg-white py-2.5 text-[10px] font-black uppercase tracking-widest text-[#003366] shadow-sm hover:bg-slate-50"
+                    >
+                      <span className="inline-flex items-center justify-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Abrir PDF en pestaña nueva
+                      </span>
+                    </button>
+                  )}
                 </div>
 
-                <div className="space-y-4">
-                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Observaciones / Feedback</label>
-                   <textarea 
-                      value={observations}
-                      onChange={(e) => setObservations(e.target.value)}
-                      placeholder="Ingrese los comentarios para el estudiante..."
-                      className="w-full h-40 p-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:ring-2 focus:ring-[#003366]/5 focus:border-[#003366] outline-none transition-all font-medium text-slate-700 resize-none hover:bg-white"
-                   />
-                   <p className="text-[10px] text-slate-400 font-medium px-4">
-                      {observations.trim() ? "Comentarios listos." : "Las observaciones son obligatorias en caso de rechazo."}
-                   </p>
+                <div className="flex w-full shrink-0 flex-col gap-4 lg:w-[340px] lg:border-l lg:border-slate-100 lg:pl-6">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                    Observaciones / feedback
+                  </label>
+                  <textarea
+                    value={observations}
+                    onChange={(e) => setObservations(e.target.value)}
+                    placeholder="Comentarios generales para el estudiante…"
+                    className="min-h-[160px] w-full flex-1 resize-none rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 outline-none transition-all hover:bg-white focus:border-[#003366] focus:ring-2 focus:ring-[#003366]/5"
+                  />
+                  <p className="text-[10px] text-slate-400">
+                    {observations.trim()
+                      ? "Listo para enviar con la decisión."
+                      : "Las observaciones son obligatorias si rechaza el documento."}
+                  </p>
                 </div>
               </div>
 

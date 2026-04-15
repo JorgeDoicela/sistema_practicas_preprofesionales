@@ -148,6 +148,8 @@ model Document {
   isCertificateSlot Boolean           @default(false)
   blankFileKey      String?
   sortOrder         Int               @default(0)
+  /// Anotaciones de revisión (resaltados, tachados, comentarios por fragmento) en JSON
+  reviewAnnotations Json?
   internship        Internship        @relation(fields: [internshipId], references: [id])
   template          DocumentTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
 

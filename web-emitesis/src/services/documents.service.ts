@@ -80,7 +80,11 @@ export const documentsService = {
     return response.json();
   },
 
-  async reviewDocument(id: string, review: { status: string, observations: string }, twoFactorCode?: string) {
+  async reviewDocument(
+    id: string,
+    review: { status: string; observations: string; annotations?: unknown },
+    twoFactorCode?: string,
+  ) {
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/documents/${id}/review`, {
       method: 'PATCH',
@@ -99,7 +103,11 @@ export const documentsService = {
     return response.json();
   },
 
-  async coordinatorReviewDocument(id: string, review: { status: string, observations: string }, twoFactorCode?: string) {
+  async coordinatorReviewDocument(
+    id: string,
+    review: { status: string; observations: string; annotations?: unknown },
+    twoFactorCode?: string,
+  ) {
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/documents/${id}/coordinator-review`, {
       method: 'PATCH',

@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsNotEmpty, ValidateIf, MaxLength, IsOptional } from 'class-validator';
+import { IsString, IsEnum, IsNotEmpty, ValidateIf, MaxLength, IsOptional, Allow } from 'class-validator';
 import { DocumentStatus } from '@prisma/client';
 import { StripControlChars } from '../../common/decorators/strip-control-chars.decorator';
 
@@ -13,4 +13,9 @@ export class ReviewDocumentDto {
   @IsNotEmpty({ message: 'Las observaciones son obligatorias para rechazar el documento' })
   @IsString()
   observations?: string;
+
+  /** JSON: { version: 1, items: [...] } con áreas resaltadas y comentarios (opcional) */
+  @IsOptional()
+  @Allow()
+  annotations?: unknown;
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import dynamic from "next/dynamic";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { 
   Users, 
@@ -24,6 +25,23 @@ import { internshipsService } from "@/services/internships.service";
 import { documentsService } from "@/services/documents.service";
 import { attendancesService } from "@/services/attendances.service";
 import { certificationService, EligibilityResponse } from "@/services/certification.service";
+import type { PdfReviewAnnotationsPayload } from "@/lib/pdf-review-annotations";
+import { parseReviewAnnotations } from "@/lib/pdf-review-annotations";
+
+const DocumentPdfReviewEditor = dynamic(
+  () =>
+    import("@/components/documents/DocumentPdfReviewEditor").then((m) => ({
+      default: m.DocumentPdfReviewEditor,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[200px] items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-sm text-slate-500">
+        Cargando visor PDF…
+      </div>
+    ),
+  },
+);
 
 export default function GestionEstudiantesPage() {
   const [internships, setInternships] = useState<any[]>([]);
@@ -41,6 +59,11 @@ export default function GestionEstudiantesPage() {
   const [attendanceFilters, setAttendanceFilters] = useState<Record<string, { startDate: string, endDate: string }>>({});
   const [eligibilityData, setEligibilityData] = useState<Record<string, EligibilityResponse>>({});
   const [generatingCertId, setGeneratingCertId] = useState<string | null>(null);
+
+  const reviewAnnotationsRef = useRef<PdfReviewAnnotationsPayload>({ version: 1, items: [] });
+  const handleReviewAnnotationsChange = useCallback((p: PdfReviewAnnotationsPayload) => {
+    reviewAnnotationsRef.current = p;
+  }, []);
 
   const loadData = useCallback(async () => {
     try {
@@ -87,6 +110,7 @@ export default function GestionEstudiantesPage() {
   const handleReviewClick = (doc: any, internshipId: string) => {
     setSelectedDoc({ ...doc, internshipId });
     setObservations(doc.observations || "");
+    reviewAnnotationsRef.current = parseReviewAnnotations(doc.reviewAnnotations);
     setIsReviewDrawerOpen(true);
   };
 
@@ -98,7 +122,11 @@ export default function GestionEstudiantesPage() {
 
     setSaving(true);
     try {
-      await documentsService.coordinatorReviewDocument(selectedDoc.id, { status, observations });
+      await documentsService.coordinatorReviewDocument(selectedDoc.id, {
+        status,
+        observations,
+        annotations: reviewAnnotationsRef.current,
+      });
       alert(status === 'APROBADO_DEFINITIVO' ? "Aprobación definitiva exitosa" : "Documento rechazado por coordinación");
       
       // Recargar datos para actualizar elegibilidad
@@ -204,9 +232,9 @@ export default function GestionEstudiantesPage() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 200 }}
-              className="fixed top-0 right-0 w-full max-w-md h-full bg-white shadow-2xl z-[101] flex flex-col"
+              className="fixed top-0 right-0 z-[101] flex h-full min-h-0 w-full max-w-[min(100vw,1180px)] flex-col bg-white shadow-2xl"
             >
-              <div className="p-10 border-b border-slate-100 flex items-center justify-between bg-emerald-50/30">
+              <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-emerald-50/30 p-6 lg:p-10">
                 <div className="flex items-center gap-5">
                    <div className="w-12 h-12 bg-[#003366] rounded-2xl flex items-center justify-center shadow-lg shadow-blue-900/10">
                       <FileCheck className="text-[#C5A059] w-6 h-6" />
@@ -224,37 +252,54 @@ export default function GestionEstudiantesPage() {
                 </button>
               </div>
 
-              <div className="flex-1 p-10 space-y-8 overflow-y-auto">
-                <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200/60">
-                   <h4 className="text-[11px] font-black uppercase tracking-widest text-[#C5A059] mb-3">Documento</h4>
-                   <p className="font-bold text-[#003366] text-lg leading-tight">{selectedDoc?.name}</p>
-                   
-                   <a 
-                      href={selectedDoc?.filePath}
+              <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden p-6 lg:flex-row lg:p-8">
+                <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/40 p-4">
+                  <div className="mb-3 shrink-0">
+                    <h4 className="text-[11px] font-black uppercase tracking-widest text-[#C5A059]">Documento</h4>
+                    <p className="font-bold text-[#003366]">{selectedDoc?.name}</p>
+                  </div>
+                  <div className="min-h-0 flex-1 overflow-auto">
+                    {selectedDoc && (
+                      <DocumentPdfReviewEditor
+                        key={selectedDoc.id}
+                        fileUrl={selectedDoc.filePath}
+                        initialItems={parseReviewAnnotations(selectedDoc.reviewAnnotations).items}
+                        onItemsChange={handleReviewAnnotationsChange}
+                      />
+                    )}
+                  </div>
+                  {selectedDoc?.filePath && (
+                    <a
+                      href={selectedDoc.filePath}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-6 w-full py-4 bg-white border border-slate-200 rounded-xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest text-[#003366] hover:bg-slate-50 transition-all shadow-sm"
-                   >
-                      <FileText className="w-4 h-4" />
-                      Visualizar Archivo
-                   </a>
+                      className="mt-3 flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-2.5 text-[10px] font-black uppercase tracking-widest text-[#003366] shadow-sm hover:bg-slate-50"
+                    >
+                      <FileText className="h-4 w-4" />
+                      Abrir PDF en pestaña nueva
+                    </a>
+                  )}
                 </div>
 
-                <div className="space-y-4">
-                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Observaciones Finales</label>
-                   <textarea 
-                      value={observations}
-                      onChange={(e) => setObservations(e.target.value)}
-                      placeholder="Ingrese el feedback final para el estudiante y el tutor..."
-                      className="w-full h-44 p-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:ring-2 focus:ring-[#003366]/5 focus:border-[#003366] outline-none transition-all font-medium text-slate-700 resize-none hover:bg-white"
-                   />
-                </div>
-                
-                <div className="bg-amber-50 rounded-2xl p-5 flex gap-4 border border-amber-100/50">
-                   <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                   <p className="text-[10px] text-amber-700 font-bold leading-relaxed">
-                      RECUERDE: Un documento con APROBACIÓN DEFINITIVA queda bloqueado para cualquier modificación futura por parte del estudiante.
-                   </p>
+                <div className="flex w-full shrink-0 flex-col gap-4 lg:w-[360px] lg:border-l lg:border-slate-100 lg:pl-6">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                    Observaciones finales
+                  </label>
+                  <textarea
+                    value={observations}
+                    onChange={(e) => setObservations(e.target.value)}
+                    placeholder="Feedback para el estudiante y el tutor…"
+                    className="min-h-[140px] w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 outline-none transition-all hover:bg-white focus:border-[#003366] focus:ring-2 focus:ring-[#003366]/5"
+                  />
+                  <div className="rounded-2xl border border-amber-100/50 bg-amber-50 p-4">
+                    <div className="flex gap-3">
+                      <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+                      <p className="text-[10px] font-bold leading-relaxed text-amber-800">
+                        La aprobación definitiva bloquea el documento para el estudiante. Las anotaciones en el PDF se
+                        guardan con esta revisión.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
