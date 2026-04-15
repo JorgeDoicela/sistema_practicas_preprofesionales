@@ -33,7 +33,19 @@ export class DocumentTemplatesController {
   @Roles(Role.COORDINADOR, Role.ADMIN)
   async knownFormats() {
     const keys = await this.documentTemplatesService.resolveBlankFormatKeys();
-    return { keys };
+    return {
+      keys,
+      protectedKeys: this.documentTemplatesService.institutionalBlankFormatKeys(),
+    };
+  }
+
+  @Delete('blank-template')
+  @Roles(Role.COORDINADOR, Role.ADMIN)
+  removeBlank(@Query('key') key?: string) {
+    if (!key?.trim()) {
+      throw new BadRequestException('Indique el parámetro key con el nombre del archivo .docx');
+    }
+    return this.documentTemplatesService.deleteBlankTemplate(key.trim());
   }
 
   @Post('upload-blank')

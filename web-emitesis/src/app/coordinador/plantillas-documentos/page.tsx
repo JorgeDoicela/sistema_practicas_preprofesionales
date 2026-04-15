@@ -22,6 +22,8 @@ import { labelForDocxKey } from "@/lib/docx-template-labels";
 export default function PlantillasDocumentosPage() {
   const [items, setItems] = useState<DocumentTemplate[]>([]);
   const [knownKeys, setKnownKeys] = useState<string[]>([]);
+  const [protectedKeys, setProtectedKeys] = useState<string[]>([]);
+  const [deletingFormatKey, setDeletingFormatKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -41,12 +43,13 @@ export default function PlantillasDocumentosPage() {
     try {
       setLoading(true);
       setError(null);
-      const [list, keys] = await Promise.all([
+      const [list, formats] = await Promise.all([
         documentTemplatesService.findAll(showInactive),
-        documentTemplatesService.knownFormatKeys(),
+        documentTemplatesService.blankFormatsMeta(),
       ]);
       setItems(list);
-      setKnownKeys(keys);
+      setKnownKeys(formats.keys);
+      setProtectedKeys(formats.protectedKeys);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error");
     } finally {
@@ -117,6 +120,33 @@ export default function PlantillasDocumentosPage() {
     }
   };
 
+  const isProtectedFormat = (k: string) =>
+    protectedKeys.some((p) => p.toLowerCase() === k.toLowerCase());
+
+  const handleDeleteBlankFormat = async (key: string) => {
+    if (isProtectedFormat(key)) {
+      alert("Los formatos institucionales del sistema no se pueden eliminar.");
+      return;
+    }
+    if (
+      !confirm(
+        `¿Eliminar del servidor el archivo «${key}»? Dejará de aparecer en los desplegables. No debe estar asignado a ninguna plantilla del catálogo.`,
+      )
+    ) {
+      return;
+    }
+    setDeletingFormatKey(key);
+    setError(null);
+    try {
+      await documentTemplatesService.deleteBlankDocx(key);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo eliminar el formato");
+    } finally {
+      setDeletingFormatKey(null);
+    }
+  };
+
   const handleDelete = async (t: DocumentTemplate) => {
     if (t.isCertificateSlot) {
       alert(
@@ -183,8 +213,9 @@ export default function PlantillasDocumentosPage() {
           <p className="mt-2 leading-relaxed text-sky-900/90">
             Use el recuadro <strong>«Subir formato Word (.docx)»</strong> de abajo. El archivo queda registrado con un{" "}
             <strong>nombre técnico</strong> (letras minúsculas y guiones bajos) y aparecerá en los desplegables para
-            vincularlo a cada ítem del catálogo. Si solo elige entre los que ya vienen en el sistema, no hace falta
-            subir nada nuevo.
+            vincularlo a cada ítem del catálogo. Los formatos que usted suba puede borrarlos en{" "}
+            <strong>«Formatos en servidor»</strong>; los predefinidos del sistema no son eliminables. Si solo elige
+            entre los que ya vienen en el sistema, no hace falta subir nada nuevo.
           </p>
         </div>
 
@@ -232,6 +263,62 @@ export default function PlantillasDocumentosPage() {
             </button>
           </div>
         </motion.form>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8"
+        >
+          <h2 className="text-sm font-black uppercase tracking-widest text-[#003366]">Formatos en servidor</h2>
+          <p className="mt-2 text-xs leading-relaxed text-slate-600">
+            Archivos <strong>.docx</strong> que aparecen en «Word en blanco» / «Formato .docx».{" "}
+            <strong>Eliminar</strong> aquí quita el fichero del almacén; es distinto de eliminar una fila del catálogo
+            de plantillas (tabla de abajo). Antes de borrar un formato, desvincúlelo de todas las plantillas que lo
+            usen.
+          </p>
+          {knownKeys.length === 0 ? (
+            <p className="mt-4 text-sm text-slate-500">No hay formatos listados todavía.</p>
+          ) : (
+            <ul className="mt-4 divide-y divide-slate-100 rounded-2xl border border-slate-100">
+              {knownKeys.map((k) => {
+                const prot = isProtectedFormat(k);
+                return (
+                  <li
+                    key={k}
+                    className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-slate-800">
+                        {labelForDocxKey(k)}{" "}
+                        <span className="font-mono text-xs font-normal text-slate-500">({k})</span>
+                      </p>
+                      {prot && (
+                        <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                          Formato institucional — no eliminable
+                        </p>
+                      )}
+                    </div>
+                    {prot ? null : (
+                      <button
+                        type="button"
+                        disabled={deletingFormatKey === k}
+                        onClick={() => void handleDeleteBlankFormat(k)}
+                        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-rose-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-wider text-rose-600 shadow-sm transition hover:border-rose-300 hover:bg-rose-50 disabled:opacity-50"
+                      >
+                        {deletingFormatKey === k ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                        Quitar archivo
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </motion.div>
 
         <motion.form
           initial={{ opacity: 0 }}

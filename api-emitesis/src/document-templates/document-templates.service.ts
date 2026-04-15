@@ -46,6 +46,19 @@ export class DocumentTemplatesService {
     ];
   }
 
+  /** Plantillas .docx del sistema que no se deben borrar desde el coordinador */
+  institutionalBlankFormatKeys(): string[] {
+    return this.defaultBlankFormatKeys();
+  }
+
+  private assertBlankFormatFilename(key: string): string {
+    const k = path.basename(key || '').trim().toLowerCase();
+    if (!/^[a-z0-9_-]+\.docx$/.test(k)) {
+      throw new BadRequestException('Nombre de archivo no válido');
+    }
+    return k;
+  }
+
   /**
    * Lista de archivos .docx disponibles como formato en blanco: plantillas por defecto,
    * más los que existan en disco (uploads/templates) y en el almacenamiento (Blob).
@@ -122,6 +135,50 @@ export class DocumentTemplatesService {
     });
 
     return { key };
+  }
+
+  /**
+   * Elimina un .docx de la carpeta de formatos (disco y/o Blob). No aplica a las plantillas institucionales.
+   * No se elimina si alguna plantilla del catálogo sigue usando ese archivo como blankFileKey.
+   */
+  async deleteBlankTemplate(rawKey: string): Promise<{ ok: boolean }> {
+    const key = this.assertBlankFormatFilename(rawKey);
+    if (this.defaultBlankFormatKeys().includes(key)) {
+      throw new BadRequestException(
+        'No se pueden eliminar los formatos .docx institucionales predefinidos del sistema.',
+      );
+    }
+
+    const inUse = await this.prisma.documentTemplate.count({
+      where: { blankFileKey: key },
+    });
+    if (inUse > 0) {
+      throw new ConflictException(
+        `El formato «${key}» está asignado a ${inUse} plantilla(s). Asigne otro archivo o quítese la asignación antes de eliminarlo.`,
+      );
+    }
+
+    const diskPath = path.join(process.cwd(), 'uploads', 'templates', key);
+    try {
+      await fs.unlink(diskPath);
+    } catch {
+      /* archivo ausente en disco */
+    }
+
+    try {
+      const listResult = await this.storageService.listFiles();
+      const blob = (listResult.blobs ?? []).find((b) => {
+        const p = (b.pathname || '').replace(/\\/g, '/');
+        return p === `templates/${key}` || p.endsWith(`/templates/${key}`);
+      });
+      if (blob?.url) {
+        await this.storageService.delete(blob.url);
+      }
+    } catch {
+      /* listado o borrado en blob no disponible */
+    }
+
+    return { ok: true };
   }
 
   private async assertActiveCatalogHasCertificateSlot(excludeTemplateId?: string) {

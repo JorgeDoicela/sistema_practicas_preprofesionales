@@ -38,12 +38,36 @@ export const documentTemplatesService = {
   },
 
   async knownFormatKeys(): Promise<string[]> {
+    const meta = await this.blankFormatsMeta();
+    return meta.keys;
+  },
+
+  /** Lista de .docx disponibles y cuáles son institucionales (no eliminables). */
+  async blankFormatsMeta(): Promise<{ keys: string[]; protectedKeys: string[] }> {
     const res = await fetch(`${API_URL}/document-templates/blank-format-keys`, {
       headers: await authHeaders(),
     });
-    if (!res.ok) return [];
+    if (!res.ok) return { keys: [], protectedKeys: [] };
     const data = await res.json();
-    return data.keys ?? [];
+    return {
+      keys: data.keys ?? [],
+      protectedKeys: data.protectedKeys ?? [],
+    };
+  },
+
+  /** Quita un .docx subido por el coordinador del almacén (no los institucionales). */
+  async deleteBlankDocx(key: string): Promise<void> {
+    const q = new URLSearchParams({ key });
+    const res = await fetch(`${API_URL}/document-templates/blank-template?${q.toString()}`, {
+      method: "DELETE",
+      headers: await authHeaders(),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(
+        Array.isArray(err.message) ? err.message.join(", ") : err.message || "Error al eliminar el formato",
+      );
+    }
   },
 
   /** Sube un .docx a la carpeta de formatos; devuelve la clave (nombre de archivo) para asignarla a una plantilla. */
