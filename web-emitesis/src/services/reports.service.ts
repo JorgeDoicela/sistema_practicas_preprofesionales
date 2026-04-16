@@ -3,7 +3,11 @@ import { api } from "./auth.service";
 export interface GlobalStats {
   assignmentsCount: number;
   pendingDocs: number;
+  approvedDocs: number;
   activeBlocks: number;
+  activeInternships: number;
+  completedInternships: number;
+  totalStudents: number;
   totalCompletedHours: number;
   totalPlannedHours: number;
   progressPercentage: number;

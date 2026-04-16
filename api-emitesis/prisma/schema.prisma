@@ -92,9 +92,11 @@ model Internship {
   location    String
   businessTutorName  String?
   businessTutorEmail String?
-  lat         Float?
-  lng         Float?
-  testEnabled Boolean      @default(false)
+  lat               Float?
+  lng               Float?
+  /// RF-ATT-LOC: Array JSON de ubicaciones permitidas [{label,lat,lng,radiusM?}]
+  allowedLocations  Json?
+  testEnabled       Boolean      @default(false)
   status      String       @default("En Proceso")
   createdAt   DateTime     @default(now())
   attendances Attendance[]

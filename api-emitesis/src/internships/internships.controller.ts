@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Patch, Body, Param, UseGuards, Req } from '@nestjs/common';
 import { InternshipsService } from './internships.service';
 import { CreateInternshipDto } from './dto/create-internship.dto';
+import { UpdateLocationsDto } from './dto/update-locations.dto';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
 import { RolesGuard } from '../auth/strategies/roles.guard';
 import { Roles } from '../auth/strategies/roles.decorator';
@@ -41,6 +42,13 @@ export class InternshipsController {
   @Roles(Role.EMPRESA, Role.TUTOR_EMPRESARIAL, Role.ADMIN, Role.COORDINADOR)
   findByCompany(@Param('id') id: string) {
     return this.internshipsService.findByCompany(id);
+  }
+
+  /** RF-ATT-LOC: El tutor académico (o admin/coordinador) configura las ubicaciones permitidas */
+  @Patch(':id/locations')
+  @Roles(Role.TUTOR, Role.ADMIN, Role.COORDINADOR)
+  updateLocations(@Param('id') id: string, @Body() dto: UpdateLocationsDto) {
+    return this.internshipsService.updateLocations(id, dto.locations);
   }
 
   @Patch(':id/toggle-test')

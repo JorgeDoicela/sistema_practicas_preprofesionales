@@ -100,6 +100,26 @@ export const internshipsService = {
     return response.json();
   },
 
+  /** RF-ATT-LOC: Guardar las ubicaciones permitidas para asistencia */
+  async updateLocations(id: string, locations: { label: string; lat: number; lng: number; radiusM?: number }[]) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/internships/${id}/locations`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ locations }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al guardar las ubicaciones');
+    }
+
+    return response.json();
+  },
+
   async toggleTest(id: string) {
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/internships/${id}/toggle-test`, {

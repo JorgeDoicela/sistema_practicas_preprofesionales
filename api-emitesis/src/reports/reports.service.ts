@@ -18,23 +18,47 @@ export class ReportsService {
     const [
       assignmentsCount,
       pendingDocs,
+      approvedDocs,
       activeBlocks,
-      allInternships,
+      activeInternships,
+      completedInternships,
+      totalStudents,
+      allActiveInternships,
     ] = await Promise.all([
+      // Total de prácticas activas
       this.prisma.internship.count({
         where: { status: { in: ['Activo', 'En Proceso'] } },
       }),
+      // Documentos pendientes de revisión final
       this.prisma.document.count({
         where: { status: 'APROBADO_TUTOR' },
       }),
+      // Documentos con aprobación definitiva
+      this.prisma.document.count({
+        where: { status: 'APROBADO_DEFINITIVO' },
+      }),
+      // Usuarios bloqueados/inactivos
       this.prisma.user.count({
-        where: { 
+        where: {
           OR: [
             { isActive: false },
-            { lockoutUntil: { gte: new Date() } }
-          ]
+            { lockoutUntil: { gte: new Date() } },
+          ],
         },
       }),
+      // Prácticas en ejecución
+      this.prisma.internship.count({
+        where: { status: { in: ['Activo', 'En Proceso'] } },
+      }),
+      // Prácticas finalizadas
+      this.prisma.internship.count({
+        where: { status: 'Finalizado' },
+      }),
+      // Total de estudiantes registrados
+      this.prisma.user.count({
+        where: { role: 'ESTUDIANTE', isActive: true },
+      }),
+      // Detalle de prácticas activas para calcular horas
       this.prisma.internship.findMany({
         where: { status: { in: ['Activo', 'En Proceso'] } },
         include: { attendances: true },
@@ -44,7 +68,7 @@ export class ReportsService {
     let totalCompletedHours = 0;
     let totalPlannedHours = 0;
 
-    for (const internship of allInternships) {
+    for (const internship of allActiveInternships) {
       totalPlannedHours += internship.totalHours;
       let internshipMinutes = 0;
       for (const att of internship.attendances) {
@@ -59,12 +83,17 @@ export class ReportsService {
     return {
       assignmentsCount,
       pendingDocs,
+      approvedDocs,
       activeBlocks,
+      activeInternships,
+      completedInternships,
+      totalStudents,
       totalCompletedHours: Math.round(totalCompletedHours),
       totalPlannedHours: Math.round(totalPlannedHours),
-      progressPercentage: totalPlannedHours > 0 
-        ? Math.round((totalCompletedHours / totalPlannedHours) * 100) 
-        : 0,
+      progressPercentage:
+        totalPlannedHours > 0
+          ? Math.round((totalCompletedHours / totalPlannedHours) * 100)
+          : 0,
     };
   }
 

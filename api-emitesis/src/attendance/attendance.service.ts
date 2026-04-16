@@ -25,6 +25,40 @@ export class AttendanceService {
     return R * c; // Distancia en km
   }
 
+  /** Verifica si (lat,lng) está dentro del rango de al menos una ubicación permitida.
+   *  Usa `allowedLocations` JSON si existe; sino cae al campo lat/lng legacy.
+   *  Devuelve null si está permitido, o un mensaje de error si está fuera de rango. */
+  private checkLocationAllowed(
+    lat: number,
+    lng: number,
+    internship: { lat: number | null; lng: number | null; allowedLocations: unknown },
+  ): string | null {
+    type Loc = { label?: string; lat: number; lng: number; radiusM?: number };
+    const locs: Loc[] = Array.isArray(internship.allowedLocations) && internship.allowedLocations.length > 0
+      ? (internship.allowedLocations as Loc[])
+      : internship.lat && internship.lng
+        ? [{ label: 'Lugar de prácticas', lat: internship.lat, lng: internship.lng }]
+        : [];
+
+    if (locs.length === 0) {
+      return 'La ubicación del lugar de prácticas no ha sido configurada. Contacta a tu tutor académico.';
+    }
+
+    for (const loc of locs) {
+      const radiusKm = (loc.radiusM ?? 200) / 1000;
+      const dist = this.calculateDistance(lat, lng, loc.lat, loc.lng);
+      if (dist <= radiusKm) return null; // dentro del rango → permitido
+    }
+
+    // Calcular la distancia más cercana para el mensaje de error
+    const nearest = locs.reduce((best, loc) => {
+      const d = this.calculateDistance(lat, lng, loc.lat, loc.lng);
+      return d < best.dist ? { dist: d, label: loc.label ?? 'Sede' } : best;
+    }, { dist: Infinity, label: '' });
+
+    return `Estás fuera del rango permitido (${(nearest.dist * 1000).toFixed(0)}m de "${nearest.label}"). Debes estar dentro del radio configurado.`;
+  }
+
   async checkIn(studentId: string, dto: RegisterAttendanceDto) {
     const { lat, lng } = dto;
 
@@ -39,14 +73,10 @@ export class AttendanceService {
       throw new BadRequestException('No tienes una asignación de prácticas activa');
     }
 
-    // Regla de Negocio: Validar ubicación (Radio 200m = 0.2km)
-    if (!internship.lat || !internship.lng) {
-        throw new BadRequestException('La ubicación del lugar de prácticas no ha sido configurada');
-    }
-
-    const distance = this.calculateDistance(lat, lng, internship.lat, internship.lng);
-    if (distance > 0.2) {
-      throw new BadRequestException(`Te encuentras fuera del rango permitido (${(distance * 1000).toFixed(0)}m). Debes estar a menos de 200m.`);
+    // Validar ubicación contra todas las sedes permitidas
+    const locationError = this.checkLocationAllowed(lat, lng, internship);
+    if (locationError) {
+      throw new BadRequestException(locationError);
     }
 
     // Regla de Negocio: Solo una entrada por día
@@ -66,13 +96,22 @@ export class AttendanceService {
       throw new BadRequestException('Ya has registrado tu entrada el día de hoy');
     }
 
+    // Calcular distancia al punto más cercano para el registro histórico
+    type Loc = { lat: number; lng: number; radiusM?: number };
+    const locs: Loc[] = Array.isArray(internship.allowedLocations) && (internship.allowedLocations as Loc[]).length > 0
+      ? (internship.allowedLocations as Loc[])
+      : internship.lat && internship.lng ? [{ lat: internship.lat, lng: internship.lng }] : [];
+    const nearestDist = locs.length > 0
+      ? Math.min(...locs.map((l) => this.calculateDistance(lat, lng, l.lat, l.lng)))
+      : 0;
+
     return this.prisma.attendance.create({
       data: {
         internshipId: internship.id,
         checkIn: new Date(),
         lat,
         lng,
-        distanceKm: distance,
+        distanceKm: nearestDist,
         checkInPhoto: dto.checkInPhotoUrl,
       },
     });
@@ -92,10 +131,10 @@ export class AttendanceService {
       throw new BadRequestException('No tienes una asignación de prácticas activa');
     }
 
-    // Regla de Negocio: Validar ubicación
-    const distance = this.calculateDistance(lat, lng, internship.lat!, internship.lng!);
-    if (distance > 0.2) {
-      throw new BadRequestException(`Te encuentras fuera del rango permitido (${(distance * 1000).toFixed(0)}m). Debes estar a menos de 200m.`);
+    // Validar ubicación contra todas las sedes permitidas
+    const locationErrorOut = this.checkLocationAllowed(lat, lng, internship);
+    if (locationErrorOut) {
+      throw new BadRequestException(locationErrorOut);
     }
 
     const today = new Date();

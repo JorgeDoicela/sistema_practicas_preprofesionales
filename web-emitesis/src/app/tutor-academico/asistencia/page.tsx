@@ -3,29 +3,31 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import {
-  CalendarCheck,
-  Search,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  Building2,
-  ChevronDown,
-  ChevronUp,
-  ArrowRightCircle,
-  ArrowLeftCircle,
-  MapPin,
+  CalendarCheck, Search, Clock, CheckCircle2, AlertCircle, Loader2,
+  Building2, ChevronDown, ChevronUp, ArrowRightCircle, ArrowLeftCircle,
+  MapPin, Plus, Trash2, Navigation, Edit3, X, Save, Info,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
 import { attendancesService } from "@/services/attendances.service";
 
+// ── Tipos ──────────────────────────────────────────────────────────────────
+interface AllowedLocation {
+  label: string;
+  lat: number;
+  lng: number;
+  radiusM?: number;
+}
+
 interface StudentAttendance {
   internshipId: string;
   studentName: string;
   companyName: string;
   status: string;
+  allowedLocations: AllowedLocation[];
+  legacyLat?: number | null;
+  legacyLng?: number | null;
   summary: {
     totalHours: number;
     requiredHours: number;
@@ -37,18 +39,32 @@ interface StudentAttendance {
   loadingDetail: boolean;
 }
 
+// ── Componente principal ───────────────────────────────────────────────────
 export default function TutorAsistenciaPage() {
   const [rows, setRows] = useState<StudentAttendance[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  // Modal de ubicaciones
+  const [locationModalId, setLocationModalId] = useState<string | null>(null);
+  const [editingLocations, setEditingLocations] = useState<AllowedLocation[]>([]);
+  const [savingLocations, setSavingLocations] = useState(false);
+  const [locationSaved, setLocationSaved] = useState(false);
+
+  // Form de nueva ubicación
+  const [newLocLabel, setNewLocLabel] = useState("");
+  const [newLocLat, setNewLocLat] = useState("");
+  const [newLocLng, setNewLocLng] = useState("");
+  const [newLocRadius, setNewLocRadius] = useState("200");
+  const [gettingGps, setGettingGps] = useState(false);
+  const [addLocError, setAddLocError] = useState<string | null>(null);
+
   const loadBase = useCallback(async () => {
     try {
       const userStr = localStorage.getItem("user");
       if (!userStr) return;
       const user = JSON.parse(userStr);
-
       const internships = await internshipsService.findByTutor(user.id);
       setRows(
         internships.map((i: any) => ({
@@ -56,6 +72,9 @@ export default function TutorAsistenciaPage() {
           studentName: i.student?.fullName ?? "—",
           companyName: i.company?.name ?? "—",
           status: i.status ?? "—",
+          allowedLocations: Array.isArray(i.allowedLocations) ? i.allowedLocations : [],
+          legacyLat: i.lat ?? null,
+          legacyLng: i.lng ?? null,
           summary: null,
           history: [],
           loadingDetail: false,
@@ -68,13 +87,11 @@ export default function TutorAsistenciaPage() {
     }
   }, []);
 
-  useEffect(() => {
-    loadBase();
-  }, [loadBase]);
+  useEffect(() => { loadBase(); }, [loadBase]);
 
   const loadDetail = useCallback(async (internshipId: string) => {
     setRows((prev) =>
-      prev.map((r) => (r.internshipId === internshipId ? { ...r, loadingDetail: true } : r)),
+      prev.map((r) => r.internshipId === internshipId ? { ...r, loadingDetail: true } : r),
     );
     try {
       const [summary, history] = await Promise.all([
@@ -90,22 +107,84 @@ export default function TutorAsistenciaPage() {
       );
     } catch {
       setRows((prev) =>
-        prev.map((r) =>
-          r.internshipId === internshipId ? { ...r, loadingDetail: false } : r,
-        ),
+        prev.map((r) => r.internshipId === internshipId ? { ...r, loadingDetail: false } : r),
       );
     }
   }, []);
 
   const handleToggle = (internshipId: string) => {
-    if (expandedId === internshipId) {
-      setExpandedId(null);
-      return;
-    }
+    if (expandedId === internshipId) { setExpandedId(null); return; }
     setExpandedId(internshipId);
     const row = rows.find((r) => r.internshipId === internshipId);
-    if (row && !row.summary && !row.loadingDetail) {
-      loadDetail(internshipId);
+    if (row && !row.summary && !row.loadingDetail) loadDetail(internshipId);
+  };
+
+  // ── Gestión de ubicaciones ──────────────────────────────────────────────
+  const openLocationModal = (row: StudentAttendance) => {
+    const locs: AllowedLocation[] =
+      row.allowedLocations.length > 0
+        ? [...row.allowedLocations]
+        : row.legacyLat && row.legacyLng
+          ? [{ label: "Sede principal", lat: row.legacyLat, lng: row.legacyLng, radiusM: 200 }]
+          : [];
+    setEditingLocations(locs);
+    setNewLocLabel(""); setNewLocLat(""); setNewLocLng(""); setNewLocRadius("200");
+    setAddLocError(null); setLocationSaved(false);
+    setLocationModalId(row.internshipId);
+  };
+
+  const closeLocationModal = () => setLocationModalId(null);
+
+  const handleGetGps = () => {
+    if (!navigator.geolocation) { setAddLocError("Tu navegador no soporta GPS"); return; }
+    setGettingGps(true);
+    setAddLocError(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setNewLocLat(pos.coords.latitude.toFixed(6));
+        setNewLocLng(pos.coords.longitude.toFixed(6));
+        setGettingGps(false);
+      },
+      () => { setAddLocError("No se pudo obtener la ubicación"); setGettingGps(false); },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
+
+  const handleAddLocation = () => {
+    setAddLocError(null);
+    const lat = parseFloat(newLocLat);
+    const lng = parseFloat(newLocLng);
+    const radius = parseInt(newLocRadius, 10);
+    if (!newLocLabel.trim()) { setAddLocError("El nombre de la sede es obligatorio"); return; }
+    if (isNaN(lat) || lat < -90 || lat > 90) { setAddLocError("Latitud inválida"); return; }
+    if (isNaN(lng) || lng < -180 || lng > 180) { setAddLocError("Longitud inválida"); return; }
+    if (isNaN(radius) || radius < 50 || radius > 5000) { setAddLocError("Radio debe estar entre 50 y 5000m"); return; }
+    setEditingLocations((prev) => [...prev, { label: newLocLabel.trim(), lat, lng, radiusM: radius }]);
+    setNewLocLabel(""); setNewLocLat(""); setNewLocLng(""); setNewLocRadius("200");
+  };
+
+  const handleRemoveLocation = (idx: number) => {
+    setEditingLocations((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleSaveLocations = async () => {
+    if (!locationModalId) return;
+    setSavingLocations(true);
+    try {
+      await internshipsService.updateLocations(locationModalId, editingLocations);
+      setRows((prev) =>
+        prev.map((r) =>
+          r.internshipId === locationModalId
+            ? { ...r, allowedLocations: editingLocations }
+            : r,
+        ),
+      );
+      setLocationSaved(true);
+      setTimeout(() => { setLocationSaved(false); closeLocationModal(); }, 1200);
+    } catch (err: any) {
+      setAddLocError(err.message || "Error al guardar");
+    } finally {
+      setSavingLocations(false);
     }
   };
 
@@ -115,7 +194,7 @@ export default function TutorAsistenciaPage() {
       r.companyName.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const totalHours = rows.reduce((acc, r) => acc + (r.summary?.totalHours ?? 0), 0);
+  const totalHoursAll = rows.reduce((acc, r) => acc + (r.summary?.totalHours ?? 0), 0);
   const avgProgress =
     rows.filter((r) => r.summary).length > 0
       ? Math.round(
@@ -125,6 +204,8 @@ export default function TutorAsistenciaPage() {
             rows.filter((r) => r.summary).length,
         )
       : null;
+
+  const activeRow = rows.find((r) => r.internshipId === locationModalId);
 
   return (
     <DashboardLayout>
@@ -139,7 +220,7 @@ export default function TutorAsistenciaPage() {
               Asistencia <span className="text-slate-400">de Pasantes</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
-              Monitorea el registro de horas y asistencia de cada estudiante bajo tu tutoría.
+              Monitorea el historial de horas y configura las sedes de asistencia.
             </p>
           </div>
           <div className="relative group">
@@ -154,36 +235,19 @@ export default function TutorAsistenciaPage() {
           </div>
         </section>
 
-        {/* KPIs rápidos */}
+        {/* KPIs */}
         {!loading && rows.length > 0 && (
           <section className="grid sm:grid-cols-3 gap-6">
-            <KpiCard
-              icon={<Clock className="w-6 h-6" />}
-              title="Pasantes activos"
-              value={rows.filter((r) => r.status !== "Finalizado").length}
-              color="bg-blue-500"
-            />
-            <KpiCard
-              icon={<CheckCircle2 className="w-6 h-6" />}
-              title="Horas registradas"
-              value={`${totalHours}h`}
-              color="bg-emerald-500"
-            />
-            <KpiCard
-              icon={<CalendarCheck className="w-6 h-6" />}
-              title="Progreso promedio"
-              value={avgProgress !== null ? `${avgProgress}%` : "—"}
-              color="bg-amber-500"
-            />
+            <KpiCard icon={<Clock className="w-6 h-6" />} title="Pasantes activos" value={rows.filter((r) => r.status !== "Finalizado").length} color="bg-blue-500" />
+            <KpiCard icon={<CheckCircle2 className="w-6 h-6" />} title="Horas registradas" value={`${totalHoursAll}h`} color="bg-emerald-500" />
+            <KpiCard icon={<CalendarCheck className="w-6 h-6" />} title="Progreso promedio" value={avgProgress !== null ? `${avgProgress}%` : "—"} color="bg-amber-500" />
           </section>
         )}
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-40 gap-4">
             <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-              Cargando pasantes...
-            </p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cargando pasantes...</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="bg-white rounded-[2.5rem] border border-dashed border-slate-200 p-20 text-center">
@@ -203,61 +267,69 @@ export default function TutorAsistenciaPage() {
                 className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden"
               >
                 {/* Fila principal */}
-                <button
-                  onClick={() => handleToggle(row.internshipId)}
-                  className="w-full p-7 flex flex-col md:flex-row md:items-center gap-5 text-left hover:bg-slate-50/50 transition-colors"
-                >
-                  <div className="w-14 h-14 rounded-[1.5rem] bg-[#003366]/5 flex items-center justify-center text-xl font-black text-[#003366] shrink-0">
-                    {row.studentName.charAt(0)}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-black text-[#003366] truncate">{row.studentName}</h3>
-                    <div className="flex flex-wrap gap-4 mt-1">
-                      <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        <Building2 className="w-3 h-3" />
-                        {row.companyName}
-                      </span>
-                      <span
-                        className={cn(
-                          "px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest",
-                          row.status === "Finalizado"
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-amber-50 text-amber-700",
-                        )}
-                      >
-                        {row.status}
-                      </span>
+                <div className="p-7 flex flex-col md:flex-row md:items-center gap-5">
+                  <button
+                    onClick={() => handleToggle(row.internshipId)}
+                    className="flex-1 flex flex-col md:flex-row md:items-center gap-5 text-left"
+                  >
+                    <div className="w-14 h-14 rounded-[1.5rem] bg-[#003366]/5 flex items-center justify-center text-xl font-black text-[#003366] shrink-0">
+                      {row.studentName.charAt(0)}
                     </div>
-                  </div>
-
-                  {/* Progress mini */}
-                  <div className="flex items-center gap-4 shrink-0">
-                    {row.summary ? (
-                      <div className="text-right">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                          {row.summary.totalHours}h / {row.summary.requiredHours}h
-                        </p>
-                        <div className="w-32 h-2 bg-slate-100 rounded-full mt-1 overflow-hidden">
-                          <div
-                            className="h-full bg-[#003366] rounded-full transition-all"
-                            style={{ width: `${row.summary.progressPercentage}%` }}
-                          />
-                        </div>
-                        <p className="text-[9px] font-black text-[#C5A059] mt-0.5">
-                          {row.summary.progressPercentage}% completado
-                        </p>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-black text-[#003366] truncate">{row.studentName}</h3>
+                      <div className="flex flex-wrap gap-4 mt-1">
+                        <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                          <Building2 className="w-3 h-3" />{row.companyName}
+                        </span>
+                        <span className={cn(
+                          "px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest",
+                          row.status === "Finalizado" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700",
+                        )}>
+                          {row.status}
+                        </span>
+                        {/* Badge de ubicaciones */}
+                        <span className={cn(
+                          "flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest",
+                          row.allowedLocations.length > 0
+                            ? "bg-blue-50 text-blue-700"
+                            : "bg-rose-50 text-rose-600",
+                        )}>
+                          <MapPin className="w-2.5 h-2.5" />
+                          {row.allowedLocations.length > 0
+                            ? `${row.allowedLocations.length} sede(s)`
+                            : "Sin sedes"}
+                        </span>
                       </div>
-                    ) : row.loadingDetail ? (
-                      <Loader2 className="w-5 h-5 text-[#003366] animate-spin" />
-                    ) : null}
-                    {expandedId === row.internshipId ? (
-                      <ChevronUp className="w-4 h-4 text-slate-400" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-slate-400" />
-                    )}
-                  </div>
-                </button>
+                    </div>
+
+                    {/* Progress mini */}
+                    <div className="flex items-center gap-4 shrink-0">
+                      {row.summary ? (
+                        <div className="text-right">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            {row.summary.totalHours}h / {row.summary.requiredHours}h
+                          </p>
+                          <div className="w-32 h-2 bg-slate-100 rounded-full mt-1 overflow-hidden">
+                            <div className="h-full bg-[#003366] rounded-full transition-all" style={{ width: `${row.summary.progressPercentage}%` }} />
+                          </div>
+                          <p className="text-[9px] font-black text-[#C5A059] mt-0.5">{row.summary.progressPercentage}% completado</p>
+                        </div>
+                      ) : row.loadingDetail ? (
+                        <Loader2 className="w-5 h-5 text-[#003366] animate-spin" />
+                      ) : null}
+                      {expandedId === row.internshipId ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                    </div>
+                  </button>
+
+                  {/* Botón gestionar ubicaciones */}
+                  <button
+                    onClick={() => openLocationModal(row)}
+                    className="flex items-center gap-2 px-4 py-2.5 border-2 border-[#003366]/20 rounded-2xl text-[10px] font-black text-[#003366] uppercase tracking-widest hover:bg-[#003366] hover:text-white hover:border-[#003366] transition-all shrink-0"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    Gestionar Sedes
+                  </button>
+                </div>
 
                 {/* Detalle de historial */}
                 <AnimatePresence>
@@ -284,16 +356,29 @@ export default function TutorAsistenciaPage() {
                                   { label: "Registros", value: String(row.summary.totalRecords) },
                                   { label: "Horas pendientes", value: `${row.summary.remainingHours}h` },
                                 ].map((kpi) => (
-                                  <div
-                                    key={kpi.label}
-                                    className="bg-slate-50 rounded-2xl p-4 border border-slate-100"
-                                  >
-                                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
-                                      {kpi.label}
-                                    </p>
+                                  <div key={kpi.label} className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">{kpi.label}</p>
                                     <p className="text-xl font-black text-[#003366]">{kpi.value}</p>
                                   </div>
                                 ))}
+                              </div>
+                            )}
+
+                            {/* Sedes configuradas */}
+                            {row.allowedLocations.length > 0 && (
+                              <div className="mb-6 p-5 bg-blue-50 rounded-2xl border border-blue-100">
+                                <p className="text-[9px] font-black uppercase tracking-widest text-blue-700 mb-3 flex items-center gap-2">
+                                  <MapPin className="w-3 h-3" /> Sedes de Asistencia Configuradas
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                  {row.allowedLocations.map((loc, i) => (
+                                    <span key={i} className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-xl border border-blue-200 text-[10px] font-bold text-blue-800">
+                                      <MapPin className="w-3 h-3 text-blue-500" />
+                                      {loc.label}
+                                      <span className="text-blue-400">· {loc.radiusM ?? 200}m</span>
+                                    </span>
+                                  ))}
+                                </div>
                               </div>
                             )}
 
@@ -310,52 +395,66 @@ export default function TutorAsistenciaPage() {
                                       <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">Fecha</th>
                                       <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">Entrada</th>
                                       <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">Salida</th>
+                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">Foto</th>
                                       <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">Distancia</th>
                                     </tr>
                                   </thead>
                                   <tbody className="divide-y divide-slate-50">
-                                    {row.history.slice(0, 10).map((h: any) => (
+                                    {row.history.slice(0, 15).map((h: any) => (
                                       <tr key={h.id} className="hover:bg-slate-50 transition-colors">
                                         <td className="px-5 py-3 font-bold text-[#003366]">
-                                          {new Date(h.checkIn).toLocaleDateString("es-ES", {
-                                            day: "numeric", month: "short",
-                                          })}
+                                          {new Date(h.checkIn).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
                                         </td>
                                         <td className="px-5 py-3">
                                           <div className="flex items-center gap-1.5 text-emerald-600 font-bold">
                                             <ArrowRightCircle className="w-3.5 h-3.5" />
-                                            {new Date(h.checkIn).toLocaleTimeString([], {
-                                              hour: "2-digit", minute: "2-digit",
-                                            })}
+                                            {new Date(h.checkIn).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                           </div>
                                         </td>
                                         <td className="px-5 py-3">
                                           {h.checkOut ? (
                                             <div className="flex items-center gap-1.5 text-rose-500 font-bold">
                                               <ArrowLeftCircle className="w-3.5 h-3.5" />
-                                              {new Date(h.checkOut).toLocaleTimeString([], {
-                                                hour: "2-digit", minute: "2-digit",
-                                              })}
+                                              {new Date(h.checkOut).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                             </div>
                                           ) : (
                                             <span className="text-amber-500 font-black text-[9px] uppercase">Pendiente</span>
                                           )}
                                         </td>
                                         <td className="px-5 py-3">
+                                          <div className="flex gap-1">
+                                            {h.checkInPhoto && (
+                                              <a href={h.checkInPhoto} target="_blank" rel="noopener noreferrer" title="Foto entrada">
+                                                <div className="w-7 h-7 rounded-lg overflow-hidden border border-emerald-200">
+                                                  <img src={h.checkInPhoto} alt="entrada" className="w-full h-full object-cover" />
+                                                </div>
+                                              </a>
+                                            )}
+                                            {h.checkOutPhoto && (
+                                              <a href={h.checkOutPhoto} target="_blank" rel="noopener noreferrer" title="Foto salida">
+                                                <div className="w-7 h-7 rounded-lg overflow-hidden border border-rose-200">
+                                                  <img src={h.checkOutPhoto} alt="salida" className="w-full h-full object-cover" />
+                                                </div>
+                                              </a>
+                                            )}
+                                            {!h.checkInPhoto && !h.checkOutPhoto && (
+                                              <span className="text-slate-300 text-[9px] font-bold">—</span>
+                                            )}
+                                          </div>
+                                        </td>
+                                        <td className="px-5 py-3">
                                           <div className="flex items-center gap-1 text-slate-400 font-bold">
                                             <MapPin className="w-3 h-3" />
-                                            {h.distanceKm
-                                              ? `${(h.distanceKm * 1000).toFixed(0)}m`
-                                              : "N/A"}
+                                            {h.distanceKm ? `${(h.distanceKm * 1000).toFixed(0)}m` : "N/A"}
                                           </div>
                                         </td>
                                       </tr>
                                     ))}
                                   </tbody>
                                 </table>
-                                {row.history.length > 10 && (
+                                {row.history.length > 15 && (
                                   <p className="text-center text-[9px] font-black uppercase tracking-widest text-slate-300 py-3 border-t border-slate-100">
-                                    Mostrando los últimos 10 registros
+                                    Mostrando los últimos 15 registros
                                   </p>
                                 )}
                               </div>
@@ -371,20 +470,208 @@ export default function TutorAsistenciaPage() {
           </div>
         )}
       </div>
+
+      {/* ── Modal: Gestionar Ubicaciones ──────────────────────────────────────── */}
+      <AnimatePresence>
+        {locationModalId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.92, opacity: 0 }}
+              className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl overflow-hidden"
+            >
+              {/* Header */}
+              <div className="bg-[#003366] p-6 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.3em]">
+                    Gestión de Sedes · RF-ATT-LOC
+                  </p>
+                  <p className="text-white font-black text-lg mt-0.5">
+                    {activeRow?.studentName}
+                  </p>
+                </div>
+                <button
+                  onClick={closeLocationModal}
+                  className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
+                {/* Info */}
+                <div className="flex gap-3 p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                  <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                  <p className="text-[10px] font-bold text-blue-700 leading-relaxed">
+                    El estudiante solo podrá marcar asistencia si se encuentra dentro del radio configurado para al menos una de las sedes. Puedes añadir múltiples sedes o sucursales.
+                  </p>
+                </div>
+
+                {/* Sedes existentes */}
+                <div className="space-y-2">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                    Sedes configuradas ({editingLocations.length})
+                  </p>
+
+                  {editingLocations.length === 0 ? (
+                    <div className="p-6 border-2 border-dashed border-slate-200 rounded-2xl text-center">
+                      <MapPin className="w-10 h-10 text-slate-200 mx-auto mb-2" />
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-300">
+                        Sin sedes configuradas
+                      </p>
+                      <p className="text-[9px] text-slate-400 mt-1">
+                        El estudiante no podrá marcar asistencia hasta que configures al menos una sede.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {editingLocations.map((loc, i) => (
+                        <div key={i} className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 group">
+                          <div className="w-8 h-8 bg-[#003366] rounded-xl flex items-center justify-center text-[#C5A059] shrink-0 text-xs font-black">
+                            {i + 1}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-black text-[#003366] text-sm">{loc.label}</p>
+                            <p className="text-[9px] text-slate-400 font-bold mt-0.5">
+                              Lat: {loc.lat.toFixed(6)} · Lng: {loc.lng.toFixed(6)} · Radio: {loc.radiusM ?? 200}m
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleRemoveLocation(i)}
+                            className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Agregar nueva sede */}
+                <div className="border-t border-slate-100 pt-5 space-y-3">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                    <Plus className="w-3 h-3" /> Agregar nueva sede
+                  </p>
+
+                  <input
+                    type="text"
+                    value={newLocLabel}
+                    onChange={(e) => setNewLocLabel(e.target.value)}
+                    placeholder="Nombre de la sede (ej. Sede Central, Sucursal Norte)"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm font-medium text-[#003366] focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 mb-1 block">
+                        Latitud
+                      </label>
+                      <input
+                        type="number"
+                        step="0.000001"
+                        value={newLocLat}
+                        onChange={(e) => setNewLocLat(e.target.value)}
+                        placeholder="-0.123456"
+                        className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm font-medium text-[#003366] focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 mb-1 block">
+                        Longitud
+                      </label>
+                      <input
+                        type="number"
+                        step="0.000001"
+                        value={newLocLng}
+                        onChange={(e) => setNewLocLng(e.target.value)}
+                        placeholder="-78.456789"
+                        className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm font-medium text-[#003366] focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-end gap-3">
+                    <div className="flex-1">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 mb-1 block">
+                        Radio permitido (metros)
+                      </label>
+                      <input
+                        type="number"
+                        min={50}
+                        max={5000}
+                        value={newLocRadius}
+                        onChange={(e) => setNewLocRadius(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm font-medium text-[#003366] focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <button
+                      onClick={handleGetGps}
+                      disabled={gettingGps}
+                      title="Usar mi ubicación GPS actual"
+                      className="flex items-center gap-2 px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-100 disabled:opacity-60 transition-colors whitespace-nowrap"
+                    >
+                      {gettingGps ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
+                      Mi GPS
+                    </button>
+                  </div>
+
+                  {addLocError && (
+                    <div className="flex items-center gap-2 p-3 bg-rose-50 border border-rose-100 rounded-xl text-rose-600">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <p className="text-[10px] font-bold">{addLocError}</p>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleAddLocation}
+                    className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-[#003366] rounded-2xl text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Agregar sede a la lista
+                  </button>
+                </div>
+
+                {/* Guardar */}
+                <div className="border-t border-slate-100 pt-4">
+                  <button
+                    onClick={handleSaveLocations}
+                    disabled={savingLocations || locationSaved}
+                    className={cn(
+                      "w-full py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-3",
+                      locationSaved
+                        ? "bg-emerald-500 text-white"
+                        : "bg-[#003366] text-white hover:bg-[#004488] disabled:opacity-60",
+                    )}
+                  >
+                    {savingLocations ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : locationSaved ? (
+                      <CheckCircle2 className="w-5 h-5" />
+                    ) : (
+                      <Save className="w-5 h-5" />
+                    )}
+                    {locationSaved ? "¡Guardado!" : savingLocations ? "Guardando..." : "Guardar Configuración"}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </DashboardLayout>
   );
 }
 
-function KpiCard({
-  icon, title, value, color,
-}: {
-  icon: React.ReactElement; title: string; value: string | number; color: string;
-}) {
+function KpiCard({ icon, title, value, color }: { icon: React.ReactElement; title: string; value: string | number; color: string }) {
   return (
-    <motion.div
-      whileHover={{ y: -4 }}
-      className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl"
-    >
+    <motion.div whileHover={{ y: -4 }} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl">
       <div className={cn("p-4 rounded-2xl inline-flex mb-6", color.replace("bg-", "bg-") + "/10")}>
         {React.cloneElement(icon as React.ReactElement<{ className?: string }>, {
           className: `w-6 h-6 ${color.replace("bg-", "text-")}`,

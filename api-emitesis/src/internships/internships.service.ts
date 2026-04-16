@@ -233,6 +233,23 @@ export class InternshipsService {
     });
   }
 
+  /** RF-ATT-LOC: Guardar la lista de ubicaciones permitidas para asistencia */
+  async updateLocations(id: string, locations: { label: string; lat: number; lng: number; radiusM?: number }[]) {
+    const internship = await this.prisma.internship.findUnique({ where: { id } });
+    if (!internship) throw new NotFoundException('Asignación no encontrada');
+
+    // También actualizar lat/lng principal con la primera ubicación para retrocompatibilidad
+    const primary = locations[0];
+    return this.prisma.internship.update({
+      where: { id },
+      data: {
+        allowedLocations: locations as any,
+        lat: primary?.lat ?? internship.lat,
+        lng: primary?.lng ?? internship.lng,
+      },
+    });
+  }
+
   async toggleTest(id: string) {
     const internship = await this.prisma.internship.findUnique({ where: { id } });
     if (!internship) {

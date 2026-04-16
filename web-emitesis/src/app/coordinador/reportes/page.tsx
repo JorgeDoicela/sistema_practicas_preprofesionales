@@ -236,7 +236,7 @@ function ReportStatCard({ title, value, hint, icon, color }: any) {
     >
       <div className="flex items-start justify-between mb-8">
         <div className={cn("p-4 rounded-2xl bg-opacity-10", colorMap[color].split(" ")[0])}>
-          {React.cloneElement(icon as React.ReactElement, { className: cn("w-6 h-6", colorMap[color].split(" ")[1]) })}
+          {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: cn("w-6 h-6", colorMap[color].split(" ")[1]) })}
         </div>
         <div className="w-8 h-8 rounded-full border border-slate-100 flex items-center justify-center text-slate-300 group-hover:text-[#003366] transition-colors">
            <ChevronRight className="w-4 h-4" />

@@ -309,7 +309,7 @@ export default function EvaluacionesPage() {
                                 <span className="text-[11px] font-bold text-slate-600">{label}</span>
                                 <StarRow
                                   score={
-                                    r.evaluation![key as keyof typeof CRITERIA_LABELS] as number
+                                    (r.evaluation as unknown as Record<string, number>)[key]
                                   }
                                 />
                               </div>

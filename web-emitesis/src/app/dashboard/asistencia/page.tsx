@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 import { attendancesService } from "@/services/attendances.service";
 import { internshipsService } from "@/services/internships.service";
 import { ROLES } from "@/constants/roles";
+
+interface AllowedLocation { label: string; lat: number; lng: number; radiusM?: number; }
 import { useWebAuthn } from "@/hooks/useWebAuthn";
 import { useCamera } from "@/hooks/useCamera";
 import { aiService } from "@/services/ai.service";
@@ -110,7 +112,7 @@ export default function AsistenciaPage() {
           attendancesService.findByInternship(active.id as string, f?.startDate, f?.endDate),
           attendancesService.getSummary(active.id as string),
         ]);
-        setStatus(todayStatus);
+        setStatus(todayStatus as Record<string, unknown> | null);
         setHistory(attendanceHistory as Record<string, unknown>[]);
         setSummary(attendanceSummary);
 
@@ -343,12 +345,32 @@ export default function AsistenciaPage() {
             </div>
           </div>
 
-          {/* Requisitos */}
+          {/* Requisitos + sedes */}
           <div className="flex flex-col items-end gap-2">
-            <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl">
-              <MapPin className="w-4 h-4" />
-              <span className="text-[10px] font-black uppercase tracking-widest">GPS &lt; 200m</span>
-            </div>
+            {/* Sedes permitidas */}
+            {internship && (() => {
+              const locs: AllowedLocation[] = Array.isArray((internship as any).allowedLocations) && (internship as any).allowedLocations.length > 0
+                ? (internship as any).allowedLocations
+                : (internship as any).lat && (internship as any).lng
+                  ? [{ label: "Sede principal", lat: (internship as any).lat, lng: (internship as any).lng, radiusM: 200 }]
+                  : [];
+              if (locs.length === 0) return (
+                <div className="flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-600 rounded-xl">
+                  <AlertCircle className="w-4 h-4" />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Sin sedes configuradas</span>
+                </div>
+              );
+              return (
+                <div className="flex flex-col gap-1 items-end">
+                  {locs.map((loc, i) => (
+                    <div key={i} className="flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-700 rounded-xl">
+                      <MapPin className="w-3.5 h-3.5" />
+                      <span className="text-[9px] font-black uppercase tracking-widest">{loc.label} · {loc.radiusM ?? 200}m</span>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
             <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-xl">
               <Fingerprint className="w-4 h-4" />
               <span className="text-[10px] font-black uppercase tracking-widest">Biometría</span>
