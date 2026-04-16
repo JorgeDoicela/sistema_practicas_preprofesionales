@@ -18,6 +18,7 @@ import { User as UserType } from "@/types/user";
 import { ROLES, normalizeApiRoleToAppRole, type Role } from "@/constants/roles";
 import { internshipsService } from "@/services/internships.service";
 import { agreementsService } from "@/services/agreements.service";
+import { reportsService, GlobalStats } from "@/services/reports.service";
 
 type InternshipRow = {
   id: string;
@@ -79,6 +80,7 @@ export function DashboardMain() {
   const [error, setError] = useState<string | null>(null);
   const [internships, setInternships] = useState<InternshipRow[]>([]);
   const [agreementsCount, setAgreementsCount] = useState<number | null>(null);
+  const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
 
   const loadDashboard = useCallback(async (u: UserType & { role: string }) => {
     const role = normalizeApiRoleToAppRole(u.role);
@@ -87,13 +89,14 @@ export function DashboardMain() {
     setError(null);
 
     try {
-      if (role === ROLES.ADMIN || role === ROLES.COORDINADOR) {
-        const [all, agr] = await Promise.all([
+        const [all, agr, stats] = await Promise.all([
           internshipsService.findAll() as Promise<InternshipRow[]>,
           agreementsService.findAll() as Promise<Array<{ status?: string }>>,
+          reportsService.getGlobalStats(),
         ]);
         setInternships(Array.isArray(all) ? all : []);
         setAgreementsCount((agr ?? []).filter((a) => (a.status ?? "Activo") === "Activo").length);
+        setGlobalStats(stats);
         return;
       }
 
@@ -211,18 +214,18 @@ export function DashboardMain() {
             color: "bg-indigo-500",
           },
           {
-            title: "Horas planificadas",
-            value: hoursPlanned.toLocaleString("es-EC"),
-            hint: "Suma de horas por asignación",
+            title: "Horas cumplidas",
+            value: globalStats ? `${globalStats.totalCompletedHours}h` : "—",
+            hint: globalStats ? `De ${globalStats.totalPlannedHours}h planificadas` : "Suma de todas las horas",
             icon: <Clock className="w-6 h-6" />,
             color: "bg-amber-500",
           },
           {
-            title: "Documentación",
-            value: `${pct}%`,
-            hint: `${approved} aprobación definitiva de ${totalDocs} documentos`,
-            icon: <CheckCircle2 className="w-6 h-6" />,
-            color: "bg-emerald-500",
+            title: "Docs. Pendientes",
+            value: globalStats ? String(globalStats.pendingDocs) : "—",
+            hint: "Esperando revisión de coordinación",
+            icon: <FileCheck className="w-6 h-6" />,
+            color: "bg-rose-500",
           },
         ],
       };
@@ -556,6 +559,12 @@ export function DashboardMain() {
                           className="w-full py-3.5 bg-white/15 border border-white/30 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest text-center hover:bg-white/25"
                         >
                           Convenios
+                        </Link>
+                        <Link
+                          href="/coordinador/reportes"
+                          className="w-full py-3.5 bg-slate-900/40 border border-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest text-center hover:bg-black/40"
+                        >
+                          Módulo de Reportes
                         </Link>
                       </>
                     )}

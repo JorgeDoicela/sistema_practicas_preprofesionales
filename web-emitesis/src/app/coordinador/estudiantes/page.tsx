@@ -25,6 +25,7 @@ import { internshipsService } from "@/services/internships.service";
 import { documentsService } from "@/services/documents.service";
 import { attendancesService } from "@/services/attendances.service";
 import { certificationService, EligibilityResponse } from "@/services/certification.service";
+import { reportsService } from "@/services/reports.service";
 import type { PdfReviewAnnotationsPayload } from "@/lib/pdf-review-annotations";
 import { parseReviewAnnotations } from "@/lib/pdf-review-annotations";
 
@@ -162,6 +163,14 @@ export default function GestionEstudiantesPage() {
     }
   };
 
+  const handleExportAttendance = async (internshipId: string) => {
+    try {
+      await reportsService.exportAttendanceExcel(internshipId);
+    } catch (error) {
+      alert("Error al exportar asistencia");
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-10 max-w-[1600px] mx-auto pb-20">
@@ -210,6 +219,7 @@ export default function GestionEstudiantesPage() {
                 onToggle={() => setExpandedInternshipId(expandedInternshipId === internship.id ? null : internship.id)}
                 onReviewClick={handleReviewClick}
                 onGenerateCertificate={() => handleGenerateCertificate(internship.id)}
+                onExportAttendance={handleExportAttendance}
               />
             ))}
           </div>
@@ -340,7 +350,8 @@ function StudentInternshipCard({
   generating, 
   onToggle, 
   onReviewClick, 
-  onGenerateCertificate 
+  onGenerateCertificate,
+  onExportAttendance 
 }: any) {
   const documents = Array.isArray(internship.documents) ? internship.documents : [];
   const pendingDocs = documents.filter((d: any) => d.status === 'APROBADO_TUTOR').length;
@@ -400,6 +411,13 @@ function StudentInternshipCard({
            )}>
               <ChevronRight className="w-5 h-5" />
            </div>
+           <button 
+              onClick={(e) => { e.stopPropagation(); onExportAttendance(internship.id); }}
+              className="p-3 bg-white border border-slate-200 text-slate-400 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-100 transition-all flex items-center justify-center group/btn"
+              title="Exportar Asistencia (Excel)"
+            >
+               <FileSpreadsheet className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+            </button>
         </div>
       </div>
 

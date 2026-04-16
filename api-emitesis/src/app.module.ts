@@ -16,8 +16,8 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { StorageModule } from './infrastructure/storage/storage.module';
 import { WebauthnModule } from './webauthn/webauthn.module';
 import { AiModule } from './ai/ai.module';
-import { SystemLogsModule } from './system-logs/system-logs.module';
 import { DocumentTemplatesModule } from './document-templates/document-templates.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -38,6 +38,7 @@ import { DocumentTemplatesModule } from './document-templates/document-templates
     AiModule,
     SystemLogsModule,
     DocumentTemplatesModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
