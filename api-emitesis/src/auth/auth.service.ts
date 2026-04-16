@@ -26,23 +26,43 @@ export class AuthService {
 
   private async verifyRecaptcha(token: string) {
     const secretKey = this.configService.get<string>('RECAPTCHA_SECRET_KEY');
+    const skipRecaptcha = this.configService.get<string>('SKIP_RECAPTCHA') === 'true';
+
+    // Bypass por configuración explícita (útil para clonar el proyecto en nuevos entornos de dev)
+    if (skipRecaptcha) {
+      console.warn('--- RECAPTCHA BYPASS: SKIP_RECAPTCHA=true detectado. Saltando validación. ---');
+      return true;
+    }
     
-    // Si no hay clave configurada, saltamos la validación (para dev/test)
+    // Si no hay clave configurada o es el placeholder inicial
     if (!secretKey || secretKey === 'PONER_AQUI_TU_CLAVE_SECRETA_DE_GOOGLE') {
-      console.warn('reCAPTCHA Secret Key no configurada. Saltando validación.');
+      console.warn('reCAPTCHA Secret Key no configurada o incompleta. Use SKIP_RECAPTCHA=true para bypass local.');
       return true;
     }
 
     try {
-      console.log('Validando token con Google...');
+      // Usamos URLSearchParams para asegurar el formato application/x-www-form-urlencoded
+      const params = new URLSearchParams();
+      params.append('secret', secretKey);
+      params.append('response', token);
+
       const response = await axios.post<{ success: boolean; 'error-codes'?: string[] }>(
-        `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${token}`
+        'https://www.google.com/recaptcha/api/siteverify',
+        params.toString(),
+        {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        }
       );
       
-      console.log('Resultado de Google:', response.data);
+      if (!response.data.success) {
+          console.error('--- FALLO DE RECAPTCHA ---');
+          console.error('Causas indicadas por Google:', response.data['error-codes']?.join(', ') || 'Desconocido');
+          console.error('Tip: Asegúrese de que el dominio/IP de esta laptop esté autorizado en el panel de Google ReCAPTCHA.');
+      }
+
       return response.data.success;
     } catch (error: unknown) {
-      console.error('Error verificando reCAPTCHA:', (error as Error).message);
+      console.error('Error de red al verificar reCAPTCHA:', (error as Error).message);
       return false;
     }
   }

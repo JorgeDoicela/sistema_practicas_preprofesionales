@@ -17,6 +17,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 import { useRef } from "react";
 import { sanitizeEmailClient, sanitizePasswordClient } from "@/utils/security";
 import { ROLE_REDIRECTS, Role, normalizeApiRoleToAppRole } from "@/constants/roles";
+import { AlertTriangle, Info } from "lucide-react";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -30,6 +31,9 @@ export default function LoginPage() {
     const [mfaCode, setMfaCode] = useState("");
     const [mfaUserId, setMfaUserId] = useState<string | null>(null);
     const recaptchaRef = useRef<ReCAPTCHA>(null);
+    
+    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+    const isDev = process.env.NODE_ENV === "development";
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -37,7 +41,7 @@ export default function LoginPage() {
         setError(null);
 
         try {
-            if (!recaptchaToken) {
+            if (siteKey && !recaptchaToken) {
                 setError("Por favor, completa el reCAPTCHA.");
                 setIsLoading(false);
                 return;
@@ -156,13 +160,27 @@ export default function LoginPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-center py-2">
-                                        <ReCAPTCHA
-                                            ref={recaptchaRef}
-                                            sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
-                                            onChange={(token: string | null) => setRecaptchaToken(token)}
-                                        />
-                                    </div>
+                                    {siteKey ? (
+                                        <div className="flex justify-center py-2">
+                                            <ReCAPTCHA
+                                                ref={recaptchaRef}
+                                                sitekey={siteKey}
+                                                onChange={(token: string | null) => setRecaptchaToken(token)}
+                                            />
+                                        </div>
+                                    ) : (
+                                        isDev && (
+                                            <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
+                                                <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                                                <div className="space-y-1">
+                                                    <p className="text-[10px] font-black uppercase text-amber-800 tracking-widest">Modo Desarrollo</p>
+                                                    <p className="text-[10px] font-medium text-amber-600 leading-tight">
+                                                        ReCAPTCHA no configurado. Use <code className="bg-amber-100 px-1 rounded">SKIP_RECAPTCHA=true</code> en el backend para iniciar sesión.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )
+                                    )}
 
                                     {error && <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-bold text-center border border-red-100">{error}</div>}
 
