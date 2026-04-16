@@ -75,7 +75,7 @@ export class AttendanceService {
 
     // Validar ubicación contra todas las sedes permitidas
     const locationError = this.checkLocationAllowed(lat, lng, internship);
-    if (locationError) {
+    if (locationError && !internship.testEnabled) {
       throw new BadRequestException(locationError);
     }
 
@@ -132,9 +132,9 @@ export class AttendanceService {
     }
 
     // Validar ubicación contra todas las sedes permitidas
-    const locationErrorOut = this.checkLocationAllowed(lat, lng, internship);
-    if (locationErrorOut) {
-      throw new BadRequestException(locationErrorOut);
+    const locationError = this.checkLocationAllowed(lat, lng, internship);
+    if (locationError && !internship.testEnabled) {
+      throw new BadRequestException(locationError);
     }
 
     const today = new Date();

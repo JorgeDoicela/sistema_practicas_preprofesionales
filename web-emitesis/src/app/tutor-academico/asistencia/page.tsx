@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
 import { attendancesService } from "@/services/attendances.service";
+import MapPicker from "@/components/shared/MapPicker";
 
 // ── Tipos ──────────────────────────────────────────────────────────────────
 interface AllowedLocation {
@@ -59,6 +60,7 @@ export default function TutorAsistenciaPage() {
   const [newLocRadius, setNewLocRadius] = useState("200");
   const [gettingGps, setGettingGps] = useState(false);
   const [addLocError, setAddLocError] = useState<string | null>(null);
+  const [showMapSelector, setShowMapSelector] = useState(false);
 
   const loadBase = useCallback(async () => {
     try {
@@ -131,6 +133,7 @@ export default function TutorAsistenciaPage() {
     setNewLocLabel(""); setNewLocLat(""); setNewLocLng(""); setNewLocRadius("200");
     setAddLocError(null); setLocationSaved(false);
     setLocationModalId(row.internshipId);
+    setShowMapSelector(false);
   };
 
   const closeLocationModal = () => setLocationModalId(null);
@@ -559,6 +562,39 @@ export default function TutorAsistenciaPage() {
                   <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
                     <Plus className="w-3 h-3" /> Agregar nueva sede
                   </p>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setShowMapSelector(!showMapSelector)}
+                      className={cn(
+                        "flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border-2",
+                        showMapSelector
+                          ? "bg-blue-50 border-blue-200 text-blue-700"
+                          : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
+                      )}
+                    >
+                      <MapPin className="w-4 h-4" />
+                      {showMapSelector ? "Cerrar Mapa" : "Seleccionar en Mapa"}
+                    </button>
+                  </div>
+
+                  {showMapSelector && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="space-y-3"
+                    >
+                      <MapPicker
+                        lat={parseFloat(newLocLat) || -0.180653}
+                        lng={parseFloat(newLocLng) || -78.467838}
+                        radiusM={parseInt(newLocRadius, 10) || 200}
+                        onChange={(lat, lng) => {
+                          setNewLocLat(lat.toFixed(6));
+                          setNewLocLng(lng.toFixed(6));
+                        }}
+                      />
+                    </motion.div>
+                  )}
 
                   <input
                     type="text"

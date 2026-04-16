@@ -29,29 +29,37 @@ export class WebauthnService {
 
   /** RF-14: Generar opciones para registrar credencial biométrica */
   async generateRegistrationOptions(userId: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new NotFoundException('Usuario no encontrado');
+    try {
+      const user = await this.prisma.user.findUnique({ where: { id: userId } });
+      if (!user) throw new NotFoundException('Usuario no encontrado');
 
-    const options = await generateRegistrationOptions({
-      rpName: this.rpName,
-      rpID: this.rpID,
-      userName: user.email,
-      userDisplayName: user.fullName,
-      attestationType: 'none',
-      authenticatorSelection: {
-        authenticatorAttachment: 'platform',
-        userVerification: 'required',
-        residentKey: 'preferred',
-      },
-      supportedAlgorithmIDs: [-7, -257],
-    });
+      const options = await generateRegistrationOptions({
+        rpName: this.rpName,
+        rpID: this.rpID,
+        userName: user.email,
+        userDisplayName: user.fullName,
+        attestationType: 'none',
+        authenticatorSelection: {
+          authenticatorAttachment: 'platform',
+          userVerification: 'required',
+          residentKey: 'preferred',
+        },
+        supportedAlgorithmIDs: [-7, -257],
+      });
 
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { webauthnChallenge: options.challenge },
-    });
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { webauthnChallenge: options.challenge },
+      });
 
-    return options;
+      return options;
+    } catch (err: any) {
+      console.error('[WebauthnService] Error generating registration options:', err);
+      if (err instanceof NotFoundException) throw err;
+      throw new BadRequestException(
+        `Error al generar opciones de registro: ${err.message || 'Error desconocido'}. Verifique la configuración WEBAUTHN_RP_ID.`,
+      );
+    }
   }
 
   /** RF-14: Verificar y almacenar la credencial biométrica */
