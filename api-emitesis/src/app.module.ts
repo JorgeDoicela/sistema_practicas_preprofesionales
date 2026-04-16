@@ -18,6 +18,7 @@ import { WebauthnModule } from './webauthn/webauthn.module';
 import { AiModule } from './ai/ai.module';
 import { DocumentTemplatesModule } from './document-templates/document-templates.module';
 import { ReportsModule } from './reports/reports.module';
+import { PrivacyModule } from './privacy/privacy.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { ReportsModule } from './reports/reports.module';
     SystemLogsModule,
     DocumentTemplatesModule,
     ReportsModule,
+    PrivacyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -6,7 +6,7 @@ const MAX_MESSAGE = 2000;
 const MAX_PATH = 500;
 
 export type SystemLogLevel = 'INFO' | 'WARN' | 'ERROR';
-export type SystemLogCategory = 'HTTP' | 'AUTH' | 'SYSTEM';
+export type SystemLogCategory = 'HTTP' | 'AUTH' | 'SYSTEM' | 'PRIVACY';
 
 export interface CreateSystemLogInput {
   level: SystemLogLevel;

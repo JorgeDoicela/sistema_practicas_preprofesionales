@@ -50,8 +50,8 @@ export class InternshipsController {
   }
 
   @Get(':id')
-  @Roles(Role.COORDINADOR, Role.ADMIN, Role.TUTOR, Role.ESTUDIANTE, Role.EMPRESA, Role.TUTOR_EMPRESARIAL)
-  findOne(@Param('id') id: string) {
-    return this.internshipsService.findOne(id);
+  @Roles(Role.ADMIN, Role.COORDINADOR, Role.TUTOR, Role.ESTUDIANTE)
+  findOne(@Param('id') id: string, @Req() req: any) {
+    return this.internshipsService.findOne(id, req.user);
   }
 }

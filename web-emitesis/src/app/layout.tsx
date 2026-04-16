@@ -25,6 +25,7 @@ export const metadata: Metadata = {
 
 import { Navbar } from "@/components/navigation/Navbar";
 import { Footer } from "@/components/navigation/Footer";
+import { PrivacyConsentWrapper } from "@/components/auth/PrivacyConsentWrapper";
 
 export default function RootLayout({
   children,
@@ -36,7 +37,9 @@ export default function RootLayout({
       <body className={`${montserrat.variable} ${roboto.variable} font-body antialiased bg-slate-50 text-slate-900`}>
         <Navbar />
         <main className="min-h-screen">
-          {children}
+          <PrivacyConsentWrapper>
+            {children}
+          </PrivacyConsentWrapper>
         </main>
         <Footer />
       </body>

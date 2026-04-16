@@ -4,11 +4,14 @@ import { CreateInternshipDto } from './dto/create-internship.dto';
 import { EmailService } from '../notifications/email.service';
 import { FALLBACK_DOCUMENT_TEMPLATES } from '../document-templates/document-templates.constants';
 
+import { SystemLogsService } from '../system-logs/system-logs.service';
+
 @Injectable()
 export class InternshipsService {
   constructor(
     private prisma: PrismaService,
     private emailService: EmailService,
+    private systemLogs: SystemLogsService,
   ) {}
 
   async create(dto: CreateInternshipDto) {
@@ -241,7 +244,7 @@ export class InternshipsService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, actor?: { id: string, role: string, email: string }) {
     const internship = await this.prisma.internship.findUnique({
       where: { id },
       include: {
@@ -255,6 +258,24 @@ export class InternshipsService {
 
     if (!internship) {
       throw new NotFoundException('Asignación no encontrada');
+    }
+
+    // PIA: Auditoría de acceso a datos personales (LOPDP)
+    // Solo logueamos si el que accede no es el propio estudiante
+    if (actor && actor.id !== internship.studentId && (actor.role === 'ADMIN' || actor.role === 'COORDINADOR' || actor.role === 'TUTOR')) {
+        this.systemLogs.append({
+            level: 'INFO',
+            category: 'PRIVACY',
+            message: `Acceso a datos personales (PIA): ${actor.role} consultó el expediente del estudiante ${internship.student.fullName}`,
+            userId: actor.id,
+            actorEmail: actor.email,
+            path: `/dashboard/documentos/${id}`,
+            metadata: {
+                studentId: internship.studentId,
+                internshipId: id,
+                impact: 'PERSONAL_DATA_EXPOSURE'
+            }
+        });
     }
 
     return internship;
