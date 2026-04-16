@@ -63,5 +63,39 @@ export const privacyService = {
         throw new Error('Error al obtener sus solicitudes');
     }
     return response.json();
+  },
+
+  // ── Métodos de Administración (LOPDP) ──────────────────────────────────────
+
+  async findAllAdmin() {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/privacy/admin/requests`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+        throw new Error('Error al obtener la lista global de solicitudes LOPDP');
+    }
+    return response.json();
+  },
+
+  async respondAdmin(requestId: string, responseText: string, status: string) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/privacy/admin/requests/${requestId}/respond`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ response: responseText, status }),
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Error al responder a la solicitud LOPDP');
+    }
+    return response.json();
   }
 };

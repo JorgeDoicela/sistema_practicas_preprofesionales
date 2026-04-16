@@ -88,4 +88,35 @@ export class PrivacyService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  // ── Métodos Administrativos (LOPDP) ────────────────────────────────────────
+
+  async findAllRequests() {
+    return this.prisma.dataRequest.findMany({
+      include: {
+        user: {
+          select: {
+            fullName: true,
+            email: true,
+            role: true,
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async respondToRequest(requestId: string, response: string, status: string) {
+    return this.prisma.dataRequest.update({
+      where: { id: requestId },
+      data: {
+        response,
+        status,
+        updatedAt: new Date(),
+      },
+      include: {
+        user: true
+      }
+    });
+  }
 }

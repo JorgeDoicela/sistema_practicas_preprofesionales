@@ -1,58 +1,50 @@
 import { API_URL } from '@/lib/api-base';
 
-export interface SystemLogRow {
+export interface SystemLog {
   id: string;
   createdAt: string;
-  level: string;
-  category: string;
+  level: string; // INFO, WARN, ERROR
+  category: string; // HTTP, AUTH, SYSTEM, etc
   message: string;
-  method: string | null;
-  path: string | null;
-  statusCode: number | null;
-  userId: string | null;
-  actorEmail: string | null;
-  ip: string | null;
-  durationMs: number | null;
-  user?: {
-    id: string;
-    email: string;
-    fullName: string;
-    role: string;
-  } | null;
+  method?: string;
+  path?: string;
+  statusCode?: number;
+  userId?: string;
+  actorEmail?: string;
+  ip?: string;
+  durationMs?: number;
+  metadata?: any;
 }
 
-export interface SystemLogsResponse {
-  data: SystemLogRow[];
-  meta: { page: number; limit: number; total: number; totalPages: number };
+export interface PaginatedLogs {
+  data: SystemLog[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 export const systemLogsService = {
-  async findPage(params: {
-    page?: number;
-    limit?: number;
-    level?: string;
-    category?: string;
-  }): Promise<SystemLogsResponse> {
-    const token = localStorage.getItem("token");
-    const sp = new URLSearchParams();
-    if (params.page) sp.set("page", String(params.page));
-    if (params.limit) sp.set("limit", String(params.limit));
-    if (params.level) sp.set("level", params.level);
-    if (params.category) sp.set("category", params.category);
-    const q = sp.toString();
-    const response = await fetch(`${API_URL}/system-logs${q ? `?${q}` : ""}`, {
-      headers: { Authorization: `Bearer ${token}` },
+  async getLogs(page = 1, limit = 50, filters: { level?: string; category?: string } = {}) {
+    const token = localStorage.getItem('token');
+    const query = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+      ...(filters.level && { level: filters.level }),
+      ...(filters.category && { category: filters.category }),
     });
+
+    const response = await fetch(`${API_URL}/system-logs?${query.toString()}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
     if (!response.ok) {
-      let message = "Error al cargar el registro de actividad";
-      try {
-        const err = await response.json();
-        message = err.message || message;
-      } catch {
-        /* ignore */
-      }
-      throw new Error(message);
+      throw new Error('Error al obtener los logs del sistema');
     }
-    return response.json();
-  },
+    return response.json() as Promise<PaginatedLogs>;
+  }
 };

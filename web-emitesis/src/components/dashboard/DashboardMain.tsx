@@ -12,6 +12,8 @@ import {
   GraduationCap,
   AlertCircle,
   Loader2,
+  BarChart3,
+  PieChart,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { User as UserType } from "@/types/user";
@@ -480,6 +482,83 @@ export function DashboardMain() {
               />
             ))}
           </section>
+
+          {(appRole === ROLES.ADMIN || appRole === ROLES.COORDINADOR) && globalStats && (
+            <section className="bg-white rounded-[2.5rem] p-10 shadow-2xl shadow-slate-200/50 border border-slate-50 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-8 opacity-5">
+                <BarChart3 className="w-32 h-32 text-[#003366]" />
+              </div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="p-2.5 bg-brand-gold/10 text-brand-gold rounded-xl">
+                    <PieChart className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">Analíticas de Gestión Institucional</h3>
+                </div>
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
+                  <div className="space-y-6">
+                    <div>
+                      <div className="flex justify-between mb-2 text-[10px] font-black uppercase tracking-widest">
+                        <span className="text-slate-400">Progreso de Documentación</span>
+                        <span className="text-emerald-600">
+                          {Math.round((globalStats.approvedDocs / (globalStats.approvedDocs + globalStats.pendingDocs || 1)) * 100)}%
+                        </span>
+                      </div>
+                      <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${(globalStats.approvedDocs / (globalStats.approvedDocs + globalStats.pendingDocs || 1)) * 100}%` }}
+                          className="h-full bg-emerald-500 rounded-full"
+                        />
+                      </div>
+                      <p className="text-[9px] text-slate-400 mt-2 font-medium">Relación entre documentos con aprobación definitiva vs pendientes de revisión.</p>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-2 text-[10px] font-black uppercase tracking-widest">
+                        <span className="text-slate-400">Cumplimiento de Horas</span>
+                        <span className="text-brand-blue">
+                          {Math.round((globalStats.totalCompletedHours / (globalStats.totalPlannedHours || 1)) * 100)}%
+                        </span>
+                      </div>
+                      <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${(globalStats.totalCompletedHours / (globalStats.totalPlannedHours || 1)) * 100}%` }}
+                          className="h-full bg-brand-blue rounded-full"
+                        />
+                      </div>
+                      <p className="text-[9px] text-slate-400 mt-2 font-medium">Horas registradas en asistencias frente al total de horas planificadas.</p>
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-2 grid sm:grid-cols-3 gap-6">
+                    <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl transition-all cursor-default">
+                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Completadas</p>
+                       <p className="text-3xl font-black text-brand-blue">{globalStats.completedInternships}</p>
+                       <div className="w-full h-1 bg-emerald-100 rounded-full mt-3 overflow-hidden">
+                          <div className="h-full bg-emerald-500 w-[40%]" />
+                       </div>
+                    </div>
+                    <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl transition-all cursor-default">
+                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">En ejecución</p>
+                       <p className="text-3xl font-black text-brand-blue">{globalStats.activeInternships}</p>
+                       <div className="w-full h-1 bg-blue-100 rounded-full mt-3 overflow-hidden">
+                          <div className="h-full bg-blue-500 w-[70%]" />
+                       </div>
+                    </div>
+                    <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl transition-all cursor-default">
+                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Alumnos</p>
+                       <p className="text-3xl font-black text-brand-blue">{globalStats.totalStudents}</p>
+                       <div className="w-full h-1 bg-amber-100 rounded-full mt-3 overflow-hidden">
+                          <div className="h-full bg-amber-500 w-[100%]" />
+                       </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
 
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">

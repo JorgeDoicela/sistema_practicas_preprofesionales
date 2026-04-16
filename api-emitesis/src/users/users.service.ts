@@ -54,6 +54,10 @@ export class UsersService {
         fullName: true,
         role: true,
         isActive: true,
+        isTwoFactorEnabled: true,
+        lopdpAccepted: true,
+        lopdpAcceptedAt: true,
+        lopdpVersion: true,
         createdAt: true,
       },
     });

@@ -20,6 +20,7 @@ import {
     FlaskConical,
     Handshake,
     ScrollText,
+    ShieldAlert,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { User as UserType } from "@/types/user";
@@ -33,12 +34,12 @@ const MENUS: Record<string, Array<{ icon: React.ElementType; label: string; href
     ADMIN: [
         { icon: LayoutDashboard, label: "Tablero",              href: "/dashboard" },
         { icon: FileText,        label: "Plantillas documentos", href: "/coordinador/plantillas-documentos" },
-        { icon: ScrollText,      label: "Registro de actividad", href: "/admin/logs" },
+        { icon: ScrollText,      label: "Auditoría de Sistema",  href: "/admin/logs" },
+        { icon: ShieldAlert,     label: "Cumplimiento LOPDP",   href: "/admin/privacidad" },
         { icon: Users,           label: "Usuarios",             href: "/admin/usuarios" },
         { icon: UserPlus,        label: "Asignaciones",         href: "/coordinador/asignacion" },
         { icon: Handshake,       label: "Convenios",            href: "/coordinador/convenios" },
         { icon: GraduationCap,   label: "Gestión Estudiantes",  href: "/coordinador/estudiantes" },
-        { icon: FileStack,       label: "Documentos",           href: "/dashboard/documentos" },
     ],
     COORDINADOR: [
         { icon: LayoutDashboard, label: "Tablero",              href: "/dashboard" },

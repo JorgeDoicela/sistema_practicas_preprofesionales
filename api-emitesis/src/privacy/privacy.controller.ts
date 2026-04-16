@@ -1,4 +1,7 @@
-import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Role } from '@prisma/client';
+import { Roles } from '../auth/strategies/roles.decorator';
+import { RolesGuard } from '../auth/strategies/roles.guard';
 import { PrivacyService } from './privacy.service';
 import { PrivacyConsentDto, ArcoRequestDto } from './dto/privacy-actions.dto';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
@@ -26,5 +29,24 @@ export class PrivacyController {
   @Get('my-requests')
   getMyRequests(@Req() req: any) {
     return this.privacyService.getMyRequests(req.user.userId);
+  }
+
+  // ── Rutas de Administración (LOPDP) ────────────────────────────────────────
+
+  @Get('admin/requests')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  findAllAdmin() {
+    return this.privacyService.findAllRequests();
+  }
+
+  @Patch('admin/requests/:id/respond')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  respondAdmin(
+    @Param('id') id: string,
+    @Body() body: { response: string; status: string }
+  ) {
+    return this.privacyService.respondToRequest(id, body.response, body.status);
   }
 }
