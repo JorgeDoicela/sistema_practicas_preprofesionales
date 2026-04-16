@@ -10,21 +10,21 @@ export class PrivacyController {
 
   @Post('consent')
   recordConsent(@Req() req: any, @Body() dto: PrivacyConsentDto) {
-    return this.privacyService.recordConsent(req.user.id, dto);
+    return this.privacyService.recordConsent(req.user.userId, dto);
   }
 
   @Post('arco-request')
   createArcoRequest(@Req() req: any, @Body() dto: ArcoRequestDto) {
-    return this.privacyService.createArcoRequest(req.user.id, dto);
+    return this.privacyService.createArcoRequest(req.user.userId, dto);
   }
 
   @Get('my-data')
   getUserData(@Req() req: any) {
-    return this.privacyService.getUserDataSummary(req.user.id);
+    return this.privacyService.getUserDataSummary(req.user.userId);
   }
 
   @Get('my-requests')
   getMyRequests(@Req() req: any) {
-    return this.privacyService.getMyRequests(req.user.id);
+    return this.privacyService.getMyRequests(req.user.userId);
   }
 }

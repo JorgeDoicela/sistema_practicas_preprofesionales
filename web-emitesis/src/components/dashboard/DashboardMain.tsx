@@ -89,6 +89,7 @@ export function DashboardMain() {
     setError(null);
 
     try {
+      if (role === ROLES.ADMIN || role === ROLES.COORDINADOR) {
         const [all, agr, stats] = await Promise.all([
           internshipsService.findAll() as Promise<InternshipRow[]>,
           agreementsService.findAll() as Promise<Array<{ status?: string }>>,
