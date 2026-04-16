@@ -80,9 +80,6 @@ export default function LoginPage() {
             router.push(redirectPath);
         } catch (err: unknown) {
             setError((err as Error).message || "Credenciales inválidas.");
-            // Reset reCAPTCHA on error
-            setRecaptchaToken(null);
-            recaptchaRef.current?.reset();
         } finally {
             setIsLoading(false);
         }
