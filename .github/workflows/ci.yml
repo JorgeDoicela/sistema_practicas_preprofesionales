@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [ main ]
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   backend:
     name: Backend (api-emitesis)
@@ -35,11 +32,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: api-emitesis/package-lock.json
+          # Sin package-lock.json, la caché de npm de setup-node falla ("paths were not resolved").
+          package-manager-cache: false
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
@@ -77,11 +74,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: web-emitesis/package-lock.json
+          package-manager-cache: false
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
