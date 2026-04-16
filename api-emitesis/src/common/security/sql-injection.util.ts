@@ -3,7 +3,8 @@
  * Prisma ya usa consultas parametrizadas; esto añade límites de tamaño y saneo de caracteres peligrosos.
  */
 
-const CTRL = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
+/** Sin literales de control en el fuente (eslint no-control-regex). */
+const CTRL = new RegExp('[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]', 'g');
 
 /** Elimina bytes nulos y caracteres de control ASCII (riesgo en algunos drivers / logs). */
 export function stripControlCharacters(input: string): string {

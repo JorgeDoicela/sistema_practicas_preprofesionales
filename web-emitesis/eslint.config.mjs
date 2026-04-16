@@ -9,7 +9,14 @@ const eslintConfig = defineConfig([
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unused-vars": "off",
-    }
+    },
+  },
+  {
+    files: ["next.config.ts"],
+    rules: {
+      // next.config corre en Node; `require("webpack")` es el patrón recomendado por Next para plugins.
+      "@typescript-eslint/no-require-imports": "off",
+    },
   },
   // Override default ignores of eslint-config-next.
   globalIgnores([

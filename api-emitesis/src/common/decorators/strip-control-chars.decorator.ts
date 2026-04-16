@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
 
-const CTRL = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
+const CTRL = new RegExp('[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]', 'g');
 
 /** Elimina NUL y controles ASCII; no altera el contenido imprimible (apto para contraseñas). */
 export function SanitizePasswordField() {

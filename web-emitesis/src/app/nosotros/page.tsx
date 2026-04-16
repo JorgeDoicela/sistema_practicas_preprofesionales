@@ -20,7 +20,9 @@ export default function NosotrosPage() {
                             Excelencia en <br /> Formación Técnica
                         </h1>
                         <p className="text-slate-500 max-w-2xl mx-auto font-medium text-lg">
-                            El Instituto Superior Tecnológico "Mayor Pedro Traversari" (ISTPET) es una institución comprometida con el desarrollo profesional y productivo del Ecuador.
+                            {
+                              "El Instituto Superior Tecnológico \"Mayor Pedro Traversari\" (ISTPET) es una institución comprometida con el desarrollo profesional y productivo del Ecuador."
+                            }
                         </p>
                     </motion.div>
                 </div>

@@ -5,9 +5,10 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import {
   MapPin, Clock, ArrowRightCircle, ArrowLeftCircle, CheckCircle2,
   AlertCircle, Loader2, Calendar, History, Camera, Fingerprint,
-  ShieldCheck, ShieldX, Image, Plus, X, Info, ChevronDown, ChevronUp,
+  ShieldCheck, ShieldX, Image as ImageIcon, Plus, X, Info, ChevronDown, ChevronUp,
   RefreshCw, SwitchCamera, Wifi, WifiOff,
 } from "lucide-react";
+import NextImage from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { attendancesService } from "@/services/attendances.service";
@@ -192,6 +193,8 @@ export default function AsistenciaPage() {
       cancelAnimationFrame(outerRaf);
       if (innerRaf) cancelAnimationFrame(innerRaf);
     };
+    // `camera` cambia identidad cada render; incluirlo reabriría la cámara en bucle.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalOpen, modalStep, cameraFacing]);
 
   // Paso biométrico: comprobar soporte+credencial y luego auto-disparar verificación
@@ -332,6 +335,7 @@ export default function AsistenciaPage() {
     if (activityModalOpen && !activityBlobTemp && activityVideoRef.current) {
       activityCamera.openCamera(activityVideoRef.current);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activityModalOpen, activityBlobTemp]);
 
   const handleCaptureActivity = async () => {
@@ -525,10 +529,13 @@ export default function AsistenciaPage() {
                   </div>
                 </div>
                 {!!(status as Record<string, unknown> | null)?.checkInPhoto && (
-                  <img
+                  <NextImage
                     src={(status as Record<string, unknown>).checkInPhoto as string}
+                    width={56}
+                    height={56}
+                    unoptimized
                     className="w-14 h-14 rounded-2xl object-cover border-2 border-emerald-200"
-                    alt="Foto entrada"
+                    alt="Foto de entrada"
                   />
                 )}
               </button>
@@ -570,10 +577,13 @@ export default function AsistenciaPage() {
                   </div>
                 </div>
                 {!!(status as Record<string, unknown> | null)?.checkOutPhoto && (
-                  <img
+                  <NextImage
                     src={(status as Record<string, unknown>).checkOutPhoto as string}
+                    width={56}
+                    height={56}
+                    unoptimized
                     className="w-14 h-14 rounded-2xl object-cover border-2 border-rose-200"
-                    alt="Foto salida"
+                    alt="Foto de salida"
                   />
                 )}
               </button>
@@ -592,7 +602,7 @@ export default function AsistenciaPage() {
                 <div className="p-8 border-b border-slate-100 flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
-                      <Image className="w-5 h-5" />
+                      <ImageIcon className="w-5 h-5" aria-hidden />
                     </div>
                     <div>
                       <h3 className="text-sm font-black text-[#003366] uppercase tracking-[0.2em]">Fotos de Actividades</h3>
@@ -611,14 +621,21 @@ export default function AsistenciaPage() {
                 <div className="p-8">
                   {activityPhotos.length === 0 ? (
                     <div className="text-center py-10 space-y-3">
-                      <Image className="w-12 h-12 text-slate-200 mx-auto" />
+                      <ImageIcon className="w-12 h-12 text-slate-200 mx-auto" aria-hidden />
                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Sin fotos de actividades hoy</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                       {activityPhotos.map((photo) => (
                         <div key={photo.id} className="group relative rounded-2xl overflow-hidden border border-slate-100 aspect-square bg-slate-50">
-                          <img src={photo.photoUrl} alt={photo.caption || "Actividad"} className="w-full h-full object-cover" />
+                          <NextImage
+                            src={photo.photoUrl}
+                            alt={photo.caption || "Foto de actividad"}
+                            width={400}
+                            height={400}
+                            unoptimized
+                            className="w-full h-full object-cover"
+                          />
                           {photo.caption && (
                             <div className="absolute inset-x-0 bottom-0 bg-black/60 p-2 translate-y-full group-hover:translate-y-0 transition-transform">
                               <p className="text-white text-[9px] font-bold truncate">{photo.caption}</p>
@@ -827,7 +844,14 @@ export default function AsistenciaPage() {
                     {/* Foto capturada como confirmación */}
                     {capturedPhotoUrl && (
                       <div className="flex items-center gap-4 bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
-                        <img src={capturedPhotoUrl} className="w-12 h-12 rounded-xl object-cover border-2 border-emerald-200" alt="Foto" />
+                        <NextImage
+                          src={capturedPhotoUrl}
+                          width={48}
+                          height={48}
+                          unoptimized
+                          className="w-12 h-12 rounded-xl object-cover border-2 border-emerald-200"
+                          alt="Foto capturada para asistencia"
+                        />
                         <div>
                           <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Foto lista</p>
                           <p className="text-[9px] text-emerald-600">Verificando identidad…</p>
@@ -969,10 +993,13 @@ export default function AsistenciaPage() {
 
                     {/* Foto capturada en miniatura */}
                     {capturedPhotoUrl && (
-                      <img
+                      <NextImage
                         src={capturedPhotoUrl}
+                        width={80}
+                        height={80}
+                        unoptimized
                         className="w-20 h-20 rounded-2xl object-cover border-4 border-white shadow-md"
-                        alt="Foto de asistencia"
+                        alt="Foto de asistencia registrada"
                       />
                     )}
 
@@ -1089,7 +1116,14 @@ export default function AsistenciaPage() {
                   </>
                 ) : (
                   <>
-                    <img src={activityPreviewTemp!} alt="Actividad" className="w-full aspect-video object-cover rounded-2xl" />
+                    <NextImage
+                      src={activityPreviewTemp!}
+                      alt="Vista previa de actividad"
+                      width={640}
+                      height={360}
+                      unoptimized
+                      className="w-full aspect-video object-cover rounded-2xl"
+                    />
 
                     {/* RF-18: Campo de descripción + botón de IA */}
                     <div className="space-y-2">
@@ -1227,13 +1261,27 @@ function HistoryRow({ record, expanded, onToggle }: {
               {!!record.checkInPhoto && (
                 <div className="space-y-1">
                   <p className="text-[8px] font-black text-emerald-600 uppercase tracking-widest">Foto Entrada</p>
-                  <img src={record.checkInPhoto as string} alt="Entrada" className="w-24 h-24 rounded-xl object-cover border border-emerald-100" />
+                  <NextImage
+                    src={record.checkInPhoto as string}
+                    width={96}
+                    height={96}
+                    unoptimized
+                    alt="Foto de entrada del día"
+                    className="w-24 h-24 rounded-xl object-cover border border-emerald-100"
+                  />
                 </div>
               )}
               {!!record.checkOutPhoto && (
                 <div className="space-y-1">
                   <p className="text-[8px] font-black text-rose-600 uppercase tracking-widest">Foto Salida</p>
-                  <img src={record.checkOutPhoto as string} alt="Salida" className="w-24 h-24 rounded-xl object-cover border border-rose-100" />
+                  <NextImage
+                    src={record.checkOutPhoto as string}
+                    width={96}
+                    height={96}
+                    unoptimized
+                    alt="Foto de salida del día"
+                    className="w-24 h-24 rounded-xl object-cover border border-rose-100"
+                  />
                 </div>
               )}
               {!record.checkInPhoto && !record.checkOutPhoto && (
