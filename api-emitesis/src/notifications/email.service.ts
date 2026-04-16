@@ -635,7 +635,7 @@ export class EmailService {
             fgColor: { argb: 'FFE0E0E0' },
         };
 
-        return workbook.xlsx.writeBuffer() as Promise<Buffer>;
+        return workbook.xlsx.writeBuffer() as unknown as Promise<Buffer>;
     }
 
     // Método privado para registrar en la base de datos (RF-CON-002: Punto 4)
