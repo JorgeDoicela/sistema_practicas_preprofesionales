@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import * as nodemailer from 'nodemailer';
+import * as ExcelJS from 'exceljs';
 
 @Injectable()
 export class EmailService {
@@ -200,12 +201,13 @@ export class EmailService {
         startDate: string,
         hours: number,
         location: string,
-        businessTutorName?: string
+        businessTutorName?: string,
+        excelBuffer?: Buffer
     ) {
         const subject = 'Información de Asignación de Prácticas Preprofesionales - ISTPET';
         const metadata = { studentName, companyName, type: 'ASSIGNMENT' };
 
-        const mailOptions = {
+        const mailOptions: any = {
             from: `"Coordinación de Prácticas ISTPET" <${this.configService.get<string>('MAIL_USER')}>`,
             to: email,
             subject: subject,
@@ -226,12 +228,19 @@ export class EmailService {
               ${businessTutorName ? `<li><strong>Tutor Empresarial:</strong> ${businessTutorName}</li>` : ''}
             </ul>
           </div>
+          <p>Adjunto a este correo encontrarás un archivo Excel con los datos oficiales de tu asignación.</p>
           <p>Por favor, ponte en contacto con tu tutor académico asignado para iniciar el proceso de inducción.</p>
           <p style="font-size: 12px; color: #777;">Este es un correo automático, por favor no respondas a este mensaje.</p>
           <hr style="border: 0; border-top: 1px solid #eee;" />
           <p style="text-align: center; font-size: 12px; color: #999;">&copy; 2026 Instituto Superior Tecnológico "Mayor Pedro Traversari"</p>
         </div>
-      `
+      `,
+            attachments: excelBuffer ? [
+                {
+                    filename: 'Datos_Asignacion_Practicas.xlsx',
+                    content: excelBuffer
+                }
+            ] : []
         };
 
         try {
@@ -255,12 +264,13 @@ export class EmailService {
         companyName: string,
         startDate: string,
         hours: number,
-        businessTutorName?: string
+        businessTutorName?: string,
+        excelBuffer?: Buffer
     ) {
         const subject = `Nueva Asignación de Tutoría: ${studentName} - ISTPET`;
         const metadata = { tutorName, studentName, companyName, type: 'TUTOR_ASSIGNMENT' };
 
-        const mailOptions = {
+        const mailOptions: any = {
             from: `"Coordinación de Prácticas ISTPET" <${this.configService.get<string>('MAIL_USER')}>`,
             to: email,
             subject: subject,
@@ -281,11 +291,18 @@ export class EmailService {
               ${businessTutorName ? `<li><strong>Tutor Empresarial (Contraparte):</strong> ${businessTutorName}</li>` : ''}
             </ul>
           </div>
+          <p>Adjunto encontrará el archivo Excel con la información detallada para su control administrativo.</p>
           <p>Por favor, coordine con el estudiante el inicio del proceso de prácticas y la planificación de las visitas correspondientes.</p>
           <hr style="border: 0; border-top: 1px solid #eee;" />
           <p style="text-align: center; font-size: 12px; color: #999;">&copy; 2026 Instituto Superior Tecnológico "Mayor Pedro Traversari"</p>
         </div>
-      `
+      `,
+            attachments: excelBuffer ? [
+                {
+                    filename: 'Datos_Asignacion_Tutoría.xlsx',
+                    content: excelBuffer
+                }
+            ] : []
         };
 
         try {
@@ -576,6 +593,49 @@ export class EmailService {
             await this.logEmail(email, subject, 'FALLIDO', err.message, metadata);
             return { success: false, error: err.message };
         }
+    }
+
+    async generateAssignmentExcelBuffer(data: {
+        studentName: string;
+        companyName: string;
+        location: string;
+        hours: number;
+        tutorName: string;
+        startDate: string;
+        businessTutorName?: string;
+    }): Promise<Buffer> {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Asignación');
+
+        worksheet.columns = [
+            { header: 'Estudiante', key: 'student', width: 30 },
+            { header: 'Empresa', key: 'company', width: 30 },
+            { header: 'Dirección de Prácticas', key: 'location', width: 40 },
+            { header: 'Horas', key: 'hours', width: 10 },
+            { header: 'Tutor Académico', key: 'tutor', width: 30 },
+            { header: 'Tutor Empresarial', key: 'businessTutor', width: 30 },
+            { header: 'Fecha Inicio', key: 'start', width: 15 },
+        ];
+
+        worksheet.addRow({
+            student: data.studentName,
+            company: data.companyName,
+            location: data.location,
+            hours: data.hours,
+            tutor: data.tutorName,
+            businessTutor: data.businessTutorName || '—',
+            start: new Date(data.startDate).toLocaleDateString(),
+        });
+
+        // Styling
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFE0E0E0' },
+        };
+
+        return workbook.xlsx.writeBuffer() as Promise<Buffer>;
     }
 
     // Método privado para registrar en la base de datos (RF-CON-002: Punto 4)

@@ -100,4 +100,11 @@ export class DocumentsController {
     }
     return this.documentsService.uploadDocument(id, file, req.user.id);
   }
+
+  @Patch(':id/delete-file')
+  @Roles(Role.ESTUDIANTE, Role.ADMIN)
+  @UseGuards(TwoFactorGuard)
+  deleteFile(@Param('id') id: string) {
+    return this.documentsService.deleteDocumentFile(id);
+  }
 }

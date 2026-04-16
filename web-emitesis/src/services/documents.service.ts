@@ -80,6 +80,25 @@ export const documentsService = {
     return response.json();
   },
 
+  async deleteDocumentFile(id: string, twoFactorCode?: string) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/documents/${id}/delete-file`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'x-2fa-code': twoFactorCode || '',
+      },
+      body: JSON.stringify({ twoFactorCode }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al eliminar el archivo');
+    }
+    return response.json();
+  },
+
   async reviewDocument(
     id: string,
     review: { status: string; observations: string; annotations?: unknown },

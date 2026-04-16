@@ -26,7 +26,9 @@ import { internshipsService } from "@/services/internships.service";
 import { documentsService } from "@/services/documents.service";
 import { ROLES } from "@/constants/roles";
 import { TwoFactorModal } from "@/components/auth/TwoFactorModal";
+import { DoubleConfirmationModal } from "@/components/shared/DoubleConfirmationModal";
 import { api } from "@/services/auth.service";
+import { Trash2 } from "lucide-react";
 
 export default function DocumentosPage() {
   const [internships, setInternships] = useState<any[]>([]);
@@ -41,6 +43,8 @@ export default function DocumentosPage() {
   const [is2faModalOpen, setIs2faModalOpen] = useState(false);
   const [pendingUpload, setPendingUpload] = useState<{id: string, file: File} | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadInternships();
@@ -140,6 +144,46 @@ export default function DocumentosPage() {
       throw error; // El modal manejará el error
     }
   };
+
+  const handleDeleteClick = (id: string) => {
+    setDeletingId(id);
+    setIsConfirmModalOpen(true);
+  };
+
+  const confirmDeleteFile = async () => {
+    if (!deletingId) return;
+    try {
+      if (currentUser?.isTwoFactorEnabled) {
+          setPendingAction(() => async (code: string) => {
+              await documentsService.deleteDocumentFile(deletingId, code);
+          });
+          setIsConfirmModalOpen(false);
+          setIs2faModalOpen(true);
+          return;
+      }
+      await documentsService.deleteDocumentFile(deletingId);
+      alert("Archivo eliminado con éxito");
+      loadInternships();
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
+
+  const handle2faConfirmAction = async (code: string) => {
+      if (!pendingAction) return;
+      try {
+          const action = (pendingAction as any)();
+          await action(code);
+          alert("Acción completada con éxito");
+          setIs2faModalOpen(false);
+          setPendingAction(null);
+          loadInternships();
+      } catch (error) {
+          throw error;
+      }
+  };
+
+  const [pendingAction, setPendingAction] = useState<(() => (code: string) => Promise<void>) | null>(null);
 
   const filteredInternships = internships.filter(item => {
     const matchesSearch = 
@@ -365,6 +409,17 @@ export default function DocumentosPage() {
                           </button>
                         </div>
                       )}
+
+                      {!isApproved && doc.filePath && (
+                        <button
+                          onClick={() => handleDeleteClick(doc.id)}
+                          disabled={isExpired || isUnderReview}
+                          className="col-span-2 py-4 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all active:scale-[0.98] border border-rose-100"
+                        >
+                           <Trash2 className="w-3.5 h-3.5" />
+                           Eliminar Archivo
+                        </button>
+                      )}
                     </div>
                   )}
 
@@ -510,10 +565,24 @@ export default function DocumentosPage() {
         onClose={() => {
             setIs2faModalOpen(false);
             setPendingUpload(null);
+            setPendingAction(null);
         }}
-        onConfirm={confirmUploadWith2fa}
-        title="Confirmar Carga de Documento"
-        description="Esta es una operación crítica. Ingresa tu código 2FA para autorizar la subida del archivo."
+        onConfirm={pendingUpload ? confirmUploadWith2fa : handle2faConfirmAction}
+        title={pendingUpload ? "Confirmar Carga de Documento" : "Verificación de Seguridad"}
+        description={pendingUpload 
+          ? "Esta es una operación crítica. Ingresa tu código 2FA para autorizar la subida del archivo." 
+          : "Ingrese su código 2FA para autorizar esta operación crítica."
+        }
+      />
+      <DoubleConfirmationModal 
+        isOpen={isConfirmModalOpen}
+        onClose={() => {
+            setIsConfirmModalOpen(false);
+            setDeletingId(null);
+        }}
+        onConfirm={confirmDeleteFile}
+        title="¿Está seguro del procedimiento?"
+        description="Esta acción eliminará el archivo subido actualmente. Deberá subir un nuevo archivo antes de la fecha límite para evitar sanciones."
       />
     </div>
   );

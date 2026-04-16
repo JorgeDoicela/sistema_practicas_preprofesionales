@@ -305,4 +305,21 @@ export class DocumentsService {
 
     return updatedDoc;
   }
+
+  async deleteDocumentFile(id: string) {
+    const document = await this.prisma.document.findUnique({ where: { id } });
+    if (!document) throw new NotFoundException('Documento no encontrado');
+    if (document.status === 'APROBADO_DEFINITIVO') {
+      throw new BadRequestException('No se puede eliminar el archivo de un documento aprobado definitivamente');
+    }
+
+    return this.prisma.document.update({
+      where: { id },
+      data: {
+        filePath: null,
+        submittedAt: null,
+        status: 'PENDIENTE',
+      },
+    });
+  }
 }

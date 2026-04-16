@@ -122,6 +122,17 @@ export class InternshipsService {
         return newInternship;
       });
 
+      // Generar Buffer de Excel para adjuntar (Requisito de negocio)
+      const excelBuffer = await this.emailService.generateAssignmentExcelBuffer({
+        studentName: internship.student.fullName,
+        companyName: internship.company.name,
+        location: internship.location,
+        hours: internship.totalHours,
+        tutorName: internship.tutor.fullName,
+        startDate: startDate,
+        businessTutorName: internship.businessTutorName || undefined,
+      });
+
       // RF-ASG-001: Enviar correo al estudiante
       this.emailService.sendAssignmentEmail(
         internship.student.email,
@@ -130,7 +141,8 @@ export class InternshipsService {
         startDate,
         totalHours,
         location,
-        businessTutorName
+        businessTutorName,
+        excelBuffer
       ).catch((err: Error) => {
         console.error('Error al enviar correo de asignación al estudiante:', err.message);
       });
@@ -143,7 +155,8 @@ export class InternshipsService {
         internship.company.name,
         startDate,
         totalHours,
-        businessTutorName
+        businessTutorName,
+        excelBuffer
       ).catch((err: Error) => {
         console.error('Error al enviar correo de asignación al tutor:', err.message);
       });
