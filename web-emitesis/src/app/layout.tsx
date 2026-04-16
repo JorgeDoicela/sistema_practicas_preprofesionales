@@ -26,6 +26,7 @@ export const metadata: Metadata = {
 import { Navbar } from "@/components/navigation/Navbar";
 import { Footer } from "@/components/navigation/Footer";
 import { PrivacyConsentWrapper } from "@/components/auth/PrivacyConsentWrapper";
+import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 
 export default function RootLayout({
   children,
@@ -37,9 +38,14 @@ export default function RootLayout({
       <body className={`${montserrat.variable} ${roboto.variable} font-body antialiased bg-slate-50 text-slate-900`}>
         <Navbar />
         <main className="min-h-screen">
-          <PrivacyConsentWrapper>
-            {children}
-          </PrivacyConsentWrapper>
+          <GoogleReCaptchaProvider
+            reCaptchaKey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+            language="es"
+          >
+            <PrivacyConsentWrapper>
+              {children}
+            </PrivacyConsentWrapper>
+          </GoogleReCaptchaProvider>
         </main>
         <Footer />
       </body>

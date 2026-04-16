@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import ReCAPTCHA from 'react-google-recaptcha';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { authService } from '@/services/auth.service';
 import { sanitizeEmailClient } from '@/utils/security';
 
@@ -10,32 +10,38 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
 
-    const token = recaptchaRef.current?.getValue();
-    if (!token) {
-      setMessage({ type: 'error', text: 'Por favor, completa el reCAPTCHA' });
+    let token = null;
+    if (executeRecaptcha) {
+        try {
+            token = await executeRecaptcha('forgot_password');
+        } catch (err) {
+            console.error('Error executing reCAPTCHA v3:', err);
+        }
+    }
+
+    if (!token && process.env.NODE_ENV === 'production') {
+      setMessage({ type: 'error', text: 'Error de validación de seguridad. Por favor, intente de nuevo.' });
       setLoading(false);
       return;
     }
 
     try {
       const cleanEmail = sanitizeEmailClient(email);
-      await authService.forgotPassword(cleanEmail, token);
+      await authService.forgotPassword(cleanEmail, token || 'dev_bypass');
       setMessage({ 
         type: 'success', 
         text: 'Si el correo está registrado, recibirás un enlace de recuperación en los próximos minutos.' 
       });
       setEmail('');
-      recaptchaRef.current?.reset();
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message });
-      recaptchaRef.current?.reset();
     } finally {
       setLoading(false);
     }
@@ -78,12 +84,7 @@ export default function ForgotPasswordPage() {
             />
           </div>
 
-          <div className="flex justify-center">
-            <ReCAPTCHA
-              ref={recaptchaRef}
-              sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
-            />
-          </div>
+          {/* reCAPTCHA v3 es invisible */}
 
           <div>
             <button

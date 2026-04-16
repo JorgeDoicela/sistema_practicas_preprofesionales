@@ -46,7 +46,7 @@ export class AuthService {
       params.append('secret', secretKey);
       params.append('response', token);
 
-      const response = await axios.post<{ success: boolean; 'error-codes'?: string[] }>(
+      const response = await axios.post<{ success: boolean; score?: number; action?: string; 'error-codes'?: string[] }>(
         'https://www.google.com/recaptcha/api/siteverify',
         params.toString(),
         {
@@ -55,12 +55,21 @@ export class AuthService {
       );
       
       if (!response.data.success) {
-          console.error('--- FALLO DE RECAPTCHA ---');
+          console.error('--- FALLO DE RECAPTCHA v3 ---');
           console.error('Causas indicadas por Google:', response.data['error-codes']?.join(', ') || 'Desconocido');
-          console.error('Tip: Asegúrese de que el dominio/IP de esta laptop esté autorizado en el panel de Google ReCAPTCHA.');
+          return false;
       }
 
-      return response.data.success;
+      // Validación de Score (0.0 - 1.0). 0.5 es un umbral estándar.
+      const score = response.data.score ?? 0;
+      console.log(`[reCAPTCHA v3] Score: ${score} | Action: ${response.data.action}`);
+
+      if (score < 0.5) {
+          console.warn(`--- BLOQUEO POR SCORE BAJO (${score}) ---`);
+          return false;
+      }
+
+      return true;
     } catch (error: unknown) {
       console.error('Error de red al verificar reCAPTCHA:', (error as Error).message);
       return false;

@@ -13,24 +13,22 @@ import {
     EyeOff
 } from "lucide-react";
 import { authService } from "@/services/auth.service";
-import ReCAPTCHA from "react-google-recaptcha";
-import { useRef } from "react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { sanitizeEmailClient, sanitizePasswordClient } from "@/utils/security";
 import { ROLE_REDIRECTS, Role, normalizeApiRoleToAppRole } from "@/constants/roles";
 import { AlertTriangle, Info } from "lucide-react";
 
 export default function LoginPage() {
     const router = useRouter();
+    const { executeRecaptcha } = useGoogleReCaptcha();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
     const [isMfaRequired, setIsMfaRequired] = useState(false);
     const [mfaCode, setMfaCode] = useState("");
     const [mfaUserId, setMfaUserId] = useState<string | null>(null);
-    const recaptchaRef = useRef<ReCAPTCHA>(null);
     
     const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
     const isDev = process.env.NODE_ENV === "development";
@@ -41,17 +39,30 @@ export default function LoginPage() {
         setError(null);
 
         try {
-            if (siteKey && !recaptchaToken) {
-                setError("Por favor, completa el reCAPTCHA.");
+            let currentToken = null;
+
+            if (siteKey && executeRecaptcha) {
+                try {
+                    currentToken = await executeRecaptcha("login");
+                } catch (recaptchaErr) {
+                    console.error("Error al ejecutar reCAPTCHA v3:", recaptchaErr);
+                    if (process.env.NODE_ENV === "production") {
+                        throw new Error("No se pudo validar la seguridad de la sesión.");
+                    }
+                }
+            }
+
+            if (siteKey && !currentToken && process.env.NODE_ENV === "production") {
+                setError("Por favor, inténtalo de nuevo (Error de validación).");
                 setIsLoading(false);
                 return;
             }
 
-            // Sanitización contra SQL Injection
-            const cleanEmail = sanitizeEmailClient(email);
-            const cleanPassword = sanitizePasswordClient(password);
-
-            const data = await authService.login(cleanEmail, cleanPassword, recaptchaToken);
+            const data = await authService.login(
+                sanitizeEmailClient(email), 
+                sanitizePasswordClient(password), 
+                currentToken || "dev_bypass"
+            );
             
             if (data.mfaRequired) {
                 setIsMfaRequired(true);
@@ -160,26 +171,16 @@ export default function LoginPage() {
                                         </div>
                                     </div>
 
-                                    {siteKey ? (
-                                        <div className="flex justify-center py-2">
-                                            <ReCAPTCHA
-                                                ref={recaptchaRef}
-                                                sitekey={siteKey}
-                                                onChange={(token: string | null) => setRecaptchaToken(token)}
-                                            />
-                                        </div>
-                                    ) : (
-                                        isDev && (
-                                            <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
-                                                <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                                                <div className="space-y-1">
-                                                    <p className="text-[10px] font-black uppercase text-amber-800 tracking-widest">Modo Desarrollo</p>
-                                                    <p className="text-[10px] font-medium text-amber-600 leading-tight">
-                                                        ReCAPTCHA no configurado. Use <code className="bg-amber-100 px-1 rounded">SKIP_RECAPTCHA=true</code> en el backend para iniciar sesión.
-                                                    </p>
-                                                </div>
+                                    {!siteKey && isDev && (
+                                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
+                                            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] font-black uppercase text-amber-800 tracking-widest">Modo Desarrollo</p>
+                                                <p className="text-[10px] font-medium text-amber-600 leading-tight">
+                                                    ReCAPTCHA v3 no configurado (Invisible). Use <code className="bg-amber-100 px-1 rounded">SKIP_RECAPTCHA=true</code> en el backend.
+                                                </p>
                                             </div>
-                                        )
+                                        </div>
                                     )}
 
                                     {error && <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-bold text-center border border-red-100">{error}</div>}
