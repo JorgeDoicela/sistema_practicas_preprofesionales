@@ -89,7 +89,14 @@ async function bootstrapLocal() {
   console.log(`Backend running on: http://localhost:${port}`);
 }
 
-if (!process.env.VERCEL) {
+/**
+ * En algunos entornos locales (Windows + herramientas de Vercel) puede existir
+ * `VERCEL` como variable global, lo que impedía levantar el servidor local.
+ * Solo tratamos como runtime serverless real cuando VERCEL=1.
+ */
+const isVercelRuntime = process.env.VERCEL === '1';
+
+if (!isVercelRuntime) {
   bootstrapLocal().catch((err: Error) => {
     console.error('Failed to start server:', err.message);
     process.exit(1);
