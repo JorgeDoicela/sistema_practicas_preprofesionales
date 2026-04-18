@@ -55,4 +55,23 @@ export const aiService = {
     const data = await res.json();
     return data.description as string;
   },
+
+  /**
+   * RF-AI-01: Enviar consulta al asistente contextual de prácticas.
+   */
+  async askQuestion(question: string, context: string): Promise<string> {
+    const res = await fetch(`${API_URL}/ai/ask`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ question, context }),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || "Error al conectar con el asistente");
+    }
+
+    const data = await res.json();
+    return data.answer as string;
+  },
 };

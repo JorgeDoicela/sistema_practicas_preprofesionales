@@ -47,7 +47,7 @@ function StarDisplay({ score, max = 5 }: { score: number; max?: number }) {
 export default function MiEvaluacionPage() {
   const [loading, setLoading] = useState(true);
   const [internship, setInternship] = useState<any>(null);
-  const [evaluation, setEvaluation] = useState<any>(null);
+  const [evaluations, setEvaluations] = useState<any[]>([]);
 
   const loadData = useCallback(async () => {
     try {
@@ -61,10 +61,10 @@ export default function MiEvaluacionPage() {
       const primary = internships[0];
       setInternship(primary);
 
-      const ev = await evaluationsService.findByInternship(primary.id);
-      setEvaluation(ev);
+      const evs = await evaluationsService.findByInternship(primary.id);
+      setEvaluations(Array.isArray(evs) ? evs : []);
     } catch (error) {
-      console.error("Error cargando evaluación:", error);
+      console.error("Error cargando evaluaciones:", error);
     } finally {
       setLoading(false);
     }
@@ -74,6 +74,75 @@ export default function MiEvaluacionPage() {
     loadData();
   }, [loadData]);
 
+  const evalAcademica = evaluations.find((e) => e.type === "ACADEMICA");
+  const evalEmpresarial = evaluations.find((e) => e.type === "EMPRESARIAL");
+
+  return (
+    <DashboardLayout>
+      <div className="max-w-5xl mx-auto pb-20 space-y-10">
+        {/* Header */}
+        <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+            <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
+              Mi Desempeño Profesional
+            </span>
+            <h2 className="text-4xl font-black text-[#003366] tracking-tight">
+              HUB de <span className="text-slate-400">Evaluación Dual</span>
+            </h2>
+            <p className="text-slate-500 font-medium mt-2">
+              Resultados técnicos y actitudinales emitidos por tus tutores de seguimiento.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-2xl border border-slate-100 shadow-sm">
+             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Actualizado en tiempo real</span>
+          </div>
+        </section>
+
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-40 gap-4">
+            <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              Sincronizando evaluaciones...
+            </p>
+          </div>
+        ) : !internship ? (
+          <div className="bg-amber-50 rounded-[2.5rem] border border-amber-100 p-16 text-center">
+            <AlertCircle className="w-16 h-16 text-amber-400 mx-auto mb-5" />
+            <h3 className="text-xl font-black text-amber-900 uppercase tracking-tight">Sin trayectoria registrada</h3>
+            <p className="text-amber-700 font-medium mt-2">
+              Aún no tienes una práctica preprofesional asignada en el ecosistema.
+            </p>
+          </div>
+        ) : (
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Tarjeta Académica */}
+            <EvalCard 
+              type="ACADEMICA"
+              title="Evaluación Académica"
+              subtitle="Tutor del Instituto (ISTPET)"
+              evaluation={evalAcademica}
+              icon={<GraduationCap className="w-6 h-6" />}
+              color="blue"
+            />
+
+            {/* Tarjeta Empresarial */}
+            <EvalCard 
+              type="EMPRESARIAL"
+              title="Evaluación Empresarial"
+              subtitle="Tutor de la Empresa/Institución"
+              evaluation={evalEmpresarial}
+              icon={<Building2 className="w-6 h-6" />}
+              color="gold"
+            />
+          </div>
+        )}
+      </div>
+    </DashboardLayout>
+  );
+}
+
+function EvalCard({ type, title, subtitle, evaluation, icon, color }: any) {
   const total = evaluation
     ? evaluation.punctuality +
       evaluation.teamwork +
@@ -82,191 +151,85 @@ export default function MiEvaluacionPage() {
       evaluation.attitude
     : 0;
   const percentage = evaluation ? Math.round((total / 25) * 100) : 0;
+  
+  const isBlue = color === "blue";
 
   return (
-    <DashboardLayout>
-      <div className="max-w-3xl mx-auto pb-20 space-y-10">
-        {/* Header */}
-        <section>
-          <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
-            Mi Práctica Preprofesional
-          </span>
-          <h2 className="text-4xl font-black text-[#003366] tracking-tight">
-            Mi <span className="text-slate-400">Evaluación</span>
-          </h2>
-          <p className="text-slate-500 font-medium mt-2">
-            Resultado del test de aptitud y actitud emitido por la empresa donde realizaste tus prácticas.
-          </p>
-        </section>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden flex flex-col"
+    >
+      <div className={cn(
+        "p-8 flex items-center justify-between",
+        isBlue ? "bg-[#003366] text-white" : "bg-[#C5A059] text-white"
+      )}>
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white">
+            {icon}
+          </div>
+          <div>
+            <h3 className="text-lg font-black tracking-tight">{title}</h3>
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-70">{subtitle}</p>
+          </div>
+        </div>
+        {evaluation && (
+          <div className="text-right">
+             <span className="text-3xl font-black">{total}</span>
+             <span className="text-sm font-black opacity-40 ml-1">/25</span>
+          </div>
+        )}
+      </div>
 
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-40 gap-4">
-            <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-              Cargando tu evaluación...
-            </p>
+      <div className="p-8 flex-1 space-y-8">
+        {!evaluation ? (
+          <div className="py-20 text-center space-y-4">
+            <Clock className="w-12 h-12 text-slate-200 mx-auto" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Pendiente de calificación</p>
           </div>
-        ) : !internship ? (
-          <div className="bg-amber-50 rounded-[2.5rem] border border-amber-100 p-16 text-center">
-            <AlertCircle className="w-16 h-16 text-amber-400 mx-auto mb-5" />
-            <h3 className="text-xl font-black text-amber-900 uppercase tracking-tight">Sin práctica asignada</h3>
-            <p className="text-amber-700 font-medium mt-2">
-              Aún no tienes una práctica preprofesional registrada en el sistema.
-            </p>
-          </div>
-        ) : !evaluation ? (
-          <>
-            {/* Ficha de práctica */}
-            <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8">
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-5">
-                Tu práctica activa
-              </p>
-              <div className="grid sm:grid-cols-3 gap-6">
-                <InfoBlock icon={<Building2 className="w-4 h-4" />} label="Empresa" value={internship.company?.name ?? "—"} />
-                <InfoBlock icon={<User className="w-4 h-4" />} label="Tutor académico" value={internship.tutor?.fullName ?? "—"} />
-                <InfoBlock icon={<GraduationCap className="w-4 h-4" />} label="Estado" value={internship.status ?? "—"} highlight />
-              </div>
-            </div>
-            <div className="bg-slate-50 rounded-[2.5rem] border border-dashed border-slate-200 p-16 text-center">
-              <Clock className="w-16 h-16 text-slate-300 mx-auto mb-5" />
-              <h3 className="text-xl font-black text-slate-500 uppercase tracking-tight">
-                Evaluación pendiente
-              </h3>
-              <p className="text-slate-400 font-medium mt-2 max-w-sm mx-auto leading-relaxed">
-                La empresa aún no ha completado el test de aptitud y actitud. Te notificaremos cuando esté disponible.
-              </p>
-            </div>
-          </>
         ) : (
           <>
-            {/* Ficha de práctica */}
-            <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8">
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-5">
-                Tu práctica
-              </p>
-              <div className="grid sm:grid-cols-3 gap-6">
-                <InfoBlock icon={<Building2 className="w-4 h-4" />} label="Empresa evaluadora" value={internship.company?.name ?? "—"} />
-                <InfoBlock icon={<User className="w-4 h-4" />} label="Tutor académico" value={internship.tutor?.fullName ?? "—"} />
-                <InfoBlock icon={<GraduationCap className="w-4 h-4" />} label="Estado práctica" value={internship.status ?? "—"} highlight />
+            <div className="space-y-6">
+              {CRITERIA.map((c) => (
+                <div key={c.key} className="flex items-center justify-between group">
+                  <div>
+                    <p className="text-[10px] font-black text-[#003366] uppercase tracking-widest">{c.label}</p>
+                    <p className="text-[9px] font-medium text-slate-400 max-w-[150px]">{c.desc}</p>
+                  </div>
+                  <StarDisplay score={evaluation[c.key]} />
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-6 border-t border-slate-50">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rendimiento Técnico</span>
+                <span className="text-lg font-black text-[#003366]">{percentage}%</span>
+              </div>
+              <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${percentage}%` }}
+                  className={cn(
+                    "h-full rounded-full",
+                    percentage >= 80 ? "bg-emerald-500" : percentage >= 60 ? "bg-[#C5A059]" : "bg-rose-500"
+                  )}
+                />
               </div>
             </div>
 
-            {/* Resultado global */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-gradient-to-br from-[#003366] to-[#004a99] rounded-[2.5rem] p-10 text-white shadow-2xl shadow-blue-900/30"
-            >
-              <div className="flex items-center gap-3 mb-8">
-                <Award className="w-8 h-8 text-[#C5A059]" />
-                <div>
-                  <p className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.3em]">
-                    Resultado final
-                  </p>
-                  <h3 className="text-xl font-black">Test de Aptitud y Actitud</h3>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-8 items-center">
-                <div>
-                  <div className="flex items-end gap-3 mb-4">
-                    <span className="text-7xl font-black text-white">{total}</span>
-                    <span className="text-3xl font-black text-white/40 mb-2">/ 25</span>
-                  </div>
-                  <div className="h-3 bg-white/20 rounded-full overflow-hidden mb-3">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${percentage}%` }}
-                      transition={{ duration: 1, ease: "easeOut" }}
-                      className={cn(
-                        "h-full rounded-full",
-                        percentage >= 80 ? "bg-emerald-400" : percentage >= 60 ? "bg-amber-400" : "bg-rose-400",
-                      )}
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-[#C5A059]" />
-                    <span
-                      className={cn(
-                        "text-sm font-black",
-                        percentage >= 80 ? "text-emerald-300" : percentage >= 60 ? "text-amber-300" : "text-rose-300",
-                      )}
-                    >
-                      {percentage}% ·{" "}
-                      {percentage >= 80
-                        ? "Desempeño sobresaliente"
-                        : percentage >= 60
-                          ? "Desempeño aceptable"
-                          : "Desempeño en mejora"}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-center">
-                  <div
-                    className={cn(
-                      "w-36 h-36 rounded-full flex flex-col items-center justify-center border-4",
-                      percentage >= 80
-                        ? "border-emerald-400 bg-emerald-400/10"
-                        : percentage >= 60
-                          ? "border-amber-400 bg-amber-400/10"
-                          : "border-rose-400 bg-rose-400/10",
-                    )}
-                  >
-                    <span className="text-5xl font-black text-white">{percentage}%</span>
-                    <CheckCircle2
-                      className={cn(
-                        "w-6 h-6 mt-2",
-                        percentage >= 80 ? "text-emerald-400" : percentage >= 60 ? "text-amber-400" : "text-rose-400",
-                      )}
-                    />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Desglose por criterio */}
-            <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
-              <div className="px-10 py-8 border-b border-slate-100">
-                <h3 className="text-lg font-black text-[#003366]">Desglose por criterio</h3>
-                <p className="text-sm text-slate-500 font-medium mt-1">
-                  Puntuación detallada entregada por la empresa evaluadora.
-                </p>
-              </div>
-              <div className="p-10 space-y-7">
-                {CRITERIA.map((c, idx) => (
-                  <motion.div
-                    key={c.key}
-                    initial={{ opacity: 0, x: -16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.08 }}
-                    className="flex flex-col md:flex-row md:items-center gap-4"
-                  >
-                    <div className="flex-1">
-                      <h4 className="font-black text-[#003366] text-sm">{c.label}</h4>
-                      <p className="text-slate-400 text-[11px] font-medium mt-0.5">{c.desc}</p>
-                    </div>
-                    <StarDisplay score={evaluation[c.key] ?? 0} />
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-
-            {/* Observaciones */}
             {evaluation.observations && (
-              <div className="bg-amber-50 rounded-[2.5rem] border border-amber-100 p-8">
-                <p className="text-[9px] font-black uppercase tracking-widest text-amber-700 mb-3">
-                  Observaciones de la empresa
+              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                  <TrendingUp className="w-3 h-3 text-[#C5A059]" /> Feedback cualitativo
                 </p>
-                <p className="text-slate-700 font-medium leading-relaxed text-sm">
-                  {evaluation.observations}
-                </p>
+                <p className="text-xs font-medium text-slate-600 italic">"{evaluation.observations}"</p>
               </div>
             )}
           </>
         )}
       </div>
-    </DashboardLayout>
+    </motion.div>
   );
 }
 

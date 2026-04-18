@@ -23,6 +23,8 @@ import { agreementsService } from "@/services/agreements.service";
 import { reportsService, GlobalStats } from "@/services/reports.service";
 import { announcementsService, Announcement } from "@/services/announcements.service";
 import { Megaphone, X } from "lucide-react";
+import { StudentRoadmap } from "./StudentRoadmap";
+import { AICopilot } from "./AICopilot";
 
 type InternshipRow = {
   id: string;
@@ -523,6 +525,10 @@ export function DashboardMain() {
         </div>
       ) : (
         <>
+          {appRole === ROLES.ESTUDIANTE && internships.length > 0 && (
+            <StudentRoadmap internship={internships[0]} />
+          )}
+
           <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {stats.cards.map((c) => (
               <StatCard
@@ -715,6 +721,11 @@ export function DashboardMain() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Copilot de IA para Estudiantes */}
+      {appRole === ROLES.ESTUDIANTE && (
+        <AICopilot user={user} internship={internships[0]} />
       )}
     </div>
   );

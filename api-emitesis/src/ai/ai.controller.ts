@@ -16,6 +16,16 @@ class SuggestDescriptionDto {
   mimeType?: string;
 }
 
+class AskDto {
+  @IsString()
+  @IsNotEmpty()
+  question: string;
+
+  @IsString()
+  @IsNotEmpty()
+  context: string;
+}
+
 @Controller('ai')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class AiController {
@@ -40,5 +50,18 @@ export class AiController {
       body.mimeType,
     );
     return { description };
+  }
+
+  /**
+   * RF-AI-01: Endpoint de consulta para el Copilot de Estudiantes.
+   */
+  @Post('ask')
+  @Roles(Role.ESTUDIANTE, Role.ADMIN)
+  async ask(@Body() body: AskDto) {
+    const answer = await this.aiService.askQuestion(
+      body.context,
+      body.question,
+    );
+    return { answer };
   }
 }
