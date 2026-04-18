@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
 import Link from "next/link";
+import { LivePresenceWidget } from "@/components/dashboard/LivePresenceWidget";
 
 export default function EmpresaDashboardPage() {
   const [internships, setInternships] = useState<any[]>([]);
@@ -120,67 +121,73 @@ export default function EmpresaDashboardPage() {
           <KpiCard title="Evaluados" value={evaluatedCount} icon={<Award className="w-6 h-6" />} color="bg-emerald-500" />
         </section>
 
-        {/* Lista de Pasantes */}
-        <section className="space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-2xl font-black text-[#003366]">Pasantes Asignados</h3>
-              <p className="text-slate-500 text-sm font-medium mt-1">
-                Activa el test de aptitud para que el pasante pueda ser evaluado.
-              </p>
-            </div>
-            <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
-              <input
-                type="text"
-                placeholder="Buscar pasante..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12 pr-6 py-4 bg-white border border-slate-200 rounded-2xl w-full md:w-[300px] outline-none focus:ring-4 focus:ring-[#003366]/5 focus:border-[#003366] transition-all font-medium text-sm shadow-sm"
-              />
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-40 gap-4">
-              <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                Cargando pasantes...
-              </p>
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="bg-white rounded-[2.5rem] border border-dashed border-slate-200 p-20 text-center">
-              <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                <GraduationCap className="w-10 h-10 text-slate-300" />
+        {/* Monitor Seccional */}
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-2xl font-black text-[#003366]">Pasantes Asignados</h3>
+                <p className="text-slate-500 text-sm font-medium mt-1">
+                  Activa el test de aptitud para que el pasante pueda ser evaluado.
+                </p>
               </div>
-              <h3 className="text-xl font-bold text-slate-800 mb-2">
-                {searchTerm ? "Sin resultados" : "No hay pasantes asignados aún"}
-              </h3>
-              <p className="text-slate-400 text-sm">
-                {searchTerm ? "Ajusta el término de búsqueda." : "Cuando el coordinador asigne pasantes a tu empresa aparecerán aquí."}
-              </p>
+              <div className="relative group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
+                <input
+                  type="text"
+                  placeholder="Buscar pasante..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-12 pr-6 py-4 bg-white border border-slate-200 rounded-2xl w-full md:w-[250px] outline-none focus:ring-4 focus:ring-[#003366]/5 focus:border-[#003366] transition-all font-medium text-sm shadow-sm"
+                />
+              </div>
             </div>
-          ) : (
-            <div className="grid gap-5">
-              <AnimatePresence mode="popLayout">
-                {filtered.map((internship, idx) => (
-                  <motion.div
-                    key={internship.id}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                  >
-                    <PasanteCard
-                      internship={internship}
-                      toggling={togglingId === internship.id}
-                      onToggleTest={() => handleToggleTest(internship.id)}
-                    />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          )}
-        </section>
+
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-40 gap-4">
+                <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  Cargando pasantes...
+                </p>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="bg-white rounded-[2.5rem] border border-dashed border-slate-200 p-20 text-center">
+                <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                  <GraduationCap className="w-10 h-10 text-slate-300" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-2">
+                  {searchTerm ? "Sin resultados" : "No hay pasantes asignados aún"}
+                </h3>
+                <p className="text-slate-400 text-sm">
+                  {searchTerm ? "Ajusta el término de búsqueda." : "Cuando el coordinador asigne pasantes a tu empresa aparecerán aquí."}
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-5">
+                <AnimatePresence mode="popLayout">
+                  {filtered.map((internship, idx) => (
+                    <motion.div
+                      key={internship.id}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                    >
+                      <PasanteCard
+                        internship={internship}
+                        toggling={togglingId === internship.id}
+                        onToggleTest={() => handleToggleTest(internship.id)}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
+          
+          <div className="lg:col-span-1">
+             <LivePresenceWidget internships={internships} />
+          </div>
+        </div>
       </div>
     </DashboardLayout>
   );

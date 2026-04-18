@@ -17,11 +17,15 @@ import {
   GraduationCap,
   ClipboardList,
   SaveAll,
+  TrendingUp,
+  Camera,
+  FileCheck,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
 import { evaluationsService, EvaluationPayload } from "@/services/evaluations.service";
+import { CertificatePreview } from "@/components/dashboard/CertificatePreview";
 
 const CRITERIA = [
   {
@@ -62,6 +66,7 @@ export default function EvaluarEstudiantePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [isCertOpen, setIsCertOpen] = useState(false);
 
   const [scores, setScores] = useState<ScoreMap>({
     punctuality: 0,
@@ -190,6 +195,17 @@ export default function EvaluarEstudiantePage() {
               Evaluar Pasante
             </h2>
           </div>
+          <div className="flex-1" />
+          {hoursWorked >= internship.totalHours && existingEval && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsCertOpen(true)}
+              className="px-6 py-3 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 flex items-center gap-2"
+            >
+              <FileCheck className="w-4 h-4" /> Generar Certificado
+            </motion.button>
+          )}
         </div>
 
         {/* Ficha del pasante */}
@@ -206,6 +222,42 @@ export default function EvaluarEstudiantePage() {
               <InfoBlock icon={<Clock className="w-4 h-4" />} label="Horas trabajadas" value={`${hoursWorked.toFixed(0)}h de ${internship.totalHours}h`} />
               <InfoBlock icon={<ClipboardList className="w-4 h-4" />} label="Estado práctica" value={internship.status} highlight />
             </div>
+          </div>
+        </div>
+
+        {/* Evidence Explorer */}
+        <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
+          <div className="p-8 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+               <Camera className="w-5 h-5 text-[#C5A059]" />
+               <h3 className="text-lg font-black text-[#003366]">Explorador de Evidencias</h3>
+            </div>
+          </div>
+          <div className="p-8">
+            {internship.attendances?.filter((a:any) => a.activityPhotoKey).length === 0 ? (
+               <div className="py-12 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200 text-center">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sin evidencias fotográficas aún</p>
+               </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {internship.attendances?.filter((a:any) => a.activityPhotoKey).map((a:any, i:number) => (
+                  <motion.div 
+                    key={a.id}
+                    whileHover={{ scale: 1.05 }}
+                    className="relative aspect-square rounded-2xl overflow-hidden border border-slate-100 group"
+                  >
+                     <img 
+                       src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/uploads/${a.activityPhotoKey}`}
+                       alt="Evidencia"
+                       className="w-full h-full object-cover"
+                     />
+                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
+                        <p className="text-[9px] font-black text-white uppercase tracking-widest">{new Date(a.checkIn).toLocaleDateString()}</p>
+                     </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -335,6 +387,12 @@ export default function EvaluarEstudiantePage() {
             </button>
           </div>
         </div>
+        
+        <CertificatePreview 
+          isOpen={isCertOpen}
+          onClose={() => setIsCertOpen(false)}
+          internship={internship}
+        />
       </div>
     </DashboardLayout>
   );
