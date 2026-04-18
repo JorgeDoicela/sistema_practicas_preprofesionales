@@ -26,6 +26,14 @@ import { Megaphone, X } from "lucide-react";
 import { StudentRoadmap } from "./StudentRoadmap";
 import { AICopilot } from "./AICopilot";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
+import { attendancesService } from "@/services/attendances.service";
+import dynamic from "next/dynamic";
+
+// Importación dinámica de Leaflet para evitar errores de SSR
+const MiniMap = dynamic(() => import("./MapComponent"), { 
+  ssr: false,
+  loading: () => <div className="h-40 bg-slate-100 animate-pulse rounded-2xl" />
+});
 
 type InternshipRow = {
   id: string;
@@ -90,6 +98,10 @@ export function DashboardMain() {
   const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [closedAnnouncements, setClosedAnnouncements] = useState<string[]>([]);
+  
+  // Asistencia hoy
+  const [todayAttendance, setTodayAttendance] = useState<any>(null);
+  const [loc, setLoc] = useState<{lat: number, lng: number} | null>(null);
 
   const loadDashboard = useCallback(async (u: UserType & { role: string }) => {
     const role = normalizeApiRoleToAppRole(u.role);
@@ -111,9 +123,20 @@ export function DashboardMain() {
       }
 
       if (role === ROLES.ESTUDIANTE) {
-        const list = (await internshipsService.findByStudent(u.id)) as InternshipRow[];
+        const [list, att] = await Promise.all([
+          internshipsService.findByStudent(u.id) as Promise<InternshipRow[]>,
+          attendancesService.getTodayStatus(),
+        ]);
         setInternships(Array.isArray(list) ? list : []);
+        setTodayAttendance(att);
         setAgreementsCount(null);
+
+        // Pedir ubicación para el mini-mapa
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition((pos) => {
+            setLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          });
+        }
         return;
       }
 
@@ -539,6 +562,56 @@ export function DashboardMain() {
               />
             ))}
           </section>
+
+          {appRole === ROLES.ESTUDIANTE && internships.length > 0 && (
+            <section className="grid md:grid-cols-3 gap-8">
+              <div className="md:col-span-2 bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-xl relative overflow-hidden flex flex-col md:flex-row gap-8">
+                <div className="flex-1 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+                      <Clock className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">Asistencia Rápida</h3>
+                  </div>
+                  <p className="text-sm text-slate-500 font-medium">
+                    {todayAttendance?.checkIn 
+                      ? todayAttendance.checkOut 
+                        ? "Has completado tu jornada de hoy. ¡Buen trabajo!"
+                        : "Tu jornada está activa. No olvides registrar tu salida al terminar."
+                      : "Registra tu entrada para iniciar el conteo de horas de hoy."}
+                  </p>
+                  <div className="pt-4 flex flex-col sm:flex-row gap-3">
+                    <Link 
+                      href="/dashboard/asistencia"
+                      className="px-8 py-4 bg-[#003366] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#003366]/90 transition-all text-center"
+                    >
+                      {todayAttendance?.checkIn ? "Gestionar Salida" : "Registrar Entrada"}
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="w-full md:w-[300px] h-[200px] rounded-[2rem] overflow-hidden border border-slate-100 shadow-inner group">
+                   <MiniMap 
+                     center={loc || { lat: -0.1807, lng: -78.4678 }} 
+                     zoom={15} 
+                     points={loc ? [loc] : []}
+                   />
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-[#003366] to-[#002244] rounded-[2.5rem] p-10 text-white shadow-xl flex flex-col justify-center">
+                 <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-6">
+                    <BarChart3 className="w-6 h-6 text-[#C5A059]" />
+                 </div>
+                 <h4 className="text-xl font-black tracking-tight mb-2">Resumen de Horas</h4>
+                 <p className="text-sm text-white/60 font-medium mb-6">Visualiza tu progreso acumulado de este periodo.</p>
+                 <div className="flex items-end gap-3">
+                    <span className="text-4xl font-black text-[#C5A059]">{internships[0]?.attendances?.length || 0}</span>
+                    <span className="text-xs font-bold text-white/40 uppercase mb-2">Días registrados</span>
+                 </div>
+              </div>
+            </section>
+          )}
 
           {(appRole === ROLES.ADMIN || appRole === ROLES.COORDINADOR) && globalStats && (
             <section className="bg-white rounded-[2.5rem] p-10 shadow-2xl shadow-slate-200/50 border border-slate-50 relative overflow-hidden group">

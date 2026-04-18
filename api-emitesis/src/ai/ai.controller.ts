@@ -26,6 +26,16 @@ class AskDto {
   context: string;
 }
 
+class PreVerifyDto {
+  @IsString()
+  @IsNotEmpty()
+  documentName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  base64Image: string;
+}
+
 @Controller('ai')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class AiController {
@@ -63,5 +73,17 @@ export class AiController {
       body.question,
     );
     return { answer };
+  }
+
+  /**
+   * RF-AI-01: Pre-verificación de documentos PDF.
+   */
+  @Post('pre-verify')
+  @Roles(Role.ESTUDIANTE, Role.ADMIN)
+  async preVerify(@Body() body: PreVerifyDto) {
+    return this.aiService.preVerifyDocument(
+      body.documentName,
+      body.base64Image,
+    );
   }
 }

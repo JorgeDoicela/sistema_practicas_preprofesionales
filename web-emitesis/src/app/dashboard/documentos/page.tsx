@@ -28,7 +28,12 @@ import { ROLES } from "@/constants/roles";
 import { TwoFactorModal } from "@/components/auth/TwoFactorModal";
 import { DoubleConfirmationModal } from "@/components/shared/DoubleConfirmationModal";
 import { api } from "@/services/auth.service";
-import { Trash2 } from "lucide-react";
+import { Trash2, Sparkles, Wand2 } from "lucide-react";
+import { aiService } from "@/services/ai.service";
+import * as pdfjs from "pdfjs-dist";
+
+// Configurar el worker de PDF.js
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 export default function DocumentosPage() {
   const [internships, setInternships] = useState<any[]>([]);
@@ -45,6 +50,8 @@ export default function DocumentosPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isAiScanning, setIsAiScanning] = useState(false);
+  const [aiFeedback, setAiFeedback] = useState<{ isValid: boolean, feedback: string } | null>(null);
 
   useEffect(() => {
     loadInternships();
@@ -89,9 +96,12 @@ export default function DocumentosPage() {
     }
   };
 
-  const handleUpload = async (docId: string, event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (docId: string, event: React.ChangeEvent<HTMLInputElement>, skipAi = false) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    const doc = userDocuments.find(d => d.id === docId);
+    const docName = doc?.name || "Documento de Prácticas";
 
     // Regla de Negocio: Solo PDF
     if (file.type !== "application/pdf") {
@@ -105,9 +115,28 @@ export default function DocumentosPage() {
       return;
     }
 
+    // --- ESCANEO POR IA (Opcional pero sugerido) ---
+    if (!skipAi && !isApproved(docId)) {
+      setIsAiScanning(true);
+      try {
+        const base64 = await getFirstPageAsBase64(file);
+        const result = await aiService.preVerifyDocument(docName, base64);
+        
+        if (!result.isValid) {
+          setAiFeedback(result);
+          setPendingUpload({ id: docId, file });
+          setIsAiScanning(false);
+          return; // Detenemos para mostrar advertencia
+        }
+      } catch (error) {
+        console.error("AI Scan failed:", error);
+      } finally {
+        setIsAiScanning(false);
+      }
+    }
+
     setUploadingId(docId);
     try {
-      // Si el usuario tiene 2FA, abrimos el modal
       if (currentUser?.isTwoFactorEnabled) {
           setPendingUpload({ id: docId, file });
           setIs2faModalOpen(true);
@@ -117,31 +146,56 @@ export default function DocumentosPage() {
 
       await documentsService.uploadDocument(docId, file);
       alert("Documento subido con éxito");
-      loadInternships(); // Recargar para ver el nuevo estado
+      loadInternships();
     } catch (error: any) {
       alert(error.message);
     } finally {
       setUploadingId(null);
+      setAiFeedback(null);
     }
   };
 
-  const confirmUploadWith2fa = async (code: string) => {
-    if (!pendingUpload) return;
+  const isApproved = (id: string) => {
+    return userDocuments.find(d => d.id === id)?.status === 'APROBADO_DEFINITIVO';
+  };
+
+  const getFirstPageAsBase64 = async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+    const page = await pdf.getPage(1);
+    const viewport = page.getViewport({ scale: 1.5 });
     
-    // Configurar el header temporalmente para esta petición
-    // O pasarlo en el body si el backend lo acepta.
-    // Mi guard acepta body.twoFactorCode o x-2fa-code header.
-    // Usaremos un interceptor temporal o simplemente pasamos el código en el body si el service lo soporta.
-    // El uploadDocument usa FormData, así que lo añadiremos ahí.
-    
-    try {
-      await documentsService.uploadDocument(pendingUpload.id, pendingUpload.file, code);
-      alert("Documento subido con éxito con 2FA");
-      setIs2faModalOpen(false);
-      setPendingUpload(null);
-      loadInternships();
-    } catch (error: any) {
-      throw error; // El modal manejará el error
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+
+    await page.render({ canvasContext: context!, viewport }).promise;
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+    return dataUrl.split(",")[1];
+  };
+
+  const confirmUploadAfterAi = async () => {
+    setAiFeedback(null);
+    if (pendingUpload) {
+      // Proceder con la lógica normal
+      const { id, file } = pendingUpload;
+      setUploadingId(id);
+      try {
+        if (currentUser?.isTwoFactorEnabled) {
+          setIs2faModalOpen(true);
+          setUploadingId(null);
+          return;
+        }
+        await documentsService.uploadDocument(id, file);
+        alert("Documento subido exitosamente");
+        loadInternships();
+      } catch (error: any) {
+        alert(error.message);
+      } finally {
+        setUploadingId(null);
+        setPendingUpload(null);
+      }
     }
   };
 
@@ -423,6 +477,13 @@ export default function DocumentosPage() {
                     </div>
                   )}
 
+                  {isAiScanning && uploadingId === null && (
+                    <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center gap-3">
+                      <Sparkles className="w-8 h-8 text-[#C5A059] animate-pulse" />
+                      <p className="text-[10px] font-black text-[#003366] uppercase tracking-widest">IA Escaneando Documento...</p>
+                    </div>
+                  )}
+
                   {isLocked && doc.startDate && (
                     <div className="mt-4 p-4 bg-orange-50 rounded-xl flex gap-3">
                       <AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
@@ -584,6 +645,43 @@ export default function DocumentosPage() {
         title="¿Está seguro del procedimiento?"
         description="Esta acción eliminará el archivo subido actualmente. Deberá subir un nuevo archivo antes de la fecha límite para evitar sanciones."
       />
+
+      {/* AI Feedback Warning Modal */}
+      <AnimatePresence>
+        {aiFeedback && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-[#003366]/40 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-white rounded-[2.5rem] p-10 max-w-md w-full shadow-2xl border border-rose-100"
+            >
+              <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-6">
+                <Wand2 className="w-8 h-8 text-rose-500" />
+              </div>
+              <h3 className="text-xl font-black text-[#003366] mb-4 uppercase tracking-tight">Advertencia de IA</h3>
+              <p className="text-slate-600 text-sm font-medium leading-relaxed mb-6">
+                 Nuestro sistema de inteligencia artificial ha detectado posibles problemas con este documento:
+                 <br /><br />
+                 <span className="text-rose-600 font-bold">"{aiFeedback.feedback}"</span>
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => { setAiFeedback(null); setPendingUpload(null); }}
+                  className="py-4 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all font-black uppercase"
+                >
+                  Corregir Archivo
+                </button>
+                <button
+                  onClick={confirmUploadAfterAi}
+                  className="py-4 bg-[#003366] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#003366]/90 transition-all shadow-lg shadow-blue-900/10"
+                >
+                  Subir de todas formas
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

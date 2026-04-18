@@ -305,5 +305,58 @@ export class InternshipsService {
     }
 
     return internship;
+  /**
+   * PIA-CORE: Cálculo del Health Score de la práctica.
+   * Proporciona un índice del 0 al 100 sobre la salud y progreso de la práctica.
+   */
+  async calculateHealthScore(id: string): Promise<{ score: number; indicators: any }> {
+    const internship = await this.prisma.internship.findUnique({
+      where: { id },
+      include: {
+        documents: true,
+        attendances: true,
+        evaluations: true,
+      },
+    });
+
+    if (!internship) throw new NotFoundException('Asignación no encontrada');
+
+    // 1. Indicador de Documentos (40%)
+    const approvedDocs = internship.documents.filter((d) => d.status === 'APROBADO_DEFINITIVO').length;
+    const totalDocs = internship.documents.length || 1;
+    const docScore = (approvedDocs / totalDocs) * 40;
+
+    // 2. Indicador de Asistencia (30%)
+    // (Simplificación: Horas registradas vs total horas objetivo)
+    const attendances = internship.attendances || [];
+    // Asumimos 8 horas por registro exitoso para el cálculo del score si no hay checkOut exacto
+    const registeredHours = attendances.length * 8; 
+    const attendanceScore = Math.min((registeredHours / internship.totalHours) * 30, 30);
+
+    // 3. Indicador de Evaluaciones (30%)
+    let evalScore = 20; // Base neutra si no hay evaluaciones
+    if (internship.evaluations.length > 0) {
+      const avg = internship.evaluations.reduce((acc, e) => {
+        const sum = e.punctuality + e.teamwork + e.technicalSkills + e.proactivity + e.attitude;
+        return acc + (sum / 25); // max 5 puntos por item, total 25
+      }, 0) / internship.evaluations.length;
+      evalScore = avg * 30;
+    }
+
+    // 4. Penalizaciones por Incumplimiento
+    const incumplimientos = internship.documents.filter((d) => d.status === 'INCUMPLIDO').length;
+    const penalty = incumplimientos * 5; // -5 puntos por cada documento incumplido
+
+    const totalScore = Math.max(0, Math.min(100, docScore + attendanceScore + evalScore - penalty));
+
+    return {
+      score: Math.round(totalScore),
+      indicators: {
+        documentation: Math.round((docScore / 40) * 100),
+        attendance: Math.round((attendanceScore / 30) * 100),
+        evaluations: Math.round((evalScore / 30) * 100),
+        penalties: penalty,
+      },
+    };
   }
 }

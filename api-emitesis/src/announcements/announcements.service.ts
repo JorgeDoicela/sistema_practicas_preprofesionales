@@ -2,18 +2,35 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
 
+import { SystemLogsService } from '../system-logs/system-logs.service';
+
 @Injectable()
 export class AnnouncementsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private systemLogs: SystemLogsService
+  ) {}
 
   async create(dto: CreateAnnouncementDto, userId?: string) {
-    return this.prisma.announcement.create({
+    const announcement = await this.prisma.announcement.create({
       data: {
         ...dto,
         userId,
         endDate: dto.endDate ? new Date(dto.endDate) : null,
       },
     });
+
+    if (userId) {
+      this.systemLogs.append({
+        level: 'INFO',
+        category: 'SYSTEM',
+        message: `Nuevo anuncio creado: ${announcement.title} por ${userId}`,
+        userId: userId,
+        metadata: { announcementId: announcement.id, type: announcement.type }
+      });
+    }
+
+    return announcement;
   }
 
   async findAll() {
@@ -48,6 +65,20 @@ export class AnnouncementsService {
   }
 
   async remove(id: string) {
-    return this.prisma.announcement.delete({ where: { id } });
+    const announcement = await this.prisma.announcement.findUnique({ where: { id } });
+    if (!announcement) throw new NotFoundException('Anuncio no encontrado');
+
+    await this.prisma.announcement.delete({ where: { id } });
+
+    if (announcement.userId) {
+      this.systemLogs.append({
+        level: 'WARN',
+        category: 'SYSTEM',
+        message: `Anuncio eliminado: ${announcement.title}`,
+        metadata: { announcementId: id, deletedBy: announcement.userId }
+      });
+    }
+
+    return { message: 'Anuncio eliminado correctamente' };
   }
 }

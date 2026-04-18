@@ -101,5 +101,49 @@ export class AiService {
     });
 
     return response.choices[0]?.message?.content?.trim() || 'No pude procesar tu consulta en este momento.';
+  /**
+   * RF-AI-01: Pre-verificación de documentos PDF.
+   * Analiza la primera página del documento para asegurar que tiene el formato correcto y datos básicos.
+   * @param documentName - Nombre del documento (ej. "Informe de Actividades")
+   * @param base64Image - Imagen de la primera página del PDF
+   */
+  async preVerifyDocument(documentName: string, base64Image: string): Promise<{ isValid: boolean; feedback: string }> {
+    if (!this.openai) {
+      return { isValid: true, feedback: 'IA no disponible para pre-verificación.' };
+    }
+
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4o',
+      max_tokens: 200,
+      messages: [
+        {
+          role: 'system',
+          content:
+            'Eres un experto en control de calidad documental para el programa de prácticas ISTPET. ' +
+            'Tu tarea es realizar una pre-revisión visual de la primera página de un documento subido por un estudiante. ' +
+            'Debes verificar: 1. El título coincide con lo solicitado. 2. Existen campos de firmas o logotipos institucionales. 3. No es una hoja en blanco o con texto irrelevante. ' +
+            'Responde en formato JSON: {"isValid": boolean, "feedback": "string corto con observaciones en español"}.',
+        },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image_url',
+              image_url: { url: `data:image/jpeg;base64,${base64Image}`, detail: 'low' },
+            },
+            {
+              type: 'text',
+              text: `Este documento debe ser un "${documentName}". ¿Parece correcto y completo para ser revisado por un tutor?`,
+            },
+          ],
+        },
+      ],
+      response_format: { type: 'json_object' },
+    });
+
+    const content = response.choices[0]?.message?.content;
+    if (!content) return { isValid: true, feedback: 'Error en la respuesta de IA.' };
+    
+    return JSON.parse(content);
   }
 }

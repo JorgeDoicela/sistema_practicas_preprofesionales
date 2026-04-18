@@ -10,10 +10,14 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { Role } from '@prisma/client';
+import { SystemLogsService } from '../system-logs/system-logs.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly systemLogs: SystemLogsService,
+  ) {}
 
   async create(dto: CreateUserDto) {
     const existing = await this.prisma.user.findUnique({
@@ -26,7 +30,7 @@ export class UsersService {
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         email: dto.email,
         password: hashedPassword,
@@ -43,6 +47,16 @@ export class UsersService {
         createdAt: true,
       },
     });
+
+    this.systemLogs.append({
+      level: 'INFO',
+      category: 'PRIVACY',
+      message: `Nuevo usuario creado: ${user.email} con rol ${user.role}`,
+      userId: user.id,
+      metadata: { action: 'CREATE_USER', role: user.role }
+    });
+
+    return user;
   }
 
   findAll() {
@@ -160,7 +174,7 @@ export class UsersService {
       data.password = await bcrypt.hash(dto.password, 10);
     }
 
-    return this.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { id },
       data,
       select: {
@@ -172,6 +186,24 @@ export class UsersService {
         createdAt: true,
       },
     });
+
+    if (dto.role || dto.isActive !== undefined) {
+      this.systemLogs.append({
+        level: 'WARN',
+        category: 'PRIVACY',
+        message: `Usuario ${updatedUser.email} actualizado por ${currentUserId}`,
+        userId: currentUserId,
+        metadata: { 
+          targetUserId: id, 
+          oldRole: user.role, 
+          newRole: updatedUser.role,
+          oldStatus: user.isActive,
+          newStatus: updatedUser.isActive
+        }
+      });
+    }
+
+    return updatedUser;
   }
 
   async remove(id: string, currentUserId: string) {
@@ -205,6 +237,14 @@ export class UsersService {
     }
 
     await this.prisma.user.delete({ where: { id } });
+
+    this.systemLogs.append({
+      level: 'WARN',
+      category: 'PRIVACY',
+      message: `Usuario eliminado: ${user.email} por administrador/coordinador ${currentUserId}`,
+      userId: currentUserId,
+      metadata: { deletedUserId: id, deletedUserEmail: user.email }
+    });
 
     return { message: 'Usuario eliminado correctamente' };
   }

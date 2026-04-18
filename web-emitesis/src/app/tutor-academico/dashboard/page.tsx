@@ -24,6 +24,19 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from "recharts";
 
 const DOC_STATUS_COLOR: Record<string, string> = {
   PENDIENTE: "bg-slate-100 text-slate-500",
@@ -93,6 +106,22 @@ export default function TutorAcademicoDashboardPage() {
     return acc + docs.filter((d: any) => d.status === "APROBADO_TUTOR").length;
   }, 0);
 
+  // Datos para gráfico de distribución de documentos
+  const docDistribution = internships.reduce((acc: any, i) => {
+    (i.documents || []).forEach((d: any) => {
+      const label = DOC_STATUS_LABEL[d.status] || d.status;
+      acc[label] = (acc[label] || 0) + 1;
+    });
+    return acc;
+  }, {});
+
+  const chartData = Object.entries(docDistribution).map(([name, value]) => ({
+    name,
+    value,
+  }));
+
+  const COLORS = ["#94A3B8", "#3B82F6", "#F59E0B", "#F43F5E", "#10B981", "#F97316", "#EF4444"];
+
   return (
     <DashboardLayout>
       <div className="space-y-12 max-w-[1600px] mx-auto pb-20">
@@ -113,37 +142,77 @@ export default function TutorAcademicoDashboardPage() {
           </div>
         </section>
 
-        {/* KPI Cards */}
-        <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <KpiCard
-            title="Pasantes Activos"
-            value={activeCount}
-            icon={<Users className="w-6 h-6" />}
-            color="text-blue-600"
-            bg="bg-blue-50"
-          />
-          <KpiCard
-            title="Pendientes de Revisión"
-            value={pendingReviews}
-            icon={<FileCheck className="w-6 h-6" />}
-            color="text-amber-600"
-            bg="bg-amber-50"
-            alert={pendingReviews > 0}
-          />
-          <KpiCard
-            title="Aprobados por Tutor"
-            value={approvedCount}
-            icon={<CheckCircle2 className="w-6 h-6" />}
-            color="text-emerald-600"
-            bg="bg-emerald-50"
-          />
-          <KpiCard
-            title="Visitas Realizadas"
-            value={internships.reduce((acc, i) => acc + (i.monitoringVisits?.length || 0), 0)}
-            icon={<MapPin className="w-6 h-6" />}
-            color="text-violet-600"
-            bg="bg-violet-50"
-          />
+        {/* KPIs and Chart Section */}
+        <section className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 grid sm:grid-cols-2 gap-6">
+            <KpiCard
+              title="Pasantes Activos"
+              value={activeCount}
+              icon={<Users className="w-6 h-6" />}
+              color="text-blue-600"
+              bg="bg-blue-50"
+            />
+            <KpiCard
+              title="Pendientes de Revisión"
+              value={pendingReviews}
+              icon={<FileCheck className="w-6 h-6" />}
+              color="text-amber-600"
+              bg="bg-amber-50"
+              alert={pendingReviews > 0}
+            />
+            <KpiCard
+              title="Aprobados por Tutor"
+              value={approvedCount}
+              icon={<CheckCircle2 className="w-6 h-6" />}
+              color="text-emerald-600"
+              bg="bg-emerald-50"
+            />
+            <KpiCard
+              title="Visitas Realizadas"
+              value={internships.reduce((acc, i) => acc + (i.monitoringVisits?.length || 0), 0)}
+              icon={<MapPin className="w-6 h-6" />}
+              color="text-violet-600"
+              bg="bg-violet-50"
+            />
+          </div>
+
+          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl flex flex-col">
+            <h3 className="text-lg font-black text-[#003366] mb-6 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-[#C5A059]" />
+              Estado Documental Global
+            </h3>
+            <div className="flex-1 min-h-[250px] w-full">
+              {loading ? (
+                <div className="w-full h-full bg-slate-50 animate-pulse rounded-2xl" />
+              ) : chartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                    />
+                    <Legend verticalAlign="bottom" height={36}/>
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-slate-400 text-xs font-medium uppercase tracking-widest">
+                  Sin datos suficientes
+                </div>
+              )}
+            </div>
+          </div>
         </section>
 
         {/* Banner de alerta */}
@@ -199,11 +268,27 @@ export default function TutorAcademicoDashboardPage() {
           </div>
 
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-40 gap-4">
-              <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                Cargando expedientes...
-              </p>
+            <div className="grid gap-6">
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="bg-white rounded-[2rem] border border-slate-100 p-7 animate-pulse">
+                  <div className="flex flex-col md:flex-row md:items-center gap-6">
+                    <div className="flex items-center gap-5 flex-1">
+                      <div className="w-16 h-16 bg-slate-100 rounded-[1.5rem]" />
+                      <div className="space-y-3 flex-1">
+                        <div className="h-4 bg-slate-100 rounded-full w-48" />
+                        <div className="flex gap-4">
+                          <div className="h-3 bg-slate-50 rounded-full w-24" />
+                          <div className="h-3 bg-slate-50 rounded-full w-24" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="w-24 h-10 bg-slate-100 rounded-2xl" />
+                      <div className="w-24 h-10 bg-slate-100 rounded-2xl" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : filtered.length === 0 ? (
             <div className="bg-white rounded-[2.5rem] border border-dashed border-slate-200 p-20 text-center">

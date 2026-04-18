@@ -32,21 +32,28 @@ export class HttpExceptionFilter implements ExceptionFilter {
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
+      method: request.method,
       message: typeof message === 'string' ? message : (message as any).message || message,
+      error: (message as any).error || (status >= 500 ? 'Internal Server Error' : 'Bad Request'),
     };
 
-    // Log del error para administración (industrial traceability)
+    // Auditoría industrial: Log avanzado
+    const logInfo = {
+      method: request.method,
+      path: request.url,
+      ip: request.ip,
+      userId: (request as any).user?.id || 'ANONYMOUS',
+      statusCode: status,
+      errorMessage: errorResponse.message,
+    };
+
     if (status >= 500) {
       this.logger.error(
-        `[${request.method}] ${request.url} - Status: ${status} - Error: ${
-          exception.message || 'Unknown'
-        }`,
+        `Critical Failure: ${JSON.stringify(logInfo)}`,
         exception.stack,
       );
     } else {
-      this.logger.warn(
-        `[${request.method}] ${request.url} - Status: ${status} - Message: ${JSON.stringify(message)}`,
-      );
+      this.logger.warn(`API Warning: ${JSON.stringify(logInfo)}`);
     }
 
     response.status(status).json(errorResponse);

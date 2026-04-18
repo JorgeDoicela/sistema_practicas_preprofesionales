@@ -74,4 +74,23 @@ export const aiService = {
     const data = await res.json();
     return data.answer as string;
   },
+
+  /**
+   * RF-AI-01: Pre-verificación de documentos (Escaneo inicial por IA).
+   */
+  async preVerifyDocument(documentName: string, base64Image: string): Promise<{ isValid: boolean; feedback: string }> {
+    const res = await fetch(`${API_URL}/ai/pre-verify`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ documentName, base64Image }),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || "Error en la pre-verificación por IA");
+    }
+
+    const data = await res.json();
+    return data as { isValid: boolean; feedback: string };
+  },
 };

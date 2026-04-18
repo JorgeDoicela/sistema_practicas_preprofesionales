@@ -13,23 +13,18 @@ export class AgreementsService {
   async create(createAgreementDto: CreateAgreementDto, filePath: string) {
     const { ruc, companyName, address, representative, email, startDate } = createAgreementDto;
 
-    // A3: RUC duplicado
-    const existingCompany = await this.prisma.company.findUnique({
-      where: { ruc },
-    });
-
-    if (existingCompany) {
-      throw new ConflictException({
-        message: 'La empresa con este RUC ya existe en el sistema',
-        companyId: existingCompany.id
-      });
-    }
-
     try {
       return await this.prisma.$transaction(async (tx) => {
-        // 5. El sistema guarda la información de la empresa
-        const company = await tx.company.create({
-          data: {
+        // RF-CON-001 (Optimizado): Buscar o actualizar empresa
+        const company = await tx.company.upsert({
+          where: { ruc },
+          update: {
+            name: companyName,
+            address,
+            representative,
+            email,
+          },
+          create: {
             ruc,
             name: companyName,
             address,
@@ -38,13 +33,13 @@ export class AgreementsService {
           },
         });
 
-        // 5. El sistema guarda el convenio
+        // 5. El sistema guarda el nuevo convenio (Historial)
         const agreement = await tx.agreement.create({
           data: {
             companyId: company.id,
             startDate: new Date(startDate),
             filePath: filePath,
-            status: 'Activo', // Postcondición: Estado 'Activo'
+            status: 'Activo',
           },
           include: {
             company: true
@@ -52,14 +47,12 @@ export class AgreementsService {
         });
 
         // RF-CON-002: Notificar a empresa sobre convenio por correo
-        // Se dispara después de que la transacción fue exitosa
         this.emailService.sendAgreementNotification(
           company.email,
           company.name,
           filePath,
           { agreementId: agreement.id, companyId: company.id }
         ).catch((err: Error) => {
-          // Loggear error si el proceso de envío falla (pero el convenio ya se guardó)
           console.error('Error disparando notificación de convenio:', err.message);
         });
 
