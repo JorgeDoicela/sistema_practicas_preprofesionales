@@ -25,6 +25,7 @@ import { announcementsService, Announcement } from "@/services/announcements.ser
 import { Megaphone, X } from "lucide-react";
 import { StudentRoadmap } from "./StudentRoadmap";
 import { AICopilot } from "./AICopilot";
+import { DashboardSkeleton } from "@/components/ui/Skeleton";
 
 type InternshipRow = {
   id: string;
@@ -519,10 +520,7 @@ export function DashboardMain() {
       )}
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-24 gap-4 text-slate-500">
-          <Loader2 className="w-10 h-10 text-[#003366] animate-spin" />
-          <p className="text-[10px] font-black uppercase tracking-widest">Cargando métricas…</p>
-        </div>
+        <DashboardSkeleton />
       ) : (
         <>
           {appRole === ROLES.ESTUDIANTE && internships.length > 0 && (

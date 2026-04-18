@@ -24,8 +24,8 @@ import { SystemLogsModule } from './system-logs/system-logs.module';
 import { MaintenanceModule } from './maintenance/maintenance.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
 import { AnalyticsModule } from './analytics/analytics.module';
-import { EvaluationsModule } from './evaluations/evaluations.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -54,6 +54,7 @@ import { MonitoringModule } from './monitoring/monitoring.module';
     AnalyticsModule,
     EvaluationsModule,
     MonitoringModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

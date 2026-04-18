@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import type { INestApplication } from '@nestjs/common';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 /** En Vercel no se debe crear Nest en cada petición (agota tiempo/memoria y provoca FUNCTION_INVOCATION_FAILED). */
 let vercelExpressApp: unknown = null;
@@ -55,6 +57,10 @@ async function createConfiguredApp(): Promise<INestApplication> {
       forbidNonWhitelisted: false,
     }),
   );
+
+  /** Industrial Core: Estandarización de respuestas y errores */
+  app.useGlobalInterceptors(new TransformInterceptor());
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   return app;
 }
