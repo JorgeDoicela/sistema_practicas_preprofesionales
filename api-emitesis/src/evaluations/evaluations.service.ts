@@ -19,7 +19,12 @@ export class EvaluationsService {
     }
 
     return this.prisma.evaluation.upsert({
-      where: { internshipId },
+      where: {
+        internshipId_type: {
+          internshipId,
+          type: data.type as any,
+        },
+      },
       update: {
         ...data,
         status: 'COMPLETADO',
@@ -33,14 +38,8 @@ export class EvaluationsService {
   }
 
   async findByInternship(internshipId: string) {
-    const evaluation = await this.prisma.evaluation.findUnique({
+    return this.prisma.evaluation.findMany({
       where: { internshipId },
     });
-
-    if (!evaluation) {
-      throw new NotFoundException('Evaluación no encontrada para este internship');
-    }
-
-    return evaluation;
   }
 }

@@ -6,6 +6,14 @@ export class CreateEvaluationDto {
   @IsNotEmpty()
   internshipId: string;
 
+  @IsNotEmpty()
+  @IsString()
+  type: 'EMPRESARIAL' | 'ACADEMICA';
+
+  @IsOptional()
+  @IsUUID('4')
+  evaluatorId?: string;
+
   @IsInt()
   @Min(1)
   @Max(5)

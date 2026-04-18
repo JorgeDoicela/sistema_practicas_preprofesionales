@@ -18,6 +18,8 @@ import {
   XCircle,
   GraduationCap,
   ClipboardCheck,
+  MapPin,
+  User,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -136,12 +138,11 @@ export default function TutorAcademicoDashboardPage() {
             bg="bg-emerald-50"
           />
           <KpiCard
-            title="Incumplimientos"
-            value={incumplidosCount}
-            icon={<AlertTriangle className="w-6 h-6" />}
-            color="text-red-600"
-            bg="bg-red-50"
-            alert={incumplidosCount > 0}
+            title="Visitas Realizadas"
+            value={internships.reduce((acc, i) => acc + (i.monitoringVisits?.length || 0), 0)}
+            icon={<MapPin className="w-6 h-6" />}
+            color="text-violet-600"
+            bg="bg-violet-50"
           />
         </section>
 
@@ -273,6 +274,13 @@ function InternshipCard({ internship }: { internship: any }) {
   const approved = docs.filter((d) => d.status === "APROBADO_DEFINITIVO").length;
   const withoutDates = docs.filter((d) => !d.startDate && d.status === "PENDIENTE").length;
 
+  // Lógica de visitas
+  const lastVisit = internship.monitoringVisits?.[0];
+  const daysSinceLastVisit = lastVisit 
+    ? (Date.now() - new Date(lastVisit.date).getTime()) / 86400000 
+    : 999;
+  const visitRequired = daysSinceLastVisit > 30;
+
   // Docs próximos a vencer (en los próximos 3 días)
   const soon = docs.filter((d) => {
     if (!d.dueDate || d.status !== "PENDIENTE" || d.filePath) return false;
@@ -319,6 +327,9 @@ function InternshipCard({ internship }: { internship: any }) {
 
           {/* Document badges */}
           <div className="flex flex-wrap items-center gap-3">
+            {visitRequired && (
+              <Badge icon={<MapPin className="w-3.5 h-3.5" />} label="Visita Requerida" color="bg-violet-50 text-violet-700 border-violet-100" />
+            )}
             {withoutDates > 0 && (
               <Badge icon={<Clock className="w-3.5 h-3.5" />} label={`${withoutDates} sin fecha`} color="bg-slate-100 text-slate-500" />
             )}
@@ -342,6 +353,13 @@ function InternshipCard({ internship }: { internship: any }) {
               <ClipboardCheck className="w-4 h-4" />
               Gestionar
               <ChevronRight className="w-3 h-3" />
+            </Link>
+            <Link
+              href={`/tutor-academico/estudiantes/${internship.id}`}
+              className="flex items-center gap-2 px-5 py-3 bg-[#C5A059] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#b08940] transition-all shadow-lg shadow-amber-900/10 active:scale-95"
+            >
+              <User className="w-4 h-4" />
+              Ficha
             </Link>
           </div>
         </div>

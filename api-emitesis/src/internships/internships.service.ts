@@ -197,6 +197,11 @@ export class InternshipsService {
           orderBy: { checkIn: 'desc' },
           take: 3,
         },
+        evaluations: true,
+        monitoringVisits: {
+          orderBy: { date: 'desc' },
+          take: 1,
+        },
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -226,7 +231,7 @@ export class InternshipsService {
         student: true,
         company: true,
         tutor: true,
-        evaluation: true,
+        evaluations: true,
         attendances: true,
       },
       orderBy: { createdAt: 'desc' },
@@ -269,7 +274,11 @@ export class InternshipsService {
         company: true,
         tutor: true,
         attendances: true,
-        documents: true
+        documents: true,
+        evaluations: true,
+        monitoringVisits: {
+          orderBy: { date: 'desc' },
+        },
       }
     });
 

@@ -2,6 +2,8 @@ import { API_URL } from '@/lib/api-base';
 
 export interface EvaluationPayload {
   internshipId: string;
+  type: 'EMPRESARIAL' | 'ACADEMICA';
+  evaluatorId?: string;
   punctuality: number;
   teamwork: number;
   technicalSkills: number;

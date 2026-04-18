@@ -74,11 +74,17 @@ export default function EvaluarEstudiantePage() {
 
   const loadData = useCallback(async () => {
     try {
-      const [internshipData, evalData] = await Promise.all([
+      const [internshipData, evalRaw] = await Promise.all([
         internshipsService.findOne(id),
         evaluationsService.findByInternship(id),
       ]);
       setInternship(internshipData);
+      
+      // Filtrar por tipo EMPRESARIAL
+      const evalData = Array.isArray(evalRaw) 
+        ? evalRaw.find((e: any) => e.type === 'EMPRESARIAL') 
+        : evalRaw;
+
       if (evalData) {
         setExistingEval(evalData);
         setScores({
@@ -116,6 +122,7 @@ export default function EvaluarEstudiantePage() {
     try {
       await evaluationsService.createOrUpdate({
         internshipId: id,
+        type: 'EMPRESARIAL',
         punctuality: scores.punctuality,
         teamwork: scores.teamwork,
         technicalSkills: scores.technicalSkills,

@@ -5,13 +5,14 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import {
   CalendarCheck, Search, Clock, CheckCircle2, AlertCircle, Loader2,
   Building2, ChevronDown, ChevronUp, ArrowRightCircle, ArrowLeftCircle,
-  MapPin, Plus, Trash2, Navigation, Edit3, X, Save, Info,
+  MapPin, Plus, Trash2, Navigation, Edit3, X, Save, Info, User,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
 import { attendancesService } from "@/services/attendances.service";
 import MapPicker from "@/components/shared/MapPicker";
+import Link from "next/link";
 
 // ── Tipos ──────────────────────────────────────────────────────────────────
 interface AllowedLocation {
@@ -324,14 +325,24 @@ export default function TutorAsistenciaPage() {
                     </div>
                   </button>
 
-                  {/* Botón gestionar ubicaciones */}
-                  <button
-                    onClick={() => openLocationModal(row)}
-                    className="flex items-center gap-2 px-4 py-2.5 border-2 border-[#003366]/20 rounded-2xl text-[10px] font-black text-[#003366] uppercase tracking-widest hover:bg-[#003366] hover:text-white hover:border-[#003366] transition-all shrink-0"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                    Gestionar Sedes
-                  </button>
+                  {/* Botones de acción */}
+                  <div className="flex items-center gap-3 shrink-0">
+                    <Link
+                      href={`/tutor-academico/estudiantes/${row.internshipId}`}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-[#C5A059] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#b08940] transition-all shadow-lg shadow-amber-900/10"
+                    >
+                      <User className="w-3.5 h-3.5" />
+                      Ver Ficha
+                    </Link>
+                    
+                    <button
+                      onClick={() => openLocationModal(row)}
+                      className="flex items-center gap-2 px-4 py-2.5 border-2 border-[#003366]/20 rounded-2xl text-[10px] font-black text-[#003366] uppercase tracking-widest hover:bg-[#003366] hover:text-white hover:border-[#003366] transition-all"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      Gestionar Sedes
+                    </button>
+                  </div>
                 </div>
 
                 {/* Detalle de historial */}

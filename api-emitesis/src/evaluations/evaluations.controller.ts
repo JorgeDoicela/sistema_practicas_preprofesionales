@@ -12,7 +12,7 @@ export class EvaluationsController {
   constructor(private readonly evaluationsService: EvaluationsService) {}
 
   @Post()
-  @Roles(Role.EMPRESA, Role.TUTOR_EMPRESARIAL, Role.ADMIN, Role.COORDINADOR)
+  @Roles(Role.EMPRESA, Role.TUTOR_EMPRESARIAL, Role.ADMIN, Role.COORDINADOR, Role.TUTOR)
   async createOrUpdate(@Body() dto: CreateEvaluationDto) {
     return this.evaluationsService.createOrUpdate(dto);
   }
