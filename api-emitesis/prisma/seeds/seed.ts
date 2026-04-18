@@ -70,6 +70,8 @@ async function main() {
   await prisma.user.deleteMany();
   await prisma.company.deleteMany();
   await prisma.emailLog.deleteMany();
+  await prisma.systemSetting.deleteMany();
+  await prisma.announcement.deleteMany();
 
   const password = await bcrypt.hash('password123', 10);
   const lopdpData = { lopdpAccepted: true, lopdpAcceptedAt: daysAgo(10), lopdpVersion: '1.0' };
@@ -230,6 +232,26 @@ async function main() {
       }
     }
   }
+
+  // 9. Configuraciones Globales
+  console.log('⚙️ Seteando configuraciones globales...');
+  await prisma.systemSetting.createMany({
+    data: [
+      { key: 'attendance_radius', value: '250', description: 'Radio de geofencing para asistencia (metros)', category: 'GPS' },
+      { key: 'session_timeout', value: '3600', description: 'Tiempo de expiración de sesión (segundos)', category: 'AUTH' },
+      { key: 'smtp_host', value: 'smtp.gmail.com', description: 'Servidor SMTP para notificaciones', category: 'EMAIL' },
+    ]
+  });
+
+  // 10. Anuncio Inicial
+  await prisma.announcement.create({
+    data: {
+      title: '¡Bienvenidos a la nueva versión Admin Pro!',
+      content: 'Hemos industrializado el panel administrativo para mejor control del sistema.',
+      type: 'SUCCESS',
+      startDate: daysAgo(1),
+    }
+  });
 
   console.log('\n✅ Seed Profesional finalizado con éxito.');
   console.log('──────────────────────────────────────────────────────');

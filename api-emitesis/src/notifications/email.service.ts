@@ -121,6 +121,44 @@ export class EmailService {
     }
 
     /**
+     * Reenvía un correo electrónico basado en un log previo (útil para corregir envíos fallidos)
+     */
+    async resendEmail(logId: string) {
+        const log = await this.prisma.emailLog.findUnique({ where: { id: logId } });
+        if (!log) throw new Error('Log de email no encontrado');
+
+        this.logger.log(`Reenviando email a ${log.to}: ${log.subject}`);
+
+        const mailOptions = {
+            from: `"Soporte ISTPET" <${this.configService.get<string>('MAIL_USER')}>`,
+            to: log.to,
+            subject: `[REENVÍO] ${log.subject}`,
+            html: `
+        <div style="background-color: #fff3cd; padding: 10px; border: 1px solid #ffeeba; color: #856404; margin-bottom: 20px; text-align: center;">
+          Este es un reenvío manual solicitado por un administrador.
+        </div>
+        ${this.getContentForSubject(log.subject)}
+      `,
+        };
+
+        try {
+            const info = await this.transporter.sendMail(mailOptions);
+            await this.logEmail(log.to, log.subject, 'EXITO', null, log.metadata || {});
+            return { success: true, messageId: info.messageId };
+        } catch (err: any) {
+            await this.logEmail(log.to, log.subject, 'FALLIDO', err.message, log.metadata || {});
+            return { success: false, error: err.message };
+        }
+    }
+
+    // Método auxiliar para reconstruir contenido basado en subject
+    private getContentForSubject(subject: string): string {
+        if (subject.includes('Bienvenido')) return '<p>Bienvenido al Sistema de Prácticas ISTPET. Por favor acceda al portal.</p>';
+        if (subject.includes('Recuperación')) return '<p>Solicitaste un cambio de contraseña. Por favor usa el enlace enviado anteriormente.</p>';
+        return '<p>Notificación administrativa del Sistema de Prácticas ISTPET.</p>';
+    }
+
+    /**
      * RF-CON-002: Notificar a empresa sobre convenio por correo
      * Incluye adjunto y reintentos automáticos
      */

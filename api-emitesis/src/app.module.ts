@@ -17,9 +17,13 @@ import { StorageModule } from './infrastructure/storage/storage.module';
 import { WebauthnModule } from './webauthn/webauthn.module';
 import { AiModule } from './ai/ai.module';
 import { DocumentTemplatesModule } from './document-templates/document-templates.module';
+import { SettingsModule } from './settings/settings.module';
 import { ReportsModule } from './reports/reports.module';
 import { PrivacyModule } from './privacy/privacy.module';
 import { SystemLogsModule } from './system-logs/system-logs.module';
+import { MaintenanceModule } from './maintenance/maintenance.module';
+import { AnnouncementsModule } from './announcements/announcements.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -40,8 +44,12 @@ import { SystemLogsModule } from './system-logs/system-logs.module';
     AiModule,
     SystemLogsModule,
     DocumentTemplatesModule,
+    SettingsModule,
     ReportsModule,
     PrivacyModule,
+    MaintenanceModule,
+    AnnouncementsModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

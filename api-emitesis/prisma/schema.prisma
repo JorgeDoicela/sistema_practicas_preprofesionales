@@ -240,3 +240,26 @@ enum DocumentStatus {
   RECHAZADO_COORDINADOR
   INCUMPLIDO
 }
+
+/// Configuraciones globales del sistema (Radio GPS, SMTP, etc.)
+model SystemSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  description String?
+  category    String   @default("GENERAL") // GENERAL, GPS, EMAIL, AUTH
+  updatedAt   DateTime @updatedAt
+}
+
+/// Anuncios globales visibles para todos los usuarios
+model Announcement {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  type      String   @default("INFO") // INFO, WARNING, SUCCESS, DANGER
+  isActive  Boolean  @default(true)
+  startDate DateTime @default(now())
+  endDate   DateTime?
+  userId    String?  // Quién creó el anuncio
+  createdAt DateTime @default(now())
+}

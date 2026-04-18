@@ -15,12 +15,14 @@ import {
   BarChart3,
   PieChart,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { User as UserType } from "@/types/user";
 import { ROLES, normalizeApiRoleToAppRole, type Role } from "@/constants/roles";
 import { internshipsService } from "@/services/internships.service";
 import { agreementsService } from "@/services/agreements.service";
 import { reportsService, GlobalStats } from "@/services/reports.service";
+import { announcementsService, Announcement } from "@/services/announcements.service";
+import { Megaphone, X } from "lucide-react";
 
 type InternshipRow = {
   id: string;
@@ -83,6 +85,8 @@ export function DashboardMain() {
   const [internships, setInternships] = useState<InternshipRow[]>([]);
   const [agreementsCount, setAgreementsCount] = useState<number | null>(null);
   const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [closedAnnouncements, setClosedAnnouncements] = useState<string[]>([]);
 
   const loadDashboard = useCallback(async (u: UserType & { role: string }) => {
     const role = normalizeApiRoleToAppRole(u.role);
@@ -140,10 +144,20 @@ export function DashboardMain() {
       }
       setUser(merged);
       void loadDashboard(merged);
+      void loadAnnouncements();
     } catch {
       setLoading(false);
     }
   }, [loadDashboard]);
+
+  const loadAnnouncements = async () => {
+    try {
+      const active = await announcementsService.findActive();
+      setAnnouncements(active);
+    } catch (e) {
+      console.error("Error loading announcements", e);
+    }
+  };
 
   const stats = useMemo(() => {
     if (!appRole) {
@@ -455,6 +469,45 @@ export function DashboardMain() {
           </div>
         </div>
       </section>
+
+      {/* Anuncios Globales */}
+      <AnimatePresence>
+        {announcements
+          .filter(a => !closedAnnouncements.includes(a.id))
+          .map((a) => (
+            <motion.div
+              key={a.id}
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className={`relative overflow-hidden group rounded-[2rem] border-l-8 p-6 flex items-start gap-6 shadow-xl ${
+                a.type === 'SUCCESS' ? 'bg-emerald-50 border-emerald-500 text-emerald-900' :
+                a.type === 'WARNING' ? 'bg-amber-50 border-amber-500 text-amber-900' :
+                a.type === 'DANGER' ? 'bg-rose-50 border-rose-500 text-rose-900' :
+                'bg-blue-50 border-blue-500 text-blue-900'
+              }`}
+            >
+              <div className={`p-4 rounded-2xl bg-white shadow-sm flex-shrink-0 ${
+                a.type === 'SUCCESS' ? 'text-emerald-500' :
+                a.type === 'WARNING' ? 'text-amber-500' :
+                a.type === 'DANGER' ? 'text-rose-500' :
+                'text-blue-500'
+              }`}>
+                 <Megaphone className="w-6 h-6" />
+              </div>
+              <div className="flex-1 pr-10">
+                 <h4 className="text-xl font-black tracking-tight leading-none mb-2 uppercase">{a.title}</h4>
+                 <p className="text-sm font-medium opacity-80 leading-relaxed">{a.content}</p>
+              </div>
+              <button 
+                onClick={() => setClosedAnnouncements([...closedAnnouncements, a.id])}
+                className="absolute top-6 right-6 p-2 rounded-full hover:bg-black/5 transition-colors"
+              >
+                 <X className="w-4 h-4 opacity-40 hover:opacity-100" />
+              </button>
+            </motion.div>
+          ))}
+      </AnimatePresence>
 
       {error && (
         <div className="flex items-center gap-3 rounded-2xl border border-rose-100 bg-rose-50 px-5 py-4 text-rose-800 text-sm font-semibold">

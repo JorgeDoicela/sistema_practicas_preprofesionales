@@ -36,6 +36,9 @@ import { getProfilePathForRole } from "@/lib/profile-route";
 const MENUS: Record<string, Array<{ icon: React.ElementType; label: string; href: string }>> = {
     ADMIN: [
         { icon: LayoutDashboard, label: "Tablero",               href: "/dashboard" },
+        { icon: Settings,        label: "Configuración Sistema", href: "/admin/configuracion" },
+        { icon: BarChart3,       label: "Salud y Métricas",      href: "/admin/salud" },
+        { icon: Star,            label: "Anuncios Globales",     href: "/admin/anuncios" },
         { icon: FileText,        label: "Plantillas",             href: "/coordinador/plantillas-documentos" },
         { icon: ScrollText,      label: "Auditoría de Sistema",   href: "/admin/logs" },
         { icon: ShieldAlert,     label: "Cumplimiento LOPDP",    href: "/admin/privacidad" },
@@ -44,7 +47,6 @@ const MENUS: Record<string, Array<{ icon: React.ElementType; label: string; href
         { icon: Handshake,       label: "Convenios",             href: "/coordinador/convenios" },
         { icon: GraduationCap,   label: "Gestión Estudiantes",   href: "/coordinador/estudiantes" },
         { icon: ClipboardCheck,  label: "Evaluaciones",          href: "/coordinador/evaluaciones" },
-        { icon: BarChart3,       label: "Reportes",              href: "/coordinador/reportes" },
         { icon: FileStack,       label: "Documentos",            href: "/dashboard/documentos" },
     ],
     COORDINADOR: [

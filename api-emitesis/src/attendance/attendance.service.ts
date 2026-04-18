@@ -3,12 +3,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../infrastructure/storage/storage.service';
 import { RegisterAttendanceDto } from './dto/register-attendance.dto';
 import { MulterFile } from '../shared/interfaces/multer-file.interface';
+import { SettingsService } from '../settings/settings.service';
 
 @Injectable()
 export class AttendanceService {
   constructor(
     private prisma: PrismaService,
     private storageService: StorageService,
+    private settingsService: SettingsService,
   ) {}
 
   private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -28,11 +30,11 @@ export class AttendanceService {
   /** Verifica si (lat,lng) está dentro del rango de al menos una ubicación permitida.
    *  Usa `allowedLocations` JSON si existe; sino cae al campo lat/lng legacy.
    *  Devuelve null si está permitido, o un mensaje de error si está fuera de rango. */
-  private checkLocationAllowed(
+  private async checkLocationAllowed(
     lat: number,
     lng: number,
     internship: { lat: number | null; lng: number | null; allowedLocations: unknown },
-  ): string | null {
+  ): Promise<string | null> {
     type Loc = { label?: string; lat: number; lng: number; radiusM?: number };
     const locs: Loc[] = Array.isArray(internship.allowedLocations) && internship.allowedLocations.length > 0
       ? (internship.allowedLocations as Loc[])
@@ -44,8 +46,11 @@ export class AttendanceService {
       return 'La ubicación del lugar de prácticas no ha sido configurada. Contacta a tu tutor académico.';
     }
 
+    const globalRadius = await this.settingsService.getNumberValue('attendance_radius', 250);
+
     for (const loc of locs) {
-      const radiusKm = (loc.radiusM ?? 200) / 1000;
+      // Usar radio específico de la loc o el global de configuración
+      const radiusKm = (loc.radiusM ?? globalRadius) / 1000;
       const dist = this.calculateDistance(lat, lng, loc.lat, loc.lng);
       if (dist <= radiusKm) return null; // dentro del rango → permitido
     }
@@ -74,7 +79,7 @@ export class AttendanceService {
     }
 
     // Validar ubicación contra todas las sedes permitidas
-    const locationError = this.checkLocationAllowed(lat, lng, internship);
+    const locationError = await this.checkLocationAllowed(lat, lng, internship);
     if (locationError && !internship.testEnabled) {
       throw new BadRequestException(locationError);
     }
@@ -132,7 +137,7 @@ export class AttendanceService {
     }
 
     // Validar ubicación contra todas las sedes permitidas
-    const locationError = this.checkLocationAllowed(lat, lng, internship);
+    const locationError = await this.checkLocationAllowed(lat, lng, internship);
     if (locationError && !internship.testEnabled) {
       throw new BadRequestException(locationError);
     }
