@@ -26,6 +26,7 @@ import { Megaphone, X } from "lucide-react";
 import { StudentRoadmap } from "./StudentRoadmap";
 import { AICopilot } from "./AICopilot";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
+import { AnalyticsOverview } from "./AnalyticsOverview";
 import { attendancesService } from "@/services/attendances.service";
 import dynamic from "next/dynamic";
 
@@ -687,6 +688,8 @@ export function DashboardMain() {
                     </div>
                   </div>
                 </div>
+
+                <AnalyticsOverview stats={globalStats} />
               </div>
             </section>
           )}

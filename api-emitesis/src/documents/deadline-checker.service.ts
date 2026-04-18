@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 /**
  * RF-09: Bloqueo Automático por Incumplimiento.
@@ -16,6 +17,7 @@ export class DeadlineCheckerService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
@@ -59,15 +61,14 @@ export class DeadlineCheckerService {
           data: { status: 'INCUMPLIDO' },
         });
 
-        // Notificar al tutor académico
-        if (doc.internship.tutor?.email) {
-          await this.emailService.sendIncumplimientoAlertToTutor(
-            doc.internship.tutor.email,
-            doc.internship.tutor.fullName,
-            doc.internship.student.fullName,
-            doc.name,
-          );
-        }
+        // Notificar al estudiante vía app
+        await this.notificationsService.createInApp(
+          doc.internship.studentId,
+          `Documento Incumplido: ${doc.name}`,
+          `El plazo para entregar este documento ha vencido y se ha marcado como INCUMPLIDO.`,
+          'ERROR',
+          '/dashboard/documentos'
+        );
 
         this.logger.log(
           `RF-09: Documento "${doc.name}" del estudiante "${doc.internship.student.fullName}" marcado como INCUMPLIDO.`,

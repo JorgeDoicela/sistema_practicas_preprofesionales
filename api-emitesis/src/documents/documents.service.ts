@@ -4,7 +4,9 @@ import { UpdateDocumentDatesDto } from './dto/update-document-dates.dto';
 import { ReviewDocumentDto } from './dto/review-document.dto';
 import { StorageService } from '../infrastructure/storage/storage.service';
 import { EmailService } from '../notifications/email.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { MulterFile } from '../shared/interfaces/multer-file.interface';
+import { SystemLogsService } from '../system-logs/system-logs.service';
 
 @Injectable()
 export class DocumentsService {
@@ -12,6 +14,8 @@ export class DocumentsService {
     private prisma: PrismaService,
     private storageService: StorageService,
     private emailService: EmailService,
+    private systemLogs: SystemLogsService,
+    private notificationsService: NotificationsService,
   ) {}
 
   async updateDates(id: string, dto: UpdateDocumentDatesDto) {
@@ -158,6 +162,13 @@ export class DocumentsService {
       // que será marcada como Extemporánea. El estado pasará a ser "En Revisión"
       // para que el tutor decida si aceptarla o no.
       console.log(`[DocumentsService] Entrega tardía detectada para el documento ${document.id}`);
+      this.systemLogs.append({
+        level: 'WARN',
+        category: 'HTTP',
+        message: `Entrega tardía del documento ${document.name} por el estudiante ${document.internship.student.fullName}`,
+        userId: studentId,
+        metadata: { documentId: id, internshipId: document.internshipId, type: 'LATE_SUBMISSION' }
+      });
     }
 
     // Limpieza de almacenamiento: Eliminar versión anterior si existe
@@ -234,6 +245,14 @@ export class DocumentsService {
         }),
       },
     });
+    
+    this.systemLogs.append({
+      level: 'INFO',
+      category: 'HTTP',
+      message: `Tutor ${document.internship.tutor.fullName} revisó documento ${document.name} -> ${reviewDto.status}`,
+      userId: tutorId,
+      metadata: { documentId: id, status: reviewDto.status, internshipId: document.internshipId }
+    });
 
     // Notificar al estudiante
     if (document.internship.student?.email) {
@@ -286,6 +305,14 @@ export class DocumentsService {
           reviewAnnotations: reviewDto.annotations as object,
         }),
       },
+    });
+
+    this.systemLogs.append({
+      level: 'INFO',
+      category: 'HTTP',
+      message: `Coordinador revisó documento ${document.name} -> ${reviewDto.status}`,
+      userId: coordinatorId,
+      metadata: { documentId: id, status: reviewDto.status, internshipId: document.internshipId }
     });
 
     // Notificar a Estudiante y Tutor

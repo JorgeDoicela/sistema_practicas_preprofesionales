@@ -25,6 +25,7 @@ export default function AdminAnnouncementsPage() {
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newType, setNewType] = useState<Announcement['type']>("INFO");
+  const [newEndDate, setNewEndDate] = useState("");
 
   useEffect(() => {
     loadAnnouncements();
@@ -49,11 +50,13 @@ export default function AdminAnnouncementsPage() {
         title: newTitle,
         content: newContent,
         type: newType,
+        endDate: newEndDate || undefined,
       });
       setAnnouncements([res, ...announcements]);
       setCreating(false);
       setNewTitle("");
       setNewContent("");
+      setNewEndDate("");
     } catch (err) {
       console.error(err);
     }
@@ -112,8 +115,8 @@ export default function AdminAnnouncementsPage() {
             >
                <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight mb-8">Crear Comunicación</h3>
                <div className="grid gap-6">
-                  <div className="grid md:grid-cols-4 gap-6">
-                     <div className="md:col-span-3">
+                   <div className="grid md:grid-cols-5 gap-6">
+                      <div className="md:col-span-3">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Título del Anuncio</label>
                         <input 
                           value={newTitle}
@@ -122,30 +125,45 @@ export default function AdminAnnouncementsPage() {
                           className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-[#003366] focus:ring-2 focus:ring-[#C5A059]"
                         />
                      </div>
-                     <div className="md:col-span-1">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Tipo</label>
-                        <select 
-                          value={newType}
-                          onChange={e => setNewType(e.target.value as any)}
+                     <div className="md:col-span-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Expiración (Opcional)</label>
+                        <input 
+                          type="date"
+                          value={newEndDate}
+                          onChange={e => setNewEndDate(e.target.value)}
                           className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-[#003366] focus:ring-2 focus:ring-[#C5A059]"
-                        >
-                           <option value="INFO">Informativo</option>
-                           <option value="SUCCESS">Éxito</option>
-                           <option value="WARNING">Advertencia</option>
-                           <option value="DANGER">Urgente</option>
-                        </select>
+                        />
                      </div>
                   </div>
-                  <div>
-                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Contenido</label>
-                     <textarea 
-                        value={newContent}
-                        onChange={e => setNewContent(e.target.value)}
-                        rows={4}
-                        placeholder="Escribe aquí el mensaje detallado..."
-                        className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-[#003366] focus:ring-2 focus:ring-[#C5A059]"
-                     />
-                  </div>
+                   <div>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Tipo de Aviso</label>
+                      <div className="flex flex-wrap gap-2">
+                         {['INFO', 'SUCCESS', 'WARNING', 'DANGER'].map(t => (
+                            <button
+                               key={t}
+                               type="button"
+                               onClick={() => setNewType(t as any)}
+                               className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                  newType === t 
+                                  ? 'bg-[#003366] text-white shadow-lg' 
+                                  : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                               }`}
+                            >
+                               {t}
+                            </button>
+                         ))}
+                      </div>
+                   </div>
+                   <div>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Contenido</label>
+                      <textarea 
+                         value={newContent}
+                         onChange={e => setNewContent(e.target.value)}
+                         rows={4}
+                         placeholder="Escribe aquí el mensaje detallado..."
+                         className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-[#003366] focus:ring-2 focus:ring-[#C5A059]"
+                      />
+                   </div>
                   <div className="flex justify-end gap-3 mt-4">
                      <button onClick={() => setCreating(false)} className="px-6 py-3 text-sm font-black text-slate-400 uppercase tracking-widest hover:text-slate-600">Cancelar</button>
                      <button onClick={handleCreate} className="px-10 py-3 bg-[#C5A059] text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-lg shadow-gold/20">Publicar Anuncio</button>
@@ -184,7 +202,13 @@ export default function AdminAnnouncementsPage() {
                             <Clock className="w-3 h-3" />
                             Publicado: {new Date(a.createdAt).toLocaleDateString()}
                          </span>
-                         <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-md ${
+                          {a.endDate && (
+                            <span className="flex items-center gap-1.5 text-[9px] font-black text-rose-400 uppercase tracking-widest">
+                               <RefreshCcw className="w-3 h-3" />
+                               Expira: {new Date(a.endDate).toLocaleDateString()}
+                            </span>
+                          )}
+                          <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-md ${
                             a.type === 'SUCCESS' ? 'bg-emerald-100 text-emerald-700' :
                             a.type === 'WARNING' ? 'bg-amber-100 text-amber-700' :
                             a.type === 'DANGER' ? 'bg-rose-100 text-rose-700' :

@@ -323,6 +323,8 @@ export class InternshipsService {
     }
 
     return internship;
+  }
+
   /**
    * PIA-CORE: Cálculo del Health Score de la práctica.
    * Proporciona un índice del 0 al 100 sobre la salud y progreso de la práctica.

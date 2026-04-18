@@ -2,6 +2,7 @@ import { Injectable, ConflictException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAgreementDto } from './dto/create-agreement.dto';
 import { EmailService } from '../notifications/email.service';
+import { SystemLogsService } from '../system-logs/system-logs.service';
 import { validateEcuadorianRUC } from '../common/utils/validators';
 
 @Injectable()
@@ -9,6 +10,7 @@ export class AgreementsService {
   constructor(
     private prisma: PrismaService,
     private emailService: EmailService,
+    private systemLogs: SystemLogsService,
   ) {}
 
   async create(createAgreementDto: CreateAgreementDto, filePath: string) {
@@ -69,6 +71,14 @@ export class AgreementsService {
           console.error('Error disparando notificación de convenio:', err.message);
         });
 
+        this.systemLogs.append({
+          level: 'INFO',
+          category: 'HTTP',
+          message: `Convenio registrado exitosamente para la empresa: ${company.name}`,
+          userId: 'SYSTEM',
+          metadata: { agreementId: agreement.id, ruc: company.ruc, companyId: company.id }
+        });
+        
         return agreement;
       });
     } catch (error: unknown) {

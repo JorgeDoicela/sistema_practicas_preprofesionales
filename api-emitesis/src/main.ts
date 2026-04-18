@@ -5,6 +5,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import type { INestApplication } from '@nestjs/common';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import helmet from 'helmet';
 
 /** En Vercel no se debe crear Nest en cada petición (agota tiempo/memoria y provoca FUNCTION_INVOCATION_FAILED). */
 let vercelExpressApp: unknown = null;
@@ -57,10 +58,16 @@ async function createConfiguredApp(): Promise<INestApplication> {
       forbidNonWhitelisted: false,
     }),
   );
+  
+  /** Security Hardening: Ocultar info del servidor y cabeceras seguras */
+  app.use(helmet());
 
   /** Industrial Core: Estandarización de respuestas y errores */
   app.useGlobalInterceptors(new TransformInterceptor());
   app.useGlobalFilters(new HttpExceptionFilter());
+  
+  /** Resilience: Permitir que el servidor cierre conexiones limpiamente */
+  app.enableShutdownHooks();
 
   return app;
 }

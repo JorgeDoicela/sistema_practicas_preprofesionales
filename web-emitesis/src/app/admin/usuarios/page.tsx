@@ -22,6 +22,7 @@ import { usersService } from '@/services/users.service';
 import { User, UserRole } from "@/types/user";
 import { TwoFactorModal } from '@/components/auth/TwoFactorModal';
 import { DoubleConfirmModal, useDoubleConfirm } from '@/components/ui/DoubleConfirmModal';
+import { TableSkeleton } from '@/components/ui/Skeleton';
 
 const RoleBadge = ({ role }: { role: UserRole | string }) => {
   const styles: Record<string, string> = {
@@ -241,9 +242,8 @@ export default function UsuariosManagementPage() {
               <tbody className="divide-y divide-slate-50">
                 {loading ? (
                   <tr>
-                    <td colSpan={5} className="px-8 py-20 text-center">
-                      <Loader2 className="w-8 h-8 text-[#003366] animate-spin mx-auto mb-4" />
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cargando Usuarios...</p>
+                    <td colSpan={5} className="px-8 py-10">
+                      <TableSkeleton />
                     </td>
                   </tr>
                 ) : filteredUsers.length === 0 ? (

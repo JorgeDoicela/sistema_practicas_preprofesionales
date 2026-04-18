@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Search, ChevronDown, User, ShieldCheck, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { User as UserType } from "@/types/user";
+import { Search, User, ShieldCheck, ChevronDown, LogOut } from "lucide-react";
+import { NotificationBell } from "./NotificationBell";
 
 export function Navbar() {
   const [user, setUser] = useState<UserType | null>(null);
@@ -51,11 +52,7 @@ export function Navbar() {
         {/* Right Actions */}
         <div className="flex items-center gap-8">
           
-          {/* Notifications */}
-          <button className="relative p-2.5 rounded-2xl bg-white border border-slate-100 shadow-sm hover:translate-y-[-2px] transition-all group">
-            <Bell className="w-5 h-5 text-slate-500 group-hover:text-[#003366] transition-colors" />
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-[#C5A059] rounded-full border-2 border-white" />
-          </button>
+          <NotificationBell />
 
           {/* User Profile */}
           <div className="flex items-center gap-4 pl-8 border-l border-slate-100 relative">

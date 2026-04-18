@@ -101,6 +101,7 @@ export class AiService {
     });
 
     return response.choices[0]?.message?.content?.trim() || 'No pude procesar tu consulta en este momento.';
+  }
   /**
    * RF-AI-01: Pre-verificación de documentos PDF.
    * Analiza la primera página del documento para asegurar que tiene el formato correcto y datos básicos.
@@ -144,6 +145,6 @@ export class AiService {
     const content = response.choices[0]?.message?.content;
     if (!content) return { isValid: true, feedback: 'Error en la respuesta de IA.' };
     
-    return JSON.parse(content);
+    return JSON.parse(content as string);
   }
 }

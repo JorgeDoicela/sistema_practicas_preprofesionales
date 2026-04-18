@@ -155,6 +155,22 @@ export default function DocumentosPage() {
     }
   };
 
+  const confirmUploadWith2fa = async (code: string) => {
+    if (!pendingUpload) return;
+    setUploadingId(pendingUpload.id);
+    try {
+      await documentsService.uploadDocument(pendingUpload.id, pendingUpload.file, code);
+      alert("Documento subido con éxito tras verificación");
+      setIs2faModalOpen(false);
+      setPendingUpload(null);
+      loadInternships();
+    } catch (error: any) {
+      throw error;
+    } finally {
+      setUploadingId(null);
+    }
+  };
+
   const isApproved = (id: string) => {
     return userDocuments.find(d => d.id === id)?.status === 'APROBADO_DEFINITIVO';
   };
@@ -226,7 +242,7 @@ export default function DocumentosPage() {
   const handle2faConfirmAction = async (code: string) => {
       if (!pendingAction) return;
       try {
-          const action = (pendingAction as any)();
+          const action = pendingAction();
           await action(code);
           alert("Acción completada con éxito");
           setIs2faModalOpen(false);

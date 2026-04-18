@@ -266,6 +266,32 @@ export class EmailService {
         }
     }
 
+    async sendDeadlineReminder(email: string, studentName: string, documentName: string, dueDate: Date) {
+        const subject = `⚠ Recordatorio de Plazo: ${documentName}`;
+        try {
+            const content = `
+                <p>Hola <span class="highlight">${studentName}</span>,</p>
+                <p>Este es un recordatorio automático de que el plazo para la entrega del documento <span class="highlight">${documentName}</span> está próximo a vencer.</p>
+                <div class="alert-box" style="border-left-color: #C5A059">
+                    <strong>Fecha Límite:</strong> ${dueDate.toLocaleDateString()}<br>
+                    <strong>Hora Límite:</strong> 23:59
+                </div>
+                <p>Por favor, asegúrese de cargar el documento firmado en el portal antes de la fecha indicada para evitar marcas de entrega tardía o incumplimiento.</p>
+            `;
+            const html = this.getHtmlTemplate('Recordatorio de Entrega', content, 'Cargar Documento', `${this.getPublicAppBase()}/dashboard/documentos`, 'WARNING');
+
+            await this.transporter.sendMail({
+                from: `"Gestión Académica ISTPET" <${this.configService.get<string>('MAIL_USER')}>`,
+                to: email,
+                subject,
+                html
+            });
+            return { success: true };
+        } catch (err: any) {
+            return { success: false, error: err.message };
+        }
+    }
+
     async sendDocumentReviewResultToStudent(email: string, studentName: string, documentName: string, status: string, observations: string) {
         const isApproved = status === 'APROBADO_TUTOR' || status === 'APROBADO_DEFINITIVO';
         const subject = `Resultado de Revisión: ${documentName}`;
@@ -379,6 +405,31 @@ export class EmailService {
                 subject,
                 html,
                 attachments: excelBuffer ? [{ filename: 'Seguimiento_Tutor.xlsx', content: excelBuffer }] : []
+            });
+            return { success: true };
+        } catch (err: any) {
+            return { success: false, error: err.message };
+        }
+    }
+
+    async sendIncumplimientoAlertToTutor(email: string, tutorName: string, studentName: string, documentName: string) {
+        const subject = `⚠ ALERTA DE INCUMPLIMIENTO: ${documentName} - ${studentName}`;
+        try {
+            const content = `
+                <p>Estimado/a <span class="highlight">${tutorName}</span>,</p>
+                <p>Se le informa que el plazo de entrega para el documento <span class="highlight">${documentName}</span> ha vencido sin que el estudiante <span class="highlight">${studentName}</span> haya realizado la carga correspondiente.</p>
+                <div class="alert-box" style="border-left-color: #d32f2f">
+                    <strong>Acción Automática:</strong> El documento ha sido marcado como <span style="color: #d32f2f; font-weight: 800;">INCUMPLIDO</span> en el sistema.
+                </div>
+                <p>Por favor, coordine con el estudiante para verificar los motivos del retraso o proceda según lo estipulado en el reglamento de prácticas preprofesionales.</p>
+            `;
+            const html = this.getHtmlTemplate('Alerta de Incumplimiento', content, 'Ver Expediente', `${this.getPublicAppBase()}/tutor-academico/asistencia`, 'ERROR');
+
+            await this.transporter.sendMail({
+                from: `"Sistema EmiTesis" <${this.configService.get<string>('MAIL_USER')}>`,
+                to: email,
+                subject,
+                html
             });
             return { success: true };
         } catch (err: any) {
