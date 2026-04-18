@@ -1,33 +1,30 @@
-# Diccionario de Datos y Modelo de Entidad-Relación
+# Arquitectura de Datos y Diccionario de Base de Datos
 
-Este documento proporciona una especificación técnica exhaustiva de la base de datos de EmiTesis, detallando cada entidad, sus atributos, restricciones y el propósito de los campos especiales.
+El sistema utiliza **PostgreSQL 16** gestionado a través de **Prisma ORM**. La estructura ha sido diseñada para garantizar la integridad referencial, la inmutabilidad de los registros de asistencia y el cumplimiento de la normativa de protección de datos (LOPDP).
 
-## 1. Diagrama Entidad-Relación Completo (Mermaid)
+## 1. Modelos del Sistema Industrializado
+
+### 1.1 Núcleo de Prácticas
+- **Internship (Asignación)**: Entidad central que une al Estudiante, Empresa y Tutores. Almacena las ubicaciones permitidas (JSON), el estado del test de actitud y las coordenadas principales.
+- **Attendance (Asistencia)**: Registro inmutable de entradas y salidas. Incluye geolocalización, biometría y **activityPhotoKey** para evidencias visuales.
+- **Evaluation (Evaluación Dual)**: Almacena puntajes de aptitud y actitud. Diferencia entre evaluaciones de tipo `ACADEMICA` y `EMPRESARIAL`.
+
+### 1.2 Monitoreo y Seguimiento 360
+- **MonitoringVisit (Visita de Campo)**: Registro de las visitas de supervisión realizadas por el tutor académico. Almacena fecha, observaciones y resultados de la verificación in situ.
+- **Document (Gestión Documental)**: Rastreo del ciclo de vida de los 21+ documentos obligatorios, incluyendo validaciones y plantillas.
+
+### 1.3 Auditoría e Inteligencia
+- **SystemLog (Auditoría Industrial)**: Registro de eventos de seguridad, acceso a datos sensibles (LOPDP) y errores sistémicos. Esencial para el cumplimiento normativo.
+- **AiChatLog**: Registro de las interacciones del estudiante con el Copilot de IA, permitiendo refinar el conocimiento del asistente.
+
+### 1.4 Comunicación y Privacidad
+- **Announcement (Avisos Masivos)**: Gestión de notificaciones globales para roles específicos.
+- **PrivacyRequest (LOPDP/ARCO)**: Gestión de solicitudes ciudadanas sobre sus datos personales (Acceso, Rectificación, Cancelación, Oposición).
+
+## 2. Diagrama Entidad-Relación (Conceptual)
 
 ```mermaid
 erDiagram
-    USER ||--o| COMPANY : "vinculado_a (opcional)"
-    USER ||--o{ INTERNSHIP : "como_estudiante"
-    USER ||--o{ INTERNSHIP : "como_tutor"
-    COMPANY ||--o{ AGREEMENT : "posee"
-    COMPANY ||--o{ INTERNSHIP : "aloja"
-    INTERNSHIP ||--o{ ATTENDANCE : "registra"
-    INTERNSHIP ||--o{ DOCUMENT : "contiene"
-
-    USER {
-        string id PK "UUID"
-        string email UK "Correo institucional"
-        string password "Hash BCrypt (costo 10)"
-        string fullName "Nombre completo"
-        Role role "Enum: ADMIN, COORDINADOR, TUTOR, ESTUDIANTE, EMPRESA"
-        boolean isActive "Estado de cuenta"
-        int failedAttempts "Contador para bloqueo"
-        datetime lockoutUntil "Fecha/hora de liberación de bloqueo"
-        string resetToken "Token de recuperación (32 bytes)"
-        datetime resetTokenExpires "Expiración de recuperación (1h)"
-    }
-
-    COMPANY {
         string id PK "UUID"
         string ruc UK "Identificación fiscal única"
         string name "Nombre comercial"

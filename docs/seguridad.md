@@ -1,19 +1,38 @@
-# Seguridad y Hardening del Sistema
+# Estándares de Seguridad, Privacidad y Hardening
 
-Este documento especifica las capas de seguridad implementadas para proteger la integridad de la información y la disponibilidad de los servicios de EmiTesis.
+El ecosistema EmiTesis sigue estándares internacionales de seguridad y cumplimiento legal para proteger la integridad de los datos académicos y personales.
 
-## 1. Seguridad en Capa de Aplicación (API)
+## 1. Cumplimiento LOPDP (Ley de Protección de Datos)
 
-### 1.1 Autenticación Robusta
-*   **Tokenización:** Uso de JWT (JSON Web Tokens) firmados con algoritmo HS256. El payload incluye `sub` (ID de usuario), `role` y `email`.
-*   **Hashing de Secretos:** Implementación de `bcrypt` con un `saltFactor` de 10 para todas las contraseñas de usuario.
-*   **Recuperación Segura:** Generación de tokens de recuperación de un solo uso (`crypto.randomBytes(32)`) con una ventana de validez de 60 minutos.
+El sistema ha sido diseñado bajo los principios de **Privacidad desde el Diseño**.
+- **Módulo ARCO**: Interfaz dedicada para que los usuarios ejerzan sus derechos de Acceso, Rectificación, Cancelación y Oposición.
+- **Transparencia**: Los estudiantes pueden ver un registro de quién ha accedido a sus datos personales (PIA - Privacy Impact Assessment) en tiempo real.
+- **Responsabilidad Estricta**: Los administradores deben justificar y registrar cada acceso a expedientes sensibles.
 
-### 1.2 Mecanismos de Defensa Activa
-*   **Protección contra Fuerza Bruta:** El sistema implementa un bloqueo temporal de cuenta tras 5 intentos fallidos consecutivos de login. El bloqueo persiste por 15 minutos (`lockoutUntil`).
-*   **reCAPTCHA v2/v3:** Integración con Google reCAPTCHA en los endpoints de Login y Registro de Empresa para mitigar ataques de bots y automatización no autorizada.
+## 2. Auditoría Industrial y Trazabilidad
 
-## 2. Control de Acceso (RBAC)
+- **System Logs de Grado Militar**: Cada acción crítica (cambios de notas, aprobación de documentos, accesos fallidos) se registra con IP, agente de usuario y marca de tiempo inmutable.
+- **Categorización de Eventos**: Los logs se clasifican en INFO, WARN, ERROR y SECURITY para una respuesta rápida ante incidentes.
+
+## 3. Defensa Activa (Hardening)
+
+### 3.1 Rate Limiting (Throttling)
+Protección contra ataques de fuerza bruta y denegación de servicio (DoS) en endpoints críticos:
+- `/api/auth/login`: Límite estricto de intentos antes de bloqueo temporal.
+- `/api/attendance/check-in`: Evita el spam de registros de ubicación.
+
+### 3.2 Protección contra Suplantación (GPS Spoofing)
+- Algoritmos de validación de proximidad que detectan discrepancias entre la IP de conexión y la geolocalización reportada por el dispositivo.
+
+### 3.3 Cifrado y Hash
+- **Contraseñas**: Almacenadas con BCrypt (salt cost: 10).
+- **Tránsito**: Encriptación forzosa mediante TLS 1.3 (HTTPS).
+- **Documentos**: Los enlaces a archivos en Vercel Blob tienen tokens de expiración para evitar accesos no autorizados mediante URL directas.
+
+---
+Para más detalles sobre la gestión de sesiones y tokens, consulte la [Guía de API](api-guia.md).
+
+## 4. Control de Acceso (RBAC)
 
 El sistema utiliza un Control de Acceso Basado en Roles (RBAC) mediante Guards de NestJS.
 

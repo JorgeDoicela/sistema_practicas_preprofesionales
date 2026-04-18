@@ -1,25 +1,41 @@
-## 1. Diseño del Ciclo de Vida de la Práctica
+# Lógica de Negocio y Reglas Técnicas
 
-El proceso está gobernado por tres entidades principales: Estudiante, Tutor Académico y Representante de la Empresa. El flujo ha sido diseñado para maximizar la transparencia y el control administrativo.
+Este documento detalla las reglas de nivel industrial que gobiernan el comportamiento del ecosistema EmiTesis, asegurando la calidad académica y el cumplimiento normativo.
 
-### 1.1 Control de Asignaciones y Validaciones
-Para garantizar la integridad del proceso académico, se han implementado las siguientes validaciones automáticas:
-*   **Exclusividad Académica:** El sistema impide que un estudiante sea asignado a más de una práctica simultánea en estado activo, evitando duplicidad de horas y conflictos administrativos.
-*   **Vigencia Institucional:** Solo se permite el inicio de prácticas con empresas que posean un convenio vigente en la base de datos, asegurando el respaldo legal de cada pasantía.
-*   **Control de Tiempos:** Se ha restringido la creación de asignaciones con fechas pasadas para mantener una cronología auditada y real del proceso.
+## 1. Ciclo de Vida del Estudiante (Roadmap Industrial)
 
-### 1.2 Inicialización de Documentación Obligatoria
-Al momento de oficializar una práctica, el sistema instancia automáticamente el set completo de 8 documentos requeridos por la normativa de la institución. Esto elimina el error humano de olvido de formularios y asegura que el estudiante tenga su expediente listo desde el primer día.
-1. Solicitud de prácticas.
-2. Plan de rotación.
-3. Informe de actividades.
-4. Registro de asistencia.
-5. Evaluación del tutor académico.
-6. Evaluación del representante de la empresa.
-7. Informe final de prácticas.
-8. Certificado de culminación.
+El proceso de prácticas se ha gamificado y estandarizado en 4 etapas críticas:
+1.  **Asignación**: Vinculación de estudiante-tutor-empresa.
+2.  **Ejecución (Marcaje 360)**: Registro diario de asistencia con validación de geofencing (GPS) y biometría.
+3.  **Monitoreo y Evidencia**: Subida obligatoria de fotos de actividades diaria para validación por parte del tutor empresarial.
+4.  **Evaluación y Cierre**: Generación de certificado tras cumplir el 100% de horas y aprobaciones.
 
-## 2. Gestión Documental y Firma Electrónica
+## 2. Reglas de Validación de Asistencia (RF-ATT-LOC)
+
+- **Geofencing**: El sistema valida que el estudiante se encuentre dentro de un radio de **X metros** (configurable por locación) de los puntos permitidos definidos por la empresa.
+- **Biometría Progresiva**: Si el dispositivo lo permite, se solicita validación biométrica para evitar el "marcaje por terceros".
+- **Evidencia Visual**: No se permite cerrar una jornada de asistencia sin la carga de al menos una **foto de actividad** que demuestre el trabajo realizado ese día.
+
+## 3. Modelo de Evaluación Dual (RF-07)
+
+A diferencia de sistemas tradicionales, EmiTesis emplea un modelo de evaluación cruzada:
+- **Evaluación Empresarial**: Enfocada en aptitudes técnicas, proactividad y actitud en el entorno laboral.
+- **Evaluación Académica**: Enfocada en el cumplimiento de los objetivos de aprendizaje y la calidad de los informes entregados.
+- **Dual Performance Glance**: Los coordinadores pueden ver ambos puntajes lado a lado para detectar discrepancias en el rendimiento.
+
+## 4. Inteligencia Artificial Contextual (AI Copilot)
+
+The system uses AI for autonomous technical support:
+- **Zero-Hallucination Policy**: La IA solo responde basándose en el expediente actual del estudiante y las reglas de negocio del ISTPET.
+- **Asistencia Proactiva**: Identifica documentos faltantes o proximidad a la finalización de horas para alertar al estudiante.
+
+## 5. Protocolo de Monitoreo 360 (Tutor Académico)
+
+- **Visitas de Campo**: Los tutores académicos deben registrar al menos una visita de monitoreo presencial o virtual, documentando evidencias en el sistema.
+- **Alertas Tempranas**: Si un estudiante deja de marcar por más de 3 días hábiles, el sistema genera una alerta crítica para el tutor académico.
+
+---
+Estas reglas garantizan que el título de técnico/tecnólogo esté respaldado por un proceso de prácticas verificable y de alta calidad.
 
 ### 2.1 Flujo de Revisión (State Machine)
 Los documentos siguen un flujo jerárquico estricto de aprobación:

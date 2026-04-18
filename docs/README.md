@@ -1,26 +1,27 @@
-# Índice de Documentación Técnica - EmiTesis (ISTPET)
+# Índice de Documentación Técnica - EmiTesis Industrialized (ISTPET)
 
-Bienvenido a la base de conocimientos central del Sistema de Gestión de Prácticas Preprofesionales. Este directorio actúa como el mapa maestro para entender, desarrollar y desplegar el sistema.
+Bienvenido a la base de conocimientos central del **Sistema de Gestión de Prácticas Preprofesionales EmiTesis**. Este repositorio documenta un ecosistema de nivel industrial diseñado para la automatización, monitoreo y certificación de procesos académicos.
 
 ## Mapa de Navegación
 
 ### 1. Fundamentos Arquitectónicos
-*   **[Arquitectura del Sistema](arquitectura.md):** Vista general del stack tecnológico, topología de red y diagramas de componentes.
-*   **[Base de Datos y Diccionario](base-de-datos.md):** Diagrama Entidad-Relación completo, descripción de modelos y restricciones de integridad.
+*   **[Arquitectura del Sistema](arquitectura.md):** Vista general del stack tecnológico, motor de IA (GPT-4o), interceptores de resiliencia y topología de red.
+*   **[Base de Datos y Diccionario](base-de-datos.md):** Diccionario de datos actualizado incluyendo modelos de auditoría, visitas de monitoreo 360 y cumplimiento de privacidad.
 
-### 2. Lógica y Seguridad
-*   **[Lógica de Negocio y Reglas Técnicas](logica-negocio.md):** Ciclo de vida de las prácticas, flujo de aprobación de documentos (RF-DOC-001) y reglas de negocio críticas.
-*   **[Seguridad y Hardening](seguridad.md):** Estándares de autenticación JWT, gestión de roles (RBAC) y mecanismos de defensa activa (reCAPTCHA, Lockout).
+### 2. Lógica, Seguridad y Cumplimiento
+*   **[Lógica de Negocio y Reglas Técnicas](logica-negocio.md):** Ciclo de vida de las prácticas, flujos de **Evaluación Dual**, reglas de validación de evidencias fotográficas y algoritmos de IA.
+*   **[Seguridad y Privacidad (LOPDP)](seguridad.md):** Estándares de autenticación, gestión de roles (RBAC), cumplimiento de la Ley de Protección de Datos (ARCO) y defensa activa (Throttling).
 
 ### 3. Guías Operativas
-*   **[DevOps y Despliegue Continuo](devops.md):** Análisis de pipelines de CI/CD, configuración de Docker y orquestación con Docker Compose.
-*   **[Guía de API y Swagger](api-guia.md):** Manual para el uso y extensión de la documentación interactiva de la API.
-*   **[Estándares de Desarrollo](desarrollo.md):** Guía de convenciones de código, comandos útiles y estructura de carpetas.
-*   **[Pruebas y Calidad](pruebas.md):** Instrucciones para ejecutar tests unitarios, de integración y revisión de linting.
-*   **[Mantenimiento y Operaciones](mantenimiento.md):** Guía de copias de seguridad (backups), logs y recuperación de desastres.
+*   **[DevOps y Despliegue Continuo](devops.md):** Análisis de pipelines, orquestación con Docker y monitoreo de salud infraestructural (`/api/health`).
+*   **[Guía de API y Swagger](api-guia.md):** Catálogo completo de endpoints industrializados para integración.
+*   **[Estándares de Desarrollo](desarrollo.md):** Convenciones de código, patrones de diseño (Interceptores/Filters) y estructura modular.
 
-### 4. Guía Funcional
-*   **[Manual de Usuario Final](manual-usuario.md):** Explicación del flujo de trabajo por roles y preguntas frecuentes.
+### 4. Guía Funcional (Experiencia de Usuario)
+*   **[Manual de Usuario Industrial](manual-usuario.md):** Guía detallada por roles:
+    *   **Estudiante**: Copilot de IA, Roadmap visual y Dual HUB.
+    *   **Tutor Académico**: Centro de Monitoreo 360 y Visitas en Campo.
+    *   **Empresa**: Presencia en Vivo y Explorador de Evidencias.
 
 ---
 
@@ -28,7 +29,7 @@ Bienvenido a la base de conocimientos central del Sistema de Gestión de Prácti
 Esta base de conocimientos ha sido diseñada bajo estándares profesionales para asegurar:
 1.  **Mantenibilidad:** Que nuevos miembros del equipo puedan entender el sistema en minutos.
 2.  **Escalabilidad:** Documentación clara de cómo añadir nuevos módulos y funcionalidades.
-3.  **Auditoría:** Referencia técnica para procesos de revisión de código y seguridad.
+3.  **Auditoría y Compliance:** Referencia técnica para procesos de revisión de código, seguridad y cumplimiento legal.
 
 ---
-Este sistema de documentación es parte del esfuerzo por llevar a EmiTesis a un estándar de calidad de nivel empresarial.
+Este sistema de documentación certifica que **EmiTesis** cumple con un estándar de calidad de nivel corporativo para instituciones de educación superior.

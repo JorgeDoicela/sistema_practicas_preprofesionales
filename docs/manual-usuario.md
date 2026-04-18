@@ -11,22 +11,50 @@ Este documento describe el funcionamiento del sistema EmiTesis desde una perspec
 
 ## 2. Proceso de Gestión de Prácticas
 
-### Paso 1: Asignación
-El Coordinador vincula al Estudiante con una Institución Receptora (Empresa) que tenga un convenio activo. En este momento, el sistema dispara correos electrónicos informativos a las partes interesadas.
+### Manual de Usuario - EmiTesis Industrialized
 
-### Paso 2: Desarrollo y Asistencia
-El Estudiante debe iniciar sesión desde su dispositivo móvil al llegar a la empresa:
-1.  Presiona "Check-In" para registrar la entrada.
-2.  Presiona "Check-Out" para registrar la salida.
-*Nota: El sistema valida que el estudiante se encuentre físicamente en la ubicación de la empresa.*
+Este manual guía a los diferentes actores del sistema a través de las nuevas funcionalidades de alto rendimiento implementadas en la plataforma.
 
-### Paso 3: Gestión de Documentos
-El Estudiante descarga los formatos oficiales desde el portal, los completa, los firma y los sube en la fecha establecida por el Tutor.
+## 1. Módulo del Estudiante (El Pasante Inteligente)
 
-### Paso 4: Revisión y Cierre
-1.  El Tutor revisa el archivo subido. Si es correcto, lo aprueba.
-2.  Si hay errores, el Tutor deja observaciones y el Estudiante debe volver a subir el documento.
-3.  Tras completar las horas y documentos, el Coordinador genera el cierre definitivo.
+### 1.1 AI Copilot
+En la esquina inferior derecha encontrarás a tu asistente de IA. Puedes preguntarle:
+- "¿Cuántas horas me faltan para terminar?"
+- "¿Qué documentos tengo pendientes de aprobación?"
+- "¿Cómo redacto mi informe de actividades?"
+La IA conoce tu expediente y te guiará paso a paso.
+
+### 1.2 Roadmap Visual
+En tu dashboard verás una línea de tiempo que se actualiza automáticamente. Gamifica tu progreso desde la asignación hasta la obtención de tu certificado.
+
+## 2. Módulo del Tutor Académico (Monitoreo 360)
+
+### 2.1 HUB de Seguimiento
+Desde la ficha del estudiante, puedes ver el **Consolidado de Asistencias** con fotos de evidencia diaria. Ya no necesitas esperar al final del mes para saber si el estudiante está cumpliendo.
+
+### 2.2 Registro de Visitas
+Utiliza el botón "Registrar Visita de Monitoreo" para documentar tus supervisiones en campo. Estas visitas son obligatorias para el cierre del expediente.
+
+## 3. Módulo de Empresa (Control de Calidad)
+
+### 3.1 Presencia en Vivo
+El widget "Presencia en Vivo" te muestra quién está actualmente en la empresa. Útil para coordinar actividades inmediatas y verificar puntualidad.
+
+### 3.2 Explorador de Evidencias
+Antes de calificar, abre el "Explorador de Evidencias" para ver la galería de fotos que el estudiante ha subido en sus marcajes diarios.
+
+### 3.3 Generación de Certificado
+Una vez que el estudiante cumple sus horas, el sistema te habilitará un botón para generar el **Certificado de Cumplimiento** con un diseño institucional premium, listo para descarga.
+
+## 4. Módulo de Administración (Gobernanza)
+
+### 4.1 Salud del Sistema
+Monitorea la integridad de la base de datos y los servicios de IA desde el panel de **Salud del Sistema**.
+### 4.2 Cumplimiento LOPDP
+Gestiona las solicitudes de privacidad de los usuarios y audita quién consulta datos sensibles para garantizar la transparencia institucional.
+
+---
+Para soporte técnico avanzado, contacte con el administrador del sistema.
 
 ## 3. Preguntas Frecuentes
 

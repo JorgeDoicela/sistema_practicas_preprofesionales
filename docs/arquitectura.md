@@ -1,63 +1,62 @@
 # Arquitectura Técnica y Topología de Despliegue
 
-Este documento define la estructura física y lógica del ecosistema EmiTesis, garantizando un despliegue escalable, portable y de alta disponibilidad.
+Este documento define la estructura física y lógica del ecosistema EmiTesis, garantizando un despliegue escalable, proactivo y de alta disponibilidad.
 
-## 1. Stack Tecnológico y Arquitectura de Decisión
+## 1. Stack Tecnológico Industrializado
 
-El sistema emplea un conjunto de tecnologías seleccionadas para maximizar la seguridad, la mantenibilidad y la eficiencia en entornos de alta demanda.
+El sistema emplea un conjunto de tecnologías seleccionadas para maximizar la seguridad, la mantenibilidad y la inteligencia artificial integrada.
 
 | Categoría | Tecnología | Implementación y Valor Técnico |
 | :--- | :--- | :--- |
-| **Lenguaje** | TypeScript / Node 22 | Garantiza la integridad del código mediante tipado estático sobre el entorno de ejecución Node.js 22 LTS, facilitando refactorizaciones seguras. |
-| **Frontend** | Next.js 14+ | Se utiliza el App Router y Server Components para optimizar el rendimiento y asegurar una carga de página instantánea mediante Renderizado del Lado del Servidor (SSR). |
-| **Backend** | NestJS 11+ | Proporciona una arquitectura modular y escalable, permitiendo una separación clara de responsabilidades y facilitando el crecimiento del sistema sin generar deuda técnica. |
-| **ORM** | Prisma | Actúa como el puente seguro entre el código y los datos, automatizando las migraciones y asegurando que el modelo de datos sea siempre consistente. |
-| **Base de Datos**| PostgreSQL | Se ha elegido por su robustez transaccional y cumplimiento ACID, asegurando que los registros de prácticas y asistencias sean inmutables y consistentes. |
-| **Autenticación**| JWT / Passport | Se implementa una arquitectura sin estado (stateless) para permitir escalabilidad horizontal y reducir la carga sobre la base de datos de sesiones. |
-| **Seguridad** | BCrypt / reCAPTCHA | Se utilizan algoritmos de hash de última generación para contraseñas y protección avanzada contra bots en los formularios de acceso. |
-| **Infraestructura**| Docker / Compose | Todo el ecosistema está contenerizado para asegurar que el comportamiento sea idéntico en desarrollo y producción, eliminando problemas de entorno. |
-| **CI/CD** | GitHub Actions | Se ha automatizado el despliegue para reducir el riesgo humano; cada cambio es validado y auditado antes de ser publicado. |
-| **Almacenamiento**| Vercel Blob | La gestión de documentos se realiza en almacenamiento en la nube dedicado, garantizando disponibilidad y rapidez sin saturar el disco del servidor principal. |
+| **IA Engine** | OpenAI GPT-4o | Motor de inteligencia artificial contextual que asiste a los estudiantes en tiempo real basándose en su propio expediente académico. |
+| **Backend Core** | NestJS 11+ | Arquitectura modular con **Interceptores de Transformación** y **Filtros de Excepción Globales** para estandarización total de API. |
+| **Frontend** | Next.js 16+ | Uso intensivo de **Skeleton Loading** y componentes de alto rendimiento para una UX premium persistente. |
+| **Observabilidad** | Custom Health Checks | Monitoreo proactivo de la salud del sistema (DB, AI, Storage) mediante el endpoint `/api/health`. |
+| **Seguridad** | WebAuthn / RBAC | Soporte para biometría (simulado/futuro) y control de acceso granular por roles industriales (Admin, Coordinador, Tutor, Estudiante, Empresa). |
+| **Almacenamiento**| Vercel Blob | Gestión distribuida de documentos y evidencias fotográficas con alta disponibilidad. |
 
-## 2. Arquitectura de Infraestructura (Física)
+## 2. Arquitectura de Resiliencia (Lógica)
 
-El despliegue se gestiona íntegramente mediante **Docker Composability**.
+El sistema implementa un "Core de Resiliencia" que actúa como un sobre protector para todas las transacciones:
+
+### 2.1 Interceptores y Filtros Globales
+- **TransformInterceptor**: Envuelve cada respuesta exitosa en un formato estándar `{ success: true, data: T, timestamp: string }`.
+- **HttpExceptionFilter**: Intercepta fallos del servidor y los traduce a respuestas JSON amigables, evitando fugas de información técnica (stack traces) hacia el cliente.
+
+### 2.2 Motor de IA Contextual
+El `AiService` no es un chatbot genérico; utiliza `gpt-4o` con un **System Prompt dinámico** que inyecta:
+- Estado actual de las prácticas del estudiante.
+- Conteo de horas y documentos pendientes.
+- Contexto de la empresa y tutores asignados.
+
+## 3. Topología de Despliegue (Física)
+
+Mantenemos una arquitectura de contenedores orquestada por Docker para garantizar portabilidad absoluta.
 
 ```mermaid
-graph LR
-    Internet((Internet))
+graph TD
+    Client[Browser/Mobile] -->|HTTPS| Proxy[Nginx/Vercel Proxy]
+    Proxy -->|APIPrefix| API[API Cluster - NestJS]
+    Proxy -->|Static/SSR| Web[Frontend - Next.js]
     
-    subgraph "Docker Host"
-        API[API - NestJS]
-        Web[Web - Next.js]
-        DB[(PostgreSQL)]
-        Vol[Volume: pg_data]
+    subgraph "Core Services"
+        API -->|Prisma| DB[(PostgreSQL)]
+        API -->|SDK| AI[OpenAI GPT-4o]
+        API -->|SDK| Blob[Vercel Blob Storage]
     end
     
-    Internet -->|Puerto 80/443| Web
-    Internet -->|Puerto 5000| API
-    Web -->|API Calls| API
-    API -->|Internal Network| DB
-    DB <--> Vol
+    subgraph "Monitoring"
+        Health[Health Monitor] -.->|Check| API
+        Health -.->|Check| DB
+    end
 ```
 
-### 2.1 Orquestación de Contenedores
-*   **Multi-Stage Build:** Los Dockerfiles utilizan construcciones multietapa para reducir el tamaño de las imágenes finales (< 200MB).
-*   **Healthchecks:** El contenedor de la API espera a que la base de datos esté "Healthy" antes de iniciar el servicio.
-*   **Auto-Migración:** Se incluye un script de entrada (`docker-entrypoint.sh`) que ejecuta automáticamente `npx prisma migrate deploy` y `npm run seed`.
+## 4. Gestión de Salud (Observabilidad)
 
-## 3. Pipeline de Integración y Despliegue Continuo (CI/CD)
+El sistema expone un dashboard de salud técnico (`/api/health`) que verifica:
+1.  **Database**: Conectividad y latencia de Prisma.
+2.  **AI Service**: Disponibilidad de la API de OpenAI.
+3.  **Storage**: Acceso de escritura/lectura al storage de evidencias.
 
-Se utiliza **GitHub Actions** para automatizar el ciclo de vida del software:
-
-1.  **Vigía de Seguridad:** Escaneo de vulnerabilidades mediante `npm audit`.
-2.  **Validación de Compilación:** Asegura que tanto el Frontend como el Backend compilen sin errores tras cada commit.
-3.  **Registro de Imágenes (GHCR):** Publicación automática de imágenes versionadas en el registro de GitHub tras un push exitoso a la rama `main`.
-
-## 4. Gestión de Configuración y Secretos
-
-El sistema utiliza un modelo de configuración basado en variables de entorno (`.env`):
-*   `DATABASE_URL`: Cadena de conexión a PostgreSQL.
-*   `JWT_SECRET`: Clave maestra para la firma de tokens.
-*   `RECAPTCHA_SECRET_KEY`: Validación con los servidores de Google.
-*   `BLOB_READ_WRITE_TOKEN`: Credencial para almacenamiento en la nube.
+---
+Este diseño arquitectónico garantiza que **EmiTesis** pueda escalar para soportar miles de estudiantes simultáneos con una degradación mínima del rendimiento.

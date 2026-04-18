@@ -1,29 +1,61 @@
-# Guía de API y Documentación Interactiva
+# Guía de API Industrialized - EmiTesis
 
-Se ha integrado una capa de documentación dinámica basada en **Swagger** para que cualquier desarrollador pueda interactuar con la API de forma visual y rápida, eliminando la necesidad de manuales estáticos que se desactualizan.
+Este documento es un catálogo de referencia para los endpoints principales de la API, diseñados bajo estándares RESTful y protegidos por JWT.
 
-## 1. Arquitectura de Swagger
+## 1. Endpoints de Inteligencia y Salud
 
-La configuración reside en `src/main.ts` y está diseñada para ser la fuente de verdad del contrato de la API.
+- **`GET /api/health`**: Devuelve el estado proactivo de la infraestructura (DB, AI, Storage).
+- **`POST /api/ai/ask`**: Interactúa con el motor GPT-4o para consultas contextuales del estudiante.
+- **`GET /api/system-logs`**: (Admin) Recupera el registro de auditoría industrial.
 
-*   **Punto de Acceso:** `/api/docs`
-*   **Automatización:** El módulo se alimenta directamente de los decoradores en el código, garantizando que el manual web siempre refleje el estado real de los endpoints en producción.
+## 2. Endpoints de Seguimiento y Monitoreo
 
-## 2. Estándares para Desarrolladores
+- **`POST /api/monitoring-visits`**: Registra una visita de campo por parte del tutor académico.
+- **`PATCH /api/internships/:id/locations`**: Configura múltiples zonas de geofencing permitidas.
+- **`POST /api/attendance/check-in`**: Inicia jornada con evidencias fotográficas y validación biométrica/GPS.
+
+## 3. Endpoints de Evaluación y Privacidad
+
+- **`POST /api/evaluations`**: Registra evaluaciones duales (Académica/Empresarial).
+- **`GET /api/privacy/requests`**: Gestiona solicitudes de derechos ARCO.
+- **`GET /api/privacy/logs`**: Registro de transparencia de acceso a datos (PIA).
+
+## 4. Endpoints de Comunicación
+
+- **`POST /api/announcements`**: Publicación de avisos masivos filtrados por rol.
+- **`GET /api/announcements/active`**: Recupera avisos vigentes para el perfil del usuario.
+
+## 5. Documentación Interactiva (Swagger)
+
+Para una exploración detallada de los esquemas Request/Response, acceda a la interfaz interactiva de Swagger:
+- **URL**: `[BASE_URL]/api/docs`
+- **Autenticación**: Use el botón "Authorize" e ingrese su token Bearer.
+
+---
+Cada llamada a la API devuelve un sobre de respuesta estandarizado:
+```json
+{
+  "success": true,
+  "data": { ... },
+  "timestamp": "2026-04-18T18:42:00Z"
+}
+```
+
+## 6. Estándares para Desarrolladores
 
 Para que un nuevo endpoint sea documentado profesionalmente, se deben seguir estas reglas:
 
-### 2.1 Categorización (Controllers)
+### 6.1 Categorización (Controllers)
 Cada controlador debe estar marcado con el decorador `@ApiTags('NombreModulo')`. Esto agrupa las operaciones en secciones lógicas dentro de la interfaz web.
 
-### 2.2 Modelado de Datos (DTOs)
+### 6.2 Modelado de Datos (DTOs)
 Todos los Data Transfer Objects (DTOs) utilizados en peticiones `POST`, `PUT` o `PATCH` deben usar el decorador `@ApiProperty()` en cada atributo.
 *   **Propósito:** Define el tipo de dato, si es opcional y proporciona ejemplos al usuario final.
 
-### 2.3 Seguridad de Endpoints
+### 6.3 Seguridad de Endpoints
 Las rutas protegidas por `JwtAuthGuard` deben incluir el decorador `@ApiBearerAuth()` (si se desea especificar a nivel de operación) para que Swagger permita el envío del token JWT.
 
-## 3. Endpoints Críticos del Sistema
+## 7. Endpoints Críticos del Sistema
 
 | Módulo | Ruta | Propósito |
 | :--- | :--- | :--- |
