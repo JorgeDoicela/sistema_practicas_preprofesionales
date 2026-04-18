@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, UseGuards, Req, Query, ParseIntPipe, DefaultValuePipe } from '@nestjs/common';
 import { InternshipsService } from './internships.service';
 import { CreateInternshipDto } from './dto/create-internship.dto';
 import { UpdateLocationsDto } from './dto/update-locations.dto';
@@ -22,8 +22,11 @@ export class InternshipsController {
 
   @Get()
   @Roles(Role.COORDINADOR, Role.ADMIN)
-  findAll() {
-    return this.internshipsService.findAll();
+  findAll(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    return this.internshipsService.findAll(page, limit);
   }
 
   @Get('tutor/:id')

@@ -215,15 +215,19 @@ export class EmailService {
         }
     }
 
-    async sendDocumentNotificationToTutor(email: string, studentName: string, documentName: string) {
-        const subject = `Nueva Entrega: ${documentName} - ${studentName}`;
+    async sendDocumentNotificationToTutor(email: string, studentName: string, documentName: string, isLate = false) {
+        const subject = `${isLate ? '⚠ ENTREGA TARDÍA: ' : 'Nueva Entrega: '}${documentName} - ${studentName}`;
         try {
             const content = `
                 <p>Se ha recibido una nueva entrega documental pendiente de revisión académica.</p>
                 <p>El estudiante <span class="highlight">${studentName}</span> ha cargado el documento <span class="highlight">${documentName}</span> al sistema.</p>
-                <p>Por favor, acceda al portal administrativo para emitir la validación correspondiente dentro de los plazos establecidos.</p>
+                ${isLate ? `
+                <div class="alert-box" style="border-left-color: #d32f2f">
+                    <strong>Aviso de Plazo:</strong> Este documento ha sido entregado fuera de la fecha límite establecida. Por favor, revise la validez del mismo según el reglamento de vinculación.
+                </div>` : ''}
+                <p>Por favor, acceda al portal administrativo para emitir la validación correspondiente.</p>
             `;
-            const html = this.getHtmlTemplate('Documento en Revisión', content, 'Revisar Ahora', `${this.getPublicAppBase()}/admin/practicas`);
+            const html = this.getHtmlTemplate(isLate ? 'Entrega Extemporánea' : 'Documento en Revisión', content, 'Revisar Ahora', `${this.getPublicAppBase()}/tutor-academico/asistencia`, isLate ? 'WARNING' : 'INFO');
 
             const info = await this.transporter.sendMail({
                 from: `"Sistema EmiTesis" <${this.configService.get<string>('MAIL_USER')}>`,
@@ -232,6 +236,31 @@ export class EmailService {
                 html
             });
             return { success: true, messageId: info.messageId };
+        } catch (err: any) {
+            return { success: false, error: err.message };
+        }
+    }
+
+    async sendCoordinatorReviewResult(studentEmail: string, tutorEmail: string, studentName: string, documentName: string, status: string, observations: string) {
+        const isApproved = status === 'APROBADO_DEFINITIVO';
+        const subject = `Validación Definitiva: ${documentName}`;
+        try {
+            const content = `
+                <p>La Coordinación de Vinculación ha finalizado la revisión definitiva del documento <span class="highlight">${documentName}</span> del estudiante <span class="highlight">${studentName}</span>.</p>
+                <div class="alert-box" style="border-left-color: ${isApproved ? '#2e7d32' : '#d32f2f'}">
+                    <strong>Resolución:</strong> ${isApproved ? 'APROBACIÓN DEFINITIVA' : 'OBSERVACIONES COORDINACIÓN'}<br>
+                    ${observations ? `<strong>Detalles:</strong> ${observations}` : ''}
+                </div>
+            `;
+            const html = this.getHtmlTemplate('Resolución de Coordinación', content, 'Ir al Expediente', `${this.getPublicAppBase()}/dashboard/documentos`, isApproved ? 'SUCCESS' : 'ERROR');
+
+            await this.transporter.sendMail({
+                from: `"Coordinación ISTPET" <${this.configService.get<string>('MAIL_USER')}>`,
+                to: `${studentEmail}, ${tutorEmail}`,
+                subject,
+                html
+            });
+            return { success: true };
         } catch (err: any) {
             return { success: false, error: err.message };
         }
@@ -325,6 +354,36 @@ export class EmailService {
         };
 
         return workbook.xlsx.writeBuffer() as unknown as Promise<Buffer>;
+    }
+
+    async sendTutorAssignmentEmail(email: string, tutorName: string, studentName: string, companyName: string, startDate: string, hours: number, businessTutorName?: string, excelBuffer?: Buffer) {
+        const subject = `Asignación de Tutoría Académica: ${studentName}`;
+        try {
+            const content = `
+                <p>Estimado/a <span class="highlight">${tutorName}</span>,</p>
+                <p>Se le ha designado oficialmente como <span class="highlight">Tutor Académico</span> para el seguimiento de la práctica preprofesional del estudiante <span class="highlight">${studentName}</span>.</p>
+                <div class="alert-box">
+                    <strong>Hoja de Seguimiento:</strong><br>
+                    • Estudiante: ${studentName}<br>
+                    • Entidad: ${companyName}<br>
+                    • Inicio: ${new Date(startDate).toLocaleDateString()}<br>
+                    • Horas: ${hours}<br>
+                </div>
+                <p>Su función implica la validación de reportes mensuales y la evaluación final del proceso. Adjunto encontrará el archivo excel de asignación.</p>
+            `;
+            const html = this.getHtmlTemplate('Nueva Designación de Tutoría', content, 'Acceder al Panel', `${this.getPublicAppBase()}/tutor-academico/dashboard`);
+
+            await this.transporter.sendMail({
+                from: `"Coordinación ISTPET" <${this.configService.get<string>('MAIL_USER')}>`,
+                to: email,
+                subject,
+                html,
+                attachments: excelBuffer ? [{ filename: 'Seguimiento_Tutor.xlsx', content: excelBuffer }] : []
+            });
+            return { success: true };
+        } catch (err: any) {
+            return { success: false, error: err.message };
+        }
     }
 
     private async logEmail(to: string, subject: string, status: string, error: string | null, metadata: Prisma.InputJsonValue) {

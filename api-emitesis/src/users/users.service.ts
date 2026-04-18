@@ -59,22 +59,38 @@ export class UsersService {
     return user;
   }
 
-  findAll() {
-    return this.prisma.user.findMany({
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        email: true,
-        fullName: true,
-        role: true,
-        isActive: true,
-        isTwoFactorEnabled: true,
-        lopdpAccepted: true,
-        lopdpAcceptedAt: true,
-        lopdpVersion: true,
-        createdAt: true,
+  async findAll(page = 1, limit = 10) {
+    const skip = (page - 1) * limit;
+    
+    const [data, total] = await Promise.all([
+      this.prisma.user.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          role: true,
+          isActive: true,
+          isTwoFactorEnabled: true,
+          lopdpAccepted: true,
+          lopdpAcceptedAt: true,
+          lopdpVersion: true,
+          createdAt: true,
+        },
+      }),
+      this.prisma.user.count(),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
       },
-    });
+    };
   }
 
   async findOne(id: string) {

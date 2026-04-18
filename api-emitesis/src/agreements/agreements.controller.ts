@@ -6,7 +6,10 @@ import {
   UploadedFile, 
   BadRequestException, 
   Get,
-  UseGuards
+  UseGuards,
+  Query,
+  ParseIntPipe,
+  DefaultValuePipe
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -80,7 +83,10 @@ export class AgreementsController {
 
   @Get()
   @Roles(Role.ADMIN, Role.COORDINADOR)
-  findAll() {
-    return this.agreementsService.findAll();
+  findAll(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    return this.agreementsService.findAll(page, limit);
   }
 }

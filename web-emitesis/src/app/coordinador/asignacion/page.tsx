@@ -21,6 +21,12 @@ import { internshipsService } from '@/services/internships.service';
 import { useRouter } from 'next/navigation';
 import { User } from '@/types/user';
 import { Agreement } from '@/types/agreement';
+import dynamic from 'next/dynamic';
+
+const LeafletMap = dynamic(() => import('@/components/shared/LeafletMap'), { 
+  ssr: false,
+  loading: () => <div className="h-[300px] w-full bg-slate-100 animate-pulse rounded-2xl flex items-center justify-center text-[10px] font-black uppercase text-slate-400">Cargando Mapa Institucional...</div>
+});
 
 export default function AsignacionPage() {
   const router = useRouter();
@@ -43,7 +49,10 @@ export default function AsignacionPage() {
     totalHours: 240,
     location: '',
     businessTutorName: '',
-    businessTutorEmail: ''
+    businessTutorEmail: '',
+    initialLat: -0.180653,
+    initialLng: -78.467838,
+    initialRadius: 200
   });
 
   useEffect(() => {
@@ -219,10 +228,35 @@ export default function AsignacionPage() {
                       type="text"
                       required
                       placeholder="Dirección o departamento específico"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-12 pr-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-12 pr-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none mb-4"
                       value={form.location}
                       onChange={(e) => setForm({...form, location: e.target.value})}
                     />
+                  </div>
+                  
+                  {/* RF-ATT-LOC: Selector de Geocerca */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Configuración de Geocerca (Asistencia GPS)</label>
+                      <span className="text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Radio: {form.initialRadius}m</span>
+                    </div>
+                    <LeafletMap 
+                      lat={form.initialLat} 
+                      lng={form.initialLng} 
+                      radiusM={form.initialRadius}
+                      onChange={(lat, lng) => setForm(prev => ({ ...prev, initialLat: lat, initialLng: lng }))}
+                    />
+                    <div className="px-1">
+                      <input 
+                        type="range" 
+                        min="100" 
+                        max="1000" 
+                        step="50"
+                        className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#003366]"
+                        value={form.initialRadius}
+                        onChange={(e) => setForm(prev => ({ ...prev, initialRadius: parseInt(e.target.value) }))}
+                      />
+                    </div>
                   </div>
                 </div>
 

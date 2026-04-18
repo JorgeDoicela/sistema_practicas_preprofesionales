@@ -2,6 +2,7 @@ import { Injectable, ConflictException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAgreementDto } from './dto/create-agreement.dto';
 import { EmailService } from '../notifications/email.service';
+import { validateEcuadorianRUC } from '../common/utils/validators';
 
 @Injectable()
 export class AgreementsService {
@@ -13,9 +14,14 @@ export class AgreementsService {
   async create(createAgreementDto: CreateAgreementDto, filePath: string) {
     const { ruc, companyName, address, representative, email, startDate } = createAgreementDto;
 
+    // Validación de RUC (Backend Integrity)
+    if (!validateEcuadorianRUC(ruc)) {
+      throw new BadRequestException('El RUC proporcionado no es válido para los estándares de Ecuador.');
+    }
+
     try {
       return await this.prisma.$transaction(async (tx) => {
-        // RF-CON-001 (Optimizado): Buscar o actualizar empresa
+        // RF-CON-001: Buscar o actualizar empresa
         const company = await tx.company.upsert({
           where: { ruc },
           update: {
@@ -31,6 +37,13 @@ export class AgreementsService {
             representative,
             email,
           },
+        });
+
+        // REGLA DE NEGOCIO: Solo puede haber un convenio "Activo" a la vez por empresa.
+        // Desactivamos los convenios previos (Historial)
+        await tx.agreement.updateMany({
+          where: { companyId: company.id, status: 'Activo' },
+          data: { status: 'Histórico' },
         });
 
         // 5. El sistema guarda el nuevo convenio (Historial)
@@ -63,10 +76,25 @@ export class AgreementsService {
     }
   }
 
-  async findAll() {
-    return this.prisma.agreement.findMany({
-      include: { company: true },
-      orderBy: { createdAt: 'desc' }
-    });
+  async findAll(page = 1, limit = 10) {
+    const skip = (page - 1) * limit;
+    const [items, total] = await Promise.all([
+      this.prisma.agreement.findMany({
+        skip,
+        take: limit,
+        include: { company: true },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.agreement.count(),
+    ]);
+
+    return {
+      items,
+      meta: {
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+      },
+    };
   }
 }

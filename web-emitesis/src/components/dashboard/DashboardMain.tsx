@@ -595,6 +595,7 @@ export function DashboardMain() {
                      center={loc || { lat: -0.1807, lng: -78.4678 }} 
                      zoom={15} 
                      points={loc ? [loc] : []}
+                     radiusM={(internships[0] as any)?.lat && (internships[0] as any)?.lng ? 200 : undefined}
                    />
                 </div>
               </div>

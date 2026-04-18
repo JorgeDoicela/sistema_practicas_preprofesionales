@@ -25,6 +25,12 @@ import { useWebAuthn } from "@/hooks/useWebAuthn";
 import { useCamera } from "@/hooks/useCamera";
 import { aiService } from "@/services/ai.service";
 import { Sparkles } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const LeafletMap = dynamic(() => import("@/components/dashboard/MapComponent"), {
+  ssr: false,
+  loading: () => <div className="h-[300px] w-full bg-slate-100 animate-pulse rounded-2xl flex items-center justify-center text-[10px] font-black uppercase text-slate-400">Iniciando Geo-Radar...</div>
+});
 
 // ── Tipos ─────────────────────────────────────────────────────────────────
 type AttendanceAction = "IN" | "OUT";
@@ -83,6 +89,10 @@ export default function AsistenciaPage() {
   const [gpsStatusText, setGpsStatusText] = useState<string>("");
   const [lastGpsAccuracy, setLastGpsAccuracy] = useState<number | null>(null);
   const [cameraFacing, setCameraFacing] = useState<"user" | "environment">("user");
+  
+  // RF-ATT-LOC: Estado de proximidad proactiva
+  const [currentCoords, setCurrentCoords] = useState<{lat: number, lng: number} | null>(null);
+  const [isInRange, setIsInRange] = useState<boolean | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const activityVideoRef = useRef<HTMLVideoElement>(null);
@@ -160,6 +170,52 @@ export default function AsistenciaPage() {
   useEffect(() => {
     aiService.isAvailable().then(setAiAvailable).catch(() => setAiAvailable(false));
   }, []);
+
+  // RF-ATT-LOC: Polling de ubicación para indicador proactivo
+  useEffect(() => {
+    if (!internship) return;
+    
+    const checkProximity = async () => {
+      try {
+        const pos = await getAttendanceCoordinates();
+        setCurrentCoords({ lat: pos.lat, lng: pos.lng });
+        
+        const locs: AllowedLocation[] = Array.isArray((internship as any).allowedLocations) && (internship as any).allowedLocations.length > 0
+          ? (internship as any).allowedLocations
+          : (internship as any).lat && (internship as any).lng
+            ? [{ label: "Sede principal", lat: (internship as any).lat, lng: (internship as any).lng, radiusM: 200 }]
+            : [];
+            
+        if (locs.length === 0) {
+          setIsInRange(true); // Sin restricciones
+          return;
+        }
+
+        const R = 6371e3; // metres
+        const lat1 = pos.lat * (Math.PI / 180);
+        
+        const matching = locs.some(loc => {
+            const lat2 = loc.lat * (Math.PI / 180);
+            const deltaLat = (loc.lat - pos.lat) * (Math.PI / 180);
+            const deltaLng = (loc.lng - pos.lng) * (Math.PI / 180);
+            const a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+                      Math.cos(lat1) * Math.cos(lat2) *
+                      Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const d = R * c;
+            return d <= (loc.radiusM || 200);
+        });
+        
+        setIsInRange(matching);
+      } catch (err) {
+        console.warn("Proximity error:", err);
+      }
+    };
+
+    checkProximity();
+    const interval = setInterval(checkProximity, 15000);
+    return () => clearInterval(interval);
+  }, [internship]);
 
   // ── Abrir modal de check-in/out ─────────────────────────────────────────
   const openAttendanceModal = (action: AttendanceAction) => {
@@ -446,6 +502,59 @@ export default function AsistenciaPage() {
             </div>
           </div>
         </section>
+
+        {/* ── Visual Geofencing Context ────────────────────────────── */}
+        {internship && (
+          <section className="bg-white p-2 rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden">
+             <div className="grid md:grid-cols-3 gap-2">
+                <div className="md:col-span-2 h-[350px] rounded-[2rem] overflow-hidden group border border-slate-50">
+                  <LeafletMap 
+                     center={currentCoords || { lat: -0.1807, lng: -78.4678 }}
+                     zoom={16}
+                     points={currentCoords ? [{ ...currentCoords, label: "Tu ubicación actual" }] : []}
+                     radiusM={
+                       Array.isArray((internship as any).allowedLocations) && (internship as any).allowedLocations.length > 0
+                        ? (internship as any).allowedLocations[0].radiusM || 200
+                        : (internship as any).lat && (internship as any).lng ? 200 : undefined
+                     }
+                  />
+                </div>
+                <div className="p-8 flex flex-col justify-center gap-6 bg-slate-50/50">
+                  <div>
+                    <span className="text-[9px] font-black text-[#C5A059] uppercase tracking-widest block mb-1">Estado de Geocerca</span>
+                    <h3 className="text-2xl font-black text-[#003366] tracking-tight">Zona de Asistencia</h3>
+                  </div>
+                  
+                  <div className={cn(
+                    "p-6 rounded-3xl border flex flex-col items-center gap-3 text-center transition-all",
+                    isInRange === null ? "bg-slate-50 border-slate-100 text-slate-400" :
+                    isInRange ? "bg-emerald-50 border-emerald-200 text-emerald-600 shadow-lg shadow-emerald-500/10" :
+                    "bg-rose-50 border-rose-200 text-rose-600 shadow-lg shadow-rose-500/10"
+                  )}>
+                    {isInRange === null ? <RefreshCw className="w-8 h-8 animate-spin" /> :
+                     isInRange ? <ShieldCheck className="w-10 h-10" /> : <ShieldX className="w-10 h-10" />}
+                    
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest mb-1">
+                        {isInRange === null ? "Calculando..." : isInRange ? "Estás en el área" : "Fuera de alcance"}
+                      </p>
+                      <p className="text-xs font-bold opacity-80 leading-relaxed px-4">
+                        {isInRange === null ? "Sincronizando con satélites GPS..." : 
+                         isInRange ? "Puedes registrar tu entrada o salida sin problemas de ubicación." : 
+                         "Tu ubicación actual está fuera de los perímetros autorizados por tu tutor."}
+                      </p>
+                    </div>
+                  </div>
+
+                  {!isInRange && isInRange !== null && (
+                    <p className="text-[9px] font-bold text-rose-400 text-center flex items-center justify-center gap-2">
+                      <AlertCircle size={12} /> Desactive el ahorro de batería o WiFi si el error persiste.
+                    </p>
+                  )}
+                </div>
+             </div>
+          </section>
+        )}
 
         {/* ── KPIs ────────────────────────────────────────────────────── */}
         {summary && (

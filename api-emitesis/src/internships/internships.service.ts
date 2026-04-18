@@ -15,7 +15,7 @@ export class InternshipsService {
   ) {}
 
   async create(dto: CreateInternshipDto) {
-    const { studentId, companyId, tutorId, startDate, totalHours, location, businessTutorName, businessTutorEmail } = dto;
+    const { studentId, companyId, tutorId, startDate, totalHours, location, businessTutorName, businessTutorEmail, initialLat, initialLng, initialRadius } = dto;
 
     // A1: Estudiante ya asignado
     const activeInternship = await this.prisma.internship.findFirst({
@@ -62,7 +62,13 @@ export class InternshipsService {
             location,
             businessTutorName,
             businessTutorEmail,
-            status: 'En Proceso'
+            status: 'En Proceso',
+            // RF-ATT-LOC: Inicializar geocerca si se provee
+            lat: initialLat,
+            lng: initialLng,
+            allowedLocations: initialLat && initialLng ? [
+              { label: 'Sede Principal', lat: initialLat, lng: initialLng, radiusM: initialRadius || 200 }
+            ] : undefined
           },
           include: {
             student: true,
@@ -170,20 +176,32 @@ export class InternshipsService {
     }
   }
 
-  async findAll() {
-    return this.prisma.internship.findMany({
-      include: {
-        student: true,
-        company: true,
-        tutor: true,
-        documents: true,
-        attendances: {
-          orderBy: { checkIn: 'desc' },
-          take: 6,
+  async findAll(page = 1, limit = 10) {
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      this.prisma.internship.findMany({
+        skip,
+        take: limit,
+        include: {
+          student: true,
+          company: true,
+          tutor: true,
+          // Optimizamos: solo devolvemos conteos o flags en lugar de arrays pesados para el listado
         },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.internship.count(),
+    ]);
+
+    return {
+      items,
+      meta: {
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
       },
-      orderBy: { createdAt: 'desc' }
-    });
+    };
   }
 
   async findByTutor(tutorId: string) {

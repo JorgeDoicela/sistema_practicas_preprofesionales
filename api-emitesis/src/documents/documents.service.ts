@@ -154,21 +154,17 @@ export class DocumentsService {
     }
 
     if (now > document.dueDate) {
-      // Excepción A2: Plazo vencido -> Marcar como INCUMPLIDO (RF-09)
-      await this.prisma.document.update({
-        where: { id },
-        data: { status: 'INCUMPLIDO' as any }
+      // Cambio de Lógica: En lugar de bloquear, permitimos la entrega pero informamos
+      // que será marcada como Extemporánea. El estado pasará a ser "En Revisión"
+      // para que el tutor decida si aceptarla o no.
+      console.log(`[DocumentsService] Entrega tardía detectada para el documento ${document.id}`);
+    }
+
+    // Limpieza de almacenamiento: Eliminar versión anterior si existe
+    if (document.filePath) {
+      this.storageService.delete(document.filePath).catch((err: Error) => {
+        console.error(`[DocumentsService] Fallo al limpiar archivo antiguo ${document.filePath}:`, err.message);
       });
-      // RF-09: Notificar al tutor inmediatamente
-      if (document.internship.tutor?.email) {
-        this.emailService.sendIncumplimientoAlertToTutor(
-          document.internship.tutor.email,
-          document.internship.tutor.fullName,
-          document.internship.student.fullName,
-          document.name,
-        ).catch(() => {});
-      }
-      throw new BadRequestException('El plazo de entrega ha vencido. El documento ha sido marcado como Incumplido.');
     }
 
     // Subir archivo
@@ -193,6 +189,7 @@ export class DocumentsService {
         document.internship.tutor.email,
         document.internship.student.fullName,
         document.name,
+        now > (document.dueDate ?? now) // El correo ahora puede indicar si es tardía
       );
     }
 
