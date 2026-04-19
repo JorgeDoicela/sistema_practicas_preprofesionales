@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from './email.service';
+import { NotificationsService } from './notifications.service';
 
 @Injectable()
 export class NotificationsTask {
@@ -10,6 +11,7 @@ export class NotificationsTask {
   constructor(
     private prisma: PrismaService,
     private emailService: EmailService,
+    private notificationsService: NotificationsService,
   ) {}
 
   // Se ejecuta todos los días a las 08:00 AM
@@ -51,6 +53,15 @@ export class NotificationsTask {
           doc.internship.student.fullName,
           doc.name,
           doc.dueDate!
+        );
+
+        // RF-NOTIF-02: Notificación In-App para vencimiento
+        await this.notificationsService.createInApp(
+          doc.internship.studentId,
+          '⚠️ Plazo próximo a vencer',
+          `El documento "${doc.name}" vence mañana. Asegúrate de cargarlo a tiempo.`,
+          'WARNING',
+          '/dashboard/documentos'
         );
       }
     }

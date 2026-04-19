@@ -14,6 +14,7 @@ import {
   Loader2,
   BarChart3,
   PieChart,
+  FileDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { User as UserType } from "@/types/user";
@@ -103,6 +104,18 @@ export function DashboardMain() {
   // Asistencia hoy
   const [todayAttendance, setTodayAttendance] = useState<any>(null);
   const [loc, setLoc] = useState<{lat: number, lng: number} | null>(null);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      await reportsService.exportMasterReport();
+    } catch (e) {
+      console.error("Export failed", e);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const loadDashboard = useCallback(async (u: UserType & { role: string }) => {
     const role = normalizeApiRoleToAppRole(u.role);
@@ -316,7 +329,11 @@ export function DashboardMain() {
       const total = docs.length;
       const approved = countDocsByStatus(docs, "APROBADO_DEFINITIVO");
       const pct = total > 0 ? Math.round((approved / total) * 100) : 0;
-      const lastAtt = primary?.attendances?.[0];
+      
+      const atts = primary?.attendances ?? [];
+      const lastAtt = atts[0];
+      const incomplete = atts.filter(a => !a.checkOut).length;
+
       const attLabel = lastAtt
         ? new Date(lastAtt.checkOut ?? lastAtt.checkIn).toLocaleString("es-EC", {
             dateStyle: "short",
@@ -341,18 +358,18 @@ export function DashboardMain() {
             color: "bg-amber-500",
           },
           {
-            title: "Expediente",
+            title: "Documentación",
             value: `${pct}%`,
-            hint: `${approved} documentos con aprobación definitiva de ${total || 0}`,
+            hint: `${approved} documentos aprobados de ${total || 0}`,
             icon: <FileStack className="w-6 h-6" />,
             color: "bg-emerald-500",
           },
           {
-            title: "Última asistencia",
-            value: lastAtt ? "Registrada" : "—",
-            hint: attLabel,
+            title: "Asistencia",
+            value: incomplete > 0 ? `${incomplete} Pend.` : "Al día",
+            hint: incomplete > 0 ? "Tienes marcados sin salida" : "Todos los registros cerrados",
             icon: <CheckCircle2 className="w-6 h-6" />,
-            color: "bg-indigo-500",
+            color: incomplete > 0 ? "bg-rose-500" : "bg-indigo-500",
           },
         ],
       };
@@ -488,11 +505,27 @@ export function DashboardMain() {
             Datos en vivo desde la plataforma de prácticas preprofesionales ISTPET.
           </p>
         </div>
-        <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
-          <div className="px-4 py-2 bg-emerald-50 rounded-xl">
-            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
-              {loading ? "Sincronizando…" : error ? "Revisa la API" : "Datos actualizados"}
-            </span>
+        <div className="flex items-center gap-3">
+          {(appRole === ROLES.ADMIN || appRole === ROLES.COORDINADOR) && (
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="flex items-center gap-2 px-5 py-2.5 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-sm font-bold text-slate-600 disabled:opacity-50"
+            >
+              {exporting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <FileDown className="w-4 h-4 text-[#C5A059]" />
+              )}
+              <span className="hidden sm:inline">Reporte Maestro</span>
+            </button>
+          )}
+          <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
+            <div className="px-4 py-2 bg-emerald-50 rounded-xl">
+              <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+                {loading ? "Sincronizando…" : error ? "Revisa la API" : "Datos actualizados"}
+              </span>
+            </div>
           </div>
         </div>
       </section>
@@ -547,6 +580,58 @@ export function DashboardMain() {
         <DashboardSkeleton />
       ) : (
         <>
+          {/* Alertas de Acción Requerida (Proactive) */}
+          {appRole === ROLES.ESTUDIANTE && internships.length > 0 && (
+            <div className="space-y-4 mb-12">
+              {internships[0].documents?.some(d => d.status.includes('RECHAZADO')) && (
+                <motion.div 
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  className="bg-rose-50 border border-rose-100 rounded-3xl p-6 flex items-center justify-between gap-6"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-white text-rose-500 rounded-2xl shadow-sm">
+                       <AlertCircle className="w-6 h-6" />
+                    </div>
+                    <div>
+                       <h4 className="text-rose-900 font-black uppercase text-xs tracking-widest">Documentos Rechazados</h4>
+                       <p className="text-rose-800/70 text-sm font-medium">Tienes observaciones en tu expediente que requieren corrección inmediata.</p>
+                    </div>
+                  </div>
+                  <Link 
+                    href="/dashboard/documentos"
+                    className="px-6 py-3 bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all"
+                  >
+                    Ver Observaciones
+                  </Link>
+                </motion.div>
+              )}
+              {internships[0].attendances?.some(a => !a.checkOut) && (
+                <motion.div 
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.1 }}
+                  className="bg-amber-50 border border-amber-100 rounded-3xl p-6 flex items-center justify-between gap-6"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-white text-amber-500 rounded-2xl shadow-sm">
+                       <Clock className="w-6 h-6" />
+                    </div>
+                    <div>
+                       <h4 className="text-amber-900 font-black uppercase text-xs tracking-widest">Asistencia Incompleta</h4>
+                       <p className="text-amber-800/70 text-sm font-medium">Parece que olvidaste registrar tu salida en algún día de esta semana.</p>
+                    </div>
+                  </div>
+                  <Link 
+                    href="/dashboard/asistencia"
+                    className="px-6 py-3 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all"
+                  >
+                    Cerrar Asistencia
+                  </Link>
+                </motion.div>
+              )}
+            </div>
+          )}
           {appRole === ROLES.ESTUDIANTE && internships.length > 0 && (
             <StudentRoadmap internship={internships[0]} />
           )}

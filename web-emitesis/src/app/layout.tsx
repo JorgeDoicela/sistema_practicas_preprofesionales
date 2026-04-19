@@ -21,12 +21,23 @@ export const metadata: Metadata = {
     icon: "/images/Logo.png",
     apple: "/images/Logo.png",
   },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Emitesis",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 import { Navbar } from "@/components/navigation/Navbar";
 import { Footer } from "@/components/navigation/Footer";
 import { PrivacyConsentWrapper } from "@/components/auth/PrivacyConsentWrapper";
 import { ReCaptchaProviderWrapper } from "@/components/providers/ReCaptchaProviderWrapper";
+import { SocketProvider } from "@/providers/SocketProvider";
+import { Toaster } from "sonner";
 
 export default function RootLayout({
   children,
@@ -38,13 +49,16 @@ export default function RootLayout({
       <body className={`${montserrat.variable} ${roboto.variable} font-body antialiased bg-slate-50 text-slate-900`}>
         <Navbar />
         <main className="min-h-screen">
-          <ReCaptchaProviderWrapper>
-            <PrivacyConsentWrapper>
-              {children}
-            </PrivacyConsentWrapper>
-          </ReCaptchaProviderWrapper>
+          <SocketProvider>
+            <ReCaptchaProviderWrapper>
+              <PrivacyConsentWrapper>
+                {children}
+              </PrivacyConsentWrapper>
+            </ReCaptchaProviderWrapper>
+          </SocketProvider>
         </main>
         <Footer />
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );

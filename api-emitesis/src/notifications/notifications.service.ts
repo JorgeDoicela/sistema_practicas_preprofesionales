@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsGateway } from './notifications.gateway';
 
 /**
  * RF-NOTIF-01: Centro de Notificaciones In-App.
@@ -9,14 +10,17 @@ import { PrismaService } from '../prisma/prisma.service';
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly gateway: NotificationsGateway,
+  ) {}
 
   /**
    * Crea una notificación interna para un usuario específico.
    */
   async createInApp(userId: string, title: string, message: string, type: 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR' = 'INFO', link?: string) {
     try {
-      return await this.prisma.inAppNotification.create({
+      const notification = await this.prisma.inAppNotification.create({
         data: {
           userId,
           title,
@@ -25,6 +29,11 @@ export class NotificationsService {
           link,
         },
       });
+
+      // Emitir via WebSockets en tiempo real
+      this.gateway.sendNotificationToUser(userId, notification);
+
+      return notification;
     } catch (err: any) {
       this.logger.error(`Error creando notificación In-App para ${userId}: ${err.message}`);
     }

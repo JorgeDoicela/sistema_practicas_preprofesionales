@@ -264,10 +264,14 @@ export class AttendanceService {
     if (!internship) throw new NotFoundException('Asignación no encontrada');
 
     let totalMinutes = 0;
+    let incompleteRecords = 0;
+
     internship.attendances.forEach((att) => {
       if (att.checkIn && att.checkOut) {
         const diff = att.checkOut.getTime() - att.checkIn.getTime();
         totalMinutes += Math.floor(diff / (1000 * 60));
+      } else {
+        incompleteRecords++;
       }
     });
 
@@ -283,6 +287,29 @@ export class AttendanceService {
       progressPercentage,
       remainingHours: Math.max(0, requiredHours - totalHours),
       totalRecords: internship.attendances.length,
+      incompleteRecords,
+      status: progressPercentage >= 100 ? 'Completado' : 'En Progreso',
     };
+  }
+
+  /** RF-ADJ-001: Permitir que un Tutor o Admin corrija un registro de asistencia */
+  async update(id: string, data: { checkIn?: Date; checkOut?: Date; lat?: number; lng?: number }) {
+    const attendance = await this.prisma.attendance.findUnique({ where: { id } });
+    if (!attendance) throw new NotFoundException('Registro de asistencia no encontrado');
+
+    return this.prisma.attendance.update({
+      where: { id },
+      data: {
+        ...data,
+        // Al corregir manualmente, se recalcula la distancia si se proveen coordenadas, o se asume 0 si es corrección administrativa
+        distanceKm: data.lat && data.lng ? 0 : attendance.distanceKm, 
+      },
+    });
+  }
+
+  async remove(id: string) {
+    const attendance = await this.prisma.attendance.findUnique({ where: { id } });
+    if (!attendance) throw new NotFoundException('Registro de asistencia no encontrado');
+    return this.prisma.attendance.delete({ where: { id } });
   }
 }

@@ -6,14 +6,16 @@ import { NotificationsService } from './notifications.service';
 import { NotificationsController } from './notifications.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 
+import { NotificationsGateway } from './notifications.gateway';
+
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     PrismaModule
   ],
-  providers: [EmailService, NotificationsTask, NotificationsService],
+  providers: [EmailService, NotificationsTask, NotificationsService, NotificationsGateway],
   controllers: [NotificationsController],
-  exports: [EmailService, NotificationsService],
+  exports: [EmailService, NotificationsService, NotificationsGateway],
 })
 export class NotificationsModule {}
 

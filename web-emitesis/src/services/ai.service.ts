@@ -93,4 +93,30 @@ export const aiService = {
     const data = await res.json();
     return data as { isValid: boolean; feedback: string };
   },
+
+  /**
+   * RF-AI-02: Consultar análisis predictivo de riesgo.
+   */
+  async getRiskAssessment(indicators: {
+    healthScore: number;
+    docsApproved: number;
+    docsTotal: number;
+    hoursDone: number;
+    hoursTotal: number;
+    daysActive: number;
+  }): Promise<string> {
+    const res = await fetch(`${API_URL}/ai/risk-assessment`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(indicators),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || "Error al generar predicción de IA");
+    }
+
+    const data = await res.json();
+    return data.analysis as string;
+  },
 };

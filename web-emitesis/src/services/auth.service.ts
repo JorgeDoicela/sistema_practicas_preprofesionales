@@ -2,6 +2,7 @@
 
 import axios from 'axios';
 import { API_URL } from '@/lib/api-base';
+import { toast } from 'sonner';
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -18,118 +19,68 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-export const authService = {
+// Interceptor de respuesta para manejar rate limiting y otros errores globales
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 429) {
+      toast.error('Demasiadas peticiones', {
+        description: 'Has superado el límite de intentos permitidos. Por favor, espera unos minutos antes de reintentar.',
+        duration: 5000,
+      });
+    }
+    return Promise.reject(error);
+  }
+);
+
   async login(email: string, password: string, recaptchaToken: string) {
-    console.log('Iniciando login para:', email);
-    console.log('Recaptcha Token presente:', !!recaptchaToken);
-
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password, recaptchaToken }),
-    });
-
-    let data;
-    const text = await response.text();
     try {
-      data = JSON.parse(text);
-    } catch {
-      console.error('Error al parsear JSON en login. Texto recibido:', text);
-      throw new Error(`Error del servidor (no JSON): ${text.substring(0, 100)}`);
+      const { data } = await api.post('/auth/login', { email, password, recaptchaToken });
+      return data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Error al iniciar sesión';
+      throw new Error(message);
     }
-    console.log('Respuesta de login:', response.status, data);
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Error al iniciar sesión');
-    }
-
-    return data;
   },
 
   async registerCompany(formData: Record<string, any>, recaptchaToken: string) {
-    console.log('Registrando empresa...', formData.companyName);
-    console.log('URL de API:', `${API_URL}/auth/register-company`);
-
-    const response = await fetch(`${API_URL}/auth/register-company`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ ...formData, recaptchaToken }),
-    });
-
-    let data;
-    const text = await response.text();
     try {
-      data = JSON.parse(text);
-    } catch {
-      console.error('Error al parsear JSON. Texto recibido:', text);
-      throw new Error(`Error del servidor (no JSON): ${text.substring(0, 100)}`);
+      const { data } = await api.post('/auth/register-company', { ...formData, recaptchaToken });
+      return data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Error al registrar la empresa';
+      throw new Error(message);
     }
-
-    console.log('Respuesta de registro:', response.status, data);
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Error al registrar la empresa');
-    }
-
-    return data;
   },
 
   async forgotPassword(email: string, recaptchaToken: string) {
-    const response = await fetch(`${API_URL}/auth/forgot-password`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, recaptchaToken }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Error al solicitar el cambio de contraseña');
+    try {
+      const { data } = await api.post('/auth/forgot-password', { email, recaptchaToken });
+      return data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Error al solicitar el cambio de contraseña';
+      throw new Error(message);
     }
-
-    return data;
   },
 
   async resetPassword(token: string, password: string) {
-    const response = await fetch(`${API_URL}/auth/reset-password`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ token, password }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Error al restablecer la contraseña');
+    try {
+      const { data } = await api.post('/auth/reset-password', { token, password });
+      return data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Error al restablecer la contraseña';
+      throw new Error(message);
     }
-
-    return data;
   },
   
   async authenticate2FA(userId: string, code: string) {
-    const response = await fetch(`${API_URL}/auth/2fa/authenticate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ userId, code }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Código 2FA inválido");
+    try {
+      const { data } = await api.post('/auth/2fa/authenticate', { userId, code });
+      return data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Código 2FA inválido";
+      throw new Error(message);
     }
-
-    return data;
   },
 
   async generate2FA() {

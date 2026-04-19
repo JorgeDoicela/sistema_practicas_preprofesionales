@@ -143,5 +143,19 @@ export const documentsService = {
       throw new Error(error.message || 'Error al procesar la revisión del coordinador');
     }
     return response.json();
+  },
+
+  async getVersions(documentId: string) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/documents/${documentId}/versions`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+        throw new Error('Error al obtener el historial de versiones');
+    }
+    return response.json();
   }
 };

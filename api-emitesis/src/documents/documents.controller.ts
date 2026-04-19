@@ -46,6 +46,12 @@ export class DocumentsController {
     return this.documentsService.findByInternship(id);
   }
 
+  @Get(':id/versions')
+  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ADMIN)
+  findVersions(@Param('id') id: string) {
+    return this.documentsService.getVersions(id);
+  }
+
   @Patch(':id/dates')
   @Roles(Role.TUTOR, Role.ADMIN) // RF-DOC-001: Actor Tutor Académico
   @UseGuards(TwoFactorGuard)

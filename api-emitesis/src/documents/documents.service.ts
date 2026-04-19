@@ -85,22 +85,11 @@ export class DocumentsService {
       throw new BadRequestException('Este documento ya ha sido aprobado definitivamente');
     }
 
-    const templateMapping: Record<string, string> = {
-      'Solicitud de prácticas': 'solicitud_practicas.docx',
-      'Plan de rotación': 'plan_rotacion.docx',
-      'Informe de actividades': 'informe_actividades.docx',
-      'Registro de asistencia': 'registro_asistencia.docx',
-      'Evaluación del tutor académico': 'evaluacion_tutor.docx',
-      'Evaluación del representante de la empresa': 'evaluacion_representante.docx',
-      'Informe final de prácticas': 'informe_final.docx',
-      'Certificado de culminación': 'certificado_culminacion.docx',
-    };
+    const fileName = document.blankFileKey?.trim();
 
-    const fileName =
-      document.blankFileKey?.trim() || templateMapping[document.name];
     if (!fileName) {
       throw new NotFoundException(
-        'No existe un formato descargable para este documento (configure “Archivo .docx” en plantillas o use un nombre con plantilla predefinida).',
+        'No existe un formato descargable configurado para este documento (configure un nombre de archivo en las plantillas).',
       );
     }
 
@@ -171,10 +160,14 @@ export class DocumentsService {
       });
     }
 
-    // Limpieza de almacenamiento: Eliminar versión anterior si existe
+    // Historial de Versiones: Guardar la versión anterior si existe antes de sobreescribir
     if (document.filePath) {
-      this.storageService.delete(document.filePath).catch((err: Error) => {
-        console.error(`[DocumentsService] Fallo al limpiar archivo antiguo ${document.filePath}:`, err.message);
+      await this.prisma.documentVersion.create({
+        data: {
+          documentId: id,
+          filePath: document.filePath,
+          observations: document.observations || 'Versión previa reemplazada por nueva carga',
+        }
       });
     }
 
@@ -254,7 +247,16 @@ export class DocumentsService {
       metadata: { documentId: id, status: reviewDto.status, internshipId: document.internshipId }
     });
 
-    // Notificar al estudiante
+    // Notificar In-App al estudiante
+    await this.notificationsService.createInApp(
+      document.internship.studentId,
+      `Documento ${reviewDto.status === 'APROBADO_TUTOR' ? 'Aprobado' : 'Rechazado'} por Tutor`,
+      `Tu documento "${document.name}" ha sido marcado como ${reviewDto.status}. ${reviewDto.observations ? 'Obs: ' + reviewDto.observations : ''}`,
+      reviewDto.status.includes('APROBADO') ? 'SUCCESS' : 'ERROR',
+      '/dashboard/documentos'
+    );
+
+    // Notificar al estudiante vía Email
     if (document.internship.student?.email) {
       await this.emailService.sendDocumentReviewResultToStudent(
         document.internship.student.email,
@@ -315,7 +317,16 @@ export class DocumentsService {
       metadata: { documentId: id, status: reviewDto.status, internshipId: document.internshipId }
     });
 
-    // Notificar a Estudiante y Tutor
+    // Notificar In-App al estudiante
+    await this.notificationsService.createInApp(
+      document.internship.studentId,
+      reviewDto.status === 'APROBADO_DEFINITIVO' ? 'Documento Aprobado Final' : 'Documento Rechazado por Coordinación',
+      `Revisión final de "${document.name}": ${reviewDto.status}.`,
+      reviewDto.status === 'APROBADO_DEFINITIVO' ? 'SUCCESS' : 'ERROR',
+      '/dashboard/documentos'
+    );
+
+    // Notificar a Estudiante y Tutor vía Email
     if (document.internship.student?.email && document.internship.tutor?.email) {
       await this.emailService.sendCoordinatorReviewResult(
         document.internship.student.email,
@@ -344,6 +355,13 @@ export class DocumentsService {
         submittedAt: null,
         status: 'PENDIENTE',
       },
+    });
+  }
+
+  async getVersions(documentId: string) {
+    return this.prisma.documentVersion.findMany({
+      where: { documentId },
+      orderBy: { createdAt: 'desc' },
     });
   }
 }

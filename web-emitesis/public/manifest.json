@@ -1,0 +1,21 @@
+{
+  "name": "Emitesis ISTPET",
+  "short_name": "Emitesis",
+  "description": "Sistema de Gestión de Prácticas Preprofesionales - ISTPET",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#003366",
+  "icons": [
+    {
+      "src": "/images/Logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/Logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

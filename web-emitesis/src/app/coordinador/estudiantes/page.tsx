@@ -4,21 +4,11 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import dynamic from "next/dynamic";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { 
-  Users, 
-  Search, 
-  FileText, 
-  ChevronRight, 
-  CheckCircle2, 
-  XCircle, 
-  Clock, 
-  AlertCircle,
-  FileCheck,
-  FileSpreadsheet,
-  Loader2,
-  Building2,
-  Calendar,
   Filter,
-  FileBadge
+  FileBadge,
+  BrainCircuit,
+  History,
+  Download,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -29,6 +19,7 @@ import { certificationService, EligibilityResponse } from "@/services/certificat
 import { reportsService } from "@/services/reports.service";
 import type { PdfReviewAnnotationsPayload } from "@/lib/pdf-review-annotations";
 import { parseReviewAnnotations } from "@/lib/pdf-review-annotations";
+import { aiService } from "@/services/ai.service";
 
 const DocumentPdfReviewEditor = dynamic(
   () =>
@@ -61,6 +52,10 @@ export default function GestionEstudiantesPage() {
   const [attendanceFilters, setAttendanceFilters] = useState<Record<string, { startDate: string, endDate: string }>>({});
   const [eligibilityData, setEligibilityData] = useState<Record<string, EligibilityResponse>>({});
   const [generatingCertId, setGeneratingCertId] = useState<string | null>(null);
+  const [analyzingId, setAnalyzingId] = useState<string | null>(null);
+  const [aiAnalysis, setAiAnalysis] = useState<Record<string, string>>({});
+  const [docVersions, setDocVersions] = useState<any[]>([]);
+  const [loadingVersions, setLoadingVersions] = useState(false);
 
   const reviewAnnotationsRef = useRef<PdfReviewAnnotationsPayload>({ version: 1, items: [] });
   const handleReviewAnnotationsChange = useCallback((p: PdfReviewAnnotationsPayload) => {
@@ -109,11 +104,22 @@ export default function GestionEstudiantesPage() {
     return matchesSearch;
   });
 
-  const handleReviewClick = (doc: any, internshipId: string) => {
+  const handleReviewClick = async (doc: any, internshipId: string) => {
     setSelectedDoc({ ...doc, internshipId });
     setObservations(doc.observations || "");
     reviewAnnotationsRef.current = parseReviewAnnotations(doc.reviewAnnotations);
     setIsReviewDrawerOpen(true);
+    
+    // Cargar historial de versiones
+    try {
+      setLoadingVersions(true);
+      const versions = await documentsService.getVersions(doc.id);
+      setDocVersions(versions);
+    } catch (e) {
+      console.error("Error loading doc versions", e);
+    } finally {
+      setLoadingVersions(false);
+    }
   };
 
   const handleReviewSubmit = async (status: 'APROBADO_DEFINITIVO' | 'RECHAZADO_COORDINADOR') => {
@@ -172,6 +178,26 @@ export default function GestionEstudiantesPage() {
     }
   };
 
+  const handleAIAnalysis = async (i: any, att: any) => {
+    setAnalyzingId(i.id);
+    try {
+      const indicators = {
+        healthScore: i.healthScore || 0,
+        docsApproved: i.documents.filter((d: any) => d.status === 'APROBADO_DEFINITIVO').length,
+        docsTotal: i.documents.length,
+        hoursDone: att?.summary?.totalHours || 0,
+        hoursTotal: i.totalHours,
+        daysActive: Math.floor((new Date().getTime() - new Date(i.startDate).getTime()) / (1000 * 60 * 60 * 24))
+      };
+      const res = await aiService.getRiskAssessment(indicators);
+      setAiAnalysis(prev => ({ ...prev, [i.id]: res }));
+    } catch (e) {
+      alert("Error en el análisis de IA");
+    } finally {
+      setAnalyzingId(null);
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-10 max-w-[1600px] mx-auto pb-20">
@@ -221,6 +247,9 @@ export default function GestionEstudiantesPage() {
                 onReviewClick={handleReviewClick}
                 onGenerateCertificate={() => handleGenerateCertificate(internship.id)}
                 onExportAttendance={handleExportAttendance}
+                onAIAnalyze={() => handleAIAnalysis(internship, attendanceData[internship.id])}
+                analyzing={analyzingId === internship.id}
+                analysis={aiAnalysis[internship.id]}
               />
             ))}
           </div>
@@ -311,6 +340,39 @@ export default function GestionEstudiantesPage() {
                       </p>
                     </div>
                   </div>
+
+                  {/* Historial de Versiones */}
+                  <div className="mt-4 flex flex-col gap-3">
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-[#003366] flex items-center gap-2">
+                       <History className="w-3.5 h-3.5 text-[#C5A059]" />
+                       Historial de Versiones
+                    </h4>
+                    
+                    <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                       {loadingVersions ? (
+                         <div className="py-4 flex justify-center"><Loader2 className="w-4 h-4 animate-spin text-slate-300" /></div>
+                       ) : docVersions.length === 0 ? (
+                         <p className="text-[10px] text-slate-400 italic">No hay versiones previas registradas.</p>
+                       ) : (
+                         docVersions.map((v: any, idx: number) => (
+                           <div key={v.id} className="p-3 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between group">
+                              <div className="flex-1 min-w-0">
+                                 <p className="text-[9px] font-black text-[#003366] uppercase">Versión {docVersions.length - idx}</p>
+                                 <p className="text-[10px] text-slate-400 font-medium truncate">{new Date(v.createdAt).toLocaleString()}</p>
+                              </div>
+                              <a 
+                                href={v.filePath} 
+                                target="_blank" 
+                                className="p-2 bg-white text-slate-400 rounded-lg hover:text-emerald-600 border border-slate-100 transition-colors shadow-sm"
+                                title="Ver esta versión"
+                              >
+                                 <Download className="w-3.5 h-3.5" />
+                              </a>
+                           </div>
+                         ))
+                       )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -352,7 +414,10 @@ function StudentInternshipCard({
   onToggle, 
   onReviewClick, 
   onGenerateCertificate,
-  onExportAttendance 
+  onExportAttendance,
+  onAIAnalyze,
+  analyzing,
+  analysis
 }: any) {
   const documents = Array.isArray(internship.documents) ? internship.documents : [];
   const pendingDocs = documents.filter((d: any) => d.status === 'APROBADO_TUTOR').length;
@@ -431,6 +496,51 @@ function StudentInternshipCard({
             className="overflow-hidden bg-slate-50/50 border-t border-slate-100"
           >
             <div className="p-8 space-y-10">
+               {/* Sección de IA Predictiva */}
+               <div className="bg-gradient-to-br from-[#003366] to-[#001122] rounded-[2rem] p-8 text-white relative overflow-hidden group/ia">
+                  <div className="absolute top-0 right-0 p-10 opacity-5 rotate-12 group-hover/ia:rotate-0 transition-transform duration-1000">
+                     <BrainCircuit className="w-32 h-32" />
+                  </div>
+                  <div className="relative z-10">
+                     <div className="flex items-center justify-between gap-6 mb-4">
+                        <div className="flex items-center gap-3">
+                           <div className="p-2 bg-[#C5A059] rounded-xl text-white">
+                              <Zap className="w-4 h-4" />
+                           </div>
+                           <h4 className="text-sm font-black uppercase tracking-widest text-[#C5A059]">Emitesis AI Predictor</h4>
+                        </div>
+                        <button 
+                           onClick={(e) => { e.stopPropagation(); onAIAnalyze(); }}
+                           disabled={analyzing}
+                           className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all backdrop-blur-sm border border-white/10 disabled:opacity-50"
+                        >
+                           {analyzing ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                           ) : (
+                              "Ejecutar Análisis de Riesgo"
+                           )}
+                        </button>
+                     </div>
+                     <AnimatePresence mode="wait">
+                        {analysis ? (
+                           <motion.div 
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="bg-white/5 rounded-2xl p-6 border border-white/5"
+                           >
+                              <p className="text-xs font-medium leading-relaxed italic text-blue-100/90 tracking-wide">
+                                 “{analysis}”
+                              </p>
+                           </motion.div>
+                        ) : (
+                           <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest pl-1">
+                              Presiona el botón para analizar el progreso y detectar riesgos tempranamente.
+                           </p>
+                        )}
+                     </AnimatePresence>
+                  </div>
+               </div>
+
                {/* Dashboard de Requisitos */}
                {eligibility && (
                  <div className="grid md:grid-cols-3 gap-6 bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">

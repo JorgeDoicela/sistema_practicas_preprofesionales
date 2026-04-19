@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Req } from '@nestjs/common';
 import { AiService } from './ai.service';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
 import { RolesGuard } from '../auth/strategies/roles.guard';
@@ -34,6 +34,25 @@ class PreVerifyDto {
   @IsString()
   @IsNotEmpty()
   base64Image: string;
+
+  @IsString()
+  @IsOptional()
+  studentName?: string;
+}
+
+class RiskAssessmentDto {
+  @IsNotEmpty()
+  healthScore: number;
+  @IsNotEmpty()
+  docsApproved: number;
+  @IsNotEmpty()
+  docsTotal: number;
+  @IsNotEmpty()
+  hoursDone: number;
+  @IsNotEmpty()
+  hoursTotal: number;
+  @IsNotEmpty()
+  daysActive: number;
 }
 
 @Controller('ai')
@@ -80,10 +99,17 @@ export class AiController {
    */
   @Post('pre-verify')
   @Roles(Role.ESTUDIANTE, Role.ADMIN)
-  async preVerify(@Body() body: PreVerifyDto) {
+  async preVerify(@Body() body: PreVerifyDto, @Req() req: any) {
     return this.aiService.preVerifyDocument(
       body.documentName,
       body.base64Image,
+      body.studentName || req.user.fullName,
     );
+  }
+
+  @Post('risk-assessment')
+  @Roles(Role.ADMIN, Role.COORDINADOR)
+  async riskAssessment(@Body() body: RiskAssessmentDto) {
+    return this.aiService.getRiskAssessment(body);
   }
 }

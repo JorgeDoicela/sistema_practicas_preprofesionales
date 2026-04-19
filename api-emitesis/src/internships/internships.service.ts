@@ -2,7 +2,9 @@ import { Injectable, ConflictException, BadRequestException, NotFoundException }
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateInternshipDto } from './dto/create-internship.dto';
 import { EmailService } from '../notifications/email.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { FALLBACK_DOCUMENT_TEMPLATES } from '../document-templates/document-templates.constants';
+import { EvaluationsService } from '../evaluations/evaluations.service';
 
 import { SystemLogsService } from '../system-logs/system-logs.service';
 
@@ -12,6 +14,8 @@ export class InternshipsService {
     private prisma: PrismaService,
     private emailService: EmailService,
     private systemLogs: SystemLogsService,
+    private notificationsService: NotificationsService,
+    private evaluationsService: EvaluationsService,
   ) {}
 
   async create(dto: CreateInternshipDto) {
@@ -170,6 +174,15 @@ export class InternshipsService {
         console.error('Error al enviar correo de asignación al tutor:', err.message);
       });
 
+      // RF-ASG-003: Notificación In-App al estudiante
+      await this.notificationsService.createInApp(
+        internship.studentId,
+        'Nueva asignación de prácticas',
+        `Has sido asignado a "${internship.company.name}". Revisa tu correo para más detalles.`,
+        'SUCCESS',
+        '/dashboard'
+      );
+
       return internship;
     } catch (error: unknown) {
       throw new BadRequestException('Error al crear la asignación: ' + (error as Error).message);
@@ -322,7 +335,12 @@ export class InternshipsService {
         });
     }
 
-    return internship;
+    const finalGrade = await this.evaluationsService.calculateInternshipGrade(id);
+
+    return {
+       ...internship,
+       finalGrade
+    };
   }
 
   /**
@@ -347,11 +365,15 @@ export class InternshipsService {
     const docScore = (approvedDocs / totalDocs) * 40;
 
     // 2. Indicador de Asistencia (30%)
-    // (Simplificación: Horas registradas vs total horas objetivo)
     const attendances = internship.attendances || [];
-    // Asumimos 8 horas por registro exitoso para el cálculo del score si no hay checkOut exacto
-    const registeredHours = attendances.length * 8; 
-    const attendanceScore = Math.min((registeredHours / internship.totalHours) * 30, 30);
+    let totalMinutes = 0;
+    attendances.forEach(att => {
+      if (att.checkIn && att.checkOut) {
+        totalMinutes += (att.checkOut.getTime() - att.checkIn.getTime()) / (1000 * 60);
+      }
+    });
+    const realHours = totalMinutes / 60;
+    const attendanceScore = Math.min((realHours / internship.totalHours) * 30, 30);
 
     // 3. Indicador de Evaluaciones (30%)
     let evalScore = 20; // Base neutra si no hay evaluaciones

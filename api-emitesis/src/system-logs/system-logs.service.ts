@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 
 const MAX_MESSAGE = 2000;
 const MAX_PATH = 500;
@@ -24,7 +25,10 @@ export interface CreateSystemLogInput {
 
 @Injectable()
 export class SystemLogsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly gateway: NotificationsGateway,
+  ) {}
 
   private truncate(s: string, max: number): string {
     if (s.length <= max) return s;
@@ -36,7 +40,7 @@ export class SystemLogsService {
    */
   async append(input: CreateSystemLogInput): Promise<void> {
     try {
-      await this.prisma.systemLog.create({
+      const log = await this.prisma.systemLog.create({
         data: {
           level: input.level,
           category: input.category,
@@ -53,6 +57,9 @@ export class SystemLogsService {
             : {}),
         },
       });
+
+      // Emitir via WebSockets para monitoreo en vivo (Solo para administradores suscritos a este evento)
+      this.gateway.sendBroadcast('liveLog', log);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       console.error('[SystemLogsService] append failed:', msg);

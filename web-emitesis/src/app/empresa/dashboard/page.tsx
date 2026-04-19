@@ -30,6 +30,7 @@ export default function EmpresaDashboardPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState<string>("");
+  const [userRole, setUserRole] = useState<string>("");
 
   const loadData = useCallback(async () => {
     try {
@@ -37,6 +38,7 @@ export default function EmpresaDashboardPage() {
       if (!userStr) return;
       const user = JSON.parse(userStr);
       setCompanyName(user.fullName || "");
+      setUserRole(user.role || "");
 
       if (!user.companyId) {
         setLoading(false);
@@ -94,14 +96,16 @@ export default function EmpresaDashboardPage() {
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
-              Portal de Empresa
+              {userRole === "TUTOR_EMPRESARIAL" ? "Portal de Tutor" : "Portal de Empresa"}
             </span>
             <h2 className="text-4xl font-black text-[#003366] tracking-tight">
               Bienvenido,{" "}
-              <span className="text-slate-400">{companyName.split(" ")[0] || "Empresa"}</span>
+              <span className="text-slate-400">{companyName.split(" ")[0] || "Usuario"}</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
-              Gestión de pasantes asignados y activación del test de aptitud y actitud.
+              {userRole === "TUTOR_EMPRESARIAL" 
+                ? "Gestión de pasantes a tu cargo y evaluaciones de aptitud."
+                : "Gestión global de pasantes asignados y activación de test de aptitud."}
             </p>
           </div>
           <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">

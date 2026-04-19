@@ -183,11 +183,27 @@ model Document {
   sortOrder         Int               @default(0)
   /// Anotaciones de revisión (resaltados, tachados, comentarios por fragmento) en JSON
   reviewAnnotations Json?
+  
+  versions          DocumentVersion[]
+
   internship        Internship        @relation(fields: [internshipId], references: [id], onDelete: Cascade)
   template          DocumentTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
 
   @@index([internshipId, sortOrder])
   @@index([templateId])
+}
+
+model DocumentVersion {
+  id           String   @id @default(uuid())
+  documentId   String
+  filePath     String
+  observations String?
+  createdAt    DateTime @default(now())
+  
+  document     Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([createdAt])
 }
 
 model Attendance {

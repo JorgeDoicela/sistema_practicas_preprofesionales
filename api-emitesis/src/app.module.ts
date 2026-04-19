@@ -27,15 +27,22 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
 import { HealthModule } from './health/health.module';
 import { EvaluationsModule } from './evaluations/evaluations.module';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ExportModule } from './export/export.module';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{
+      name: 'global',
       ttl: 60000,
       limit: 100,
+    }, {
+      name: 'seguridad',
+      ttl: 300000, // 5 minutos
+      limit: 5,    // 5 intentos
     }]),
     PrismaModule,
     AuthModule,
@@ -61,9 +68,16 @@ import { ThrottlerModule } from '@nestjs/throttler';
     EvaluationsModule,
     MonitoringModule,
     HealthModule,
+    ExportModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}
 
