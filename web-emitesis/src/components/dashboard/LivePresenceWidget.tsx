@@ -14,8 +14,10 @@ export function LivePresenceWidget({ internships }: LivePresenceWidgetProps) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const activeNow = internships.filter((i) => {
-    const todayAttendance = i.attendances?.find((a: any) => {
+  const safeInternships = Array.isArray(internships) ? internships : [];
+
+  const activeNow = safeInternships.filter((i) => {
+    const todayAttendance = (i.attendances || []).find((a: any) => {
       const checkDate = new Date(a.checkIn);
       checkDate.setHours(0, 0, 0, 0);
       return checkDate.getTime() === today.getTime() && !a.checkOut;
@@ -25,7 +27,7 @@ export function LivePresenceWidget({ internships }: LivePresenceWidgetProps) {
     const attendance = i.attendances.find((a: any) => !a.checkOut);
     return {
       id: i.id,
-      name: i.student.fullName,
+      name: i.student?.fullName || "Estudiante",
       checkIn: attendance.checkIn,
       locationLabel: attendance.locationLabel || "Ubicación verificada",
     };

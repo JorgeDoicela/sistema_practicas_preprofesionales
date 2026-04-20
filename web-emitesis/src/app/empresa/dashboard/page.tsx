@@ -45,8 +45,9 @@ export default function EmpresaDashboardPage() {
         return;
       }
 
-      const data = await internshipsService.findByCompany(user.companyId);
-      setInternships(data);
+      const res: any = await internshipsService.findByCompany(user.companyId);
+      const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
+      setInternships(list);
     } catch (error) {
       console.error("Error cargando datos empresa:", error);
     } finally {
@@ -72,13 +73,15 @@ export default function EmpresaDashboardPage() {
     }
   };
 
-  const filtered = internships.filter((i) =>
-    i.student.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+  const safeInternships = Array.isArray(internships) ? internships : [];
+
+  const filtered = safeInternships.filter((i) =>
+    i.student?.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const activeCount = internships.filter((i) => i.status === "En Proceso" || i.status === "Activo").length;
-  const testEnabledCount = internships.filter((i) => i.testEnabled).length;
-  const evaluatedCount = internships.filter((i) => i.evaluation).length;
+  const activeCount = safeInternships.filter((i) => i.status === "En Proceso" || i.status === "Activo").length;
+  const testEnabledCount = safeInternships.filter((i) => i.testEnabled).length;
+  const evaluatedCount = safeInternships.filter((i) => i.evaluation).length;
   const totalHours = internships.reduce((acc, i) => {
     const worked = i.attendances?.length ? i.attendances.reduce((s: number, a: any) => {
       if (!a.checkOut) return s;

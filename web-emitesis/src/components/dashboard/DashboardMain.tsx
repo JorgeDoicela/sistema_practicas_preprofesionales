@@ -15,6 +15,7 @@ import {
   BarChart3,
   PieChart,
   FileDown,
+  ChevronRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { User as UserType } from "@/types/user";
@@ -29,6 +30,7 @@ import { AICopilot } from "./AICopilot";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import { AnalyticsOverview } from "./AnalyticsOverview";
 import { attendancesService } from "@/services/attendances.service";
+import { settingsService } from "@/services/settings.service";
 import dynamic from "next/dynamic";
 
 // Importación dinámica de Leaflet para evitar errores de SSR
@@ -127,29 +129,33 @@ export function DashboardMain() {
 
     try {
       if (role === ROLES.ADMIN || role === ROLES.COORDINADOR) {
-        const [all, agr, stats, careerList] = await Promise.all([
-          internshipsService.findAll(1, 20, cId) as Promise<InternshipRow[]>,
-          agreementsService.findAll() as Promise<Array<{ status?: string }>>,
+        const [allRes, agrRes, stats, careerList]: [any, any, any, any] = await Promise.all([
+          internshipsService.findAll(1, 20, cId),
+          agreementsService.findAll(),
           reportsService.getGlobalStats(cId),
           settingsService.findAllCareers(),
         ]);
-        setInternships(Array.isArray(all) ? all : []);
-        setAgreementsCount((agr ?? []).filter((a) => (a.status ?? "Activo") === "Activo").length);
-        setGlobalStats(stats);
-        setCareers(careerList);
+
+        const allItems = allRes?.items || (Array.isArray(allRes?.data) ? allRes.data : (Array.isArray(allRes) ? allRes : []));
+        const agrItems = agrRes?.items || (Array.isArray(agrRes?.data) ? agrRes.data : (Array.isArray(agrRes) ? agrRes : []));
+
+        setInternships(allItems);
+        setAgreementsCount(Array.isArray(agrItems) ? agrItems.filter((a: any) => (a.status ?? "Activo") === "Activo").length : 0);
+        setGlobalStats(stats?.data || stats || null);
+        setCareers(Array.isArray(careerList) ? careerList : (Array.isArray(careerList?.data) ? careerList.data : []));
         return;
       }
 
       if (role === ROLES.ESTUDIANTE) {
-        const [list, att] = await Promise.all([
-          internshipsService.findByStudent(u.id) as Promise<InternshipRow[]>,
+        const [listRes, attRes]: [any, any] = await Promise.all([
+          internshipsService.findByStudent(u.id),
           attendancesService.getTodayStatus(),
         ]);
-        setInternships(Array.isArray(list) ? list : []);
-        setTodayAttendance(att);
+        const list = listRes?.items || (Array.isArray(listRes?.data) ? listRes.data : (Array.isArray(listRes) ? listRes : []));
+        setInternships(list);
+        setTodayAttendance(attRes?.data || attRes || null);
         setAgreementsCount(null);
 
-        // Pedir ubicación para el mini-mapa
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition((pos) => {
             setLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
@@ -159,8 +165,9 @@ export function DashboardMain() {
       }
 
       if (role === ROLES.TUTOR_ACADEMICO) {
-        const list = (await internshipsService.findByTutor(u.id)) as InternshipRow[];
-        setInternships(Array.isArray(list) ? list : []);
+        const res: any = await internshipsService.findByTutor(u.id);
+        const list = res?.items || (Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []));
+        setInternships(list);
         setAgreementsCount(null);
         return;
       }
@@ -656,18 +663,6 @@ export function DashboardMain() {
             <StudentRoadmap internship={internships[0]} />
           )}
 
-          <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats.cards.map((c) => (
-              <StatCard
-                key={c.title}
-                title={c.title}
-                value={c.value}
-                hint={c.hint}
-                icon={c.icon}
-                color={c.color}
-              />
-            ))}
-          </section>
 
           {appRole === ROLES.ESTUDIANTE && internships.length > 0 && (
             <section className="grid md:grid-cols-3 gap-8">

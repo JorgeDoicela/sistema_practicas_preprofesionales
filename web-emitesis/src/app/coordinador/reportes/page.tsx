@@ -30,7 +30,8 @@ export default function ReportesPage() {
   const loadStats = async () => {
     try {
       setLoading(true);
-      const data = await reportsService.getGlobalStats();
+      const res: any = await reportsService.getGlobalStats();
+      const data = res?.data || res || null;
       setStats(data);
     } catch (error) {
       console.error("Error loading stats:", error);

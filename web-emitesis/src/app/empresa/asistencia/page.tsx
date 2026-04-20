@@ -45,9 +45,11 @@ export default function EmpresaAsistenciaPage() {
       const user = JSON.parse(userStr);
       if (!user.companyId) { setLoading(false); return; }
 
-      const internships = await internshipsService.findByCompany(user.companyId);
+      const res: any = await internshipsService.findByCompany(user.companyId);
+      const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
+
       setRows(
-        internships.map((i: any) => ({
+        list.map((i: any) => ({
           internshipId: i.id,
           studentName: i.student?.fullName ?? "—",
           status: i.status ?? "—",
@@ -71,10 +73,14 @@ export default function EmpresaAsistenciaPage() {
       prev.map((r) => (r.internshipId === internshipId ? { ...r, loadingDetail: true } : r)),
     );
     try {
-      const [summary, history] = await Promise.all([
+      const [sumRes, histRes]: [any, any] = await Promise.all([
         attendancesService.getSummary(internshipId),
         attendancesService.findByInternship(internshipId),
       ]);
+
+      const summary = sumRes?.data || sumRes || null;
+      const history = Array.isArray(histRes) ? histRes : (Array.isArray(histRes?.data) ? histRes.data : []);
+
       setRows((prev) =>
         prev.map((r) =>
           r.internshipId === internshipId

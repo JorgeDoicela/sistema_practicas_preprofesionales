@@ -65,19 +65,23 @@ export default function DocumentosPage() {
       setCurrentUser(user);
       setUserRole(user.role);
       
-      let data;
+      let res;
       if (user.role === ROLES.TUTOR_ACADEMICO || user.role === "TUTOR") {
-        data = await internshipsService.findByTutor(user.id);
+        res = await internshipsService.findByTutor(user.id);
       } else if (user.role === ROLES.ESTUDIANTE) {
-        data = await internshipsService.findByStudent(user.id);
-        if (data.length > 0) {
-          const docs = await documentsService.findByInternship(data[0].id);
-          setUserDocuments(docs);
-        }
+        res = await internshipsService.findByStudent(user.id);
       } else {
-        data = await internshipsService.findAll();
+        res = await internshipsService.findAll();
       }
-      setInternships(data);
+
+      const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
+      setInternships(list);
+
+      if (user.role === ROLES.ESTUDIANTE && list.length > 0) {
+        const docsRes: any = await documentsService.findByInternship(list[0].id);
+        const docsData = Array.isArray(docsRes) ? docsRes : (Array.isArray(docsRes?.items) ? docsRes.items : []);
+        setUserDocuments(docsData);
+      }
     } catch (error) {
       console.error("Error loading internships:", error);
     } finally {

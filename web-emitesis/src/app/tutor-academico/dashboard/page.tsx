@@ -70,8 +70,9 @@ export default function TutorAcademicoDashboardPage() {
       if (!userStr) return;
       const user = JSON.parse(userStr);
       setTutorName(user.fullName || "");
-      const data = await internshipsService.findByTutor(user.id);
-      setInternships(data);
+      const res: any = await internshipsService.findByTutor(user.id);
+      const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
+      setInternships(list);
     } catch (error) {
       console.error("Error cargando datos del tutor:", error);
     } finally {
@@ -83,13 +84,15 @@ export default function TutorAcademicoDashboardPage() {
     loadData();
   }, [loadData]);
 
-  const filtered = internships.filter((i) =>
-    i.student.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    i.company.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const safeInternships = Array.isArray(internships) ? internships : [];
+
+  const filtered = safeInternships.filter((i) =>
+    i.student?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    i.company?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // KPIs derivados
-  const activeCount = internships.filter((i) => i.status === "En Proceso" || i.status === "Activo").length;
+  const activeCount = safeInternships.filter((i) => i.status === "En Proceso" || i.status === "Activo").length;
 
   const pendingReviews = internships.reduce((acc, i) => {
     const docs = i.documents ?? [];

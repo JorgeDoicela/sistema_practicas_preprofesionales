@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { documentTemplatesService, DocumentTemplate } from "@/services/document-templates.service";
 import { settingsService } from "@/services/settings.service";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export function DocumentTemplatesView() {
   const [templates, setTemplates] = useState<DocumentTemplate[]>([]);
@@ -48,7 +49,7 @@ export function DocumentTemplatesView() {
         documentTemplatesService.knownFormatKeys(),
         settingsService.findAllCareers(),
       ]);
-      setTemplates(list);
+      setTemplates(Array.isArray(list) ? list : []);
       setBlankFormats(formats);
       setCareers(careerList);
     } catch (error) {

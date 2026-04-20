@@ -1,4 +1,4 @@
-import { API_URL } from '@/lib/api-base';
+import { api } from './auth.service';
 
 export interface DocumentTemplate {
   id: string;
@@ -13,120 +13,44 @@ export interface DocumentTemplate {
   updatedAt: string;
 }
 
-async function authBearer(): Promise<HeadersInit> {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
-async function authHeaders(): Promise<HeadersInit> {
-  return {
-    "Content-Type": "application/json",
-    ...(await authBearer()),
-  };
-}
-
 export const documentTemplatesService = {
   async findAll(includeInactive = false): Promise<DocumentTemplate[]> {
     const q = includeInactive ? "?includeInactive=true" : "";
-    const res = await fetch(`${API_URL}/document-templates${q}`, {
-      headers: await authHeaders(),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || "Error al cargar plantillas");
-    }
-    return res.json();
+    return api.get(`/document-templates${q}`);
   },
 
   async knownFormatKeys(): Promise<string[]> {
     const meta = await this.blankFormatsMeta();
-    return meta.keys;
+    return meta.keys || [];
   },
 
   /** Lista de .docx disponibles y cuáles son institucionales (no eliminables). */
   async blankFormatsMeta(): Promise<{ keys: string[]; protectedKeys: string[] }> {
-    const res = await fetch(`${API_URL}/document-templates/blank-format-keys`, {
-      headers: await authHeaders(),
-    });
-    if (!res.ok) return { keys: [], protectedKeys: [] };
-    const data = await res.json();
-    return {
-      keys: data.keys ?? [],
-      protectedKeys: data.protectedKeys ?? [],
-    };
+    return api.get('/document-templates/blank-format-keys');
   },
 
   /** Quita un .docx subido por el coordinador del almacén (no los institucionales). */
   async deleteBlankDocx(key: string): Promise<void> {
     const q = new URLSearchParams({ key });
-    const res = await fetch(`${API_URL}/document-templates/blank-template?${q.toString()}`, {
-      method: "DELETE",
-      headers: await authHeaders(),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(
-        Array.isArray(err.message) ? err.message.join(", ") : err.message || "Error al eliminar el formato",
-      );
-    }
+    return api.delete(`/document-templates/blank-template?${q.toString()}`);
   },
 
   /** Sube un .docx a la carpeta de formatos; devuelve la clave (nombre de archivo) para asignarla a una plantilla. */
   async uploadBlankDocx(file: File): Promise<{ key: string }> {
     const fd = new FormData();
     fd.append("file", file);
-    const res = await fetch(`${API_URL}/document-templates/upload-blank`, {
-      method: "POST",
-      headers: await authBearer(),
-      body: fd,
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(
-        Array.isArray(err.message) ? err.message.join(", ") : err.message || "Error al subir el archivo",
-      );
-    }
-    return res.json();
+    return api.post('/document-templates/upload-blank', fd);
   },
 
   async create(body: Partial<DocumentTemplate>): Promise<DocumentTemplate> {
-    const res = await fetch(`${API_URL}/document-templates`, {
-      method: "POST",
-      headers: await authHeaders(),
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(
-        Array.isArray(err.message) ? err.message.join(", ") : err.message || "Error al crear",
-      );
-    }
-    return res.json();
+    return api.post('/document-templates', body);
   },
 
   async update(id: string, body: Partial<DocumentTemplate>): Promise<DocumentTemplate> {
-    const res = await fetch(`${API_URL}/document-templates/${id}`, {
-      method: "PATCH",
-      headers: await authHeaders(),
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(
-        Array.isArray(err.message) ? err.message.join(", ") : err.message || "Error al actualizar",
-      );
-    }
-    return res.json();
+    return api.patch(`/document-templates/${id}`, body);
   },
 
   async remove(id: string): Promise<void> {
-    const res = await fetch(`${API_URL}/document-templates/${id}`, {
-      method: "DELETE",
-      headers: await authHeaders(),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || "Error al eliminar");
-    }
+    return api.delete(`/document-templates/${id}`);
   },
 };

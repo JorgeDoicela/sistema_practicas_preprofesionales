@@ -1,156 +1,41 @@
-import { API_URL } from '@/lib/api-base';
+import { api } from './auth.service';
 
 export const internshipsService = {
   async create(data: Record<string, unknown>) {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/internships`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(data)
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al crear la asignación');
-    }
-
-    return response.json();
+    return api.post('/internships', data);
   },
 
-  async findAll() {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/internships`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al obtener las asignaciones');
-    }
-
-    return response.json();
+  async findAll(page = 1, limit = 20, careerId?: string) {
+    const q = careerId ? `?careerId=${careerId}` : "";
+    return api.get(`/internships${q}`);
   },
 
   async findByTutor(tutorId: string) {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/internships/tutor/${tutorId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al obtener las asignaciones del tutor');
-    }
-
-    return response.json();
+    return api.get(`/internships/tutor/${tutorId}`);
   },
 
   async findOne(id: string) {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/internships/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al obtener el detalle de la asignación');
-    }
-
-    return response.json();
+    return api.get(`/internships/${id}`);
   },
 
   async findByStudent(studentId: string) {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/internships/student/${studentId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al obtener las asignaciones del estudiante');
-    }
-
-    return response.json();
+    return api.get(`/internships/student/${studentId}`);
   },
 
   async findByCompany(companyId: string) {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/internships/company/${companyId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al obtener los estudiantes de la empresa');
-    }
-
-    return response.json();
+    return api.get(`/internships/company/${companyId}`);
   },
 
   /** RF-ATT-LOC: Guardar las ubicaciones permitidas para asistencia */
   async updateLocations(id: string, locations: { label: string; lat: number; lng: number; radiusM?: number }[]) {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/internships/${id}/locations`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ locations }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al guardar las ubicaciones');
-    }
-
-    return response.json();
+    return api.patch(`/internships/${id}/locations`, { locations });
   },
 
   async toggleTest(id: string) {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/internships/${id}/toggle-test`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al cambiar el estado del test');
-    }
-
-    return response.json();
+    return api.patch(`/internships/${id}/toggle-test`);
   },
 
   async syncSigafi(id: string) {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/internships/${id}/sync-sigafi`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al sincronizar con SIGAFI');
-    }
-
-    return response.json();
+    return api.post(`/internships/${id}/sync-sigafi`);
   }
 };

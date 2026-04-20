@@ -24,8 +24,8 @@ export function NotificationBell() {
         notificationsService.getMyNotifications(),
         notificationsService.getUnreadCount()
       ]);
-      setNotifications(list);
-      setUnreadCount(count);
+      setNotifications(Array.isArray(list) ? list : []);
+      setUnreadCount(typeof count === 'number' ? count : (count as any)?.count || 0);
     } catch (e) {
       console.error("Error loading notifications", e);
     }
@@ -92,7 +92,7 @@ export function NotificationBell() {
               </div>
 
               <div className="max-h-[400px] overflow-y-auto overflow-x-hidden">
-                {notifications.length === 0 ? (
+                {(notifications || []).length === 0 ? (
                   <div className="p-12 text-center">
                      <Bell className="w-10 h-10 text-slate-100 mx-auto mb-4" />
                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No tienes notificaciones</p>

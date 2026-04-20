@@ -13,13 +13,13 @@ export interface Notification {
 
 class NotificationsService {
   async getMyNotifications(): Promise<Notification[]> {
-    const response = await api.get('/notifications/my');
-    return response.data;
+    const data = await api.get('/notifications/my');
+    return data;
   }
 
   async getUnreadCount(): Promise<number> {
-    const response = await api.get('/notifications/unread-count');
-    return response.data.count;
+    const data = await api.get('/notifications/unread-count');
+    return data.count;
   }
 
   async markAsRead(id: string): Promise<void> {

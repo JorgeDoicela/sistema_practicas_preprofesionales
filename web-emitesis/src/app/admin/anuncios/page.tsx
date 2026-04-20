@@ -34,7 +34,8 @@ export default function AdminAnnouncementsPage() {
   async function loadAnnouncements() {
     try {
       setLoading(true);
-      const data = await announcementsService.findAll();
+      const res: any = await announcementsService.findAll();
+      const data = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
       setAnnouncements(data);
     } catch (err) {
       console.error(err);

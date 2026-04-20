@@ -17,7 +17,8 @@ import {
   Trash2,
   Zap,
   Globe,
-  User as UserIcon
+  User as UserIcon,
+  History as HistoryIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -38,9 +39,10 @@ export default function AdminLogsPage() {
   const loadLogs = useCallback(async (p: number) => {
     try {
       setLoading(true);
-      const res = await api.get(`/system-logs?page=${p}&limit=20`);
-      setLogs(res.data.data);
-      setTotalPages(res.data.meta.totalPages);
+      const res: any = await api.get(`/system-logs?page=${p}&limit=20`);
+      const data = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.items) ? res.data.items : (Array.isArray(res.data?.data) ? res.data.data : []));
+      setLogs(data);
+      setTotalPages(res.data?.meta?.totalPages || res.meta?.totalPages || 1);
     } catch (err) {
       console.error(err);
     } finally {
@@ -167,7 +169,7 @@ export default function AdminLogsPage() {
                  <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                        <div className="p-2.5 bg-slate-50 text-slate-400 rounded-xl">
-                          <History className="w-5 h-5" />
+                          <HistoryIcon className="w-5 h-5" />
                        </div>
                        <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">Registro Histórico</h3>
                     </div>

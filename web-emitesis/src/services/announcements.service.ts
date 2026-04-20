@@ -13,27 +13,27 @@ export interface Announcement {
 
 export const announcementsService = {
   findAll: async () => {
-    const response = await api.get<Announcement[]>("/announcements");
-    return response.data;
+    const data = await api.get<Announcement[]>("/announcements");
+    return data;
   },
 
   findActive: async () => {
-    const response = await api.get<Announcement[]>("/announcements/active");
-    return response.data;
+    const data = await api.get<Announcement[]>("/announcements/active");
+    return data;
   },
 
   create: async (data: Partial<Announcement>) => {
-    const response = await api.post<Announcement>("/announcements", data);
-    return response.data;
+    const result = await api.post<Announcement>("/announcements", data);
+    return result;
   },
 
   update: async (id: string, data: Partial<Announcement>) => {
-    const response = await api.patch<Announcement>(`/announcements/${id}`, data);
-    return response.data;
+    const result = await api.patch<Announcement>(`/announcements/${id}`, data);
+    return result;
   },
 
   remove: async (id: string) => {
-    const response = await api.delete(`/announcements/${id}`);
-    return response.data;
+    const result = await api.delete(`/announcements/${id}`);
+    return result;
   },
 };

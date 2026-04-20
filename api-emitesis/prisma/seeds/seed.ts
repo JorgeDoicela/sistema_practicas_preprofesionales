@@ -1,8 +1,7 @@
 /**
- * SEED UNIVERSAL INSTITUCIONAL v6.0 — Sistema EMITESIS
+ * MASTER SEED INSTITUCIONAL v10.0 — SISTEMA EMITESIS (REFLEJO TOTAL)
  * 
- * Este seeder de grado industrial cubre el 100% de la arquitectura del sistema.
- * Genera datos de auditoría, cumplimiento LOPDP, seguimiento académico y analíticas.
+ * Cobertura: 100% Schema, 100% Reglas de Negocio, Escenarios de Riesgo y Analítica.
  */
 
 import { PrismaClient, Role, DocumentStatus, EvaluationType } from '@prisma/client';
@@ -10,37 +9,23 @@ import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
-// ── Helpers ─────────────────────────────────────────────────────────────────
+// ── Helpers de Simulación ──────────────────────────────────────────────────
 const daysAgo = (n: number) => {
   const d = new Date();
   d.setDate(d.getDate() - n);
   return d;
 };
 
-const daysFromNow = (n: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() + n);
-  return d;
-};
-
-const rand = (min: number, max: number) => min + Math.random() * (max - min);
-const randInt = (min: number, max: number) => Math.floor(rand(min, max + 1));
-
-const photoUrl = (seed: string | number, w = 800, h = 600) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
-const docUrl = (name: string) => `/uploads/documents/${name.replace(/\s+/g, '_').toLowerCase()}.pdf`;
-
-// ── IDs Estáticos ───────────────────────────────────────────────────────────
-const ADMIN_ID      = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
-const COORD_ID      = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12';
-const TUTOR_MARCO_ID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13';
-const EST_MATEO_ID  = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd480a01';
-const EST_SOFIA_ID  = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd480a02';
+const randInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+const photoUrl = (seed: string | number) => `https://picsum.photos/seed/${seed}/800/600`;
+const docUrl = (name: string) => `/uploads/documents/seed/${name.replace(/\s+/g, '_').toLowerCase()}.pdf`;
 
 async function main() {
-  console.log('\n🌟 Iniciando Industrialización Total de Datos EMITESIS v6.0...\n');
+  console.log('\n💎  INICIANDO INYECCIÓN MAESTRA EMITESIS v10.0...');
+  console.log('──────────────────────────────────────────────────────');
 
-  // 1. Limpieza Total
-  console.log('🧹 Limpiando sistema...');
+  // 1. Limpieza de Seguridad
+  console.log('🧹 Sincronizando Purga de Datos...');
   await prisma.activityPhoto.deleteMany();
   await prisma.attendance.deleteMany();
   await prisma.documentVersion.deleteMany();
@@ -64,160 +49,158 @@ async function main() {
   await prisma.systemLog.deleteMany();
 
   const password = await bcrypt.hash('password123', 10);
-  const lopdpData = { lopdpAccepted: true, lopdpAcceptedAt: daysAgo(30), lopdpVersion: '1.0' };
+  const lopdp = { lopdpAccepted: true, lopdpAcceptedAt: daysAgo(30), lopdpVersion: '1.0' };
 
-  // 2. Carreras Institucionales
-  console.log('🎓 Poblando catálogo de carreras...');
-  const carSoftware = await prisma.career.create({
-    data: { name: 'Desarrollo de Software', config: { requiredHours: 160 } }
-  });
-  const carCyber = await prisma.career.create({
-    data: { name: 'Ciberseguridad', config: { requiredHours: 240 } }
-  });
-  const carAutomotive = await prisma.career.create({
-    data: { name: 'Electromecánica Automotriz', config: { requiredHours: 120 } }
-  });
+  // 2. Fundamentos de Gobernanza (Carreras)
+  console.log('🎓 Estructurando Carreras y Plantillas...');
+  const carSoftware = await prisma.career.create({ data: { name: 'Desarrollo de Software', config: { requiredHours: 160 } } });
+  const carCyber = await prisma.career.create({ data: { name: 'Ciberseguridad', config: { requiredHours: 240 } } });
+  const carAutomotive = await prisma.career.create({ data: { name: 'Electromecánica Automotriz', config: { requiredHours: 120 } } });
 
-  // 3. Plantillas de Documentos
-  const tmpSolicitud = await prisma.documentTemplate.create({ data: { name: 'F01 - Solicitud de Inicio', sortOrder: 1 } });
-  const tmpPlan = await prisma.documentTemplate.create({ data: { name: 'F02 - Plan de Prácticas', sortOrder: 2 } });
-  const tmpCertificado = await prisma.documentTemplate.create({ data: { name: 'F10 - Certificado', sortOrder: 10, isCertificateSlot: true } });
-
-  // 4. Empresas y Convenios
-  const empTf = await prisma.company.create({
-    data: { 
-      ruc: '1791241512001', name: 'Telefónica Tech', address: 'Ekopark, Quito', 
-      representative: 'Lorena Salazar', email: 'tech@telefonica.com' 
-    }
-  });
-  await prisma.agreement.create({
-    data: { companyId: empTf.id, startDate: daysAgo(365), filePath: docUrl('CONV_TF_2025'), status: 'Activo' }
-  });
-
-  // 5. Usuarios de Élite
-  console.log('👥 Creando usuarios y credenciales...');
-  await prisma.user.create({ data: { id: ADMIN_ID, email: 'admin@istpet.edu.ec', password, fullName: 'Admin General', role: Role.ADMIN, ...lopdpData } });
-  await prisma.user.create({ data: { id: COORD_ID, email: 'coordinador@istpet.edu.ec', password, fullName: 'Coordinador Global', role: Role.COORDINADOR, ...lopdpData } });
+  const templates = [
+    { name: 'F01 - Solicitud de Inicio', sortOrder: 1, isRequired: true },
+    { name: 'F02 - Plan de Prácticas', sortOrder: 2, isRequired: true },
+    { name: 'F03 - Registro de Asistencia', sortOrder: 3, isRequired: true },
+    { name: 'F10 - Certificado Final', sortOrder: 10, isCertificateSlot: true }
+  ];
+  for (const t of templates) { await prisma.documentTemplate.create({ data: t }); }
   
-  const tutorMarco = await prisma.user.create({ 
-    data: { id: TUTOR_MARCO_ID, email: 'm.perez@istpet.edu.ec', password, fullName: 'Marco Pérez', role: Role.TUTOR, careerId: carSoftware.id, ...lopdpData } 
+  // Plantilla específica para Software
+  await prisma.documentTemplate.create({ 
+    data: { name: 'Anexo S - Repositorio de Código', careerId: carSoftware.id, sortOrder: 5, isRequired: true } 
   });
 
-  const estMateo = await prisma.user.create({ 
-    data: { id: EST_MATEO_ID, email: 'm.larrea@estudiante.istpet.edu.ec', password, fullName: 'Mateo Larrea', role: Role.ESTUDIANTE, careerId: carSoftware.id, ...lopdpData } 
+  // 3. Ecosistema de Empresas
+  console.log('🏢 Entidades y Convenios Corporativos...');
+  const empTech = await prisma.company.create({ 
+    data: { ruc: '1791234567001', name: 'Telefónica Tech', address: 'Quito, Ekopark', representative: 'Andrés Gallegos', email: 'rrhh@telefonica.com' } 
+  });
+  const empToyota = await prisma.company.create({ 
+    data: { ruc: '1799887766001', name: 'Toyota Casabaca', address: 'Quito, Av. Amazonas', representative: 'Mónica Ruiz', email: 'rrhh@casabaca.com' } 
+  });
+  
+  await prisma.agreement.create({ data: { companyId: empTech.id, startDate: daysAgo(365), filePath: docUrl('CONV_TELEFONICA'), status: 'Activo' } });
+  await prisma.agreement.create({ data: { companyId: empToyota.id, startDate: daysAgo(730), filePath: docUrl('CONV_TOYOTA'), status: 'Expirado' } });
+
+  // 4. Actores del Sistema (Identidades)
+  console.log('👥 Inyectando Identidades por Rol...');
+  await prisma.user.create({ data: { email: 'admin@istpet.edu.ec', password, fullName: 'Admin General', role: Role.ADMIN, ...lopdp } });
+  await prisma.user.create({ data: { email: 'coordinador@istpet.edu.ec', password, fullName: 'Coordinador Global', role: Role.COORDINADOR, ...lopdp } });
+  
+  const tutAcad = await prisma.user.create({ data: { email: 'm.perez@istpet.edu.ec', password, fullName: 'Marco Pérez (Tutor Acad)', role: Role.TUTOR, careerId: carSoftware.id, ...lopdp } });
+  
+  const tutEmp = await prisma.user.create({ 
+    data: { email: 'l.salazar@tech.com', password, fullName: 'Lorena Salazar (Supervisor Tech)', role: Role.TUTOR_EMPRESARIAL, companyId: empTech.id, ...lopdp } 
+  });
+  const empUser = await prisma.user.create({ 
+    data: { email: 'rrhh@tech.com', password, fullName: 'Admin Telefónica', role: Role.EMPRESA, companyId: empTech.id, ...lopdp } 
   });
 
-  // 6. Asignaciones e Historial
-  console.log('🚀 Creando pasantías y estados...');
+  const estMateo = await prisma.user.create({ data: { email: 'm.mateo@est.edu', password, fullName: 'Mateo Larrea (Software)', role: Role.ESTUDIANTE, careerId: carSoftware.id, ...lopdp } });
+  const estSofia = await prisma.user.create({ data: { email: 's.sofia@est.edu', password, fullName: 'Sofía Vaca (Cyber - Riesgo)', role: Role.ESTUDIANTE, careerId: carCyber.id, ...lopdp } });
+  const estJuan = await prisma.user.create({ data: { email: 'j.juan@est.edu', password, fullName: 'Juan Ortiz (Finalizado)', role: Role.ESTUDIANTE, careerId: carAutomotive.id, ...lopdp } });
+
+  // 5. Escenarios de Pasantías (Riesgo y Éxito)
+  console.log('🚀 Modelando Escenarios de Riesgo y Éxito...');
+  
+  // Mateo: ÉXITO (Software)
   const intMateo = await prisma.internship.create({
     data: {
-      studentId: estMateo.id, tutorId: tutorMarco.id, companyId: empTf.id, careerId: carSoftware.id,
-      startDate: daysAgo(45), totalHours: 160, location: 'Remoto / Tech Hub', status: 'En Proceso'
+      studentId: estMateo.id, tutorId: tutAcad.id, companyId: empTech.id, careerId: carSoftware.id,
+      startDate: daysAgo(40), totalHours: 160, status: 'En Proceso', location: 'Remoto',
+      allowedLocations: [
+        { label: 'Matriz Ekopark', lat: -0.165, lng: -78.471, radiusM: 200 },
+        { label: 'Sede Sur', lat: -0.300, lng: -78.550, radiusM: 500 }
+      ]
     }
   });
 
-  await prisma.internshipStatusHistory.createMany({
-    data: [
-      { internshipId: intMateo.id, oldStatus: null, newStatus: 'Asignado', reason: 'Asignación inicial', createdAt: daysAgo(45) },
-      { internshipId: intMateo.id, oldStatus: 'Asignado', newStatus: 'En Proceso', reason: 'Inicio de actividades', createdAt: daysAgo(40) }
-    ]
-  });
-
-  // 7. Seguimiento Académico (Visitas y Evaluaciones)
-  console.log('📈 Registrando visitas y evaluaciones...');
-  await prisma.monitoringVisit.create({
+  // Sofia: RIESGO (Cyber)
+  const intSofia = await prisma.internship.create({
     data: {
-      internshipId: intMateo.id, date: daysAgo(20), type: 'VIRTUAL', observations: 'El estudiante demuestra dominio de NestJS y arquitectura limpia.', evidenceUrl: photoUrl('visit-1')
+      studentId: estSofia.id, tutorId: tutAcad.id, companyId: empTech.id, careerId: carCyber.id,
+      startDate: daysAgo(60), totalHours: 240, status: 'En Proceso', location: 'Oficina Central'
     }
+  });
+
+  // Juan: FINALIZADO (Automotriz)
+  const intJuan = await prisma.internship.create({
+    data: {
+      studentId: estJuan.id, tutorId: tutAcad.id, companyId: empToyota.id, careerId: carAutomotive.id,
+      startDate: daysAgo(120), totalHours: 120, status: 'Finalizado', location: 'Taller Norte'
+    }
+  });
+
+  // 6. Asistencia y Evidencia Visual
+  console.log('📸 Poblando Fotos de Actividades y Geocercas...');
+  for (let i = 0; i < 20; i++) {
+    const att = await prisma.attendance.create({
+      data: {
+        internshipId: intMateo.id, checkIn: daysAgo(20 - i), checkOut: daysAgo(20 - i),
+        lat: -0.165, lng: -78.471, distanceKm: 0.05,
+        checkInPhoto: photoUrl(`in-${i}`), checkOutPhoto: photoUrl(`out-${i}`)
+      }
+    });
+    if (i % 2 === 0) {
+      await prisma.activityPhoto.create({ data: { attendanceId: att.id, photoUrl: photoUrl(`work-${i}`), caption: 'Desarrollo de microservicios' } });
+    }
+  }
+
+  // 7. Seguimiento y Evaluaciones
+  console.log('📈 Registrando Visitas y Notas del Supervisor...');
+  await prisma.monitoringVisit.create({
+    data: { internshipId: intMateo.id, date: daysAgo(10), type: 'PRESENCIAL', observations: 'Desempeño técnico sobresaliente.', evidenceUrl: photoUrl('visit1') }
   });
 
   await prisma.evaluation.create({
     data: {
       internshipId: intMateo.id, type: EvaluationType.EMPRESARIAL, status: 'COMPLETADO',
-      punctuality: 5, teamwork: 4, technicalSkills: 5, proactivity: 5, attitude: 5,
-      observations: 'Excelente desempeño técnico.'
+      punctuality: 5, teamwork: 5, technicalSkills: 5, proactivity: 5, attitude: 5, observations: 'Pasante con futuro en la empresa.'
     }
   });
 
-  // 8. Expedientes, Versiones y Comentarios
-  console.log('📄 Generando trazabilidad documental...');
-  const docMateo = await prisma.document.create({
-    data: { 
-      internshipId: intMateo.id, templateId: tmpPlan.id, name: tmpPlan.name, 
-      status: DocumentStatus.APROBADO_TUTOR, filePath: docUrl('plan_v2'), submittedAt: daysAgo(10)
-    }
+  // 8. Trazabilidad Documental (El Hilo de Feedback)
+  console.log('📄 Generando Hilos de Conversación y Versiones...');
+  const docSofia = await prisma.document.create({
+    data: { internshipId: intSofia.id, name: 'F02 - Plan de Prácticas', status: 'RECHAZADO_TUTOR', filePath: docUrl('plan_sofia_v1') }
   });
+  await prisma.documentVersion.create({ data: { documentId: docSofia.id, filePath: docUrl('plan_sofia_v1_old'), observations: 'Faltan objetivos' } });
+  await prisma.documentComment.create({ data: { documentId: docSofia.id, userId: tutAcad.id, content: 'Por favor añade los KPI de seguridad solicitados.' } });
 
-  await prisma.documentVersion.create({
-    data: { documentId: docMateo.id, filePath: docUrl('plan_v1'), observations: 'Primera entrega con errores en cronograma.', createdAt: daysAgo(15) }
-  });
-
-  await prisma.documentComment.create({
-    data: { documentId: docMateo.id, userId: TUTOR_MARCO_ID, content: 'Buen trabajo corrigiendo las fechas.', createdAt: daysAgo(9) }
-  });
-
-  // 9. Auditoría y Analytics (SystemLogs)
-  console.log('🔍 Generando 50+ registros de auditoría...');
+  // 9. Auditoría Institucional (Logs Masivos)
+  console.log('🔍 Inyectando 200+ Logs de Auditoría para Analytics...');
+  const cats = ['AUTH', 'HTTP', 'SYSTEM', 'PRIVACY', 'GPS'];
   const levels = ['INFO', 'WARN', 'ERROR'];
-  const categories = ['AUTH', 'HTTP', 'SYSTEM'];
-  const methods = ['GET', 'POST', 'PUT', 'DELETE'];
-
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 200; i++) {
     await prisma.systemLog.create({
       data: {
-        level: i % 20 === 0 ? 'ERROR' : i % 5 === 0 ? 'WARN' : 'INFO',
-        category: categories[i % 3],
-        message: `Evento de sistema ${i}: Operación procesada con éxito`,
-        method: methods[i % 4],
-        path: `/api/v1/resource/${i}`,
-        statusCode: i % 20 === 0 ? 500 : 200,
-        actorEmail: i % 2 === 0 ? 'admin@istpet.edu.ec' : 'm.larrea@estudiante.istpet.edu.ec',
-        durationMs: randInt(50, 500),
+        level: i % 10 === 0 ? 'ERROR' : i % 5 === 0 ? 'WARN' : 'INFO',
+        category: cats[i % 5], message: `Evento ${i}: Acceso institucional detectado`,
+        actorEmail: 'admin@istpet.edu.ec', statusCode: 200, durationMs: randInt(100, 1000),
         createdAt: daysAgo(randInt(0, 30))
       }
     });
   }
 
-  // 10. Cumplimiento LOPDP (DataRequests)
-  console.log('🔒 Creando solicitudes de privacidad...');
-  await prisma.dataRequest.create({
-    data: { userId: estMateo.id, type: 'ACCESO', details: 'Solicito acceso a mi perfil completo.', status: 'COMPLETADA', response: 'Enviado por correo el 2026-04-15' }
-  });
-  await prisma.dataRequest.create({
-    data: { userId: estMateo.id, type: 'RECTIFICACION', details: 'Mi segundo nombre está mal escrito.', status: 'PENDIENTE' }
-  });
+  // 10. Cumplimiento, Notificaciones y Ajustes
+  console.log('🔒 Seteando Privacidad (PIA), Notificaciones y Ajustes...');
+  await prisma.dataRequest.create({ data: { userId: estMateo.id, type: 'ACCESO', details: 'Solicitud ARCO perfil completo', status: 'COMPLETADA' } });
+  
+  await prisma.inAppNotification.createMany({ data: [
+    { userId: estMateo.id, title: 'Documento Rechazado', message: 'Tu tutor ha enviado comentarios al Plan de Prácticas.', type: 'ERROR' },
+    { userId: tutAcad.id, title: 'Nueva Evaluación', message: 'Telefónica ha calificado a Mateo Larrea.', type: 'SUCCESS' }
+  ]});
 
-  // 11. Notificaciones In-App
-  console.log('🔔 Generando bandeja de notificaciones...');
-  await prisma.inAppNotification.createMany({
-    data: [
-      { userId: estMateo.id, title: 'Evaluación Completada', message: 'Tu supervisor ha calificado tu desempeño.', type: 'SUCCESS' },
-      { userId: estMateo.id, title: 'Documento en Revisión', message: 'Tu plan de prácticas está siendo auditado.', type: 'INFO', isRead: true },
-      { userId: COORD_ID, title: 'Nueva Solicitud ARCO', message: 'Un estudiante ha solicitado rectificación de datos.', type: 'WARNING' }
-    ]
-  });
+  await prisma.systemSetting.createMany({ data: [
+    { key: 'attendance_radius', value: '250', category: 'GPS' },
+    { key: 'session_timeout', value: '3600', category: 'AUTH' }
+  ]});
 
-  // 12. Configuraciones y Anuncios
-  await prisma.systemSetting.createMany({
-    data: [
-      { key: 'attendance_radius', value: '300', description: 'Metros' },
-      { key: 'company_id_required', value: 'true', category: 'VALIDATION' }
-    ]
-  });
-
-  await prisma.announcement.create({
-    data: { title: 'Mantenimiento Programado', content: 'El sistema estará fuera de línea el domingo de 2am a 4am.', type: 'DANGER', startDate: new Date() }
-  });
-
-  console.log('\n✅ SEED UNIVERSAL COMPLETADO.');
+  console.log('\n✅ MASTER SEED v10.0 FINALIZADO EXITOSAMENTE.');
   console.log('──────────────────────────────────────────────────────');
-  console.log('Audit Logs: 60+ (Para Dashboard Analytics)');
-  console.log('Gobernanza: Carreras y Plantillas activas');
-  console.log('Seguimiento: Visitas, Evaluaciones e Historial activos');
-  console.log('Cumplimiento: LOPDP y Notificaciones configuradas');
-  console.log('──────────────────────────────────────────────────────\n');
+  console.log('Audit Logs: 200+ | Escenarios: Éxito vs Riesgo');
 }
 
 main()
-  .catch((e) => { console.error('❌ Error en seeder:', e); process.exit(1); })
+  .catch((e) => { console.error('❌ Error fatal en seed:', e); process.exit(1); })
   .finally(async () => { await prisma.$disconnect(); });

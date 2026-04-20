@@ -87,28 +87,37 @@ export default function EvaluacionesPage() {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const internships = await internshipsService.findAll();
+      const res: any = await internshipsService.findAll();
+      const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
       const rows: EvalResult[] = await Promise.all(
-        internships.map(async (i: any) => {
+        list.map(async (i: any) => {
           let evaluation: EvalResult["evaluation"] = null;
           try {
-            const ev = await evaluationsService.findByInternship(i.id);
+            const evRes: any = await evaluationsService.findByInternship(i.id);
+            // Desempaquetado industrial de la respuesta
+            const ev = evRes?.data ? (Array.isArray(evRes.data) ? evRes.data[0] : evRes.data) : (Array.isArray(evRes) ? evRes[0] : null);
+
             if (ev) {
-              const total =
-                ev.punctuality + ev.teamwork + ev.technicalSkills + ev.proactivity + ev.attitude;
+              const p = Number(ev.punctuality) || 0;
+              const tw = Number(ev.teamwork) || 0;
+              const ts = Number(ev.technicalSkills) || 0;
+              const pr = Number(ev.proactivity) || 0;
+              const at = Number(ev.attitude) || 0;
+              
+              const total = p + tw + ts + pr + at;
               evaluation = {
-                punctuality: ev.punctuality,
-                teamwork: ev.teamwork,
-                technicalSkills: ev.technicalSkills,
-                proactivity: ev.proactivity,
-                attitude: ev.attitude,
+                punctuality: p,
+                teamwork: tw,
+                technicalSkills: ts,
+                proactivity: pr,
+                attitude: at,
                 observations: ev.observations,
                 total,
                 percentage: Math.round((total / 25) * 100),
               };
             }
-          } catch {
-            // sin evaluación
+          } catch (err) {
+            console.error(`Error loading evaluation for ${i.id}:`, err);
           }
           return {
             internshipId: i.id,

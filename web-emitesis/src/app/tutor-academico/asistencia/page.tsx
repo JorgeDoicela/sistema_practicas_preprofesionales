@@ -68,9 +68,11 @@ export default function TutorAsistenciaPage() {
       const userStr = localStorage.getItem("user");
       if (!userStr) return;
       const user = JSON.parse(userStr);
-      const internships = await internshipsService.findByTutor(user.id);
+      const res: any = await internshipsService.findByTutor(user.id);
+      const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
+      
       setRows(
-        internships.map((i: any) => ({
+        list.map((i: any) => ({
           internshipId: i.id,
           studentName: i.student?.fullName ?? "—",
           companyName: i.company?.name ?? "—",
@@ -97,10 +99,14 @@ export default function TutorAsistenciaPage() {
       prev.map((r) => r.internshipId === internshipId ? { ...r, loadingDetail: true } : r),
     );
     try {
-      const [summary, history] = await Promise.all([
+      const [sumRes, histRes]: [any, any] = await Promise.all([
         attendancesService.getSummary(internshipId),
         attendancesService.findByInternship(internshipId),
       ]);
+
+      const summary = sumRes?.data || sumRes || null;
+      const history = Array.isArray(histRes) ? histRes : (Array.isArray(histRes?.data) ? histRes.data : []);
+
       setRows((prev) =>
         prev.map((r) =>
           r.internshipId === internshipId

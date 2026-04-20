@@ -8,12 +8,10 @@ export interface CleanupResult {
 
 export const maintenanceService = {
   cleanupOrphanedFiles: async () => {
-    const response = await api.post<CleanupResult>("/maintenance/cleanup-orphaned-files");
-    return response.data;
+    return api.post<CleanupResult>("/maintenance/cleanup-orphaned-files");
   },
 
   backupDatabase: async () => {
-    const response = await api.post<{ success: boolean; message: string }>("/maintenance/backup-db");
-    return response.data;
+    return api.post<{ success: boolean; message: string }>("/maintenance/backup-db");
   },
 };

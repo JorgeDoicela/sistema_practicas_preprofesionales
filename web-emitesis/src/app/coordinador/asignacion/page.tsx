@@ -71,10 +71,13 @@ export default function AsignacionPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [allUsers, allAgreements] = await Promise.all([
+        const [usersRes, agreementsRes]: [any, any] = await Promise.all([
           usersService.findAll(),
           agreementsService.findAll()
         ]);
+
+        const allUsers = Array.isArray(usersRes) ? usersRes : (Array.isArray(usersRes?.data) ? usersRes.data : []);
+        const allAgreements = Array.isArray(agreementsRes) ? agreementsRes : (Array.isArray(agreementsRes?.items) ? agreementsRes.items : []);
 
         setStudents(allUsers.filter((u: User) => u.role === 'ESTUDIANTE' && u.isActive));
         setTutors(

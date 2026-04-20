@@ -91,8 +91,9 @@ export default function UsuariosManagementPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const data = await usersService.findAll();
-      setUsers(data as User[]);
+      const res: any = await usersService.findAll();
+      const userList = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : []);
+      setUsers(userList);
     } catch (err: unknown) {
       setError((err as Error).message);
     } finally {

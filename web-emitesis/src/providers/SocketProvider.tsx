@@ -40,7 +40,9 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     const socketUrl = API_URL.replace("/api", "");
     const newSocket = io(`${socketUrl}/notifications`, {
       query: { userId },
-      transports: ["websocket"],
+      transports: ["websocket", "polling"],
+      reconnectionAttempts: 5,
+      reconnectionDelay: 2000,
     });
 
     newSocket.on("connect", () => {

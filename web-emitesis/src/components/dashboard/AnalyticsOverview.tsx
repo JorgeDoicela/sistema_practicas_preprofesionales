@@ -20,6 +20,12 @@ interface AnalyticsProps {
 }
 
 export function AnalyticsOverview({ stats }: AnalyticsProps) {
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const docData = [
     { name: "Aprobados", value: stats.approvedDocs, color: "#10b981" },
     { name: "Pendientes", value: stats.pendingDocs, color: "#f59e0b" },
@@ -30,13 +36,15 @@ export function AnalyticsOverview({ stats }: AnalyticsProps) {
     { name: "Completadas", value: stats.completedInternships, color: "#C5A059" },
   ];
 
+  if (!isMounted) return <div className="h-96 w-full animate-pulse bg-slate-50 rounded-[2.5rem] mt-12" />;
+
   return (
     <div className="grid md:grid-cols-2 gap-8 mt-12">
       {/* Gráfico de Documentación */}
       <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl">
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Eficiencia Documental</h4>
         <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height={256}>
             <BarChart data={docData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis 
@@ -65,7 +73,7 @@ export function AnalyticsOverview({ stats }: AnalyticsProps) {
       <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl">
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Estado del Programa</h4>
         <div className="h-64 w-full flex items-center justify-center">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height={256}>
             <PieChart>
               <Pie
                 data={internshipData}

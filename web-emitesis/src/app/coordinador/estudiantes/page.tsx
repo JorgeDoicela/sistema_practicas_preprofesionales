@@ -9,6 +9,19 @@ import {
   BrainCircuit,
   History,
   Download,
+  Search,
+  CheckCircle2,
+  XCircle,
+  FileCheck,
+  FileText,
+  ChevronRight,
+  Building2,
+  Users,
+  FileSpreadsheet,
+  Zap,
+  Clock,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -65,8 +78,9 @@ export default function GestionEstudiantesPage() {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await internshipsService.findAll();
-      setInternships(data);
+      const res: any = await internshipsService.findAll();
+      const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
+      setInternships(list);
     } catch (error) {
       console.error("Error loading internships:", error);
     } finally {

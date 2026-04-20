@@ -41,10 +41,6 @@ import { APP_GUARD } from '@nestjs/core';
       name: 'global',
       ttl: 60000,
       limit: 100,
-    }, {
-      name: 'seguridad',
-      ttl: 300000, // 5 minutos
-      limit: 5,    // 5 intentos
     }]),
     PrismaModule,
     AuthModule,

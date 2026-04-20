@@ -19,9 +19,15 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Interceptor de respuesta para manejar rate limiting y otros errores globales
+// Interceptor de respuesta para manejar rate limiting y unwrap de datos
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Si la respuesta viene envuelta en el formato { success, data, timestamp }
+    if (response.data && typeof response.data === 'object' && 'success' in response.data) {
+      return response.data.data;
+    }
+    return response.data;
+  },
   (error) => {
     if (error.response?.status === 429) {
       toast.error('Demasiadas peticiones', {
@@ -33,9 +39,10 @@ api.interceptors.response.use(
   }
 );
 
+export const authService = {
   async login(email: string, password: string, recaptchaToken: string) {
     try {
-      const { data } = await api.post('/auth/login', { email, password, recaptchaToken });
+      const data = await api.post('/auth/login', { email, password, recaptchaToken });
       return data;
     } catch (error: any) {
       const message = error.response?.data?.message || 'Error al iniciar sesión';
@@ -45,7 +52,7 @@ api.interceptors.response.use(
 
   async registerCompany(formData: Record<string, any>, recaptchaToken: string) {
     try {
-      const { data } = await api.post('/auth/register-company', { ...formData, recaptchaToken });
+      const data = await api.post('/auth/register-company', { ...formData, recaptchaToken });
       return data;
     } catch (error: any) {
       const message = error.response?.data?.message || 'Error al registrar la empresa';
@@ -55,7 +62,7 @@ api.interceptors.response.use(
 
   async forgotPassword(email: string, recaptchaToken: string) {
     try {
-      const { data } = await api.post('/auth/forgot-password', { email, recaptchaToken });
+      const data = await api.post('/auth/forgot-password', { email, recaptchaToken });
       return data;
     } catch (error: any) {
       const message = error.response?.data?.message || 'Error al solicitar el cambio de contraseña';
@@ -65,7 +72,7 @@ api.interceptors.response.use(
 
   async resetPassword(token: string, password: string) {
     try {
-      const { data } = await api.post('/auth/reset-password', { token, password });
+      const data = await api.post('/auth/reset-password', { token, password });
       return data;
     } catch (error: any) {
       const message = error.response?.data?.message || 'Error al restablecer la contraseña';
@@ -75,7 +82,7 @@ api.interceptors.response.use(
   
   async authenticate2FA(userId: string, code: string) {
     try {
-      const { data } = await api.post('/auth/2fa/authenticate', { userId, code });
+      const data = await api.post('/auth/2fa/authenticate', { userId, code });
       return data;
     } catch (error: any) {
       const message = error.response?.data?.message || "Código 2FA inválido";

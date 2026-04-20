@@ -16,15 +16,15 @@ export interface GlobalStats {
 export const reportsService = {
   getGlobalStats: async (careerId?: string): Promise<GlobalStats> => {
     const q = careerId ? `?careerId=${careerId}` : "";
-    const response = await api.get(`/reports/global-stats${q}`);
-    return response.data;
+    const data = await api.get(`/reports/global-stats${q}`);
+    return data;
   },
 
   exportGlobalExcel: async () => {
-    const response = await api.get("/reports/export/global/excel", {
+    const data = await api.get("/reports/export/global/excel", {
       responseType: "blob",
     });
-    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const url = window.URL.createObjectURL(new Blob([data]));
     const link = document.createElement("a");
     link.href = url;
     link.setAttribute("download", "reporte-global.xlsx");
@@ -34,10 +34,10 @@ export const reportsService = {
   },
 
   exportGlobalPdf: async () => {
-    const response = await api.get("/reports/export/global/pdf", {
+    const data = await api.get("/reports/export/global/pdf", {
       responseType: "blob",
     });
-    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const url = window.URL.createObjectURL(new Blob([data]));
     const link = document.createElement("a");
     link.href = url;
     link.setAttribute("download", "reporte-global.pdf");
@@ -47,10 +47,10 @@ export const reportsService = {
   },
 
   exportAttendanceExcel: async (internshipId: string) => {
-    const response = await api.get(`/reports/export/attendance/${internshipId}/excel`, {
+    const data = await api.get(`/reports/export/attendance/${internshipId}/excel`, {
       responseType: "blob",
     });
-    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const url = window.URL.createObjectURL(new Blob([data]));
     const link = document.createElement("a");
     link.href = url;
     link.setAttribute("download", `asistencia-${internshipId}.xlsx`);
@@ -60,10 +60,10 @@ export const reportsService = {
   },
 
   exportMasterReport: async () => {
-    const response = await api.get("/export/master-report", {
+    const data = await api.get("/export/master-report", {
       responseType: "blob",
     });
-    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const url = window.URL.createObjectURL(new Blob([data]));
     const link = document.createElement("a");
     link.href = url;
     link.setAttribute("download", `reporte-maestro-emitesis-${new Date().toISOString().split('T')[0]}.xlsx`);

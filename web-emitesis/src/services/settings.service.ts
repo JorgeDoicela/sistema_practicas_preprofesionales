@@ -11,20 +11,20 @@ export interface SystemSetting {
 
 export const settingsService = {
   findAll: async () => {
-    const response = await api.get<SystemSetting[]>("/settings");
-    return response.data;
+    const data = await api.get<SystemSetting[]>("/settings");
+    return data;
   },
 
   update: async (key: string, value: string, description?: string) => {
-    const response = await api.patch<SystemSetting>(`/settings/${key}`, {
+    const data = await api.patch<SystemSetting>(`/settings/${key}`, {
       value,
       description,
     });
-    return response.data;
+    return data;
   },
 
   findAllCareers: async () => {
-    const response = await api.get<any[]>("/settings/careers");
-    return response.data;
+    const data = await api.get<any[]>("/settings/careers");
+    return data;
   },
 };

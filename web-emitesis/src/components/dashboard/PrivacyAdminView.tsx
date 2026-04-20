@@ -47,7 +47,7 @@ export function PrivacyAdminView() {
     setLoading(true);
     try {
       const data = await privacyService.findAllAdmin();
-      setRequests(data);
+      setRequests(Array.isArray(data) ? data : []);
     } catch (error) {
       toast.error("Error al cargar solicitudes LOPDP");
     } finally {

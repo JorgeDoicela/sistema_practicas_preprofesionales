@@ -133,26 +133,34 @@ export default function AsistenciaPage() {
         return;
       }
 
-      const internships = await internshipsService.findByStudent(user.id);
-      const active = internships.find(
+      const res: any = await internshipsService.findByStudent(user.id);
+      const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
+
+      const active = list.find(
         (i: Record<string, unknown>) => i.status === "Activo" || i.status === "En Proceso"
       );
       if (active) {
         setInternship(active);
-        const [todayStatus, attendanceHistory, attendanceSummary] = await Promise.all([
+        const [todayRes, historyRes, summaryRes]: [any, any, any] = await Promise.all([
           attendancesService.getTodayStatus(),
           attendancesService.findByInternship(active.id as string, f?.startDate, f?.endDate),
           attendancesService.getSummary(active.id as string),
         ]);
+
+        const todayStatus = todayRes?.data || todayRes || null;
+        const historyData = Array.isArray(historyRes) ? historyRes : (Array.isArray(historyRes?.data) ? historyRes.data : []);
+        const attendanceSummary = summaryRes?.data || summaryRes || null;
+
         setStatus(todayStatus as Record<string, unknown> | null);
-        setHistory(attendanceHistory as Record<string, unknown>[]);
+        setHistory(historyData as Record<string, unknown>[]);
         setSummary(attendanceSummary);
 
         // Si hay registro hoy, cargar fotos de actividades
         if (todayStatus) {
-          const photos = await attendancesService.getActivityPhotos(
+          const photoRes: any = await attendancesService.getActivityPhotos(
             (todayStatus as Record<string, unknown>).id as string
           );
+          const photos = Array.isArray(photoRes) ? photoRes : (Array.isArray(photoRes?.data) ? photoRes.data : []);
           setActivityPhotos(photos as ActivityPhotoItem[]);
         }
       }

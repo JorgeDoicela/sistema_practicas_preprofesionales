@@ -1,113 +1,34 @@
-import { API_URL } from '@/lib/api-base';
+import { api } from './auth.service';
 import { User, UserProfile } from "@/types/user";
 
 export const usersService = {
   async getProfile(): Promise<UserProfile> {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/users/me`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || 'Error al cargar el perfil');
-    }
-
-    return response.json();
+    return api.get('/users/me');
   },
 
   async findAll() {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/users`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al obtener los usuarios');
-    }
-
-    return response.json();
+    return api.get('/users');
   },
 
   async create(userData: Partial<User & { password?: string }>) {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/users`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(userData)
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al crear el usuario');
-    }
-
-    return response.json();
+    return api.post('/users', userData);
   },
 
   async update(id: string, userData: Partial<User & { password?: string }>) {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/users/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(userData)
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al actualizar el usuario');
-    }
-
-    return response.json();
+    return api.patch(`/users/${id}`, userData);
   },
 
   async remove(id: string, twoFactorCode?: string) {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/users/${id}`, {
-      method: 'DELETE',
+    return api.delete(`/users/${id}`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
         'x-2fa-code': twoFactorCode || '',
       },
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al eliminar el usuario');
-    }
-
-    return response.json();
   },
 
   async bulkImport(file: File) {
-    const token = localStorage.getItem('token');
     const formData = new FormData();
     formData.append('file', file);
-
-    const response = await fetch(`${API_URL}/users/bulk-import`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      },
-      body: formData
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error en la importación masiva');
-    }
-
-    return response.json();
+    return api.post('/users/bulk-import', formData);
   }
 };

@@ -90,15 +90,18 @@ export default function DocumentDetailPage() {
       const internshipData = await internshipsService.findOne(id as string);
       setInternship(internshipData);
       
-      const [docsData, summary, history] = await Promise.all([
+      const [docsRes, summary, historyRes]: any[] = await Promise.all([
         documentsService.findByInternship(id as string),
         attendancesService.getSummary(id as string),
-        attendancesService.findByInternship(id as string) // Trae últimos registros
+        attendancesService.findByInternship(id as string)
       ]);
       
+      const docsData = Array.isArray(docsRes) ? docsRes : (Array.isArray(docsRes?.items) ? docsRes.items : []);
+      const historyData = Array.isArray(historyRes) ? historyRes : (Array.isArray(historyRes?.items) ? historyRes.items : []);
+
       setDocuments(docsData);
       setAttendanceSummary(summary);
-      setAttendanceHistory(history);
+      setAttendanceHistory(historyData);
       const userStr = localStorage.getItem("user");
       if (userStr) setCurrentUser(JSON.parse(userStr));
     } catch (error) {
@@ -300,7 +303,7 @@ export default function DocumentDetailPage() {
           </div>
 
             {internship?.status}
-          </div>
+          
 
           {currentUser?.role === 'COORDINADOR' && (
             <button 
@@ -323,7 +326,7 @@ export default function DocumentDetailPage() {
             </button>
           )}
         </div>
-      </div>
+      
 
       <div className="max-w-[1400px] mx-auto px-6 mt-10">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -488,7 +491,6 @@ export default function DocumentDetailPage() {
                                       Ver Entrega
                                     </button>
                                   )}
-                               </div>
                             </div>
                          </div>
 
@@ -697,13 +699,11 @@ export default function DocumentDetailPage() {
                   )}
                 </div>
 
-                  </p>
-                  
-                  {/* FEEDBACK THREADS v5.0 */}
-                  <div className="mt-8 flex-1 flex flex-col min-h-0 border-t border-slate-100 pt-6">
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-[#C5A059] mb-4 flex items-center gap-2">
-                       <MessageSquare size={14} /> Hilo de Retroalimentación
-                    </h4>
+                {/* FEEDBACK THREADS v5.0 */}
+                <div className="lg:col-span-1 lg:border-l border-slate-100 flex flex-col min-h-0 pl-8">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-[#C5A059] mb-4 flex items-center gap-2">
+                     <MessageSquare size={14} /> Hilo de Retroalimentación
+                  </h4>
                     
                     <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4 scrollbar-hide">
                       {loadingComments ? (
@@ -743,7 +743,6 @@ export default function DocumentDetailPage() {
                     </div>
                   </div>
                 </div>
-              </div>
 
               <div className="p-10 border-t border-slate-100 bg-white grid grid-cols-3 gap-4">
                 <button 
@@ -791,5 +790,6 @@ export default function DocumentDetailPage() {
         onConfirm={handle2faConfirm}
       />
     </div>
-  );
+  </div>
+);
 }

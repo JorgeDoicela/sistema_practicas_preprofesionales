@@ -15,6 +15,7 @@ import {
   Loader2,
   RefreshCcw,
   CheckCircle2,
+  XCircle,
   History
 } from "lucide-react";
 import { 
@@ -32,6 +33,7 @@ import {
 import { motion } from "framer-motion";
 
 export default function AdminHealthPage() {
+  const [isMounted, setIsMounted] = useState(false);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [series, setSeries] = useState<HealthSeries[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,6 +42,7 @@ export default function AdminHealthPage() {
   const [result, setResult] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
+    setIsMounted(true);
     loadData();
   }, []);
 
@@ -114,15 +117,15 @@ export default function AdminHealthPage() {
 
         {result && (
           <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
             className={`p-5 rounded-[2rem] border ${result.type === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-rose-50 border-rose-100 text-rose-800'} text-sm font-bold flex items-center justify-between shadow-lg`}
           >
             <div className="flex items-center gap-3">
-              <CheckCircle2 className="w-6 h-6" />
+              {result.type === 'success' ? <CheckCircle2 className="w-6 h-6" /> : <XCircle className="w-6 h-6" />}
               {result.text}
             </div>
-            <button onClick={() => setResult(null)} className="opacity-50 hover:opacity-100">✕</button>
+            <button onClick={() => setResult(null)} className="opacity-50 hover:opacity-100 p-2">✕</button>
           </motion.div>
         )}
 
@@ -142,7 +145,8 @@ export default function AdminHealthPage() {
                 </div>
               </div>
               <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
+                {isMounted && (
+                  <ResponsiveContainer width="100%" height={300}>
                   <AreaChart data={series}>
                     <defs>
                       <linearGradient id="colorLatency" x1="0" y1="0" x2="0" y2="1">
@@ -159,6 +163,7 @@ export default function AdminHealthPage() {
                     <Area type="monotone" dataKey="avgLatency" name="Latencia (ms)" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorLatency)" />
                   </AreaChart>
                 </ResponsiveContainer>
+                )}
               </div>
             </div>
 
@@ -170,7 +175,8 @@ export default function AdminHealthPage() {
                   <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">Tráfico y Errores</h3>
                </div>
                <div className="h-[250px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
+                {isMounted && (
+                  <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={series}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                     <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 700}} />
@@ -179,6 +185,7 @@ export default function AdminHealthPage() {
                     <Bar dataKey="errors" name="Errores" fill="#ef4444" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
+                )}
                </div>
             </div>
           </div>
