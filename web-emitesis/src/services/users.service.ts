@@ -88,5 +88,26 @@ export const usersService = {
     }
 
     return response.json();
+  },
+
+  async bulkImport(file: File) {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_URL}/users/bulk-import`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error en la importación masiva');
+    }
+
+    return response.json();
   }
 };

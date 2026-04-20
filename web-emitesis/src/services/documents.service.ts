@@ -157,5 +157,56 @@ export const documentsService = {
         throw new Error('Error al obtener el historial de versiones');
     }
     return response.json();
+  },
+
+  async getComments(documentId: string) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/documents/${documentId}/comments`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+        throw new Error('Error al obtener los comentarios');
+    }
+    return response.json();
+  },
+
+  async addComment(documentId: string, content: string) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/documents/${documentId}/comments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ content })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al agregar comentario');
+    }
+    return response.json();
+  },
+
+  async signDocument(id: string, reason: string, twoFactorCode?: string) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/documents/${id}/sign`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'x-2fa-code': twoFactorCode || '',
+      },
+      body: JSON.stringify({ reason, twoFactorCode }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al firmar electrónicamente');
+    }
+    return response.json();
   }
 };

@@ -29,6 +29,7 @@ import { HealthModule } from './health/health.module';
 import { EvaluationsModule } from './evaluations/evaluations.module';
 import { ExportModule } from './export/export.module';
 import { AutomationModule } from './automation/automation.module';
+import { CoreModule } from './core/core.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
@@ -70,6 +71,8 @@ import { APP_GUARD } from '@nestjs/core';
     MonitoringModule,
     HealthModule,
     ExportModule,
+    CoreModule,
+    AutomationModule,
   ],
   controllers: [AppController],
   providers: [

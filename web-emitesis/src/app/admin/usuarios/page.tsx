@@ -16,7 +16,9 @@ import {
   Shield,
   Loader2,
   AlertCircle,
-  X
+  X,
+  UploadCloud,
+  FileSpreadsheet
 } from 'lucide-react';
 import { usersService } from '@/services/users.service';
 import { User, UserRole } from "@/types/user";
@@ -66,7 +68,25 @@ export default function UsuariosManagementPage() {
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [deletingUser, setDeletingUser] = useState(false);
+  const [isBulkLoading, setIsBulkLoading] = useState(false);
   const deleteConfirm = useDoubleConfirm<string>();
+
+  const handleBulkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsBulkLoading(true);
+    try {
+      const result = await usersService.bulkImport(file);
+      alert(`Importación exitosa: ${result.summary.created} creados, ${result.summary.skipped} omitidos.`);
+      fetchData();
+    } catch (err: unknown) {
+      alert((err as Error).message);
+    } finally {
+      setIsBulkLoading(false);
+      if (e.target) e.target.value = '';
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -190,12 +210,31 @@ export default function UsuariosManagementPage() {
             <h1 className="text-3xl font-black text-[#003366] tracking-tight">Gestión de Usuarios</h1>
             <p className="text-slate-500 mt-2">Control centralizado de accesos, roles y perfiles institucionales.</p>
           </div>
-          <button 
-            onClick={() => handleOpenModal()}
-            className="flex items-center gap-3 bg-[#003366] text-white px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-blue-900/20 hover:translate-y-[-2px] transition-all"
-          >
-            <Plus size={18} /> Nuevo Usuario
-          </button>
+          
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <input 
+                type="file" 
+                className="absolute inset-0 opacity-0 cursor-pointer" 
+                accept=".xlsx, .xls"
+                onChange={handleBulkUpload}
+                disabled={isBulkLoading}
+              />
+              <button 
+                className="flex items-center gap-3 bg-slate-100 text-[#003366] px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all border border-slate-200"
+              >
+                {isBulkLoading ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} />}
+                Carga Masiva
+              </button>
+            </div>
+
+            <button 
+              onClick={() => handleOpenModal()}
+              className="flex items-center gap-3 bg-[#003366] text-white px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-blue-900/20 hover:translate-y-[-2px] transition-all"
+            >
+              <Plus size={18} /> Nuevo Usuario
+            </button>
+          </div>
         </div>
 
         {/* Stats Grid Placeholder */}

@@ -39,6 +39,7 @@ model User {
   dataRequests         DataRequest[]
   notifications        InAppNotification[]
   statusChanges        InternshipStatusHistory[]
+  documentComments     DocumentComment[]
 }
 
 /// Registro de actividad del sistema (peticiones HTTP, eventos relevantes, etc.)
@@ -122,6 +123,8 @@ model Career {
   users       User[]
   internships Internship[]
   createdAt   DateTime     @default(now())
+  /// RF-CAREER-001: Configuración dinámica (horas requeridas, docs obligatorios, etc.)
+  config      Json?        @default("{\"requiredHours\": 160}")
 }
 
 model InternshipStatusHistory {
@@ -215,7 +218,13 @@ model Document {
   /// Anotaciones de revisión (resaltados, tachados, comentarios por fragmento) en JSON
   reviewAnnotations Json?
   
+  /// RF-SIG-001: Firma Electrónica (Token/Certificado)
+  isDigitallySigned Boolean   @default(false)
+  signatureDate     DateTime?
+  signatureKey      String?   // Hash del certificado o referencia al sello
+
   versions          DocumentVersion[]
+  comments          DocumentComment[]
 
   internship        Internship        @relation(fields: [internshipId], references: [id], onDelete: Cascade)
   template          DocumentTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
@@ -349,5 +358,20 @@ model InAppNotification {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([createdAt])
+}
+
+/// RF-COM-001: Hilos de conversación por documento (Feedback Académico)
+model DocumentComment {
+  id          String   @id @default(uuid())
+  documentId  String
+  userId      String
+  content     String
+  createdAt   DateTime @default(now())
+  
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
   @@index([createdAt])
 }

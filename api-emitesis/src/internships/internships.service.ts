@@ -5,8 +5,8 @@ import { EmailService } from '../notifications/email.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { FALLBACK_DOCUMENT_TEMPLATES } from '../document-templates/document-templates.constants';
 import { EvaluationsService } from '../evaluations/evaluations.service';
-
 import { SystemLogsService } from '../system-logs/system-logs.service';
+import { BridgeService } from '../core/bridge.service';
 
 @Injectable()
 export class InternshipsService {
@@ -16,6 +16,7 @@ export class InternshipsService {
     private systemLogs: SystemLogsService,
     private notificationsService: NotificationsService,
     private evaluationsService: EvaluationsService,
+    private bridge: BridgeService,
   ) {}
 
   async create(dto: CreateInternshipDto) {
@@ -423,6 +424,16 @@ export class InternshipsService {
   /**
    * RF-AUDIT: Cambiar el estado de una pasantía con registro histórico.
    */
+  async syncSigafi(id: string) {
+    const internship = await this.prisma.internship.findUnique({
+      where: { id },
+      select: { studentId: true }
+    });
+    if (!internship) throw new NotFoundException('Pasantía no encontrada');
+    
+    return this.bridge.syncStudentData(internship.studentId);
+  }
+
   async changeStatus(id: string, newStatus: string, actorId: string, reason?: string) {
     const internship = await this.prisma.internship.findUnique({
       where: { id }

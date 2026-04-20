@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Param, Body, UseGuards, Res, UseInterceptors, UploadedFile, Req, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Patch, Post, Param, Body, UseGuards, Res, UseInterceptors, UploadedFile, Req, BadRequestException } from '@nestjs/common';
 import type { Response } from 'express';
 
 import { DocumentsService } from './documents.service';
@@ -12,11 +12,36 @@ import { Role } from '@prisma/client';
 import { join } from 'path';
 import { createReadStream } from 'fs';
 import { TwoFactorGuard } from '../auth/strategies/two-factor.guard';
+import { SignatureService } from '../core/signature.service';
+import { DocumentCommentsService } from './document-comments.service';
 
 @Controller('documents')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class DocumentsController {
-  constructor(private readonly documentsService: DocumentsService) {}
+  constructor(
+    private readonly documentsService: DocumentsService,
+    private readonly signatureService: SignatureService,
+    private readonly documentCommentsService: DocumentCommentsService,
+  ) {}
+
+  @Post(':id/comments')
+  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ESTUDIANTE)
+  addComment(@Param('id') id: string, @Body() body: { content: string }, @Req() req: any) {
+    return this.documentCommentsService.create(id, req.user.id, body.content);
+  }
+
+  @Get(':id/comments')
+  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ADMIN, Role.ESTUDIANTE)
+  findComments(@Param('id') id: string) {
+    return this.documentCommentsService.findByDocument(id);
+  }
+
+  @Patch(':id/sign')
+  @Roles(Role.COORDINADOR)
+  @UseGuards(TwoFactorGuard)
+  signDocument(@Param('id') id: string, @Body() body: { reason: string }, @Req() req: any) {
+    return this.signatureService.signDocument(id, req.user.id, body.reason);
+  }
 
   @Patch(':id/review')
   @Roles(Role.TUTOR)

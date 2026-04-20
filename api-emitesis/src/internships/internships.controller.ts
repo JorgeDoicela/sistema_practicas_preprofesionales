@@ -76,4 +76,10 @@ export class InternshipsController {
   updateStatus(@Param('id') id: string, @Body() body: { status: string, reason?: string }, @Req() req: any) {
     return this.internshipsService.changeStatus(id, body.status, req.user.id, body.reason);
   }
+
+  @Post(':id/sync-sigafi')
+  @Roles(Role.COORDINADOR, Role.ADMIN)
+  syncSigafi(@Param('id') id: string) {
+    return this.internshipsService.syncSigafi(id);
+  }
 }

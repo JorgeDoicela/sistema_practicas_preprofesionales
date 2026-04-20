@@ -135,5 +135,22 @@ export const internshipsService = {
     }
 
     return response.json();
+  },
+
+  async syncSigafi(id: string) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/internships/${id}/sync-sigafi`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al sincronizar con SIGAFI');
+    }
+
+    return response.json();
   }
 };

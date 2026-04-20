@@ -11,6 +11,9 @@ import {
   Query,
   DefaultValuePipe,
   ParseIntPipe,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,12 +24,25 @@ import { TwoFactorGuard } from '../auth/strategies/two-factor.guard';
 import { Roles } from '../auth/strategies/roles.decorator';
 import { Role } from '@prisma/client';
 import { ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UsersBulkService } from './users-bulk.service';
 
 @ApiTags('Users')
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly usersBulkService: UsersBulkService,
+  ) {}
+
+  @Post('bulk-import')
+  @Roles(Role.ADMIN)
+  @UseInterceptors(FileInterceptor('file'))
+  async bulkImport(@UploadedFile() file: any, @Req() req: any) {
+    if (!file) throw new BadRequestException('No se ha proporcionado ningún archivo');
+    return this.usersBulkService.importFromExcel(file.buffer, req.user.userId);
+  }
 
   @Post()
   @Roles(Role.ADMIN)

@@ -17,9 +17,12 @@ import {
   CalendarDays,
   Save,
   Loader2,
-  FileStack,
   FileCheck,
-  FileText
+  FileText,
+  MessageSquare,
+  PenTool,
+  Stamp,
+  Activity
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -70,6 +73,14 @@ export default function DocumentDetailPage() {
   const [attendanceHistory, setAttendanceHistory] = useState<any[]>([]);
 
   const reviewAnnotationsRef = useRef<PdfReviewAnnotationsPayload>({ version: 1, items: [] });
+  
+  // v5.0 Professional Features
+  const [comments, setComments] = useState<any[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [isSigning, setIsSigning] = useState(false);
+  const [isSyncingSigafi, setIsSyncingSigafi] = useState(false);
+
   const handleReviewAnnotationsChange = useCallback((p: PdfReviewAnnotationsPayload) => {
     reviewAnnotationsRef.current = p;
   }, []);
@@ -141,11 +152,56 @@ export default function DocumentDetailPage() {
     }
   };
 
-  const handleReviewClick = (doc: any) => {
+  const handleReviewClick = async (doc: any) => {
     setSelectedDoc(doc);
     setObservations(doc.observations || "");
     reviewAnnotationsRef.current = parseReviewAnnotations(doc.reviewAnnotations);
     setIsReviewDrawerOpen(true);
+    
+    // Cargar hilos de comentarios
+    setLoadingComments(true);
+    try {
+      const data = await documentsService.getComments(doc.id);
+      setComments(data);
+    } catch (e) {
+      console.error("Error al cargar comentarios");
+    } finally {
+      setLoadingComments(false);
+    }
+  };
+
+  const handleAddComment = async () => {
+    if (!newComment.trim() || !selectedDoc) return;
+    try {
+      const comment = await documentsService.addComment(selectedDoc.id, newComment);
+      setComments([...comments, comment]);
+      setNewComment("");
+    } catch (e: any) {
+      alert(e.message);
+    }
+  };
+
+  const handleSignDocument = async () => {
+    if (!selectedDoc || !confirm("¿Confirma que desea aplicar la FIRMA ELECTRÓNICA institucional a este documento? Esta acción es definitiva.")) return;
+    
+    setIsSigning(true);
+    try {
+      if (currentUser?.isTwoFactorEnabled) {
+          setPendingAction(async (code: string) => {
+            await documentsService.signDocument(selectedDoc.id, "Aprobación institucional", code);
+          });
+          setIs2faModalOpen(true);
+          return;
+      }
+      await documentsService.signDocument(selectedDoc.id, "Aprobación institucional");
+      alert("Documento firmado con éxito");
+      await loadData();
+      setIsReviewDrawerOpen(false);
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setIsSigning(false);
+    }
   };
 
   const handlePreviewFile = (doc: any) => {
@@ -243,14 +299,29 @@ export default function DocumentDetailPage() {
             </div>
           </div>
 
-          <div className={cn(
-            "px-6 py-2 rounded-2xl text-xs font-black uppercase tracking-widest border shadow-sm",
-            internship?.status === 'Activo' 
-              ? "bg-emerald-50 text-emerald-700 border-emerald-100" 
-              : "bg-orange-50 text-orange-700 border-orange-100"
-          )}>
             {internship?.status}
           </div>
+
+          {currentUser?.role === 'COORDINADOR' && (
+            <button 
+              onClick={async () => {
+                setIsSyncingSigafi(true);
+                try {
+                  const res = await internshipsService.syncSigafi(id as string);
+                  alert(`Sincronización SIGAFI: ${res.externalData.isEnrolled ? 'Estudiante MATRICULADO' : 'No matriculado'} en ${res.externalData.lastSemester}`);
+                } catch (e: any) {
+                  alert(e.message);
+                } finally {
+                  setIsSyncingSigafi(false);
+                }
+              }}
+              disabled={isSyncingSigafi}
+              className="flex items-center gap-2 bg-[#C5A059]/10 text-[#C5A059] px-6 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-[#C5A059]/30 hover:bg-[#C5A059]/20 transition-all ml-4"
+            >
+              {isSyncingSigafi ? <Loader2 size={14} className="animate-spin" /> : <Activity size={14} />}
+              SIGAFI Sync
+            </button>
+          )}
         </div>
       </div>
 
@@ -401,14 +472,13 @@ export default function DocumentDetailPage() {
                                      <XCircle className="w-3 h-3" />
                                      Vence: <span className="text-slate-600 font-black">{doc.dueDate ? new Date(doc.dueDate).toLocaleDateString() : 'No definido'}</span>
                                   </div>
-                                  <div className={cn(
-                                    "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.15em] shadow-sm",
-                                    doc.status === 'APROBADO_DEFINITIVO' ? "bg-emerald-100 text-emerald-700" : 
-                                    doc.status === 'EN_REVISION_TUTOR' ? "bg-blue-100 text-blue-700" :
-                                    "bg-slate-100 text-slate-500"
-                                  )}>
-                                     {doc.status.replace(/_/g, ' ')}
+                                  {doc.status.replace(/_/g, ' ')}
                                   </div>
+                                  {doc.isDigitallySigned && (
+                                    <div className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.15em] bg-emerald-600 text-white shadow-lg flex items-center gap-1.5 animate-pulse">
+                                       <Stamp size={10} /> Sello Veracidad
+                                    </div>
+                                  )}
                                   {doc.filePath && (
                                     <button 
                                       onClick={() => handlePreviewFile(doc)}
@@ -627,25 +697,55 @@ export default function DocumentDetailPage() {
                   )}
                 </div>
 
-                <div className="flex w-full shrink-0 flex-col gap-4 lg:w-[340px] lg:border-l lg:border-slate-100 lg:pl-6">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                    Observaciones / feedback
-                  </label>
-                  <textarea
-                    value={observations}
-                    onChange={(e) => setObservations(e.target.value)}
-                    placeholder="Comentarios generales para el estudiante…"
-                    className="min-h-[160px] w-full flex-1 resize-none rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 outline-none transition-all hover:bg-white focus:border-[#003366] focus:ring-2 focus:ring-[#003366]/5"
-                  />
-                  <p className="text-[10px] text-slate-400">
-                    {observations.trim()
-                      ? "Listo para enviar con la decisión."
-                      : "Las observaciones son obligatorias si rechaza el documento."}
                   </p>
+                  
+                  {/* FEEDBACK THREADS v5.0 */}
+                  <div className="mt-8 flex-1 flex flex-col min-h-0 border-t border-slate-100 pt-6">
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-[#C5A059] mb-4 flex items-center gap-2">
+                       <MessageSquare size={14} /> Hilo de Retroalimentación
+                    </h4>
+                    
+                    <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4 scrollbar-hide">
+                      {loadingComments ? (
+                        <div className="flex justify-center py-4"><Loader2 className="animate-spin text-slate-300" /></div>
+                      ) : comments.length === 0 ? (
+                        <p className="text-[10px] text-slate-400 font-medium italic">No hay comentarios registrados fuera de las observaciones generales.</p>
+                      ) : (
+                        comments.map((c: any) => (
+                          <div key={c.id} className={cn(
+                            "p-3 rounded-2xl text-xs",
+                            c.userId === currentUser?.id ? "bg-[#003366] text-white ml-4" : "bg-slate-100 text-slate-700 mr-4"
+                          )}>
+                            <p className="font-black text-[9px] uppercase tracking-widest mb-1 opacity-70">
+                              {c.user?.fullName} • {c.user?.role}
+                            </p>
+                            <p className="leading-relaxed font-medium">{c.content}</p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    
+                    <div className="relative">
+                      <input 
+                        type="text"
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
+                        placeholder="Escribir al estudiante..."
+                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 pr-10 text-[11px] font-bold outline-none focus:ring-2 focus:ring-[#003366]/5"
+                      />
+                      <button 
+                        onClick={handleAddComment}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#003366] hover:scale-110 transition-transform"
+                      >
+                        <Save size={16} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="p-10 border-t border-slate-100 bg-white grid grid-cols-2 gap-4">
+              <div className="p-10 border-t border-slate-100 bg-white grid grid-cols-3 gap-4">
                 <button 
                   onClick={() => handleReviewSubmit('RECHAZADO_TUTOR')}
                   disabled={saving || !observations.trim()}
@@ -654,13 +754,28 @@ export default function DocumentDetailPage() {
                   {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <XCircle className="w-5 h-5" />}
                   Rechazar
                 </button>
+
+                {currentUser?.role === 'COORDINADOR' && (
+                   <button 
+                    onClick={handleSignDocument}
+                    disabled={isSigning || selectedDoc?.status !== 'APROBADO_TUTOR'}
+                    className="h-14 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl shadow-emerald-900/20"
+                  >
+                    {isSigning ? <Loader2 className="w-5 h-5 animate-spin" /> : <Stamp className="w-5 h-5" />}
+                    Firma Electrónica
+                  </button>
+                )}
+
                 <button 
                   onClick={() => handleReviewSubmit('APROBADO_TUTOR')}
                   disabled={saving}
-                  className="h-14 bg-[#003366] text-white rounded-2xl font-black uppercase tracking-widest hover:bg-[#003366]/90 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl shadow-blue-900/20"
+                  className={cn(
+                    "h-14 rounded-2xl font-black uppercase tracking-widest transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl shadow-blue-900/20",
+                    currentUser?.role === 'COORDINADOR' ? "bg-slate-100 text-[#003366]" : "bg-[#003366] text-white"
+                  )}
                 >
                   {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
-                  Aprobar
+                  {currentUser?.role === 'COORDINADOR' ? 'Aprobar Sin Firmar' : 'Aprobar'}
                 </button>
               </div>
             </motion.div>
