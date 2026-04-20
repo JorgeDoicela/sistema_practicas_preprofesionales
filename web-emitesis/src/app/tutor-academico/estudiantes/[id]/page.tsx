@@ -40,11 +40,11 @@ export default function StudentDetailPage() {
 
   // Evaluation form state
   const [evalScores, setEvalScores] = useState({
-    punctuality: 0,
-    teamwork: 0,
-    technicalSkills: 0,
-    proactivity: 0,
-    attitude: 0,
+    punctuality: 1,
+    teamwork: 1,
+    technicalSkills: 1,
+    proactivity: 1,
+    attitude: 1,
     observations: ''
   });
 
@@ -59,15 +59,20 @@ export default function StudentDetailPage() {
         evaluationsService.findByInternship(id as string)
       ]);
 
+      const normalizeArray = (val: any) => 
+        Array.isArray(val) ? val : (Array.isArray(val?.items) ? val.items : (Array.isArray(val?.data) ? val.data : []));
+
       setInternship(intData);
-      setAttendances(attData as any[]);
+      setAttendances(normalizeArray(attData));
       setSummary(sumData);
-      setDocuments(docsData);
-      setVisits(visData);
-      setEvaluations(evalData || []);
+      setDocuments(normalizeArray(docsData));
+      setVisits(normalizeArray(visData));
+      
+      const normalizedEvals = normalizeArray(evalData);
+      setEvaluations(normalizedEvals);
 
       // If there's an academic evaluation already, load it
-      const acadEval = evalData?.find((e: any) => e.type === 'ACADEMICA');
+      const acadEval = normalizedEvals.find((e: any) => e.type === 'ACADEMICA');
       if (acadEval) {
         setEvalScores({
           punctuality: acadEval.punctuality,
@@ -120,6 +125,13 @@ export default function StudentDetailPage() {
   };
 
   const handleSaveEvaluation = async () => {
+    // Validar que todos los campos tengan al menos 1 punto
+    const scores = [evalScores.punctuality, evalScores.teamwork, evalScores.technicalSkills, evalScores.proactivity, evalScores.attitude];
+    if (scores.some(s => s < 1)) {
+      alert("Por favor, califique todos los criterios antes de guardar.");
+      return;
+    }
+
     setSaving(true);
     try {
       await evaluationsService.createOrUpdate({
@@ -130,7 +142,9 @@ export default function StudentDetailPage() {
       await loadData();
       alert("Evaluación académica guardada con éxito");
     } catch (error: any) {
-      alert(error.message);
+      // Manejar errores de validación que pueden venir como array
+      const msg = Array.isArray(error.message) ? error.message.join(', ') : error.message;
+      alert("Error: " + msg);
     } finally {
       setSaving(false);
     }

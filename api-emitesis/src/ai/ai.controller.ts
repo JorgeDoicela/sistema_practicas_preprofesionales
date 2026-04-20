@@ -114,6 +114,7 @@ export class AiController {
   @Post('risk-assessment')
   @Roles(Role.ADMIN, Role.COORDINADOR)
   async riskAssessment(@Body() body: RiskAssessmentDto) {
-    return this.aiService.getRiskAssessment(body);
+    const analysis = await this.aiService.getRiskAssessment(body);
+    return { analysis };
   }
 }

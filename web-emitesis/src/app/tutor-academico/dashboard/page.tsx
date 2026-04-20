@@ -63,6 +63,7 @@ export default function TutorAcademicoDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [tutorName, setTutorName] = useState("");
+  const [isMounted, setIsMounted] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -81,6 +82,7 @@ export default function TutorAcademicoDashboardPage() {
   }, []);
 
   useEffect(() => {
+    setIsMounted(true);
     loadData();
   }, [loadData]);
 
@@ -187,8 +189,8 @@ export default function TutorAcademicoDashboardPage() {
             <div className="flex-1 min-h-[250px] w-full">
               {loading ? (
                 <div className="w-full h-full bg-slate-50 animate-pulse rounded-2xl" />
-              ) : chartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
+              ) : chartData.length > 0 && isMounted ? (
+                <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
                       data={chartData}
@@ -209,10 +211,12 @@ export default function TutorAcademicoDashboardPage() {
                     <Legend verticalAlign="bottom" height={36}/>
                   </PieChart>
                 </ResponsiveContainer>
-              ) : (
+              ) : chartData.length === 0 && !loading ? (
                 <div className="flex items-center justify-center h-full text-slate-400 text-xs font-medium uppercase tracking-widest">
                   Sin datos suficientes
                 </div>
+              ) : (
+                <div className="w-full h-full bg-slate-50 animate-pulse rounded-2xl" />
               )}
             </div>
           </div>

@@ -195,17 +195,20 @@ export default function GestionEstudiantesPage() {
   const handleAIAnalysis = async (i: any, att: any) => {
     setAnalyzingId(i.id);
     try {
+      const documents = Array.isArray(i.documents) ? i.documents : [];
       const indicators = {
         healthScore: i.healthScore || 0,
-        docsApproved: i.documents.filter((d: any) => d.status === 'APROBADO_DEFINITIVO').length,
-        docsTotal: i.documents.length,
+        docsApproved: documents.filter((d: any) => d.status === 'APROBADO_DEFINITIVO').length,
+        docsTotal: documents.length,
         hoursDone: att?.summary?.totalHours || 0,
-        hoursTotal: i.totalHours,
-        daysActive: Math.floor((new Date().getTime() - new Date(i.startDate).getTime()) / (1000 * 60 * 60 * 24))
+        hoursTotal: i.totalHours || 0,
+        daysActive: i.startDate ? Math.floor((new Date().getTime() - new Date(i.startDate).getTime()) / (1000 * 60 * 60 * 24)) : 0
       };
+      
       const res = await aiService.getRiskAssessment(indicators);
       setAiAnalysis(prev => ({ ...prev, [i.id]: res }));
     } catch (e) {
+      console.error("AI Analysis error:", e);
       alert("Error en el análisis de IA");
     } finally {
       setAnalyzingId(null);

@@ -27,28 +27,31 @@ export const aiService = {
       reader.readAsDataURL(imageBlob);
     });
 
-    const data = await api.post('/ai/suggest-description', {
+    const data = await api.post<{ description: string }>('/ai/suggest-description', {
       base64Image: base64,
       mimeType: imageBlob.type || 'image/jpeg',
     });
 
-    return data.description as string;
+    return data?.description || 'No se pudo generar una descripción.';
   },
 
   /**
    * RF-AI-01: Enviar consulta al asistente contextual de prácticas.
    */
   async askQuestion(question: string, context: string): Promise<string> {
-    const data = await api.post('/ai/ask', { question, context });
-    return data.answer as string;
+    const data = await api.post<{ answer: string }>('/ai/ask', { question, context });
+    return data?.answer || 'No se pudo obtener una respuesta.';
   },
 
   /**
    * RF-AI-01: Pre-verificación de documentos (Escaneo inicial por IA).
    */
   async preVerifyDocument(documentName: string, base64Image: string): Promise<{ isValid: boolean; feedback: string }> {
-    const data = await api.post('/ai/pre-verify', { documentName, base64Image });
-    return data as { isValid: boolean; feedback: string };
+    const data = await api.post<{ isValid: boolean; feedback: string }>('/ai/pre-verify', { documentName, base64Image });
+    return {
+      isValid: data?.isValid ?? true,
+      feedback: data?.feedback || 'IA no disponible para pre-verificación en este momento.'
+    };
   },
 
   /**
@@ -62,7 +65,7 @@ export const aiService = {
     hoursTotal: number;
     daysActive: number;
   }): Promise<string> {
-    const data = await api.post('/ai/risk-assessment', indicators);
-    return data.analysis as string;
+    const data = await api.post<{ analysis: string }>('/ai/risk-assessment', indicators);
+    return data?.analysis || 'Análisis predictivo no disponible en este momento.';
   },
 };
