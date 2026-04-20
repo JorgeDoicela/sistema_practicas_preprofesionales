@@ -102,15 +102,20 @@ export class AiService {
 
     return response.choices[0]?.message?.content?.trim() || 'No pude procesar tu consulta en este momento.';
   }
+
+  /**
+   * RF-AI-01: Pre-verificación de documentos PDF.
    * @param documentName - Nombre del documento (ej. "Informe de Actividades")
    * @param base64Image - Imagen de la primera página del PDF
    * @param studentName - Nombre del estudiante para validación cruzada
+   * @param systemHours - Horas registradas en el sistema para comparación
    */
   async preVerifyDocument(
     documentName: string, 
     base64Image: string, 
-    studentName?: string
-  ): Promise<{ isValid: boolean; feedback: string }> {
+    studentName?: string,
+    systemHours?: number
+  ): Promise<{ isValid: boolean; feedback: string; hoursFound?: number }> {
     if (!this.openai) {
       return { isValid: true, feedback: 'IA no disponible para pre-verificación.' };
     }
@@ -123,17 +128,21 @@ export class AiService {
       1. Título: El documento debe ser un "${documentName}".
       2. Estructura: Debe tener logotipos, tablas o campos de firmas profesionales.
       3. Identidad: Busca el nombre "${studentName || 'desconocido'}" en el texto del documento.
+      4. Metría (OCR): Busca y extrae el número total de horas mencionadas en el documento (ej: "160 horas", "Total: 160").
+      
+      REFERENCIA DE SISTEMA:
+      Se espera que el documento mencione aproximadamente ${systemHours || 'no especificado'} horas.
       
       INSTRUCCIÓN:
-      Si el nombre no coincide o el documento parece ser de otro estudiante, marca isValid como false.
-      Si es una hoja en blanco o formato incorrecto, marca isValid como false.
+      - Si el nombre no coincide, isValid = false.
+      - Si el número de horas encontrado es significativamente diferente al esperado (${systemHours}), señala la discrepancia en el feedback.
       
-      Responde en formato JSON: {"isValid": boolean, "feedback": "explicación breve"}.
+      Responde en formato JSON: {"isValid": boolean, "feedback": "explicación", "hoursFound": number | null}.
     `;
 
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o',
-      max_tokens: 250,
+      max_tokens: 300,
       messages: [
         {
           role: 'system',
@@ -144,11 +153,11 @@ export class AiService {
           content: [
             {
               type: 'image_url',
-              image_url: { url: `data:image/jpeg;base64,${base64Image}`, detail: 'high' }, // High detail for OCR
+              image_url: { url: `data:image/jpeg;base64,${base64Image}`, detail: 'high' },
             },
             {
               type: 'text',
-              text: `Analiza este documento subido por ${studentName || 'un estudiante'}.`,
+              text: `Analiza este documento para ${studentName || 'un estudiante'}. Horas esperadas: ${systemHours || 'desconocidas'}.`,
             },
           ],
         },

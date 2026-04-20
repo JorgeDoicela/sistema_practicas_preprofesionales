@@ -56,11 +56,15 @@ export class InternshipsService {
 
     try {
       const internship = await this.prisma.$transaction(async (tx) => {
+        const student = await tx.user.findUnique({ where: { id: studentId } });
+        if (!student) throw new BadRequestException('Estudiante no encontrado');
+
         const newInternship = await tx.internship.create({
           data: {
             studentId,
             companyId,
             tutorId,
+            careerId: student.careerId, // Asociación automática con la carrera
             startDate: start,
             totalHours,
             location,
@@ -189,22 +193,32 @@ export class InternshipsService {
     }
   }
 
-  async findAll(page = 1, limit = 10) {
+  async findAll(page = 1, limit = 10, filter?: { careerId?: string; role?: string }) {
     const skip = (page - 1) * limit;
+
+    const where: any = {};
+    // Si es coordinador, obligatoriamente filtramos por su carrera (aislamiento)
+    if (filter?.role === 'COORDINADOR' && filter?.careerId) {
+      where.careerId = filter.careerId;
+    } else if (filter?.careerId) {
+      // Si el admin envía un filtro específico
+      where.careerId = filter.careerId;
+    }
 
     const [items, total] = await Promise.all([
       this.prisma.internship.findMany({
         skip,
         take: limit,
+        where,
         include: {
           student: true,
           company: true,
           tutor: true,
-          // Optimizamos: solo devolvemos conteos o flags en lugar de arrays pesados para el listado
+          career: true,
         },
         orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.internship.count(),
+      this.prisma.internship.count({ where }),
     ]);
 
     return {
@@ -310,6 +324,10 @@ export class InternshipsService {
         monitoringVisits: {
           orderBy: { date: 'desc' },
         },
+        statusHistory: {
+          include: { changedBy: { select: { fullName: true } } },
+          orderBy: { createdAt: 'desc' },
+        },
       }
     });
 
@@ -400,5 +418,35 @@ export class InternshipsService {
         penalties: penalty,
       },
     };
+  }
+
+  /**
+   * RF-AUDIT: Cambiar el estado de una pasantía con registro histórico.
+   */
+  async changeStatus(id: string, newStatus: string, actorId: string, reason?: string) {
+    const internship = await this.prisma.internship.findUnique({
+      where: { id }
+    });
+
+    if (!internship) throw new NotFoundException('Asignación no encontrada');
+
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Registrar en el historial
+      await tx.internshipStatusHistory.create({
+        data: {
+          internshipId: id,
+          oldStatus: internship.status,
+          newStatus: newStatus,
+          changedById: actorId,
+          reason: reason || 'Cambio manual por autoridad',
+        }
+      });
+
+      // 2. Actualizar la pasantía
+      return tx.internship.update({
+        where: { id },
+        data: { status: newStatus },
+      });
+    });
   }
 }

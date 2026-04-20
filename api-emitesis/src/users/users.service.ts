@@ -37,6 +37,7 @@ export class UsersService {
         fullName: dto.fullName,
         role: dto.role,
         companyId: dto.companyId ?? null,
+        careerId: dto.careerId ?? null,
       },
       select: {
         id: true,
@@ -103,6 +104,8 @@ export class UsersService {
         role: true,
         isActive: true,
         createdAt: true,
+        careerId: true,
+        career: { select: { id: true, name: true } },
       },
     });
 
@@ -126,6 +129,8 @@ export class UsersService {
         createdAt: true,
         companyId: true,
         isTwoFactorEnabled: true,
+        careerId: true,
+        career: { select: { id: true, name: true, faculty: true } },
         company: {
           select: {
             id: true,
@@ -184,6 +189,7 @@ export class UsersService {
       fullName: dto.fullName ?? user.fullName,
       role: dto.role ?? user.role,
       isActive: dto.isActive ?? user.isActive,
+      careerId: dto.careerId !== undefined ? dto.careerId : user.careerId,
     };
 
     if (dto.password) {

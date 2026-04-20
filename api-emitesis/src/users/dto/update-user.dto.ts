@@ -47,4 +47,9 @@ export class UpdateUserDto {
   @Transform(({ value }) => (value === '' || value === null ? undefined : value))
   @IsUUID('4')
   companyId?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => (value === '' || value === null ? undefined : value))
+  @IsUUID('4')
+  careerId?: string;
 }

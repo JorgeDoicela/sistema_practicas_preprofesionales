@@ -28,6 +28,7 @@ import { MonitoringModule } from './monitoring/monitoring.module';
 import { HealthModule } from './health/health.module';
 import { EvaluationsModule } from './evaluations/evaluations.module';
 import { ExportModule } from './export/export.module';
+import { AutomationModule } from './automation/automation.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 

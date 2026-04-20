@@ -38,6 +38,9 @@ class PreVerifyDto {
   @IsString()
   @IsOptional()
   studentName?: string;
+
+  @IsOptional()
+  systemHours?: number;
 }
 
 class RiskAssessmentDto {
@@ -104,6 +107,7 @@ export class AiController {
       body.documentName,
       body.base64Image,
       body.studentName || req.user.fullName,
+      body.systemHours,
     );
   }
 

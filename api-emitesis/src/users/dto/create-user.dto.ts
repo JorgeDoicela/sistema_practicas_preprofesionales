@@ -49,4 +49,10 @@ export class CreateUserDto {
   @Transform(({ value }) => (value === '' || value === null ? undefined : value))
   @IsUUID('4', { message: 'companyId debe ser un UUID válido' })
   companyId?: string;
+
+  @ApiProperty({ example: 'uuid-carrera', description: 'ID de la carrera asociada', required: false })
+  @IsOptional()
+  @Transform(({ value }) => (value === '' || value === null ? undefined : value))
+  @IsUUID('4', { message: 'careerId debe ser un UUID válido' })
+  careerId?: string;
 }

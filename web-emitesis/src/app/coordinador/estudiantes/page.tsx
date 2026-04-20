@@ -247,7 +247,7 @@ export default function GestionEstudiantesPage() {
                 onReviewClick={handleReviewClick}
                 onGenerateCertificate={() => handleGenerateCertificate(internship.id)}
                 onExportAttendance={handleExportAttendance}
-                onAIAnalyze={() => handleAIAnalysis(internship, attendanceData[internship.id])}
+                onAIAnalyze={() => handleAIAnalysis(internship, attendanceData[internship.id], internship.totalHours)}
                 analyzing={analyzingId === internship.id}
                 analysis={aiAnalysis[internship.id]}
               />
@@ -450,6 +450,18 @@ function StudentInternshipCard({
                     <Users className="w-3.5 h-3.5" />
                     Tutor: <span className="text-[#003366]">{internship.tutor.fullName}</span>
                  </div>
+                 {internship.career && (
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#003366] bg-slate-100 px-3 py-1 rounded-full">
+                       <Building2 className="w-3.5 h-3.5 text-[#C5A059]" />
+                       Carrera: {internship.career.name}
+                    </div>
+                  )}
+                  {internship.finalGrade > 0 && (
+                     <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white bg-[#003366] px-3 py-1 rounded-full shadow-sm">
+                        <FileBadge className="w-3.5 h-3.5 text-[#C5A059]" />
+                        Nota Final: {internship.finalGrade.toFixed(2)}
+                     </div>
+                  )}
                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
                     <Clock className="w-3.5 h-3.5" />
                     Progreso: {attendance?.summary?.progressPercentage || 0}%

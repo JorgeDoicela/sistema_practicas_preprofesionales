@@ -1,14 +1,12 @@
 import { Module } from '@nestjs/common';
-import { AgreementsController } from './agreements.controller';
-import { AgreementsService } from './agreements.service';
+import { AutomationService } from './automation.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { SystemLogsModule } from '../system-logs/system-logs.module';
 
 @Module({
   imports: [PrismaModule, NotificationsModule, SystemLogsModule],
-  controllers: [AgreementsController],
-  providers: [AgreementsService],
-  exports: [AgreementsService],
+  providers: [AutomationService],
+  exports: [AutomationService],
 })
-export class AgreementsModule {}
+export class AutomationModule {}

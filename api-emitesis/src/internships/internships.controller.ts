@@ -25,8 +25,13 @@ export class InternshipsController {
   findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('careerId') queryCareerId: string,
+    @Req() req: any,
   ) {
-    return this.internshipsService.findAll(page, limit);
+    return this.internshipsService.findAll(page, limit, {
+      careerId: queryCareerId || req.user.careerId,
+      role: req.user.role,
+    });
   }
 
   @Get('tutor/:id')
@@ -64,5 +69,11 @@ export class InternshipsController {
   @Roles(Role.ADMIN, Role.COORDINADOR, Role.TUTOR, Role.ESTUDIANTE)
   findOne(@Param('id') id: string, @Req() req: any) {
     return this.internshipsService.findOne(id, req.user);
+  }
+
+  @Patch(':id/status')
+  @Roles(Role.ADMIN, Role.COORDINADOR)
+  updateStatus(@Param('id') id: string, @Body() body: { status: string, reason?: string }, @Req() req: any) {
+    return this.internshipsService.changeStatus(id, body.status, req.user.id, body.reason);
   }
 }
