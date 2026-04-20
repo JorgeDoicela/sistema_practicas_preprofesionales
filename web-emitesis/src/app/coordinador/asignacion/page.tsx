@@ -14,6 +14,9 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle2,
+  Trash2,
+  Plus,
+  PlusCircle,
 } from 'lucide-react';
 import { usersService } from '@/services/users.service';
 import { agreementsService } from '@/services/agreements.service';
@@ -22,11 +25,19 @@ import { useRouter } from 'next/navigation';
 import { User } from '@/types/user';
 import { Agreement } from '@/types/agreement';
 import dynamic from 'next/dynamic';
+import { cn } from '@/lib/utils';
 
 const LeafletMap = dynamic(() => import('@/components/shared/LeafletMap'), { 
   ssr: false,
   loading: () => <div className="h-[300px] w-full bg-slate-100 animate-pulse rounded-2xl flex items-center justify-center text-[10px] font-black uppercase text-slate-400">Cargando Mapa Institucional...</div>
 });
+
+interface AllowedLocation {
+  label: string;
+  lat: number;
+  lng: number;
+  radiusM: number;
+}
 
 export default function AsignacionPage() {
   const router = useRouter();
@@ -50,10 +61,12 @@ export default function AsignacionPage() {
     location: '',
     businessTutorName: '',
     businessTutorEmail: '',
-    initialLat: -0.180653,
-    initialLng: -78.467838,
-    initialRadius: 200
   });
+
+  const [allowedLocations, setAllowedLocations] = useState<AllowedLocation[]>([
+    { label: 'Sede Principal', lat: -0.180653, lng: -78.467838, radiusM: 250 }
+  ]);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,13 +94,45 @@ export default function AsignacionPage() {
     fetchData();
   }, []);
 
+  const addLocation = () => {
+    const newLoc: AllowedLocation = { 
+      label: `Sede ${allowedLocations.length + 1}`, 
+      lat: -0.180653, 
+      lng: -78.467838, 
+      radiusM: 250 
+    };
+    setAllowedLocations([...allowedLocations, newLoc]);
+    setActiveIndex(allowedLocations.length);
+  };
+
+  const removeLocation = (index: number) => {
+    if (allowedLocations.length <= 1) return;
+    const newLocs = allowedLocations.filter((_, i) => i !== index);
+    setAllowedLocations(newLocs);
+    if (activeIndex >= newLocs.length) setActiveIndex(newLocs.length - 1);
+  };
+
+  const updateActiveLocation = (data: Partial<AllowedLocation>) => {
+    const newLocs = [...allowedLocations];
+    newLocs[activeIndex] = { ...newLocs[activeIndex], ...data };
+    setAllowedLocations(newLocs);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBtnLoading(true);
     setError(null);
 
     try {
-      await internshipsService.create(form);
+      const payload = {
+        ...form,
+        allowedLocations,
+        // Mantener retrocompatibilidad
+        initialLat: allowedLocations[0].lat,
+        initialLng: allowedLocations[0].lng,
+        initialRadius: allowedLocations[0].radiusM
+      };
+      await internshipsService.create(payload);
       setSuccess(true);
       setTimeout(() => router.push('/dashboard'), 2000);
     } catch (err: any) {
@@ -122,9 +167,11 @@ export default function AsignacionPage() {
     );
   }
 
+  const currentLoc = allowedLocations[activeIndex];
+
   return (
     <DashboardLayout>
-      <div className="max-w-5xl mx-auto space-y-8">
+      <div className="max-w-5xl mx-auto space-y-8 pb-20">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
             <UserPlus size={12} /> Gestión de Prácticas
@@ -221,41 +268,109 @@ export default function AsignacionPage() {
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ubicación / Lugar de Prácticas</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Dirección Institucional / Lugar de Prácticas</label>
                   <div className="relative">
                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                     <input 
                       type="text"
                       required
                       placeholder="Dirección o departamento específico"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-12 pr-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none mb-4"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-12 pr-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
                       value={form.location}
                       onChange={(e) => setForm({...form, location: e.target.value})}
                     />
                   </div>
                   
-                  {/* RF-ATT-LOC: Selector de Geocerca */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Configuración de Geocerca (Asistencia GPS)</label>
-                      <span className="text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Radio: {form.initialRadius}m</span>
+                  {/* RF-ATT-LOC: Multi-Geocerca */}
+                  <div className="mt-8 space-y-6">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                      <div>
+                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#003366]">Configuración Multi-Sedes</h4>
+                        <p className="text-[10px] text-slate-400 font-medium">Define los puntos geográficos donde el estudiante puede marcar asistencia.</p>
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={addLocation}
+                        className="px-4 py-2 bg-[#003366]/5 text-[#003366] rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-[#003366] hover:text-white transition-all flex items-center gap-2 border border-[#003366]/10"
+                      >
+                        <PlusCircle size={14} /> Añadir Sede
+                      </button>
                     </div>
-                    <LeafletMap 
-                      lat={form.initialLat} 
-                      lng={form.initialLng} 
-                      radiusM={form.initialRadius}
-                      onChange={(lat, lng) => setForm(prev => ({ ...prev, initialLat: lat, initialLng: lng }))}
-                    />
-                    <div className="px-1">
-                      <input 
-                        type="range" 
-                        min="100" 
-                        max="1000" 
-                        step="50"
-                        className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#003366]"
-                        value={form.initialRadius}
-                        onChange={(e) => setForm(prev => ({ ...prev, initialRadius: parseInt(e.target.value) }))}
-                      />
+
+                    <div className="grid md:grid-cols-3 gap-6">
+                       {/* Lista de Sedes */}
+                       <div className="space-y-2 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                          {allowedLocations.map((loc, idx) => (
+                             <div 
+                               key={idx}
+                               onClick={() => setActiveIndex(idx)}
+                               className={cn(
+                                 "p-4 rounded-2xl border transition-all cursor-pointer group flex items-center justify-between",
+                                 activeIndex === idx 
+                                    ? "bg-[#003366] border-[#003366] shadow-lg shadow-blue-900/10" 
+                                    : "bg-white border-slate-100 hover:border-slate-300"
+                               )}
+                             >
+                                <div className="min-w-0">
+                                   <p className={cn(
+                                     "text-[10px] font-black uppercase tracking-widest truncate",
+                                     activeIndex === idx ? "text-[#C5A059]" : "text-slate-400 group-hover:text-[#003366]"
+                                   )}>
+                                     {loc.label || `Sede ${idx + 1}`}
+                                   </p>
+                                   <p className={cn(
+                                     "text-[9px] font-bold",
+                                     activeIndex === idx ? "text-white/60" : "text-slate-300"
+                                   )}>Radio: {loc.radiusM}m</p>
+                                </div>
+                                {allowedLocations.length > 1 && (
+                                   <button 
+                                     type="button" 
+                                     onClick={(e) => { e.stopPropagation(); removeLocation(idx); }}
+                                     className={cn(
+                                       "p-2 rounded-lg transition-colors",
+                                       activeIndex === idx ? "text-white/40 hover:text-white" : "text-slate-300 hover:text-rose-500"
+                                     )}
+                                   >
+                                      <Trash2 size={14} />
+                                   </button>
+                                )}
+                             </div>
+                          ))}
+                       </div>
+
+                       {/* Editor de Sede Activa */}
+                       <div className="md:col-span-2 space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
+                          <div className="grid grid-cols-2 gap-4">
+                             <div className="space-y-1">
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Etiqueta de Sede</label>
+                                <input 
+                                  type="text"
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-xs font-bold outline-none focus:border-[#003366]"
+                                  value={currentLoc.label}
+                                  onChange={(e) => updateActiveLocation({ label: e.target.value })}
+                                />
+                             </div>
+                             <div className="space-y-1">
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Radio: {currentLoc.radiusM}m</label>
+                                <input 
+                                  type="range"
+                                  min="100" max="1000" step="50"
+                                  className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#003366] mt-3"
+                                  value={currentLoc.radiusM}
+                                  onChange={(e) => updateActiveLocation({ radiusM: parseInt(e.target.value) })}
+                                />
+                             </div>
+                          </div>
+
+                          <LeafletMap 
+                            key={activeIndex}
+                            lat={currentLoc.lat} 
+                            lng={currentLoc.lng} 
+                            radiusM={currentLoc.radiusM}
+                            onChange={(lat, lng) => updateActiveLocation({ lat, lng })}
+                          />
+                       </div>
                     </div>
                   </div>
                 </div>
@@ -312,16 +427,18 @@ export default function AsignacionPage() {
             </div>
 
             <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">Resumen</h4>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">Resumen de Geocercas</h4>
               <div className="space-y-4">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-slate-500">Estado</span>
-                  <span className="font-bold text-blue-600">PENDIENTE</span>
+                  <span className="text-slate-500 italic">Sedes Configuradas</span>
+                  <span className="font-bold text-[#003366]">{allowedLocations.length}</span>
                 </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-slate-500">Horas Totales</span>
-                  <span className="font-bold text-[#003366]">{form.totalHours}h</span>
-                </div>
+                {allowedLocations.map((l, i) => (
+                  <div key={i} className="flex justify-between items-center text-[10px] border-l-2 border-[#C5A059] pl-3 py-1">
+                    <span className="text-slate-400 truncate max-w-[120px]">{l.label}</span>
+                    <span className="font-bold text-[#003366]">{l.radiusM}m</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

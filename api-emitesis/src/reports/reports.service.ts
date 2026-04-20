@@ -14,7 +14,12 @@ export class ReportsService {
     private attendanceService: AttendanceService,
   ) {}
 
-  async getGlobalStats() {
+  async getGlobalStats(careerId?: string) {
+    const whereInternship = careerId ? { careerId } : {};
+    const whereUser = careerId ? { careerId, role: 'ESTUDIANTE' as const, isActive: true } : { role: 'ESTUDIANTE' as const, isActive: true };
+    const whereDoc = careerId ? { internship: { careerId }, status: 'APROBADO_TUTOR' as const } : { status: 'APROBADO_TUTOR' as const };
+    const whereDocApproved = careerId ? { internship: { careerId }, status: 'APROBADO_DEFINITIVO' as const } : { status: 'APROBADO_DEFINITIVO' as const };
+
     const [
       assignmentsCount,
       pendingDocs,
@@ -27,17 +32,17 @@ export class ReportsService {
     ] = await Promise.all([
       // Total de prácticas activas
       this.prisma.internship.count({
-        where: { status: { in: ['Activo', 'En Proceso'] } },
+        where: { ...whereInternship, status: { in: ['Activo', 'En Proceso'] } },
       }),
       // Documentos pendientes de revisión final
       this.prisma.document.count({
-        where: { status: 'APROBADO_TUTOR' },
+        where: whereDoc,
       }),
       // Documentos con aprobación definitiva
       this.prisma.document.count({
-        where: { status: 'APROBADO_DEFINITIVO' },
+        where: whereDocApproved,
       }),
-      // Usuarios bloqueados/inactivos
+      // Usuarios bloqueados/inactivos (Global, no solemos filtrar esto por carrera en dashboard general pero se podría)
       this.prisma.user.count({
         where: {
           OR: [
@@ -48,19 +53,19 @@ export class ReportsService {
       }),
       // Prácticas en ejecución
       this.prisma.internship.count({
-        where: { status: { in: ['Activo', 'En Proceso'] } },
+        where: { ...whereInternship, status: { in: ['Activo', 'En Proceso'] } },
       }),
       // Prácticas finalizadas
       this.prisma.internship.count({
-        where: { status: 'Finalizado' },
+        where: { ...whereInternship, status: 'Finalizado' },
       }),
       // Total de estudiantes registrados
       this.prisma.user.count({
-        where: { role: 'ESTUDIANTE', isActive: true },
+        where: whereUser,
       }),
       // Detalle de prácticas activas para calcular horas
       this.prisma.internship.findMany({
-        where: { status: { in: ['Activo', 'En Proceso'] } },
+        where: { ...whereInternship, status: { in: ['Activo', 'En Proceso'] } },
         include: { attendances: true },
       }),
     ]);

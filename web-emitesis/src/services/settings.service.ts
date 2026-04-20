@@ -22,4 +22,9 @@ export const settingsService = {
     });
     return response.data;
   },
+
+  findAllCareers: async () => {
+    const response = await api.get<any[]>("/settings/careers");
+    return response.data;
+  },
 };

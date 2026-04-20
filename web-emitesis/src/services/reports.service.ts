@@ -14,8 +14,9 @@ export interface GlobalStats {
 }
 
 export const reportsService = {
-  getGlobalStats: async (): Promise<GlobalStats> => {
-    const response = await api.get("/reports/global-stats");
+  getGlobalStats: async (careerId?: string): Promise<GlobalStats> => {
+    const q = careerId ? `?careerId=${careerId}` : "";
+    const response = await api.get(`/reports/global-stats${q}`);
     return response.data;
   },
 

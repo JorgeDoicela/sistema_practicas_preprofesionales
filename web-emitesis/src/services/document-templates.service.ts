@@ -8,6 +8,7 @@ export interface DocumentTemplate {
   isRequired: boolean;
   isCertificateSlot: boolean;
   blankFileKey: string | null;
+  careerId: string | null;
   createdAt: string;
   updatedAt: string;
 }

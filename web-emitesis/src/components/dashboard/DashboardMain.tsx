@@ -100,8 +100,10 @@ export function DashboardMain() {
   const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [closedAnnouncements, setClosedAnnouncements] = useState<string[]>([]);
+  const [careers, setCareers] = useState<any[]>([]);
+  const [selectedCareerId, setSelectedCareerId] = useState<string>("");
   
-  // Asistencia hoy
+  // Asistencia hoy ... (resto de estados igual)
   const [todayAttendance, setTodayAttendance] = useState<any>(null);
   const [loc, setLoc] = useState<{lat: number, lng: number} | null>(null);
   const [exporting, setExporting] = useState(false);
@@ -117,7 +119,7 @@ export function DashboardMain() {
     }
   };
 
-  const loadDashboard = useCallback(async (u: UserType & { role: string }) => {
+  const loadDashboard = useCallback(async (u: UserType & { role: string }, cId?: string) => {
     const role = normalizeApiRoleToAppRole(u.role);
     setAppRole(role);
     setLoading(true);
@@ -125,14 +127,16 @@ export function DashboardMain() {
 
     try {
       if (role === ROLES.ADMIN || role === ROLES.COORDINADOR) {
-        const [all, agr, stats] = await Promise.all([
-          internshipsService.findAll() as Promise<InternshipRow[]>,
+        const [all, agr, stats, careerList] = await Promise.all([
+          internshipsService.findAll(1, 20, cId) as Promise<InternshipRow[]>,
           agreementsService.findAll() as Promise<Array<{ status?: string }>>,
-          reportsService.getGlobalStats(),
+          reportsService.getGlobalStats(cId),
+          settingsService.findAllCareers(),
         ]);
         setInternships(Array.isArray(all) ? all : []);
         setAgreementsCount((agr ?? []).filter((a) => (a.status ?? "Activo") === "Activo").length);
         setGlobalStats(stats);
+        setCareers(careerList);
         return;
       }
 
@@ -183,12 +187,12 @@ export function DashboardMain() {
         localStorage.setItem("user", JSON.stringify(merged));
       }
       setUser(merged);
-      void loadDashboard(merged);
+      void loadDashboard(merged, selectedCareerId);
       void loadAnnouncements();
     } catch {
       setLoading(false);
     }
-  }, [loadDashboard]);
+  }, [loadDashboard, selectedCareerId]);
 
   const loadAnnouncements = async () => {
     try {
@@ -505,20 +509,36 @@ export function DashboardMain() {
             Datos en vivo desde la plataforma de prácticas preprofesionales ISTPET.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center gap-3">
           {(appRole === ROLES.ADMIN || appRole === ROLES.COORDINADOR) && (
-            <button
-              onClick={handleExport}
-              disabled={exporting}
-              className="flex items-center gap-2 px-5 py-2.5 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-sm font-bold text-slate-600 disabled:opacity-50"
-            >
-              {exporting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <FileDown className="w-4 h-4 text-[#C5A059]" />
-              )}
-              <span className="hidden sm:inline">Reporte Maestro</span>
-            </button>
+            <>
+              <div className="relative">
+                <select
+                  value={selectedCareerId}
+                  onChange={(e) => setSelectedCareerId(e.target.value)}
+                  className="pl-4 pr-10 py-2.5 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-xs font-black text-[#003366] uppercase tracking-widest appearance-none focus:outline-none focus:ring-2 focus:ring-[#C5A059]/20"
+                >
+                  <option value="">🌎 Toda la Institución</option>
+                  {careers.map((c) => (
+                    <option key={c.id} value={c.id}>🎓 {c.name}</option>
+                  ))}
+                </select>
+                <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 rotate-90 pointer-events-none" />
+              </div>
+
+              <button
+                onClick={handleExport}
+                disabled={exporting}
+                className="flex items-center gap-2 px-5 py-2.5 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-sm font-bold text-slate-600 disabled:opacity-50"
+              >
+                {exporting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <FileDown className="w-4 h-4 text-[#C5A059]" />
+                )}
+                <span className="hidden sm:inline">Reporte Maestro</span>
+              </button>
+            </>
           )}
           <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
             <div className="px-4 py-2 bg-emerald-50 rounded-xl">

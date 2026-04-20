@@ -57,27 +57,38 @@ export class InternshipsService {
 
     try {
       const internship = await this.prisma.$transaction(async (tx) => {
-        const student = await tx.user.findUnique({ where: { id: studentId } });
+        const student = await tx.user.findUnique({ 
+          where: { id: studentId },
+          include: { career: true }
+        });
         if (!student) throw new BadRequestException('Estudiante no encontrado');
+
+        // RF-CAREER: Carga automática de horas sugeridas por carrera si no se envían
+        let finalHours = totalHours;
+        if ((!finalHours || finalHours === 0) && student.career?.config) {
+          const config = student.career.config as any;
+          if (config.requiredHours) {
+            finalHours = config.requiredHours;
+          }
+        }
 
         const newInternship = await tx.internship.create({
           data: {
             studentId,
             companyId,
             tutorId,
-            careerId: student.careerId, // Asociación automática con la carrera
+            careerId: student.careerId,
             startDate: start,
-            totalHours,
+            totalHours: finalHours,
             location,
             businessTutorName,
             businessTutorEmail,
             status: 'En Proceso',
-            // RF-ATT-LOC: Inicializar geocerca si se provee
             lat: initialLat,
             lng: initialLng,
-            allowedLocations: initialLat && initialLng ? [
+            allowedLocations: dto.allowedLocations || (initialLat && initialLng ? [
               { label: 'Sede Principal', lat: initialLat, lng: initialLng, radiusM: initialRadius || 200 }
-            ] : undefined
+            ] : undefined)
           },
           include: {
             student: true,
@@ -86,9 +97,15 @@ export class InternshipsService {
           }
         });
 
-        // RF-DOC-001: documentos según plantillas activas (o lista de respaldo)
+        // RF-DOC-SPEC: documentos filtrados por carrera del estudiante + globales
         const templates = await tx.documentTemplate.findMany({
-          where: { isActive: true },
+          where: { 
+            isActive: true,
+            OR: [
+              { careerId: student.careerId },
+              { careerId: null }
+            ]
+          },
           orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
         });
 
@@ -102,18 +119,13 @@ export class InternshipsService {
         };
 
         let rows: Row[];
+        // ... (resto de la lógica igual)
         if (templates.length === 0) {
           rows = FALLBACK_DOCUMENT_TEMPLATES.map((t) => ({
             ...t,
             templateId: null,
           }));
         } else {
-          const certSlots = templates.filter((t) => t.isCertificateSlot);
-          if (certSlots.length !== 1) {
-            throw new BadRequestException(
-              'El catálogo de plantillas activas debe incluir exactamente un documento de tipo “Certificado / cierre”. Revise coordinación → Plantillas de documentos.',
-            );
-          }
           rows = templates.map((t) => ({
             name: t.name,
             sortOrder: t.sortOrder,

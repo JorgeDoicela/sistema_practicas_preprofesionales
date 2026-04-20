@@ -122,6 +122,7 @@ model Career {
   faculty     String?
   users       User[]
   internships Internship[]
+  documentTemplates DocumentTemplate[]
   createdAt   DateTime     @default(now())
   /// RF-CAREER-001: Configuración dinámica (horas requeridas, docs obligatorios, etc.)
   config      Json?        @default("{\"requiredHours\": 160}")
@@ -152,11 +153,15 @@ model DocumentTemplate {
   isRequired          Boolean  @default(true)
   isCertificateSlot   Boolean  @default(false)
   blankFileKey        String?
+  careerId            String?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
+  
+  career              Career?  @relation(fields: [careerId], references: [id], onDelete: SetNull)
   documents           Document[]
 
   @@index([isActive, sortOrder])
+  @@index([careerId])
 }
 
 model Evaluation {

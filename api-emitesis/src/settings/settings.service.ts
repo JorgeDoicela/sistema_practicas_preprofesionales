@@ -12,6 +12,12 @@ export class SettingsService {
     });
   }
 
+  async findAllCareers() {
+    return this.prisma.career.findMany({
+      orderBy: { name: 'asc' },
+    });
+  }
+
   async findByKey(key: string) {
     const setting = await this.prisma.systemSetting.findUnique({
       where: { key },

@@ -13,8 +13,8 @@ export class ReportsController {
 
   @Get('global-stats')
   @Roles(Role.ADMIN, Role.COORDINADOR)
-  async getGlobalStats() {
-    return this.reportsService.getGlobalStats();
+  async getGlobalStats(@Query('careerId') careerId?: string) {
+    return this.reportsService.getGlobalStats(careerId);
   }
 
   @Get('export/global/excel')

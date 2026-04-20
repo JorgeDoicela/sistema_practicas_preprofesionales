@@ -20,10 +20,12 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { documentTemplatesService, DocumentTemplate } from "@/services/document-templates.service";
+import { settingsService } from "@/services/settings.service";
 import { toast } from "sonner";
 
 export function DocumentTemplatesView() {
   const [templates, setTemplates] = useState<DocumentTemplate[]>([]);
+  const [careers, setCareers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<DocumentTemplate | null>(null);
@@ -36,16 +38,19 @@ export function DocumentTemplatesView() {
   const [isRequired, setIsRequired] = useState(true);
   const [isCertificateSlot, setIsCertificateSlot] = useState(false);
   const [blankFileKey, setBlankFileKey] = useState<string>("");
+  const [careerId, setCareerId] = useState<string>("");
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [list, formats] = await Promise.all([
+      const [list, formats, careerList] = await Promise.all([
         documentTemplatesService.findAll(true),
         documentTemplatesService.knownFormatKeys(),
+        settingsService.findAllCareers(),
       ]);
       setTemplates(list);
       setBlankFormats(formats);
+      setCareers(careerList);
     } catch (error) {
       toast.error("Error al sincronizar plantillas");
     } finally {
@@ -63,6 +68,7 @@ export function DocumentTemplatesView() {
     setIsRequired(true);
     setIsCertificateSlot(false);
     setBlankFileKey("");
+    setCareerId("");
     setEditingTemplate(null);
     setShowForm(false);
   };
@@ -74,6 +80,7 @@ export function DocumentTemplatesView() {
     setIsRequired(t.isRequired);
     setIsCertificateSlot(t.isCertificateSlot);
     setBlankFileKey(t.blankFileKey || "");
+    setCareerId(t.careerId || "");
     setShowForm(true);
   };
 
@@ -85,6 +92,7 @@ export function DocumentTemplatesView() {
       isRequired,
       isCertificateSlot,
       blankFileKey: blankFileKey || null,
+      careerId: careerId || null,
       isActive: editingTemplate ? editingTemplate.isActive : true,
     };
 
@@ -103,6 +111,7 @@ export function DocumentTemplatesView() {
     }
   };
 
+  // ... (toggleActive y handleDelete se mantienen igual)
   const toggleActive = async (t: DocumentTemplate) => {
     try {
       await documentTemplatesService.update(t.id, { isActive: !t.isActive });
@@ -194,7 +203,7 @@ export function DocumentTemplatesView() {
                         {t.isCertificateSlot ? <CheckCircle2 className="w-7 h-7" /> : <FileText className="w-7 h-7" />}
                       </div>
                       <div>
-                        <div className="flex items-center gap-3 mb-1">
+                        <div className="flex items-center gap-2 mb-1">
                           <span className="text-[10px] font-black text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg uppercase tracking-widest">
                             Orden {t.sortOrder}
                           </span>
@@ -203,6 +212,12 @@ export function DocumentTemplatesView() {
                               Obligatorio
                             </span>
                           )}
+                          <span className={cn(
+                            "text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-widest",
+                            t.careerId ? "bg-indigo-50 text-indigo-600" : "bg-slate-50 text-slate-500"
+                          )}>
+                            {t.careerId ? careers.find(c => c.id === t.careerId)?.name || 'Carrera Específica' : 'GLOBAL'}
+                          </span>
                         </div>
                         <h4 className="text-xl font-black text-brand-blue tracking-tight">{t.name}</h4>
                         {t.blankFileKey && (
@@ -261,6 +276,20 @@ export function DocumentTemplatesView() {
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Asignación de Carrera</label>
+                  <select
+                    className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest appearance-none focus:outline-none focus:ring-2 focus:ring-brand-blue/10"
+                    value={careerId}
+                    onChange={e => setCareerId(e.target.value)}
+                  >
+                    <option value="">🌎 GLOBAL (Toda la institución)</option>
+                    {careers.map(c => (
+                      <option key={c.id} value={c.id}>🎓 {c.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Nombre descriptivo</label>
                   <input
                     type="text"
@@ -317,7 +346,6 @@ export function DocumentTemplatesView() {
                       <input type="file" accept=".docx" className="hidden" onChange={handleFileUpload} />
                     </label>
                   </div>
-                  <p className="text-[9px] text-slate-400 font-medium px-4">Si subes un formato, el estudiante podrá descargarlo para completarlo.</p>
                 </div>
 
                 <div className="pt-4 flex flex-col gap-3">

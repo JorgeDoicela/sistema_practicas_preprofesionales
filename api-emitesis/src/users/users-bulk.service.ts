@@ -20,15 +20,15 @@ export class UsersBulkService {
    */
   async importFromExcel(buffer: Buffer, currentUserId: string) {
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(buffer);
+    await workbook.xlsx.load(buffer as any);
     const worksheet = workbook.getWorksheet(1);
     
     if (!worksheet) {
       throw new BadRequestException('El archivo Excel está vacío o no tiene hojas válidas.');
     }
 
-    const usersToCreate = [];
-    const errors = [];
+    const usersToCreate: any[] = [];
+    const errors: string[] = [];
     const careersMap = new Map<string, string>();
 
     // Precargar carreras para optimizar
@@ -56,9 +56,9 @@ export class UsersBulkService {
         return;
       }
 
-      let careerId = null;
+      let careerId: string | null = null;
       if (careerName) {
-        careerId = careersMap.get(careerName.toLowerCase());
+        careerId = careersMap.get(careerName.toLowerCase()) || null;
         if (!careerId) {
           errors.push(`Fila ${rowNumber}: Carrera '${careerName}' no encontrada en el sistema`);
           return;

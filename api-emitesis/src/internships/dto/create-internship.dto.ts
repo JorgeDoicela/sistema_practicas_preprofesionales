@@ -64,4 +64,7 @@ export class CreateInternshipDto {
   @Min(50)
   @Max(5000)
   initialRadius?: number;
+
+  @IsOptional()
+  allowedLocations?: { label: string; lat: number; lng: number; radiusM?: number }[];
 }

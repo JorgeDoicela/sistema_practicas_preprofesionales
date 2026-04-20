@@ -20,6 +20,13 @@ export class SettingsController {
     return this.settingsService.findAll();
   }
 
+  @Get('careers')
+  @Roles(Role.ADMIN, Role.COORDINADOR)
+  @ApiOperation({ summary: 'Listar carreras del instituto' })
+  findAllCareers() {
+    return this.settingsService.findAllCareers();
+  }
+
   @Get(':key')
   @Roles(Role.ADMIN, Role.COORDINADOR)
   @ApiOperation({ summary: 'Obtener una configuración específica por clave' })
