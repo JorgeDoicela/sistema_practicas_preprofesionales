@@ -386,14 +386,15 @@ async function main() {
   };
 
   const tutorsAcad: User[] = [];
-  for (const career of careers) {
+  for (let ci = 0; ci < careers.length; ci++) {
+    const career = careers[ci];
     const names = tutorsByCareer[career.name] ?? [`Ing. Docente ${career.name} A`, `Ing. Docente ${career.name} B`];
     for (let t = 0; t < names.length; t++) {
-      const slug = career.name.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 8);
+      // Usamos índice de carrera (ci) + índice de tutor (t) para garantizar unicidad
       tutorsAcad.push(
         await prisma.user.create({
           data: {
-            email: `tutor.${slug}${t + 1}@istpet.edu.ec`,
+            email: `tutor.c${ci + 1}.${t + 1}@istpet.edu.ec`,
             password,
             fullName: names[t],
             role: Role.TUTOR,
@@ -1231,9 +1232,9 @@ async function main() {
   console.log('     coordinador.tic@istpet.edu.ec        → COORDINADOR (TIC)');
   console.log('     coordinador.adm@istpet.edu.ec        → COORDINADOR (Admin)');
   console.log('     coordinador.edu@istpet.edu.ec        → COORDINADOR (Educación)');
-  console.log('     tutor.desarrol1@istpet.edu.ec        → TUTOR (Software)');
-  console.log('     tutor.mecanica1@istpet.edu.ec        → TUTOR (Automotriz)');
-  console.log('     tutor.gastrono1@istpet.edu.ec        → TUTOR (Gastronomía)');
+  console.log('     tutor.c1.1@istpet.edu.ec              → TUTOR (Desarrollo de Software)');
+  console.log('     tutor.c4.1@istpet.edu.ec              → TUTOR (Mecánica Automotriz)');
+  console.log('     tutor.c13.1@istpet.edu.ec             → TUTOR (Gastronomía)');
   console.log('     estudiante1@est.istpet.edu.ec        → ESTUDIANTE');
   console.log('     bloqueado@est.istpet.edu.ec          → cuenta bloqueada (test)');
   console.log('');
