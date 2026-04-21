@@ -264,7 +264,7 @@ export default function GestionEstudiantesPage() {
                 onReviewClick={handleReviewClick}
                 onGenerateCertificate={() => handleGenerateCertificate(internship.id)}
                 onExportAttendance={handleExportAttendance}
-                onAIAnalyze={() => handleAIAnalysis(internship, attendanceData[internship.id], internship.totalHours)}
+                onAIAnalyze={() => handleAIAnalysis(internship, attendanceData[internship.id])}
                 analyzing={analyzingId === internship.id}
                 analysis={aiAnalysis[internship.id]}
               />

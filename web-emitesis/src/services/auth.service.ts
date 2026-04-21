@@ -91,14 +91,14 @@ export const authService = {
   },
 
   async generate2FA() {
-    return api.get("/auth/2fa/generate").then(res => res.data);
+    return api.get("/auth/2fa/generate");
   },
 
   async turnOn2FA(code: string) {
-    return api.post("/auth/2fa/turn-on", { code }).then(res => res.data);
+    return api.post("/auth/2fa/turn-on", { code });
   },
 
   async turnOff2FA(code: string) {
-    return api.post("/auth/2fa/turn-off", { code }).then(res => res.data);
+    return api.post("/auth/2fa/turn-off", { code });
   },
 };

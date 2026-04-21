@@ -18,12 +18,12 @@ export interface EligibilityResponse {
 
 export const certificationService = {
   checkEligibility: async (internshipId: string): Promise<EligibilityResponse> => {
-    const response = await api.get(`/certification/check/${internshipId}`);
-    return response.data;
+    const response = await api.get<EligibilityResponse>(`/certification/check/${internshipId}`);
+    return response;
   },
 
   generateCertificate: async (internshipId: string): Promise<{ url: string; message: string }> => {
-    const response = await api.post(`/certification/generate/${internshipId}`);
-    return response.data;
+    const response = await api.post<{ url: string; message: string }>(`/certification/generate/${internshipId}`);
+    return response;
   }
 };

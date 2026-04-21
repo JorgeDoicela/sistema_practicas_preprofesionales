@@ -22,11 +22,11 @@ export interface HealthSeries {
 export const analyticsService = {
   getStats: async () => {
     const response = await api.get<AdminStats>("/analytics/stats");
-    return response.data;
+    return response;
   },
 
   getHealthSeries: async () => {
     const response = await api.get<HealthSeries[]>("/analytics/health-series");
-    return response.data;
+    return response;
   },
 };

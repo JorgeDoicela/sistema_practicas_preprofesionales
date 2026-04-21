@@ -6,9 +6,9 @@ EmiTesis es un ecosistema digital de grado empresarial (*Enterprise-grade*) dise
 
 ---
 
-## 🎯 Resumen Ejecutivo
+## Resumen Ejecutivo
 
-Históricamente, la administración de pasantías presenta retos críticos: falsificación de registros de asistencia, demoras en el flujo burocrático de revisión documental, y dificultad en la supervisión real (véase [La Problemática y Propuesta de Valor](./docs/problematica.md)). 
+Históricamente, la administración de pasantías presenta retos críticos: falsificación de registros de asistencia, demoras en el flujo burocrático de revisión documental, y dificultad en la supervisión real (véase [La Problemática y Propuesta de Valor](./docs/problematica.md)).
 
 EmiTesis soluciona estos obstáculos a través de un ecosistema interconectado basado en 3 pilares estructurales:
 1. **Verificación Estricta (Geofencing y Biometría):** Garantiza que cada hora registrada sea legítima.
@@ -17,7 +17,7 @@ EmiTesis soluciona estos obstáculos a través de un ecosistema interconectado b
 
 ---
 
-## 🏗 Arquitectura y Stack Tecnológico
+## Arquitectura y Stack Tecnológico
 
 El sistema se compone de una arquitectura **Hybrid Universal Bridge**, segmentando responsabilidades entre una API altamente resiliente y un cliente interactivo y predictivo.
 
@@ -29,26 +29,26 @@ El sistema se compone de una arquitectura **Hybrid Universal Bridge**, segmentan
 | **Document Storage** | Vercel Blob, PDF.js | Almacenamiento perenne de evidencias fotográficas, documentos firmados y convenios. |
 | **AI Copilot** | OpenAI GPT-4o | Asistente contextual con directrices anti-alucinaciones "Zero-Hallucination Policy". |
 
-📘 *Más detalles en [Arquitectura Técnica y Topología](./docs/arquitectura.md).*
+*Más detalles en [Arquitectura Técnica y Topología](./docs/arquitectura.md).*
 
 ---
 
-## 👥 Gobernanza de Roles (RBAC)
+## Gobernanza de Roles (RBAC)
 
 La integridad del sistema depende de una separación de responsabilidades absoluta:
 
-1. **👑 Administrador:** Orquestador de la plataforma; gestiona analíticas de salud del sistema, carreras, cronogramas y limpieza en caliente (Hot Maintenance).
-2. **👔 Coordinador de Prácticas:** Regulador del ecosistema; aprueba documentos en última instancia, maneja convenios corporativos y emite la certificación final.
-3. **📜 Tutor Académico:** Monitor educativo; da primera revisión a documentos y valida el progreso de objetivos.
-4. **🏢 Empresa (RRHH/Convenio):** Entidad legal enmarcada en el sistema, agrupa tutores empresariales.
-5. **🛠️ Tutor Empresarial:** Supervisor en campo; responsable de realizar las evaluaciones duales técnicas.
-6. **🎓 Estudiante:** El protagonista en campo; registra asistencia geo-localizada, somete documentos a iteración y requiere retroalimentación contínua.
+1. **Administrador:** Orquestador de la plataforma; gestiona analíticas de salud del sistema, carreras, cronogramas y limpieza en caliente (Hot Maintenance).
+2. **Coordinador de Prácticas:** Regulador del ecosistema; aprueba documentos en última instancia, maneja convenios corporativos y emite la certificación final.
+3. **Tutor Académico:** Monitor educativo; da primera revisión a documentos y valida el progreso de objetivos.
+4. **Empresa (RRHH/Convenio):** Entidad legal enmarcada en el sistema, agrupa tutores empresariales.
+5. **Tutor Empresarial:** Supervisor en campo; responsable de realizar las evaluaciones duales técnicas.
+6. **Estudiante:** El protagonista en campo; registra asistencia geo-localizada, somete documentos a iteración y requiere retroalimentación contínua.
 
-📘 *Más detalles en [Lógica de Negocio y Reglas Técnicas](./docs/logica-negocio.md).*
+*Más detalles en [Lógica de Negocio y Reglas Técnicas](./docs/logica-negocio.md).*
 
 ---
 
-## 🚀 Instalación y Despliegue Local
+## Instalación y Despliegue Local
 
 Para orquestar este ecosistema en un entorno local para propósitos de Desarrollo o Auditoría de Código:
 
@@ -65,9 +65,9 @@ cd api-emitesis
 npm install
 
 # Instanciar servicios de DB (Si usas un .env propio)
-npx prisma generate 
+npx prisma generate
 
-# Configurar variables de entorno y lanzar API 
+# Configurar variables de entorno y lanzar API
 npm run start:dev
 ```
 *(Nota: Incluye un seeder maestro `npx prisma db seed` con más de 1200 logs de ambiente demo)*.
@@ -76,24 +76,24 @@ npm run start:dev
 Aplicación frontend que consume el puerto `3000` (Backend).
 ```bash
 cd ../web-emitesis
-npm install 
+npm install
 npm run dev
 ```
 
 ---
 
-## 📚 Documentación Institucional
+## Documentación Institucional
 
 Este repositorio cuenta con un nivel de especificación detallado destinado a Desarrolladores, Arquitectos y DevOps. Recomendamos fuertemente revisar los documentos en estricto orden para entender el sistema de manera global:
 
-1. 🌍 **[Planteamiento de la Problemática y Solución](./docs/problematica.md)**
-2. 🏛 **[Arquitectura y Topología de Despliegue](./docs/arquitectura.md)**
-3. ⚙️ **[Lógica de Negocio y State Machines](./docs/logica-negocio.md)**
-4. 🗄 **[Diseño de Base de Datos y Estrategia de Seeding](./docs/base-de-datos.md)**
-5. 🛡 **[Políticas de Seguridad y Privacidad LOPDP](./docs/seguridad.md)**
-6. 🔌 **[Documentación de Componentes y Guía de Desarrollo](./docs/desarrollo.md)**
-7. 📖 **[Endpoints del API y Especificaciones](./docs/api-guia.md)**
-8. 👩‍💻 **[Manual de Usuario](./docs/manual-usuario.md)**
+1. **[Planteamiento de la Problemática y Solución](./docs/problematica.md)**
+2. **[Arquitectura y Topología de Despliegue](./docs/arquitectura.md)**
+3. **[Lógica de Negocio y State Machines](./docs/logica-negocio.md)**
+4. **[Diseño de Base de Datos y Estrategia de Seeding](./docs/base-de-datos.md)**
+5. **[Políticas de Seguridad y Privacidad LOPDP](./docs/seguridad.md)**
+6. **[Documentación de Componentes y Guía de Desarrollo](./docs/desarrollo.md)**
+7. **[Endpoints del API y Especificaciones](./docs/api-guia.md)**
+8. **[Manual de Usuario](./docs/manual-usuario.md)**
 9. ... *y guías de Devops y Mantenimiento alojadas en la misma carpeta base*.
 
 ---

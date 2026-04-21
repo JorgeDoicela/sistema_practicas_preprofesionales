@@ -22,7 +22,8 @@ import {
   MessageSquare,
   PenTool,
   Stamp,
-  Activity
+  Activity,
+  FileStack
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";

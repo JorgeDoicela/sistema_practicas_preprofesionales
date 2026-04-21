@@ -14,22 +14,22 @@ export interface Announcement {
 export const announcementsService = {
   findAll: async () => {
     const data = await api.get<Announcement[]>("/announcements");
-    return data;
+    return data as unknown as Announcement[];
   },
 
   findActive: async () => {
     const data = await api.get<Announcement[]>("/announcements/active");
-    return data;
+    return data as unknown as Announcement[];
   },
 
   create: async (data: Partial<Announcement>) => {
     const result = await api.post<Announcement>("/announcements", data);
-    return result;
+    return result as unknown as Announcement;
   },
 
   update: async (id: string, data: Partial<Announcement>) => {
     const result = await api.patch<Announcement>(`/announcements/${id}`, data);
-    return result;
+    return result as unknown as Announcement;
   },
 
   remove: async (id: string) => {

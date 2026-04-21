@@ -129,7 +129,7 @@ export default function DocumentosPage() {
         const internship = internships[0]; // En dashboard estudiante suele haber una principal
         const systemHours = internship?.totalHours;
 
-        const result = await aiService.preVerifyDocument(docName, base64, currentUser?.fullName, systemHours);
+        const result = await aiService.preVerifyDocument(docName, base64);
         
         if (!result.isValid) {
           setAiFeedback(result);

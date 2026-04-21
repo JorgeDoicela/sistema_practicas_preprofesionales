@@ -610,7 +610,7 @@ export function DashboardMain() {
           {/* Alertas de Acción Requerida (Proactive) */}
           {appRole === ROLES.ESTUDIANTE && internships.length > 0 && (
             <div className="space-y-4 mb-12">
-              {internships[0].documents?.some(d => d.status.includes('RECHAZADO')) && (
+              {internships[0].documents?.some((d: any) => d.status?.includes('RECHAZADO')) && (
                 <motion.div 
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
