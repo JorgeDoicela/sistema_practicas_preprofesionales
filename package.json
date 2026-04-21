@@ -11,6 +11,8 @@
     "docker:reset": "docker compose down -v && node scripts/docker-up.cjs",
     "docker:down": "node scripts/docker-down.cjs",
     "docker:logs": "docker compose logs -f",
+    "setup": "node scripts/setup-project.cjs",
+    "postinstall": "npm run setup",
     "dev:back": "npm run start:dev -w api-emitesis",
     "dev:front": "npm run dev -w web-emitesis",
     "info": "powershell -Command \"Start-Sleep -s 8; Write-Host '' ; Write-Host '===================================================' -ForegroundColor Gray; Write-Host '   SISTEMA EMITESIS - ACCESOS DIRECTOS (LOCAL)   ' -ForegroundColor Yellow; Write-Host '===================================================' -ForegroundColor Gray; Write-Host ' FRONTEND: http://localhost:3005' -ForegroundColor Cyan; Write-Host ' BACKEND:  http://localhost:5000' -ForegroundColor Cyan; Write-Host '===================================================' -ForegroundColor Gray; Write-Host ''\"",

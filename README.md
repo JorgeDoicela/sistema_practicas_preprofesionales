@@ -48,37 +48,35 @@ La integridad del sistema depende de una separación de responsabilidades absolu
 
 ---
 
-## Instalación y Despliegue Local
+## Instalación y Despliegue Local (Zero-Config)
 
-Para orquestar este ecosistema en un entorno local para propósitos de Desarrollo o Auditoría de Código:
+EmiTesis está industrializado para ser "Clone & Run". Toda la configuración necesaria ya viene incluida en el repositorio.
 
-### 1. Clonar el repositorio completo
-```bash
-git clone https://github.com/TU_USUARIO/TU_REPOSITORIO.git
-cd sistema_practicas_preprofesionales
-```
+### Requisitos Previos
+*   **Node.js** (v20+)
+*   **Docker** (Para la base de datos local, aunque por defecto usa Neon en la nube)
 
-### 2. Infraestructura Backend (`api-emitesis`)
-El núcleo de procesamiento lógico y acceso a base de datos.
-```bash
-cd api-emitesis
-npm install
+### Pasos para iniciar:
 
-# Instanciar servicios de DB (Si usas un .env propio)
-npx prisma generate
+1. **Clonar el repositorio**
+   ```bash
+   git clone https://github.com/TU_USUARIO/TU_REPOSITORIO.git
+   cd sistema_practicas_preprofesionales
+   ```
 
-# Configurar variables de entorno y lanzar API
-npm run start:dev
-```
-*(Nota: Incluye un seeder maestro `npx prisma db seed` con más de 1200 logs de ambiente demo)*.
+2. **Instalar dependencias (Configuración Automática)**
+   Al ejecutar este comando, el sistema detectará las variables de entorno, generará el cliente de base de datos y **reseteará/sembrará (seed)** los datos automáticamente para un entorno de pruebas fresco.
+   ```bash
+   npm install
+   ```
 
-### 3. Entorno de Experiencia Cliente (`web-emitesis`)
-Aplicación frontend que consume el puerto `3000` (Backend).
-```bash
-cd ../web-emitesis
-npm install
-npm run dev
-```
+3. **Lanzar el ecosistema**
+   Inicia el backend, el frontend y muestra los accesos directos.
+   ```bash
+   npm run dev
+   ```
+
+---
 
 ---
 
