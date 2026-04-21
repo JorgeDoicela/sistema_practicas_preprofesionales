@@ -34,7 +34,7 @@ export function AICopilot({ user, internship }: AICopilotProps) {
     {
       id: "1",
       role: "assistant",
-      text: `¡Hola ${user?.fullName?.split(" ")[0]}! Soy Antigravity, tu asistente experto. ¿En qué puedo ayudarte con tus prácticas hoy?`,
+      text: `¡Hola ${user?.fullName?.split(" ")[0]}! Soy Nexo, tu asistente experto. ¿En qué puedo ayudarte con tus prácticas hoy?`,
       timestamp: new Date(),
     },
   ]);
@@ -133,7 +133,7 @@ export function AICopilot({ user, internship }: AICopilotProps) {
                   <Bot className="w-6 h-6 text-[#003366]" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-black tracking-tight">Antigravity AI</h4>
+                  <h4 className="text-lg font-black tracking-tight">Nexo AI</h4>
                   <div className="flex items-center gap-1.5">
                     <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
                     <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-widest">En línea</span>

@@ -86,7 +86,7 @@ export class AiService {
         {
           role: 'system',
           content:
-            'Eres Antigravity, el asistente experto del programa de prácticas preprofesionales ISTPET. ' +
+            'Eres Nexo, el asistente experto del programa de prácticas preprofesionales ISTPET. ' +
             'Tu objetivo es guiar a los estudiantes en sus trámites, marcados y evaluaciones. ' +
             'Usa un tono profesional, alentador y conciso. ' +
             'Contexto del estudiante: ' + context + '\n\n' +

@@ -6,17 +6,11 @@ import Image from "next/image";
 import { BRAND_LOGO_SRC } from "@/lib/brand";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import {
-    Lock,
-    Mail,
-    Eye,
-    EyeOff
-} from "lucide-react";
+import { Lock, Mail, Eye, EyeOff, AlertTriangle, ShieldCheck, MapPin, Brain, Fingerprint } from "lucide-react";
 import { authService } from "@/services/auth.service";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { sanitizeEmailClient, sanitizePasswordClient } from "@/utils/security";
 import { ROLE_REDIRECTS, Role, normalizeApiRoleToAppRole } from "@/constants/roles";
-import { AlertTriangle, Info } from "lucide-react";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -29,7 +23,7 @@ export default function LoginPage() {
     const [isMfaRequired, setIsMfaRequired] = useState(false);
     const [mfaCode, setMfaCode] = useState("");
     const [mfaUserId, setMfaUserId] = useState<string | null>(null);
-    
+
     const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
     const isDev = process.env.NODE_ENV === "development";
 
@@ -40,30 +34,22 @@ export default function LoginPage() {
 
         try {
             let currentToken = null;
-
             if (siteKey && executeRecaptcha) {
                 try {
                     currentToken = await executeRecaptcha("login");
                 } catch (recaptchaErr) {
                     console.error("Error al ejecutar reCAPTCHA v3:", recaptchaErr);
-                    if (process.env.NODE_ENV === "production") {
-                        throw new Error("No se pudo validar la seguridad de la sesión.");
-                    }
+                    if (process.env.NODE_ENV === "production") throw new Error("No se pudo validar la seguridad de la sesión.");
                 }
             }
-
             if (siteKey && !currentToken && process.env.NODE_ENV === "production") {
                 setError("Por favor, inténtalo de nuevo (Error de validación).");
                 setIsLoading(false);
                 return;
             }
 
-            const data = await authService.login(
-                sanitizeEmailClient(email), 
-                sanitizePasswordClient(password), 
-                currentToken || "dev_bypass"
-            );
-            
+            const data = await authService.login(sanitizeEmailClient(email), sanitizePasswordClient(password), currentToken || "dev_bypass");
+
             if (data.mfaRequired) {
                 setIsMfaRequired(true);
                 setMfaUserId(data.userId);
@@ -74,10 +60,8 @@ export default function LoginPage() {
             localStorage.setItem("token", data.access_token);
             const user = { ...data.user, role: normalizeApiRoleToAppRole(String(data.user.role)) };
             localStorage.setItem("user", JSON.stringify(user));
-
             const role = user.role as Role;
-            const redirectPath = ROLE_REDIRECTS[role] || "/dashboard";
-            router.push(redirectPath);
+            router.push(ROLE_REDIRECTS[role] || "/dashboard");
         } catch (err: unknown) {
             setError((err as Error).message || "Credenciales inválidas.");
         } finally {
@@ -89,18 +73,14 @@ export default function LoginPage() {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
-
         try {
             if (!mfaUserId) return;
             const data = await authService.authenticate2FA(mfaUserId, mfaCode);
-            
             localStorage.setItem("token", data.access_token);
             const user = { ...data.user, role: normalizeApiRoleToAppRole(String(data.user.role)) };
             localStorage.setItem("user", JSON.stringify(user));
-
             const role = user.role as Role;
-            const redirectPath = ROLE_REDIRECTS[role] || "/dashboard";
-            router.push(redirectPath);
+            router.push(ROLE_REDIRECTS[role] || "/dashboard");
         } catch (err: unknown) {
             setError((err as Error).message || "Código inválido.");
         } finally {
@@ -109,129 +89,215 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#FDFDFD] flex flex-col">
-            <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 p-5">
-              <div className="max-w-7xl mx-auto flex items-center justify-between">
-                <Link href="/" className="flex items-center gap-2">
-                   <div className="bg-[#003366] p-1.5 rounded-lg">
-                      <Image src={BRAND_LOGO_SRC} alt="Logo" width={100} height={40} className="h-8 w-auto object-contain" />
-                   </div>
-                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Portal Académico</span>
-                </Link>
-                <Link href="/" className="text-[10px] font-black uppercase tracking-widest text-[#003366] hover:text-[#C5A059] transition-colors">Volver al Inicio</Link>
-              </div>
+        <div className="min-h-screen bg-slate-50 flex flex-col">
+            {/* topbar */}
+            <header className="bg-white border-b border-slate-100 px-6 py-4">
+                <div className="max-w-7xl mx-auto flex items-center justify-between">
+                    <Link href="/" className="flex items-center gap-2.5">
+                        <div className="bg-brand-blue p-1.5 rounded-lg">
+                            <Image src={BRAND_LOGO_SRC} alt="Logo" width={100} height={40} className="h-7 w-auto object-contain" />
+                        </div>
+                        <span className="text-xs font-bold text-slate-400 hidden sm:block">Portal Académico ISTPET</span>
+                    </Link>
+                    <Link href="/" className="text-xs font-semibold text-slate-500 hover:text-brand-blue transition-colors">
+                        ← Volver al inicio
+                    </Link>
+                </div>
             </header>
 
-            <div className="flex-1 flex items-center justify-center p-6">
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-md w-full">
-                    <div className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden relative">
-                         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#003366] to-[#C5A059]" />
-                         <div className="p-10 md:p-12">
-                            <div className="text-center mb-10">
-                                <h1 className="text-3xl font-black text-[#003366] tracking-tight mb-2">Ingresar</h1>
-                                <p className="text-slate-500 text-sm">Credenciales ISTPET</p>
-                            </div>
+            {/* main */}
+            <div className="flex-1 grid lg:grid-cols-2">
 
-                            {!isMfaRequired ? (
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Institucional</label>
+                {/* left — brand panel */}
+                <div className="hidden lg:flex bg-brand-blue relative overflow-hidden flex-col justify-between p-12">
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand-gold/15 via-transparent to-transparent" />
+
+                    <div className="relative z-10">
+                        <div className="w-14 h-14 rounded-xl bg-brand-gold/20 border border-brand-gold/30 flex items-center justify-center mb-10">
+                            <ShieldCheck className="w-7 h-7 text-brand-gold" />
+                        </div>
+                        <h2 className="text-4xl font-black text-white leading-tight tracking-tight mb-4">
+                            Bienvenido al<br />
+                            <span className="text-brand-gold italic">ecosistema EmiTesis</span>
+                        </h2>
+                        <p className="text-white/60 text-sm leading-relaxed max-w-sm">
+                            Gestión integral de prácticas preprofesionales con IA, geofencing y certificación verificable.
+                        </p>
+                    </div>
+
+                    <div className="relative z-10 space-y-3">
+                        {[
+                            { icon: <MapPin className="w-4 h-4" />, label: "Asistencia con Geofencing Haversine" },
+                            { icon: <Brain className="w-4 h-4" />, label: "Nexo AI · GPT-4o" },
+                            { icon: <Fingerprint className="w-4 h-4" />, label: "Passkeys WebAuthn FIDO2" },
+                        ].map(f => (
+                            <div key={f.label} className="flex items-center gap-3 text-sm text-white/70">
+                                <div className="w-8 h-8 rounded-lg bg-white/8 border border-white/10 flex items-center justify-center text-brand-gold">
+                                    {f.icon}
+                                </div>
+                                {f.label}
+                            </div>
+                        ))}
+
+                        <p className="text-[10px] text-white/30 pt-4 border-t border-white/8">
+                            Al ingresar acepta la{" "}
+                            <Link href="/privacidad" className="text-brand-gold/70 hover:text-brand-gold underline-offset-2 hover:underline transition-colors">
+                                política de privacidad LOPDP
+                            </Link>
+                        </p>
+                    </div>
+                </div>
+
+                {/* right — form */}
+                <div className="flex items-center justify-center p-6 py-12">
+                    <motion.div
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="w-full max-w-sm"
+                    >
+                        {!isMfaRequired ? (
+                            <>
+                                <div className="mb-8">
+                                    <h1 className="text-3xl font-black text-brand-blue tracking-tight mb-2">Iniciar sesión</h1>
+                                    <p className="text-slate-500 text-sm">Ingresa tus credenciales institucionales ISTPET.</p>
+                                </div>
+
+                                <form onSubmit={handleSubmit} className="space-y-5">
+                                    {/* email */}
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-slate-600 block">Correo institucional</label>
                                         <div className="relative">
-                                            <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
-                                            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 text-sm focus:ring-2 focus:ring-blue-900/5 outline-none" placeholder="correo@istpet.edu.ec" />
+                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                            <input
+                                                type="email" required value={email}
+                                                onChange={e => setEmail(e.target.value)}
+                                                placeholder="correo@istpet.edu.ec"
+                                                className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue outline-none transition-all placeholder:text-slate-300"
+                                            />
                                         </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Contraseña</label>
+
+                                    {/* password */}
+                                    <div className="space-y-1.5">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-xs font-bold text-slate-600">Contraseña</label>
+                                            <Link href="/olvido-password" className="text-xs font-semibold text-brand-gold hover:text-brand-blue transition-colors">
+                                                ¿Olvidaste tu contraseña?
+                                            </Link>
+                                        </div>
                                         <div className="relative">
-                                            <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
-                                            <input 
-                                                type={showPassword ? "text" : "password"} 
-                                                required 
-                                                value={password} 
-                                                onChange={(e) => setPassword(e.target.value)} 
-                                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-12 text-sm focus:ring-2 focus:ring-blue-900/5 outline-none" 
-                                                placeholder="••••••••" 
+                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                            <input
+                                                type={showPassword ? "text" : "password"} required value={password}
+                                                onChange={e => setPassword(e.target.value)}
+                                                placeholder="••••••••"
+                                                className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-11 pr-11 text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue outline-none transition-all placeholder:text-slate-300"
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-brand-blue transition-colors focus:outline-none"
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-blue transition-colors"
                                             >
-                                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                             </button>
-                                        </div>
-                                        <div className="flex justify-end mt-1 px-1">
-                                            <Link href="/olvido-password" className="text-[10px] font-bold uppercase tracking-widest text-[#C5A059] hover:text-[#003366] transition-colors">
-                                                ¿Olvidaste tu contraseña?
-                                            </Link>
                                         </div>
                                     </div>
 
                                     {!siteKey && isDev && (
-                                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
-                                            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                                            <div className="space-y-1">
-                                                <p className="text-[10px] font-black uppercase text-amber-800 tracking-widest">Modo Desarrollo</p>
-                                                <p className="text-[10px] font-medium text-amber-600 leading-tight">
-                                                    ReCAPTCHA v3 no configurado (Invisible). Use <code className="bg-amber-100 px-1 rounded">SKIP_RECAPTCHA=true</code> en el backend.
+                                        <div className="flex items-start gap-3 p-3.5 bg-amber-50 border border-amber-200 rounded-xl">
+                                            <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                                            <div>
+                                                <p className="text-xs font-bold text-amber-700">Modo Desarrollo</p>
+                                                <p className="text-xs text-amber-600 mt-0.5">
+                                                    ReCAPTCHA v3 no configurado. Use <code className="bg-amber-100 px-1 rounded">SKIP_RECAPTCHA=true</code> en el backend.
                                                 </p>
                                             </div>
                                         </div>
                                     )}
 
-                                    {error && <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-bold text-center border border-red-100">{error}</div>}
+                                    {error && (
+                                        <div className="flex items-start gap-3 p-3.5 bg-red-50 border border-red-200 rounded-xl">
+                                            <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                                            <p className="text-xs text-red-600 font-medium">{error}</p>
+                                        </div>
+                                    )}
 
-                                    <button type="submit" disabled={isLoading} className="w-full bg-[#003366] text-white rounded-2xl py-4 text-[11px] font-black uppercase tracking-[0.2em] shadow-xl hover:translate-y-[-2px] transition-all">
-                                        {isLoading ? "Validando..." : "Entrar al Sistema"}
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading}
+                                        className="w-full bg-brand-blue text-white rounded-xl py-3.5 text-sm font-bold hover:bg-brand-gold transition-all shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                                    >
+                                        {isLoading ? (
+                                            <span className="flex items-center justify-center gap-2">
+                                                <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                                </svg>
+                                                Validando…
+                                            </span>
+                                        ) : "Entrar al Sistema"}
                                     </button>
                                 </form>
-                            ) : (
-                                <form onSubmit={handleMfaSubmit} className="space-y-6">
-                                    <div className="text-center mb-6">
-                                        <p className="text-slate-500 text-xs">Ingresa el código de 6 dígitos de tu aplicación de autenticación.</p>
+                            </>
+                        ) : (
+                            <>
+                                <div className="mb-8 text-center">
+                                    <div className="w-14 h-14 rounded-2xl bg-brand-blue flex items-center justify-center mx-auto mb-5">
+                                        <Lock className="w-7 h-7 text-white" />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Código de Seguridad</label>
+                                    <h1 className="text-2xl font-black text-brand-blue tracking-tight mb-2">Verificación en dos pasos</h1>
+                                    <p className="text-slate-500 text-sm">Ingresa el código de 6 dígitos de tu aplicación de autenticación.</p>
+                                </div>
+
+                                <form onSubmit={handleMfaSubmit} className="space-y-5">
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-slate-600 block">Código de seguridad</label>
                                         <div className="relative">
-                                            <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
-                                            <input 
-                                                type="text" 
-                                                required 
-                                                autoFocus
-                                                maxLength={6}
-                                                value={mfaCode} 
-                                                onChange={(e) => setMfaCode(e.target.value)} 
-                                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 text-sm focus:ring-2 focus:ring-blue-900/5 outline-none tracking-[0.5em] font-bold text-center" 
-                                                placeholder="000000" 
+                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                            <input
+                                                type="text" required autoFocus maxLength={6}
+                                                value={mfaCode} onChange={e => setMfaCode(e.target.value)}
+                                                placeholder="000000"
+                                                className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-11 text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue outline-none transition-all tracking-[0.5em] font-bold text-center placeholder:tracking-normal placeholder:font-normal"
                                             />
                                         </div>
                                     </div>
 
-                                    {error && <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-bold text-center border border-red-100">{error}</div>}
+                                    {error && (
+                                        <div className="flex items-start gap-3 p-3.5 bg-red-50 border border-red-200 rounded-xl">
+                                            <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                                            <p className="text-xs text-red-600 font-medium">{error}</p>
+                                        </div>
+                                    )}
 
-                                    <button type="submit" disabled={isLoading} className="w-full bg-[#C5A059] text-white rounded-2xl py-4 text-[11px] font-black uppercase tracking-[0.2em] shadow-xl hover:translate-y-[-2px] transition-all">
-                                        {isLoading ? "Verificando..." : "Confirmar Acceso"}
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading}
+                                        className="w-full bg-brand-gold text-white rounded-xl py-3.5 text-sm font-bold hover:bg-brand-blue transition-all shadow-lg disabled:opacity-60"
+                                    >
+                                        {isLoading ? "Verificando…" : "Confirmar Acceso"}
                                     </button>
-                                    
-                                    <button type="button" onClick={() => setIsMfaRequired(false)} className="w-full text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-[#003366] transition-colors">
-                                        Volver al Login
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsMfaRequired(false)}
+                                        className="w-full text-xs font-semibold text-slate-400 hover:text-brand-blue transition-colors py-2"
+                                    >
+                                        ← Volver al inicio de sesión
                                     </button>
                                 </form>
-                            )}
-                         </div>
-                    </div>
-                </motion.div>
-            </div>
+                            </>
+                        )}
 
-            <footer className="py-6 px-4 text-center border-t border-slate-100 bg-white/60">
-                <p className="text-[10px] text-slate-500 font-medium leading-relaxed max-w-md mx-auto">
-                    Al usar el portal usted puede ejercer sus derechos sobre datos personales según la ley ecuatoriana.{" "}
-                    <Link href="/privacidad" className="text-[#003366] font-bold underline-offset-2 hover:underline">
-                        Aviso de privacidad
-                    </Link>
-                </p>
-            </footer>
+                        <p className="text-center text-xs text-slate-400 mt-8">
+                            <Link href="/privacidad" className="hover:text-brand-blue transition-colors hover:underline underline-offset-2">
+                                Aviso de privacidad (LOPDP)
+                            </Link>
+                        </p>
+                    </motion.div>
+                </div>
+            </div>
         </div>
     );
 }
