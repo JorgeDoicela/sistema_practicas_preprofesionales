@@ -21,7 +21,13 @@ export function Footer() {
         "/olvido-password"
     ];
 
-    const isHidden = hiddenRoutes.some(route => pathname?.startsWith(route));
+    const isHidden = hiddenRoutes.some((route) => {
+        if (!pathname) return false;
+        if (route === "/empresa") {
+            return pathname === "/empresa" || pathname.startsWith("/empresa/");
+        }
+        return pathname.startsWith(route);
+    });
 
     if (isHidden) return null;
     return (

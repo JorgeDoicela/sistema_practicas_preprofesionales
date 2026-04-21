@@ -23,7 +23,14 @@ export function Navbar() {
         "/olvido-password"
     ];
 
-    const isHidden = hiddenRoutes.some(route => pathname?.startsWith(route));
+    // "/empresa" es el área autenticada; "/empresas" es página pública — no usar startsWith("/empresa") solo.
+    const isHidden = hiddenRoutes.some((route) => {
+        if (!pathname) return false;
+        if (route === "/empresa") {
+            return pathname === "/empresa" || pathname.startsWith("/empresa/");
+        }
+        return pathname.startsWith(route);
+    });
 
     if (isHidden) return null;
 
