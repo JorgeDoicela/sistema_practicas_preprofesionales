@@ -95,7 +95,10 @@ model Internship {
   startDate   DateTime
   endDate     DateTime?
   totalHours  Int
-  location    String
+  /// Modalidad de ejecución de la práctica (puede diferir de la modalidad de la carrera)
+  modalidad         Modalidad    @default(PRESENCIAL)
+  /// Descripción libre del lugar físico o virtual de la práctica
+  location          String?
   businessTutorName  String?
   businessTutorEmail String?
   lat               Float?
@@ -120,6 +123,8 @@ model Career {
   id          String       @id @default(uuid())
   name        String       @unique
   faculty     String?
+  /// Modalidad oficial de la carrera según el programa académico del ISTPET
+  modalidad   Modalidad    @default(PRESENCIAL)
   users       User[]
   internships Internship[]
   documentTemplates DocumentTemplate[]
@@ -201,6 +206,14 @@ model MonitoringVisit {
 enum EvaluationType {
   EMPRESARIAL
   ACADEMICA
+}
+
+/// Modalidad de cursado/ejecución — aplica a Carrera y a Práctica
+enum Modalidad {
+  PRESENCIAL
+  SEMIPRESENCIAL
+  EN_LINEA
+  HIBRIDA
 }
 
 model Document {

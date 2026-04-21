@@ -1,37 +1,135 @@
 /**
- * MASTER SEED INSTITUCIONAL v11.0 — SISTEMA EMITESIS (MODO DEMO REALISTA)
- * 
- * Cobertura: 100% Schema, Escenarios de Riesgo Complejos, Analítica Masiva y LOPDP.
- * Objetivo: Mostrar el sistema como si tuviera 6 meses de uso real intenso.
+ * MASTER SEED INSTITUCIONAL v13.0 — SISTEMA EMITESIS
+ * Instituto Superior Tecnológico "Mayor Pedro Traversari" (ISTPET)
+ * Av. Matilde Álvarez y Hugo Díaz Romero, sector Chillogallo, Quito – Ecuador
+ * Teléfonos: 02 303 2894 / 098 4033166 | admisiones@istpet.edu.ec
+ *
+ * Datos: Carreras reales del ISTPET, empresas de Quito por perfil profesional,
+ * personal académico y coordinación acordes a la estructura institucional real.
+ *
+ * Cobertura: 100% de modelos del schema, todos los estados de documentos,
+ * múltiples versiones y comentarios, visitas de monitoreo, evaluaciones,
+ * credenciales WebAuthn, templates por carrera, notificaciones, ARCO, logs.
  */
 
-import { PrismaClient, Role, DocumentStatus, EvaluationType, Career, Company, User, Prisma } from '@prisma/client';
+import {
+  PrismaClient,
+  Role,
+  DocumentStatus,
+  EvaluationType,
+  Modalidad,
+  Career,
+  Company,
+  User,
+  Internship,
+  Document,
+  DocumentTemplate,
+  Prisma,
+} from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
-// ── Helpers de Simulación ──────────────────────────────────────────────────
-const daysAgo = (n: number) => {
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+const daysAgo = (n: number): Date => {
   const d = new Date();
   d.setDate(d.getDate() - n);
   return d;
 };
 
-const randInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
-const photoUrl = (seed: string | number) => `https://picsum.photos/seed/${seed}/800/600`;
-const docUrl = (name: string) => `/uploads/documents/seed/${name.replace(/\s+/g, '_').toLowerCase()}.pdf`;
+const hoursAgo = (n: number): Date => {
+  const d = new Date();
+  d.setHours(d.getHours() - n);
+  return d;
+};
 
-const firstNames = ['Mateo', 'Sofía', 'Juan', 'Valentina', 'Andrés', 'Isabella', 'Diego', 'Camila', 'Luis', 'Lucía', 'Carlos', 'Mariana', 'Javier', 'Elena', 'Ricardo', 'Gabriela'];
-const lastNames = ['Larrea', 'Vaca', 'Ortiz', 'Gallegos', 'Salazar', 'Méndez', 'Pérez', 'Cisneros', 'López', 'Gómez', 'Torres', 'Ramírez', 'Castro', 'Arias', 'Enríquez', 'Toapanta'];
+const randInt = (min: number, max: number): number =>
+  Math.floor(Math.random() * (max - min + 1)) + min;
 
-const getRandomName = () => `${firstNames[randInt(0, firstNames.length - 1)]} ${lastNames[randInt(0, lastNames.length - 1)]}`;
+const pick = <T>(arr: T[]): T => arr[randInt(0, arr.length - 1)];
+
+const docUrl = (name: string): string =>
+  `/uploads/documents/seed/${name.replace(/\s+/g, '_').toLowerCase()}.pdf`;
+
+const photoUrl = (seed: string | number): string =>
+  `https://picsum.photos/seed/${seed}/800/600`;
+
+const firstNames = [
+  'Mateo', 'Sofía', 'Juan', 'Valentina', 'Andrés', 'Isabella',
+  'Diego', 'Camila', 'Luis', 'Lucía', 'Carlos', 'Mariana',
+  'Javier', 'Elena', 'Ricardo', 'Gabriela', 'Sebastián', 'Natalia',
+  'Fernando', 'Patricia', 'Miguel', 'Daniela', 'Alejandro', 'Paola',
+];
+
+const lastNames = [
+  'Larrea', 'Vaca', 'Ortiz', 'Gallegos', 'Salazar', 'Méndez',
+  'Pérez', 'Cisneros', 'López', 'Gómez', 'Torres', 'Ramírez',
+  'Castro', 'Arias', 'Enríquez', 'Toapanta', 'Moreira', 'Herrera',
+  'Villacís', 'Almeida', 'Quiñonez', 'Burbano', 'Freire', 'Ponce',
+];
+
+let nameIndex = 0;
+const getUniqueName = (): string => {
+  const fn = firstNames[nameIndex % firstNames.length];
+  const ln = lastNames[Math.floor(nameIndex / firstNames.length) % lastNames.length];
+  nameIndex++;
+  return `${fn} ${ln}`;
+};
+
+// ── Comentarios y observaciones realistas ─────────────────────────────────
+
+const tutorRejectionComments = [
+  'Los objetivos no son medibles. Por favor usa la metodología SMART.',
+  'El cronograma no incluye fechas específicas. Corregir y reenviar.',
+  'Falta la firma del tutor empresarial en la sección 3.',
+  'Las actividades descritas no corresponden al perfil de la carrera.',
+  'El informe no tiene las horas desglosadas por semana. Revisar formato.',
+  'La introducción es demasiado breve. Debe tener al menos 3 párrafos.',
+  'No se adjuntó el anexo fotográfico requerido.',
+  'Las competencias adquiridas no están vinculadas con el perfil profesional.',
+];
+
+const coordRejectionComments = [
+  'El documento no cumple con el reglamento institucional vigente 2026.',
+  'Se requiere la validación previa del tutor académico antes de la revisión del coordinador.',
+  'Faltan firmas en las páginas 2 y 4. Regularizar con el área correspondiente.',
+  'El contenido no refleja las horas realmente laboradas según el registro de asistencia.',
+];
+
+const approvalComments = [
+  'Documento revisado y aprobado. Buen trabajo.',
+  'Aprobado. El plan de prácticas está bien estructurado.',
+  'Correcciones aplicadas satisfactoriamente. Aprobado.',
+  'Cumple con todos los requisitos institucionales. Aprobado.',
+];
+
+const studentResponses = [
+  'He corregido los objetivos usando la metodología SMART. Adjunto nueva versión.',
+  'Actualicé el cronograma con fechas específicas. Por favor revisar.',
+  'Agregué la firma del tutor empresarial. Reenvío el documento corregido.',
+  'He ampliado la introducción y agregado los anexos fotográficos. Gracias por la retroalimentación.',
+  'Corregí el desglose de horas por semana según el formato oficial.',
+];
+
+const visitObservations = [
+  'El estudiante se integra correctamente al equipo técnico. Muestra iniciativa y actitud proactiva.',
+  'El ambiente de trabajo es adecuado. Se verificó el cumplimiento de los objetivos planteados.',
+  'Se observó al estudiante realizando tareas acordes con su perfil profesional.',
+  'El tutor empresarial expresó satisfacción con el desempeño del pasante.',
+  'Se detectaron algunas dificultades en la comunicación con el equipo. Se recomendó refuerzo.',
+  'Excelente avance. El estudiante ya maneja las herramientas principales del área.',
+  'Se verificó el registro de asistencia y está al día. El estudiante cumple con el horario acordado.',
+];
+
+// ── MAIN ──────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log('\n INICIANDO INYECCIÓN MAESTRA EMITESIS v11.0 [MODO DEMO REALISTA]');
-  console.log('──────────────────────────────────────────────────────');
+  console.log('\n🚀 INICIANDO MASTER SEED v13.0 — ISTPET "Mayor Pedro Traversari"');
+  console.log('═══════════════════════════════════════════════════════════\n');
 
-  // 1. Limpieza de Seguridad (Orden estricto de integridad referencial)
-  console.log('Sincronizando Purga de Datos...');
+  // ─── 1. LIMPIEZA (orden estricto de integridad referencial) ──────────────
+  console.log('🧹 [1/12] Purgando base de datos...');
   await prisma.activityPhoto.deleteMany();
   await prisma.attendance.deleteMany();
   await prisma.documentVersion.deleteMany();
@@ -53,148 +151,463 @@ async function main() {
   await prisma.systemSetting.deleteMany();
   await prisma.announcement.deleteMany();
   await prisma.systemLog.deleteMany();
+  console.log('   ✓ Base de datos limpia.\n');
 
   const password = await bcrypt.hash('password123', 10);
-  const lopdp = { lopdpAccepted: true, lopdpAcceptedAt: daysAgo(60), lopdpVersion: '1.0' };
+  const lopdp = {
+    lopdpAccepted: true,
+    lopdpAcceptedAt: daysAgo(60),
+    lopdpVersion: '1.0',
+  };
 
-  // 2. Fundamentos de Gobernanza (Carreras)
-  console.log('Estructurando Facultades y Carreras...');
-  const careersData = [
-    { name: 'Desarrollo de Software', faculty: 'Tecnologías de la Información', hours: 160 },
-    { name: 'Ciberseguridad', faculty: 'Tecnologías de la Información', hours: 240 },
-    { name: 'Electromecánica Automotriz', faculty: 'Ingeniería Aplicada', hours: 120 },
-    { name: 'Administración de Empresas', faculty: 'Ciencias Administrativas', hours: 160 },
-    { name: 'Marketing Digital', faculty: 'Ciencias Administrativas', hours: 160 },
+  // ─── 2. CARRERAS REALES DEL ISTPET ────────────────────────────────────────
+  // Fuente: https://institutotraversari.edu.ec — Programa Académico 2026
+  console.log('🎓 [2/12] Creando carreras reales del ISTPET...');
+  const careersData: { name: string; faculty: string; modalidad: Modalidad; hours: number }[] = [
+    // Departamento de Tecnologías de la Información y Comunicación
+    { name: 'Desarrollo de Software',             faculty: 'Tecnologías de la Información y Comunicación', modalidad: Modalidad.PRESENCIAL,    hours: 200 },
+    { name: 'Electrónica',                        faculty: 'Tecnologías de la Información y Comunicación', modalidad: Modalidad.SEMIPRESENCIAL, hours: 200 },
+    { name: 'Redes y Telecomunicaciones',         faculty: 'Tecnologías de la Información y Comunicación', modalidad: Modalidad.SEMIPRESENCIAL, hours: 200 },
+    // Departamento de Ingeniería y Diseño
+    { name: 'Mecánica Automotriz',                faculty: 'Ingeniería y Diseño',                          modalidad: Modalidad.PRESENCIAL,    hours: 160 },
+    { name: 'Diseño Gráfico',                     faculty: 'Ingeniería y Diseño',                          modalidad: Modalidad.PRESENCIAL,    hours: 160 },
+    // Departamento de Ciencias Administrativas y Comerciales
+    { name: 'Contabilidad y Asesoría Tributaria', faculty: 'Ciencias Administrativas y Comerciales',       modalidad: Modalidad.EN_LINEA,      hours: 160 },
+    { name: 'Marketing y Comercio Electrónico',   faculty: 'Ciencias Administrativas y Comerciales',       modalidad: Modalidad.EN_LINEA,      hours: 160 },
+    { name: 'Talento Humano',                     faculty: 'Ciencias Administrativas y Comerciales',       modalidad: Modalidad.HIBRIDA,       hours: 160 },
+    // Departamento de Ciencias de la Educación
+    { name: 'Educación Inicial',                  faculty: 'Ciencias de la Educación',                     modalidad: Modalidad.PRESENCIAL,    hours: 320 },
+    { name: 'Educación Básica',                   faculty: 'Ciencias de la Educación',                     modalidad: Modalidad.SEMIPRESENCIAL, hours: 320 },
+    { name: 'Educación Inclusiva',                faculty: 'Ciencias de la Educación',                     modalidad: Modalidad.EN_LINEA,      hours: 320 },
+    // Departamento de Cultura, Deporte y Gastronomía
+    { name: 'Entrenamiento Deportivo',            faculty: 'Cultura, Deporte y Gastronomía',               modalidad: Modalidad.PRESENCIAL,    hours: 200 },
+    { name: 'Gastronomía',                        faculty: 'Cultura, Deporte y Gastronomía',               modalidad: Modalidad.SEMIPRESENCIAL, hours: 160 },
   ];
 
   const careers: Career[] = [];
   for (const c of careersData) {
-    careers.push(await prisma.career.create({ 
-      data: { name: c.name, faculty: c.faculty, config: { requiredHours: c.hours } } 
-    }));
+    careers.push(
+      await prisma.career.create({
+        data: {
+          name: c.name,
+          faculty: c.faculty,
+          modalidad: c.modalidad,
+          config: { requiredHours: c.hours },
+        },
+      }),
+    );
+  }
+  console.log(`   ✓ ${careers.length} carreras creadas.\n`);
+
+  // ─── 3. DOCUMENT TEMPLATES (por carrera + globales) ──────────────────────
+  console.log('📋 [3/12] Creando plantillas de documentos...');
+
+  // Plantillas globales (aplican a todas las carreras)
+  const globalTemplatesData = [
+    { name: 'F01 - Solicitud de Inicio de Prácticas', sortOrder: 1, isRequired: true },
+    { name: 'F02 - Plan de Prácticas Preprofesionales', sortOrder: 2, isRequired: true },
+    { name: 'F03 - Registro Semanal de Actividades', sortOrder: 3, isRequired: true },
+    { name: 'F04 - Informe de Avance de Prácticas', sortOrder: 4, isRequired: true },
+    { name: 'F05 - Informe Final de Prácticas', sortOrder: 5, isRequired: true },
+    { name: 'F06 - Evaluación del Tutor Empresarial', sortOrder: 6, isRequired: true },
+    { name: 'F07 - Autoevaluación del Estudiante', sortOrder: 7, isRequired: false },
+    { name: 'F10 - Certificado de Finalización', sortOrder: 10, isRequired: true, isCertificateSlot: true },
+  ];
+
+  const globalTemplates: DocumentTemplate[] = [];
+  for (const t of globalTemplatesData) {
+    globalTemplates.push(
+      await prisma.documentTemplate.create({
+        data: {
+          name: t.name,
+          sortOrder: t.sortOrder,
+          isRequired: t.isRequired,
+          isCertificateSlot: t.isCertificateSlot ?? false,
+          careerId: null,
+        },
+      }),
+    );
   }
 
-  const templates = [
-    { name: 'F01 - Solicitud de Inicio', sortOrder: 1, isRequired: true },
-    { name: 'F02 - Plan de Prácticas', sortOrder: 2, isRequired: true },
-    { name: 'F03 - Registro de Asistencia', sortOrder: 3, isRequired: true },
-    { name: 'F04 - Informe de Actividades', sortOrder: 4, isRequired: true },
-    { name: 'F10 - Certificado Final', sortOrder: 10, isCertificateSlot: true }
-  ];
-  for (const t of templates) { await prisma.documentTemplate.create({ data: t }); }
+  // Plantillas específicas por carrera del ISTPET
+  const careerSW    = careers.find((c) => c.name === 'Desarrollo de Software')!;
+  const careerRedes = careers.find((c) => c.name === 'Redes y Telecomunicaciones')!;
+  const careerElec  = careers.find((c) => c.name === 'Electrónica')!;
+  const careerAuto  = careers.find((c) => c.name === 'Mecánica Automotriz')!;
+  const careerDG    = careers.find((c) => c.name === 'Diseño Gráfico')!;
+  const careerGast  = careers.find((c) => c.name === 'Gastronomía')!;
+  const careerEdu   = careers.find((c) => c.name === 'Educación Inicial')!;
+  const careerDepo  = careers.find((c) => c.name === 'Entrenamiento Deportivo')!;
 
-  // 3. Ecosistema de Empresas
-  console.log('Entidades y Convenios Corporativos (12+ Entidades)...');
+  const careerSpecificTemplates: DocumentTemplate[] = [];
+  const csTemplateData = [
+    // Desarrollo de Software
+    { name: 'F-SW-01 - Enlace al Repositorio de Código (GitHub/GitLab)', sortOrder: 8, careerId: careerSW.id },
+    { name: 'F-SW-02 - Manual Técnico del Proyecto de Software',          sortOrder: 9, careerId: careerSW.id },
+    // Redes y Telecomunicaciones
+    { name: 'F-RED-01 - Diagrama de Red y Topología Implementada',        sortOrder: 8, careerId: careerRedes.id },
+    { name: 'F-RED-02 - Reporte de Configuración de Equipos',             sortOrder: 9, careerId: careerRedes.id },
+    // Electrónica
+    { name: 'F-ELEC-01 - Bitácora de Montaje y Pruebas Electrónicas',     sortOrder: 8, careerId: careerElec.id },
+    // Mecánica Automotriz
+    { name: 'F-AUTO-01 - Bitácora de Mantenimiento Vehicular',            sortOrder: 8, careerId: careerAuto.id },
+    { name: 'F-AUTO-02 - Ficha Técnica de Vehículos Intervenidos',        sortOrder: 9, careerId: careerAuto.id },
+    // Diseño Gráfico
+    { name: 'F-DG-01 - Portafolio Digital de Trabajos Realizados',        sortOrder: 8, careerId: careerDG.id },
+    // Gastronomía
+    { name: 'F-GAST-01 - Recetario y Mise en Place Documentado',          sortOrder: 8, careerId: careerGast.id },
+    { name: 'F-GAST-02 - Control de Temperatura y Normas HACCP',          sortOrder: 9, careerId: careerGast.id },
+    // Educación Inicial
+    { name: 'F-EDU-01 - Planificación Microcurricular Aplicada',          sortOrder: 8, careerId: careerEdu.id },
+    { name: 'F-EDU-02 - Diario de Campo Pedagógico',                      sortOrder: 9, careerId: careerEdu.id },
+    // Entrenamiento Deportivo
+    { name: 'F-DEP-01 - Plan de Entrenamiento Individualizado',           sortOrder: 8, careerId: careerDepo.id },
+    { name: 'F-DEP-02 - Ficha de Evaluación Física del Deportista',       sortOrder: 9, careerId: careerDepo.id },
+  ];
+  for (const t of csTemplateData) {
+    careerSpecificTemplates.push(
+      await prisma.documentTemplate.create({
+        data: { name: t.name, sortOrder: t.sortOrder, isRequired: true, careerId: t.careerId },
+      }),
+    );
+  }
+
+  const allTemplates = [...globalTemplates, ...careerSpecificTemplates];
+  console.log(`   ✓ ${allTemplates.length} plantillas creadas (${globalTemplates.length} globales + ${careerSpecificTemplates.length} específicas por carrera).\n`);
+
+  // ─── 4. EMPRESAS Y CONVENIOS ────────────────────────────────────────────────
+  // Empresas reales y organismos públicos de Quito, seleccionados según los
+  // perfiles profesionales de cada carrera del ISTPET.
+  console.log('🏢 [4/12] Creando empresas y convenios...');
   const companiesData = [
-    { name: 'Telefónica Tech', ruc: '1791234567001', address: 'Quito, Ekopark', rep: 'Andrés Gallegos', email: 'rrhh@telefonica.com' },
-    { name: 'Banco Pichincha', ruc: '1790011223001', address: 'Quito, Av. Amazonas', rep: 'Lucía Mendoza', email: 'talento@pichincha.com' },
-    { name: 'Toyota Casabaca', ruc: '1799887766001', address: 'Quito, Los Chillos', rep: 'Mónica Ruiz', email: 'rrhh@casabaca.com' },
-    { name: 'Kruger Corp', ruc: '1797766554001', address: 'Cumbayá, Paseo San Francisco', rep: 'Ernesto Kruger', email: 'hr@krugercorp.com' },
-    { name: 'Corporación Favorita', ruc: '1791122334001', address: 'Quito, El Inca', rep: 'Ricardo Noboa', email: 'rrhh@favorita.ec' },
-    { name: 'Ministerio de Telecomunicaciones', ruc: '1760000010001', address: 'Quito, 6 de Diciembre', rep: 'Galo Cevallos', email: 'rrhh@mintel.gob.ec' },
-    { name: 'Thoughtworks Ecuador', ruc: '1794455667001', address: 'Quito, Shyris', rep: 'Ana Paredes', email: 'jobs@thoughtworks.com' },
+    // ── TI: Desarrollo de Software / Redes / Electrónica ──────────────────
+    { name: 'Kruger Corp',                          ruc: '1797766554001', address: 'Cumbayá, Paseo San Francisco Lc-12',                rep: 'Ernesto Kruger',        email: 'hr@krugercorp.com',             convenio: 'Activo'     },
+    { name: 'Ministerio de Telecomunicaciones (MINTEL)', ruc: '1760000010001', address: 'Quito, Av. 6 de Diciembre N25-75 y Colón',    rep: 'Galo Cevallos',         email: 'practicas@mintel.gob.ec',       convenio: 'Activo'     },
+    { name: 'CNT EP',                               ruc: '1760000030001', address: 'Quito, Av. Amazonas N39-137 y Villalengua',        rep: 'Byron Espinoza',        email: 'practicas@cnt.gob.ec',          convenio: 'Activo'     },
+    { name: 'Claro Ecuador S.A.',                   ruc: '1791345678001', address: 'Quito, Av. República de El Salvador N36-140',      rep: 'Verónica Mora',         email: 'practicantes@claro.com.ec',     convenio: 'Activo'     },
+    { name: 'Consejo de la Judicatura',             ruc: '1768006130001', address: 'Quito, Av. Amazonas N37-101 y Unión Nacional',     rep: 'Patricia Solís',        email: 'practicas@funcionjudicial.gob.ec', convenio: 'Activo' },
+    // ── Mecánica Automotriz ────────────────────────────────────────────────
+    { name: 'Toyota Casabaca S.A.',                 ruc: '1799887766001', address: 'Quito, Av. Simón Bolívar km 12, Valle de Los Chillos', rep: 'Mónica Ruiz',       email: 'rrhh@casabaca.com',             convenio: 'Activo'     },
+    { name: 'Automotores Continental S.A.',         ruc: '1790226553001', address: 'Quito, Av. 10 de Agosto N36-211 y Naciones Unidas', rep: 'Rodrigo Cedeño',      email: 'rrhh@autoconti.com.ec',         convenio: 'Activo'     },
+    { name: 'MARESA (Manufacturas Armaduría y Rep. S.A.)', ruc: '1790014932001', address: 'Quito, Av. Galo Plaza Lasso km 7.5',        rep: 'Carlos Olmedo',        email: 'practicantes@maresa.com.ec',    convenio: 'Expirado'   },
+    // ── Diseño Gráfico ────────────────────────────────────────────────────
+    { name: 'Ministerio de Turismo del Ecuador',    ruc: '1760000060001', address: 'Quito, Av. Eloy Alfaro N32-300 y Carlos Tobar',    rep: 'Andrea Vallejo',       email: 'practicas@turismo.gob.ec',      convenio: 'Activo'     },
+    { name: 'Grupo El Comercio C.A.',               ruc: '1790011801001', address: 'Quito, Av. Pedro Vicente Maldonado y El Tablón',   rep: 'Santiago Rivadeneira', email: 'practicas@elcomercio.com',      convenio: 'Activo'     },
+    // ── Contabilidad / Marketing / Talento Humano ─────────────────────────
+    { name: 'Corporación Favorita C.A.',            ruc: '1791122334001', address: 'Quito, Av. General Enríquez 1360, Sangolquí',      rep: 'Ricardo Noboa',        email: 'rrhh@favorita.ec',              convenio: 'Activo'     },
+    { name: 'Servicio de Rentas Internas (SRI)',    ruc: '1760000020001', address: 'Quito, Av. Amazonas 4430 y Villalengua',           rep: 'Mireya Zambrano',      email: 'practicas@sri.gob.ec',          convenio: 'Activo'     },
+    { name: 'Banco Pichincha C.A.',                 ruc: '1790011223001', address: 'Quito, Av. Amazonas N35-211 y Japón',             rep: 'Lucía Mendoza',        email: 'talento@pichincha.com',         convenio: 'Activo'     },
+    { name: 'Instituto Ecuatoriano de Seguridad Social (IESS)', ruc: '1760000070001', address: 'Quito, Av. 10 de Agosto 2270 y Briceño', rep: 'Jorge Freire',     email: 'practicas@iess.gob.ec',         convenio: 'En Trámite' },
+    // ── Educación Inicial / Básica / Inclusiva ────────────────────────────
+    { name: 'Unidad Educativa Municipal "Quitumbe"', ruc: '1768150310001', address: 'Quito, Av. Rumichaca y Av. Quitumbe Ñan',        rep: 'Lic. Rosa Taipe',      email: 'practicas@quitumbe.edu.ec',     convenio: 'Activo'     },
+    { name: 'Jardín de Infantes Municipal Chillogallo', ruc: '1768200110001', address: 'Quito, Av. Matilde Álvarez S/N, Chillogallo', rep: 'Lic. Margarita Simba', email: 'practicas@chillogallo.edu.ec',  convenio: 'Activo'     },
+    { name: 'Ministerio de Educación',              ruc: '1760000050001', address: 'Quito, Av. Amazonas N34-451 y Atahualpa',         rep: 'Carlos Tobar',         email: 'practicaspreprofesionales@educacion.gob.ec', convenio: 'Activo' },
+    // ── Entrenamiento Deportivo ───────────────────────────────────────────
+    { name: 'Liga Deportiva Universitaria de Quito (LDU)', ruc: '1790011001001', address: 'Quito, Estadio Rodrigo Paz Delgado, Av. Galo Plaza', rep: 'Gustavo Morán', email: 'practicas@ldu.com.ec',       convenio: 'Activo'     },
+    { name: 'Ministerio del Deporte',               ruc: '1760000040001', address: 'Quito, Av. 6 de Diciembre N25-95 y Colón',        rep: 'Alexandra Torres',     email: 'practicas@deporte.gob.ec',      convenio: 'Activo'     },
+    // ── Gastronomía ───────────────────────────────────────────────────────
+    { name: 'JW Marriott Hotel Quito',              ruc: '1791500300001', address: 'Quito, Av. Orellana 1172 y Av. Amazonas',         rep: 'Chef Roberto Alarcón', email: 'rrhh@marriottquito.com',        convenio: 'Activo'     },
+    { name: 'Restaurant Zazu',                      ruc: '1792100450001', address: 'Quito, Mariano Aguilera 331 y La Pradera',        rep: 'Chef Rodrigo Pacheco', email: 'practicas@zazuquito.com',       convenio: 'Activo'     },
   ];
 
   const companies: Company[] = [];
   for (const c of companiesData) {
-    companies.push(await prisma.company.create({ 
-      data: { ruc: c.ruc, name: c.name, address: c.address, representative: c.rep, email: c.email } 
-    }));
+    companies.push(
+      await prisma.company.create({
+        data: {
+          ruc: c.ruc,
+          name: c.name,
+          address: c.address,
+          representative: c.rep,
+          email: c.email,
+        },
+      }),
+    );
   }
 
-  for (const comp of companies) {
-    await prisma.agreement.create({ 
-      data: { companyId: comp.id, startDate: daysAgo(randInt(100, 730)), filePath: docUrl(`CONV_${comp.name}`), status: randInt(0, 5) === 0 ? 'Expirado' : 'Activo' } 
+  for (let i = 0; i < companies.length; i++) {
+    await prisma.agreement.create({
+      data: {
+        companyId: companies[i].id,
+        startDate: daysAgo(randInt(60, 730)),
+        filePath: docUrl(`CONVENIO_${companies[i].name}`),
+        status: companiesData[i].convenio,
+      },
+    });
+  }
+  console.log(`   ✓ ${companies.length} empresas y ${companies.length} convenios creados.\n`);
+
+  // ─── 5. USUARIOS ──────────────────────────────────────────────────────────
+  console.log('👥 [5/12] Creando usuarios por rol...');
+
+  // Admin del sistema
+  const admin = await prisma.user.create({
+    data: {
+      email: 'admin@istpet.edu.ec',
+      password,
+      fullName: 'Administrador del Sistema EMITESIS — ISTPET',
+      role: Role.ADMIN,
+      ...lopdp,
+    },
+  });
+
+  // Coordinadores — uno por departamento académico del ISTPET
+  // (en ISTs la coordinación de prácticas recae en los coordinadores de carrera)
+  const coordsData = [
+    { name: 'Ing. Marco Villacís Enríquez',   email: 'coordinador.tic@istpet.edu.ec'   },
+    { name: 'Ing. Sandra Freire Toapanta',    email: 'coordinador.ing@istpet.edu.ec'   },
+    { name: 'Lcda. Carmen Suárez Almeida',    email: 'coordinador.adm@istpet.edu.ec'   },
+    { name: 'Lcda. Rosa Herrera Burbano',     email: 'coordinador.edu@istpet.edu.ec'   },
+  ];
+  const coordinators: User[] = [];
+  for (const cd of coordsData) {
+    coordinators.push(
+      await prisma.user.create({
+        data: { email: cd.email, password, fullName: cd.name, role: Role.COORDINADOR, ...lopdp },
+      }),
+    );
+  }
+
+  // Tutores académicos — docentes del ISTPET asignados por carrera
+  const tutorsByCareer: Record<string, string[]> = {
+    'Desarrollo de Software':           ['Ing. Andrés Gallegos Larrea', 'Ing. Paola Cisneros Méndez'],
+    'Electrónica':                      ['Ing. Diego Ramírez Castro', 'Ing. Luis Ortiz Pérez'],
+    'Redes y Telecomunicaciones':       ['Ing. Javier Salazar Vaca', 'Ing. Elena Gómez Torres'],
+    'Mecánica Automotriz':              ['Tec. Ricardo Toapanta Moreira', 'Tec. Fernando Arias Gallegos'],
+    'Diseño Gráfico':                   ['Dis. Valentina López Enríquez', 'Dis. Sebastián Ponce Villacís'],
+    'Contabilidad y Asesoría Tributaria': ['CPA. Natalia Quiñonez Freire', 'CPA. Patricia Almeida Herrera'],
+    'Marketing y Comercio Electrónico': ['Ing. Miguel Burbano Larrea', 'Ing. Gabriela Méndez Salazar'],
+    'Talento Humano':                   ['Psic. Daniela Castro Vaca', 'Psic. Carlos Cisneros López'],
+    'Educación Inicial':                ['Lic. Mariana Ortiz Ramírez', 'Lic. Lucía Torres Arias'],
+    'Educación Básica':                 ['Lic. Sofía Pérez Gallegos', 'Lic. Juan Gómez Toapanta'],
+    'Educación Inclusiva':              ['Lic. Camila Herrera Ponce', 'Lic. Mateo Enríquez Moreira'],
+    'Entrenamiento Deportivo':          ['Lic. Alejandro Villacís Freire', 'Lic. Isabella Quiñonez Burbano'],
+    'Gastronomía':                      ['Chef. Patricia Almeida Salazar', 'Chef. Ricardo Larrea Cisneros'],
+  };
+
+  const tutorsAcad: User[] = [];
+  for (const career of careers) {
+    const names = tutorsByCareer[career.name] ?? [`Ing. Docente ${career.name} A`, `Ing. Docente ${career.name} B`];
+    for (let t = 0; t < names.length; t++) {
+      const slug = career.name.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 8);
+      tutorsAcad.push(
+        await prisma.user.create({
+          data: {
+            email: `tutor.${slug}${t + 1}@istpet.edu.ec`,
+            password,
+            fullName: names[t],
+            role: Role.TUTOR,
+            careerId: career.id,
+            ...lopdp,
+          },
+        }),
+      );
+    }
+  }
+
+  // Tutores empresariales (uno por empresa)
+  const tutorsEmp: User[] = [];
+  for (let i = 0; i < companies.length; i++) {
+    const comp = companies[i];
+    tutorsEmp.push(
+      await prisma.user.create({
+        data: {
+          email: `supervisor@${comp.email.split('@')[1]}`,
+          password,
+          fullName: getUniqueName(),
+          role: Role.TUTOR_EMPRESARIAL,
+          companyId: comp.id,
+          ...lopdp,
+        },
+      }),
+    );
+  }
+
+  // Usuarios rol EMPRESA (representantes de empresa con acceso al portal)
+  for (let i = 0; i < 4; i++) {
+    await prisma.user.create({
+      data: {
+        email: `empresa.portal${i + 1}@${companies[i].email.split('@')[1]}`,
+        password,
+        fullName: `Portal Empresa — ${companies[i].name}`,
+        role: Role.EMPRESA,
+        companyId: companies[i].id,
+        ...lopdp,
+      },
     });
   }
 
-  // 4. Actores del Sistema
-  console.log('Inyectando Identidades por Rol (Admin, Coord, Tutores, Estudiantes)...');
-  await prisma.user.create({ data: { email: 'admin@istpet.edu.ec', password, fullName: 'Admin General', role: Role.ADMIN, ...lopdp } });
-  
-  const coordinators: User[] = [];
-  for (let i = 1; i <= 3; i++) {
-    coordinators.push(await prisma.user.create({ 
-      data: { email: `coordinador${i}@istpet.edu.ec`, password, fullName: `Coordinador ${i}`, role: Role.COORDINADOR, ...lopdp } 
-    }));
-  }
-
-  const tutorsAcad: User[] = [];
-  for (let i = 0; i < 8; i++) {
-    const career = careers[i % careers.length];
-    tutorsAcad.push(await prisma.user.create({ 
-      data: { email: `tutor.acad${i}@istpet.edu.ec`, password, fullName: getRandomName() + ' (Tutor Acad)', role: Role.TUTOR, careerId: career.id, ...lopdp } 
-    }));
-  }
-
-  const tutorsEmp: User[] = [];
-  for (let i = 0; i < companies.length; i++) {
-    tutorsEmp.push(await prisma.user.create({ 
-      data: { email: `supervisor@${companies[i].email.split('@')[1]}`, password, fullName: getRandomName() + ' (Supv. ' + companies[i].name + ')', role: Role.TUTOR_EMPRESARIAL, companyId: companies[i].id, ...lopdp } 
-    }));
-  }
-
+  // Estudiantes (60: cubrir todos los escenarios posibles)
   const students: User[] = [];
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 60; i++) {
     const career = careers[i % careers.length];
-    students.push(await prisma.user.create({ 
-      data: { email: `estudiante${i}@est.edu`, password, fullName: getRandomName(), role: Role.ESTUDIANTE, careerId: career.id, ...lopdp } 
-    }));
+    students.push(
+      await prisma.user.create({
+        data: {
+          email: `estudiante${i + 1}@est.istpet.edu.ec`,
+          password,
+          fullName: getUniqueName(),
+          role: Role.ESTUDIANTE,
+          careerId: career.id,
+          ...lopdp,
+        },
+      }),
+    );
   }
 
-  // 5. Generación Espacial de Prácticas
-  console.log('Modelando 50 Escenarios de Ciclo de Vida (Éxito, Riesgo, Inicio)...');
-  
+  // Usuario con cuenta bloqueada (por intentos fallidos)
+  await prisma.user.create({
+    data: {
+      email: 'bloqueado@est.istpet.edu.ec',
+      password,
+      fullName: 'Cuenta Bloqueada Test',
+      role: Role.ESTUDIANTE,
+      careerId: careers[0].id,
+      failedAttempts: 5,
+      lockoutUntil: new Date(Date.now() + 30 * 60 * 1000),
+      lopdpAccepted: false,
+    },
+  });
+
+  console.log(
+    `   ✓ 1 admin + ${coordinators.length} coordinadores + ${tutorsAcad.length} tutores acad. + ` +
+    `${tutorsEmp.length} supervisores + 4 portales empresa + ${students.length} estudiantes + 1 bloqueado.\n`,
+  );
+
+  // ─── 6. CREDENCIALES WEBAUTHN ─────────────────────────────────────────────
+  console.log('🔑 [6/12] Creando credenciales WebAuthn...');
+  // Registrar credencial para el admin y 5 tutores
+  const webauthnUsers = [admin, ...tutorsAcad.slice(0, 5)];
+  for (let i = 0; i < webauthnUsers.length; i++) {
+    const u = webauthnUsers[i];
+    await prisma.userCredential.create({
+      data: {
+        userId: u.id,
+        credentialId: `cred-${u.id.substring(0, 8)}-${i}`,
+        publicKey: `-----BEGIN PUBLIC KEY-----\nMFkwEwYH${Buffer.from(u.id).toString('base64').substring(0, 40)}\n-----END PUBLIC KEY-----`,
+        counter: randInt(1, 50),
+      },
+    });
+  }
+  console.log(`   ✓ ${webauthnUsers.length} credenciales WebAuthn registradas.\n`);
+
+  // ─── 7. PRÁCTICAS CON CICLO DE VIDA COMPLETO ──────────────────────────────
+  console.log('📚 [7/12] Generando prácticas con ciclo de vida completo...');
+
+  /**
+   * Escenarios distribuidos entre los 60 estudiantes:
+   *  0-9  (10): Finalizadas — todos los documentos aprobados + evaluaciones completas
+   * 10-19 (10): En proceso avanzado — documentos mixtos, varios en revisión
+   * 20-29 (10): En proceso con rechazos — al menos un documento rechazado con historial de versiones
+   * 30-39 (10): En proceso temprano — solo F01 aprobado, el resto pendiente
+   * 40-49 (10): Recién iniciadas — sin documentos aún o solo F01
+   * 50-59 (10): En proceso con incumplimientos — asistencia irregular, documentos incumplidos
+   */
+
+  const internships: Internship[] = [];
+
   for (let i = 0; i < students.length; i++) {
     const s = students[i];
     const tutor = tutorsAcad[i % tutorsAcad.length];
     const company = companies[i % companies.length];
-    const career = careers.find(c => c.id === s.careerId);
-    const reqHours = (career?.config as any)?.requiredHours || 160;
+    const career = careers.find((c) => c.id === s.careerId)!;
+    const reqHours = (career?.config as any)?.requiredHours ?? 160;
 
-    // Diferentes escenarios basados en el índice
+    // Determinar escenario
     let status = 'En Proceso';
-    let hoursCompleted = randInt(0, reqHours);
-    let startOffset = randInt(10, 90);
+    let startOffset = 60;
+    let hoursCompleted = 0;
 
-    if (i < 10) { // Scenario: Finalized
+    if (i < 10) {
       status = 'Finalizado';
+      startOffset = 130;
       hoursCompleted = reqHours;
-      startOffset = 120;
-    } else if (i < 20) { // Scenario: High risk (lots of hours but few documents)
+    } else if (i < 20) {
       status = 'En Proceso';
-      hoursCompleted = Math.floor(reqHours * 0.8);
-      startOffset = 60;
-    } else if (i < 30) { // Scenario: Just starting
+      startOffset = 80;
+      hoursCompleted = Math.floor(reqHours * 0.75);
+    } else if (i < 30) {
       status = 'En Proceso';
-      hoursCompleted = 0;
-      startOffset = 5;
+      startOffset = 70;
+      hoursCompleted = Math.floor(reqHours * 0.6);
+    } else if (i < 40) {
+      status = 'En Proceso';
+      startOffset = 30;
+      hoursCompleted = Math.floor(reqHours * 0.25);
+    } else if (i < 50) {
+      status = 'En Proceso';
+      startOffset = 10;
+      hoursCompleted = Math.floor(reqHours * 0.05);
+    } else {
+      status = 'En Proceso';
+      startOffset = 90;
+      hoursCompleted = Math.floor(reqHours * 0.4);
     }
+
+    // La modalidad de la práctica se hereda de la carrera, con variaciones
+    // realistas: algunas prácticas presenciales se ejecutan de forma híbrida,
+    // las carreras en línea pueden tener pasantías completamente remotas.
+    const careerModalidad = career?.modalidad ?? Modalidad.PRESENCIAL;
+    let internshipModalidad: Modalidad;
+    if (careerModalidad === Modalidad.EN_LINEA) {
+      // Carreras en línea → prácticas remotas o híbridas
+      internshipModalidad = i % 3 === 0 ? Modalidad.HIBRIDA : Modalidad.EN_LINEA;
+    } else if (careerModalidad === Modalidad.SEMIPRESENCIAL) {
+      internshipModalidad = i % 4 === 0 ? Modalidad.EN_LINEA : Modalidad.SEMIPRESENCIAL;
+    } else if (careerModalidad === Modalidad.HIBRIDA) {
+      internshipModalidad = i % 2 === 0 ? Modalidad.PRESENCIAL : Modalidad.HIBRIDA;
+    } else {
+      // Presencial: mayoría presencial, algunos híbridos
+      internshipModalidad = i % 5 === 0 ? Modalidad.HIBRIDA : Modalidad.PRESENCIAL;
+    }
+
+    // La location física solo aplica para prácticas presenciales/híbridas
+    const hasPhysicalLocation = internshipModalidad === Modalidad.PRESENCIAL || internshipModalidad === Modalidad.HIBRIDA || internshipModalidad === Modalidad.SEMIPRESENCIAL;
+    const locationText = hasPhysicalLocation ? company.address : null;
 
     const internship = await prisma.internship.create({
       data: {
-        studentId: s.id, tutorId: tutor.id, companyId: company.id, careerId: s.careerId,
-        startDate: daysAgo(startOffset), totalHours: reqHours, status, 
-        location: i % 2 === 0 ? 'Presencial' : 'Híbrido',
-        businessTutorName: getRandomName(),
-        businessTutorEmail: `supervisor${i}@company.com`,
-        allowedLocations: [
-          { label: 'Sede Principal', lat: -0.16 + (i * 0.001), lng: -78.47 + (i * 0.001), radiusM: 250 }
-        ]
-      }
+        studentId: s.id,
+        tutorId: tutor.id,
+        companyId: company.id,
+        careerId: s.careerId,
+        startDate: daysAgo(startOffset),
+        endDate: status === 'Finalizado' ? daysAgo(5) : null,
+        totalHours: reqHours,
+        status,
+        modalidad: internshipModalidad,
+        location: locationText,
+        businessTutorName: tutorsEmp[i % tutorsEmp.length].fullName,
+        businessTutorEmail: tutorsEmp[i % tutorsEmp.length].email,
+        // GPS solo para prácticas con componente presencial
+        allowedLocations: hasPhysicalLocation ? [
+          {
+            label: 'Sede Principal',
+            lat: -0.1601 + i * 0.001,
+            lng: -78.4701 + i * 0.001,
+            radiusM: 250,
+          },
+          {
+            label: 'Sede Secundaria / Sucursal',
+            lat: -0.2100 + i * 0.001,
+            lng: -78.5000 + i * 0.001,
+            radiusM: 300,
+          },
+        ] : null,
+      },
     });
+    internships.push(internship);
 
-    // 5.1 Historial de Estados de la Pasantía
+    // Historial de estados
     await prisma.internshipStatusHistory.create({
       data: {
         internshipId: internship.id,
         oldStatus: null,
         newStatus: 'En Proceso',
-        changedById: s.id,
-        createdAt: daysAgo(startOffset)
-      }
+        changedById: coordinators[i % coordinators.length].id,
+        createdAt: daysAgo(startOffset),
+      },
     });
-
     if (status === 'Finalizado') {
       await prisma.internshipStatusHistory.create({
         data: {
@@ -202,157 +615,639 @@ async function main() {
           oldStatus: 'En Proceso',
           newStatus: 'Finalizado',
           changedById: tutor.id,
-          createdAt: daysAgo(1)
-        }
+          createdAt: daysAgo(5),
+          reason: 'Horas completadas y documentación aprobada en su totalidad.',
+        },
       });
     }
 
-    // 6. Asistencias - Simular realismo
-    if (status !== 'Just Started') {
-      const numAtt = Math.min(Math.floor(hoursCompleted / 4), 20); // Simular hasta 20 días de asistencia
-      for (let j = 0; j < numAtt; j++) {
-        const checkInTime = daysAgo(startOffset - j);
-        checkInTime.setHours(8, randInt(0, 30));
-        const checkOutTime = new Date(checkInTime);
-        checkOutTime.setHours(12 + randInt(0, 4));
+    // ── Asistencias ──────────────────────────────────────────────────────
+    const numAtt = Math.max(1, Math.min(Math.floor(hoursCompleted / 4), 30));
+    const attendanceIds: string[] = [];
+    for (let j = 0; j < numAtt; j++) {
+      const checkIn = daysAgo(startOffset - j * 2);
+      checkIn.setHours(7 + randInt(0, 1), randInt(0, 59));
+      const checkOut = new Date(checkIn);
+      // Escenario 50-59: algunos sin checkout (incumplimiento)
+      const missingCheckout = i >= 50 && j % 4 === 0;
+      if (!missingCheckout) {
+        checkOut.setHours(checkIn.getHours() + randInt(4, 8));
+      }
 
-        const att = await prisma.attendance.create({
+      // Prácticas en línea: coordenadas 0,0 y distancia 0 (no aplica GPS presencial)
+      const isOnline = internshipModalidad === Modalidad.EN_LINEA;
+      const att = await prisma.attendance.create({
+        data: {
+          internshipId: internship.id,
+          checkIn,
+          checkOut: missingCheckout ? null : checkOut,
+          lat: isOnline ? 0 : -0.1601 + i * 0.001,
+          lng: isOnline ? 0 : -78.4701 + i * 0.001,
+          distanceKm: isOnline ? 0 : (randInt(0, 1) === 0 ? 0.05 : 0.15),
+          checkInPhoto: isOnline ? null : photoUrl(`in-${internship.id}-${j}`),
+          checkOutPhoto: (isOnline || missingCheckout) ? null : photoUrl(`out-${internship.id}-${j}`),
+        },
+      });
+      attendanceIds.push(att.id);
+
+      // Fotos de actividades (cada 2-3 días)
+      if (j % 2 === 0) {
+        const numPhotos = randInt(1, 3);
+        for (let p = 0; p < numPhotos; p++) {
+          await prisma.activityPhoto.create({
+            data: {
+              attendanceId: att.id,
+              photoUrl: photoUrl(`work-${i}-${j}-${p}`),
+              caption: pick([
+                'Desarrollo de módulo de facturación.',
+                'Reunión de seguimiento con el equipo.',
+                'Pruebas unitarias del componente.',
+                'Capacitación en herramientas internas.',
+                'Revisión de código con el supervisor.',
+                'Diseño de arquitectura del sistema.',
+                'Instalación y configuración de servidores.',
+                'Atención al cliente — área de soporte.',
+              ]),
+            },
+          });
+        }
+      }
+    }
+
+    // ── Documentos ────────────────────────────────────────────────────────
+    // SIEMPRE se crea un registro por cada plantilla aplicable a la carrera.
+    // Los documentos no entregados quedan PENDIENTE con filePath null:
+    // son visibles en la UI pero no abribles. El escenario solo determina
+    // cuántos documentos ya tienen archivo y en qué estado se encuentran.
+    const applicableTemplates = allTemplates.filter(
+      (t) => t.careerId === null || t.careerId === s.careerId,
+    );
+
+    // Para cada escenario se define hasta qué índice de plantilla el
+    // estudiante "ya avanzó" (submittedUpTo) y qué estado tienen los enviados.
+    // Los índices >= submittedUpTo quedan PENDIENTE sin archivo.
+    for (let ti = 0; ti < applicableTemplates.length; ti++) {
+      const tmpl = applicableTemplates[ti];
+
+      // ── Calcular estado según escenario ────────────────────────────────
+      let docStatus: DocumentStatus = DocumentStatus.PENDIENTE;
+      let hasFile = false;
+      let submittedAt: Date | null = null;
+      let reviewedAt: Date | null = null;
+      let isDigitallySigned = false;
+      let signatureDate: Date | null = null;
+      let signatureKey: string | null = null;
+
+      if (i < 10) {
+        // FINALIZADO — todo aprobado definitivamente
+        docStatus = DocumentStatus.APROBADO_DEFINITIVO;
+        hasFile = true;
+        submittedAt = daysAgo(startOffset - 30 + ti * 3);
+        reviewedAt = daysAgo(startOffset - 20 + ti * 2);
+        if (tmpl.isCertificateSlot) {
+          isDigitallySigned = true;
+          signatureDate = daysAgo(6);
+          signatureKey = `SHA256:${Buffer.from(s.id).toString('hex').substring(0, 32)}`;
+        }
+      } else if (i < 20) {
+        // AVANZADO — primeros aprobados, últimos pendientes
+        if (ti === 0) { docStatus = DocumentStatus.APROBADO_DEFINITIVO; hasFile = true; submittedAt = daysAgo(50); reviewedAt = daysAgo(40); }
+        else if (ti === 1) { docStatus = DocumentStatus.APROBADO_TUTOR; hasFile = true; submittedAt = daysAgo(35); reviewedAt = daysAgo(25); }
+        else if (ti === 2) { docStatus = DocumentStatus.EN_REVISION_TUTOR; hasFile = true; submittedAt = daysAgo(15); }
+        else if (ti === 3) { docStatus = DocumentStatus.APROBADO_DEFINITIVO; hasFile = true; submittedAt = daysAgo(30); reviewedAt = daysAgo(20); }
+        else { docStatus = DocumentStatus.PENDIENTE; hasFile = false; }
+      } else if (i < 30) {
+        // RECHAZOS — con versiones e historial de comentarios
+        if (ti === 0) { docStatus = DocumentStatus.APROBADO_DEFINITIVO; hasFile = true; submittedAt = daysAgo(50); reviewedAt = daysAgo(40); }
+        else if (ti === 1) { docStatus = DocumentStatus.RECHAZADO_TUTOR; hasFile = true; submittedAt = daysAgo(35); }
+        else if (ti === 2) { docStatus = DocumentStatus.RECHAZADO_COORDINADOR; hasFile = true; submittedAt = daysAgo(30); }
+        else if (ti === 3) { docStatus = DocumentStatus.EN_REVISION_TUTOR; hasFile = true; submittedAt = daysAgo(10); }
+        else { docStatus = DocumentStatus.PENDIENTE; hasFile = false; }
+      } else if (i < 40) {
+        // TEMPRANO — F01 aprobado, F02 en revisión, el resto pendiente
+        if (ti === 0) { docStatus = DocumentStatus.APROBADO_DEFINITIVO; hasFile = true; submittedAt = daysAgo(20); reviewedAt = daysAgo(15); }
+        else if (ti === 1) { docStatus = DocumentStatus.EN_REVISION_TUTOR; hasFile = true; submittedAt = daysAgo(7); }
+        else { docStatus = DocumentStatus.PENDIENTE; hasFile = false; }
+      } else if (i < 50) {
+        // INICIO — solo F01 enviado y pendiente de revisión, resto sin tocar
+        if (ti === 0) { docStatus = DocumentStatus.EN_REVISION_TUTOR; hasFile = true; submittedAt = daysAgo(3); }
+        else { docStatus = DocumentStatus.PENDIENTE; hasFile = false; }
+      } else {
+        // INCUMPLIMIENTO — F01 aprobado, F03 incumplido, F05 rechazado, resto pendiente
+        if (ti === 0) { docStatus = DocumentStatus.APROBADO_DEFINITIVO; hasFile = true; submittedAt = daysAgo(60); reviewedAt = daysAgo(55); }
+        else if (ti === 1) { docStatus = DocumentStatus.APROBADO_TUTOR; hasFile = true; submittedAt = daysAgo(45); reviewedAt = daysAgo(40); }
+        else if (ti === 2) { docStatus = DocumentStatus.INCUMPLIDO; hasFile = false; }
+        else if (ti === 3) { docStatus = DocumentStatus.EN_REVISION_TUTOR; hasFile = true; submittedAt = daysAgo(20); }
+        else if (ti === 4) { docStatus = DocumentStatus.RECHAZADO_TUTOR; hasFile = true; submittedAt = daysAgo(30); }
+        else { docStatus = DocumentStatus.PENDIENTE; hasFile = false; }
+      }
+
+      const doc = await prisma.document.create({
+        data: {
+          internshipId: internship.id,
+          templateId: tmpl.id,
+          name: tmpl.name,
+          status: docStatus,
+          filePath: hasFile
+            ? docUrl(i < 30 && (docStatus === DocumentStatus.RECHAZADO_TUTOR || docStatus === DocumentStatus.RECHAZADO_COORDINADOR)
+                ? `${tmpl.name}_V2_${s.fullName}`
+                : `${tmpl.name}_${s.fullName}`)
+            : null,
+          sortOrder: tmpl.sortOrder,
+          isRequired: tmpl.isRequired,
+          isCertificateSlot: tmpl.isCertificateSlot,
+          submittedAt,
+          reviewedAt,
+          isDigitallySigned,
+          signatureDate,
+          signatureKey,
+        },
+      });
+
+      // ── Comentarios y versiones según estado ──────────────────────────
+
+      if (docStatus === DocumentStatus.APROBADO_DEFINITIVO || docStatus === DocumentStatus.APROBADO_TUTOR) {
+        await prisma.documentComment.create({
+          data: { documentId: doc.id, userId: tutor.id, content: pick(approvalComments), createdAt: reviewedAt ?? daysAgo(5) },
+        });
+      }
+
+      if (docStatus === DocumentStatus.EN_REVISION_TUTOR) {
+        await prisma.documentComment.create({
+          data: { documentId: doc.id, userId: s.id, content: '¿Hay alguna observación sobre mi documento? Quedo atento a cualquier corrección.', createdAt: submittedAt ?? daysAgo(3) },
+        });
+      }
+
+      if (docStatus === DocumentStatus.RECHAZADO_TUTOR) {
+        // Versión original rechazada
+        await prisma.documentVersion.create({
+          data: { documentId: doc.id, filePath: docUrl(`${tmpl.name}_V1_${s.fullName}`), observations: 'Primera versión enviada. Rechazada por el tutor académico.', createdAt: daysAgo(randInt(20, 45)) },
+        });
+        await prisma.documentComment.create({
+          data: { documentId: doc.id, userId: tutor.id, content: pick(tutorRejectionComments), createdAt: daysAgo(randInt(12, 20)) },
+        });
+        await prisma.documentComment.create({
+          data: { documentId: doc.id, userId: s.id, content: pick(studentResponses), createdAt: daysAgo(randInt(5, 11)) },
+        });
+      }
+
+      if (docStatus === DocumentStatus.RECHAZADO_COORDINADOR) {
+        await prisma.documentVersion.create({
+          data: { documentId: doc.id, filePath: docUrl(`${tmpl.name}_V1_${s.fullName}`), observations: 'Versión revisada por tutor. Rechazada por coordinación.', createdAt: daysAgo(randInt(20, 35)) },
+        });
+        await prisma.documentComment.create({
+          data: { documentId: doc.id, userId: coordinators[i % coordinators.length].id, content: pick(coordRejectionComments), createdAt: daysAgo(randInt(10, 20)) },
+        });
+        await prisma.documentComment.create({
+          data: { documentId: doc.id, userId: s.id, content: pick(studentResponses), createdAt: daysAgo(randInt(3, 9)) },
+        });
+      }
+
+      if (docStatus === DocumentStatus.INCUMPLIDO) {
+        await prisma.documentComment.create({
           data: {
-            internshipId: internship.id,
-            checkIn: checkInTime,
-            checkOut: (i === 15 && j === 0) ? null : checkOutTime, // Un registro olvidado (Riesgo)
-            lat: -0.1601, lng: -78.4701, distanceKm: 0.05,
-            checkInPhoto: photoUrl(`in-${internship.id}-${j}`),
-            checkOutPhoto: photoUrl(`out-${internship.id}-${j}`)
-          }
+            documentId: doc.id,
+            userId: coordinators[i % coordinators.length].id,
+            content: 'El estudiante no entregó este documento dentro del plazo establecido. Se marca como incumplido según el reglamento vigente.',
+          },
         });
+      }
 
-        if (j % 5 === 0) {
-          await prisma.activityPhoto.create({ data: { attendanceId: att.id, photoUrl: photoUrl(`work-${j}`), caption: 'Avance de proyecto fase ' + j } });
+      // Versiones adicionales para documentos avanzados con historial
+      if (i < 30 && ti === 3 && docStatus === DocumentStatus.EN_REVISION_TUTOR) {
+        for (let v = 0; v < 2; v++) {
+          await prisma.documentVersion.create({
+            data: {
+              documentId: doc.id,
+              filePath: docUrl(`${tmpl.name}_V${v + 1}_${s.fullName}`),
+              observations: v === 0 ? 'Versión inicial.' : 'Segunda versión con correcciones aplicadas según indicaciones del tutor.',
+              createdAt: daysAgo(15 - v * 4),
+            },
+          });
         }
-      }
-    }
-
-    // 7. Documentación - El Hilo de la Verdad
-    const docStatusMap = [
-      DocumentStatus.APROBADO_DEFINITIVO,
-      DocumentStatus.PENDIENTE,
-      DocumentStatus.EN_REVISION_TUTOR,
-      DocumentStatus.RECHAZADO_TUTOR
-    ];
-
-    if (i < 10) { // Todos aprobados para los finalizados
-      for (const t of templates) {
-        await prisma.document.create({
-          data: { internshipId: internship.id, name: t.name, status: DocumentStatus.APROBADO_DEFINITIVO, filePath: docUrl(t.name + '_' + s.fullName) }
-        });
-      }
-    } else {
-      // Documentos mixtos para el resto
-      await prisma.document.create({
-        data: { internshipId: internship.id, name: 'F01 - Solicitud de Inicio', status: DocumentStatus.APROBADO_DEFINITIVO, filePath: docUrl('F01_' + s.fullName) }
-      });
-
-      if (i % 5 === 0) {
-         const d = await prisma.document.create({
-           data: { internshipId: internship.id, name: 'F02 - Plan de Prácticas', status: DocumentStatus.RECHAZADO_TUTOR, filePath: docUrl('F02_V1_' + s.fullName) }
-         });
-         await prisma.documentComment.create({ data: { documentId: d.id, userId: tutor.id, content: 'Los objetivos no son medibles. Favor corregir usando SMART.' } });
-         await prisma.documentVersion.create({ data: { documentId: d.id, filePath: docUrl('F02_V0_OLD'), observations: 'Versión inicial con errores.' } });
-      } else if (i % 3 === 0) {
-        await prisma.document.create({
-          data: { internshipId: internship.id, name: 'F02 - Plan de Prácticas', status: DocumentStatus.EN_REVISION_TUTOR, filePath: docUrl('F02_' + s.fullName) }
+        await prisma.documentComment.create({
+          data: { documentId: doc.id, userId: tutor.id, content: 'Revisando la nueva versión. En breve recibirán retroalimentación detallada.' },
         });
       }
     }
 
-    // 8. Evaluaciones y Visitas
-    if (hoursCompleted > 40) {
+    // ── Visitas de monitoreo ──────────────────────────────────────────────
+    const numVisits =
+      i < 10 ? 3 : i < 30 ? 2 : hoursCompleted > 40 ? 1 : 0;
+    for (let v = 0; v < numVisits; v++) {
       await prisma.monitoringVisit.create({
-        data: { internshipId: internship.id, date: daysAgo(5), type: 'PRESENCIAL', observations: 'El estudiante se integra bien al equipo técnico.' }
+        data: {
+          internshipId: internship.id,
+          date: daysAgo(startOffset - v * 20 - 10),
+          type: v % 2 === 0 ? 'PRESENCIAL' : 'VIRTUAL',
+          observations: pick(visitObservations),
+          evidenceUrl: v % 2 === 0 ? photoUrl(`visit-${i}-${v}`) : null,
+        },
       });
     }
 
-    if (status === 'Finalizado') {
+    // ── Evaluaciones ──────────────────────────────────────────────────────
+    if (i < 10) {
+      // Finalizados: ambas evaluaciones completadas
       await prisma.evaluation.create({
         data: {
-          internshipId: internship.id, type: EvaluationType.EMPRESARIAL, status: 'COMPLETADO',
-          punctuality: 5, teamwork: 5, technicalSkills: randInt(4, 5), proactivity: 5, attitude: 5, observations: 'Excelente aporte al departamento.'
-        }
+          internshipId: internship.id,
+          type: EvaluationType.EMPRESARIAL,
+          status: 'COMPLETADO',
+          punctuality: randInt(4, 5),
+          teamwork: randInt(4, 5),
+          technicalSkills: randInt(3, 5),
+          proactivity: randInt(4, 5),
+          attitude: 5,
+          observations: `Excelente desempeño. ${pick(['El estudiante demostró gran capacidad técnica.', 'Se integró perfectamente al equipo de trabajo.', 'Superó las expectativas del área.'])}`,
+        },
       });
       await prisma.evaluation.create({
         data: {
-          internshipId: internship.id, type: EvaluationType.ACADEMICA, status: 'COMPLETADO',
-          punctuality: 5, teamwork: 4, technicalSkills: 5, proactivity: 4, attitude: 5, observations: 'Cumple con los requisitos académicos.'
-        }
+          internshipId: internship.id,
+          type: EvaluationType.ACADEMICA,
+          status: 'COMPLETADO',
+          punctuality: randInt(4, 5),
+          teamwork: randInt(3, 5),
+          technicalSkills: randInt(4, 5),
+          proactivity: randInt(3, 5),
+          attitude: randInt(4, 5),
+          observations: `Cumple satisfactoriamente con los requisitos académicos. ${pick(['Buen dominio de las herramientas.', 'Aplica correctamente los conocimientos teóricos.', 'Reportes bien estructurados.'])}`,
+        },
+      });
+    } else if (i < 20) {
+      // En proceso avanzado: evaluación empresarial completada, académica pendiente
+      await prisma.evaluation.create({
+        data: {
+          internshipId: internship.id,
+          type: EvaluationType.EMPRESARIAL,
+          status: 'COMPLETADO',
+          punctuality: randInt(3, 5),
+          teamwork: randInt(3, 5),
+          technicalSkills: randInt(2, 5),
+          proactivity: randInt(3, 5),
+          attitude: randInt(3, 5),
+          observations: 'Buen progreso durante el periodo de prácticas.',
+        },
+      });
+      await prisma.evaluation.create({
+        data: {
+          internshipId: internship.id,
+          type: EvaluationType.ACADEMICA,
+          status: 'PENDIENTE',
+          punctuality: 0,
+          teamwork: 0,
+          technicalSkills: 0,
+          proactivity: 0,
+          attitude: 0,
+        },
+      });
+    } else if (i < 30) {
+      // Solo evaluación empresarial pendiente
+      await prisma.evaluation.create({
+        data: {
+          internshipId: internship.id,
+          type: EvaluationType.EMPRESARIAL,
+          status: 'PENDIENTE',
+          punctuality: 0,
+          teamwork: 0,
+          technicalSkills: 0,
+          proactivity: 0,
+          attitude: 0,
+        },
+      });
+    }
+    // Escenarios 30+ no tienen evaluaciones todavía
+  }
+
+  console.log(`   ✓ ${internships.length} prácticas generadas con documentos, asistencias, visitas y evaluaciones.\n`);
+
+  // ─── 8. SYSTEM LOGS (1500+) ───────────────────────────────────────────────
+  console.log('📜 [8/12] Generando logs de auditoría (1500+)...');
+  const logCategories = ['AUTH', 'HTTP', 'SYSTEM', 'PRIVACY', 'GPS', 'EMAIL', 'DOCUMENT'];
+  const logBatch: Prisma.SystemLogCreateManyInput[] = [];
+
+  for (let i = 0; i < 1500; i++) {
+    const cat = logCategories[i % logCategories.length];
+    const isError = i % 50 === 0;
+    const isWarn = i % 20 === 0;
+
+    logBatch.push({
+      level: isError ? 'ERROR' : isWarn ? 'WARN' : 'INFO',
+      category: cat,
+      message: isError
+        ? `[${cat}] Error crítico en evento ${i}: ${pick(['Timeout de base de datos', 'JWT expirado sin renovar', 'Permiso denegado en acceso a recurso', 'Fallo de conexión GPS'])}`
+        : isWarn
+        ? `[${cat}] Advertencia en evento ${i}: ${pick(['Sesión próxima a expirar', 'Umbral de intentos fallidos', 'Distancia GPS fuera del rango esperado'])}`
+        : `[${cat}] Operación exitosa ${i}: ${pick(['Login correcto', 'Documento subido', 'Asistencia registrada', 'Evaluación enviada', 'Notificación entregada'])}`,
+      actorEmail: pick([
+        'admin@istpet.edu.ec',
+        `estudiante${(i % 10) + 1}@est.istpet.edu.ec`,
+        `tutor.acad${(i % 5) + 1}@istpet.edu.ec`,
+      ]),
+      method: ['GET', 'POST', 'PATCH', 'DELETE'][i % 4],
+      path: pick(['/api/auth/login', '/api/internships', '/api/documents', '/api/attendance', '/api/evaluations']),
+      statusCode: isError ? pick([500, 502, 503]) : isWarn ? pick([400, 401, 403]) : 200,
+      durationMs: randInt(30, 2000),
+      ip: `192.168.${randInt(1, 10)}.${randInt(1, 254)}`,
+      createdAt: daysAgo(randInt(0, 90)),
+    });
+
+    if (logBatch.length >= 150) {
+      await prisma.systemLog.createMany({ data: logBatch });
+      logBatch.length = 0;
+    }
+  }
+  if (logBatch.length > 0) {
+    await prisma.systemLog.createMany({ data: logBatch });
+  }
+  console.log('   ✓ 1500 logs de auditoría insertados.\n');
+
+  // ─── 9. EMAIL LOGS ────────────────────────────────────────────────────────
+  console.log('📧 [9/12] Generando historial de correos...');
+  const emailSubjects = [
+    'Documento rechazado — acción requerida',
+    'Nueva práctica asignada',
+    'Recordatorio: subir registro de asistencia',
+    'Tu evaluación ha sido completada',
+    'Convenio por vencer — renovación requerida',
+    'Acceso al sistema bloqueado',
+    'Notificación de nueva solicitud ARCO',
+    'Certificado de finalización de prácticas disponible',
+    'Visita de monitoreo programada',
+    'Documento aprobado definitivamente',
+  ];
+
+  const emailBatch: Prisma.EmailLogCreateManyInput[] = [];
+  for (let i = 0; i < 120; i++) {
+    const failed = i % 8 === 0;
+    emailBatch.push({
+      to: `estudiante${(i % 60) + 1}@est.istpet.edu.ec`,
+      subject: emailSubjects[i % emailSubjects.length],
+      status: failed ? 'FALLIDO' : 'EXITO',
+      error: failed
+        ? pick(['MTA Connection timeout', 'Invalid recipient address', 'SMTP 550 Mailbox not found'])
+        : null,
+      sentAt: daysAgo(randInt(0, 60)),
+      metadata: { internshipIndex: i % 60, eventType: emailSubjects[i % emailSubjects.length] },
+    });
+  }
+  await prisma.emailLog.createMany({ data: emailBatch });
+  console.log('   ✓ 120 email logs generados.\n');
+
+  // ─── 10. GOBERNANZA: ANUNCIOS Y NOTIFICACIONES ────────────────────────────
+  console.log('📢 [10/12] Creando anuncios y notificaciones...');
+
+  await prisma.announcement.createMany({
+    data: [
+      {
+        title: '¡Bienvenidos al Período Académico 2026-A — ISTPET!',
+        content:
+          'El Instituto Superior Tecnológico "Mayor Pedro Traversari" da inicio al nuevo período de prácticas preprofesionales 2026-A. ' +
+          'Todos los estudiantes habilitados deben cargar su F01 - Solicitud de Inicio antes del viernes de esta semana. ' +
+          'Para consultas, contactar a su coordinador de carrera en el campus Chillogallo (Av. Matilde Álvarez y Hugo Díaz Romero) ' +
+          'o escribir a admisiones@istpet.edu.ec.',
+        type: 'INFO',
+        startDate: daysAgo(10),
+        isActive: true,
+      },
+      {
+        title: 'Mantenimiento del Sistema EMITESIS — Sábado 02:00 a 04:00',
+        content:
+          'El portal EMITESIS estará fuera de servicio el próximo sábado de 02:00 a 04:00 por actualización de seguridad y respaldo de base de datos. ' +
+          'Planifique sus cargas de documentos con anticipación. Ante emergencias: 02 303 2894.',
+        type: 'WARNING',
+        startDate: daysAgo(2),
+        endDate: daysAgo(-5),
+        isActive: true,
+      },
+      {
+        title: 'Proceso de Evaluación Final Abierto — Período 2026-A',
+        content:
+          'Los tutores empresariales asignados en el sistema ya pueden ingresar y completar la evaluación de desempeño de sus pasantes. ' +
+          'Plazo máximo: 15 días calendario desde la publicación de este aviso. ' +
+          'Contacto coordinación: coordinador.tic@istpet.edu.ec / coordinador.adm@istpet.edu.ec',
+        type: 'SUCCESS',
+        startDate: daysAgo(3),
+        isActive: true,
+      },
+      {
+        title: 'Recordatorio: Documentos Pendientes por Regularizar',
+        content:
+          'Existen estudiantes con documentos pendientes de entrega. Se solicita regularizar la situación antes del cierre del período. ' +
+          'El incumplimiento puede derivar en la no aprobación de las prácticas preprofesionales según el Reglamento ISTPET 2026.',
+        type: 'WARNING',
+        startDate: daysAgo(1),
+        isActive: true,
+      },
+      {
+        title: 'Actualización del Reglamento de Prácticas Preprofesionales 2026',
+        content:
+          'Se ha publicado la versión actualizada del Reglamento de Prácticas Preprofesionales del ISTPET, aprobada por el Consejo Académico en sesión del 15 de marzo de 2026. ' +
+          'El documento está disponible en la sección Normativa del portal institucional: https://institutotraversari.edu.ec',
+        type: 'INFO',
+        startDate: daysAgo(15),
+        isActive: true,
+      },
+      {
+        title: 'Aviso: Convenios Vencidos — Renovación Requerida',
+        content:
+          'Los convenios con MARESA y el JW Marriott Hotel Quito han expirado. No se podrán asignar nuevos pasantes a estas entidades hasta completar el proceso de renovación. ' +
+          'Coordinación está gestionando la actualización. Estimado de resolución: 30 días.',
+        type: 'WARNING',
+        startDate: daysAgo(7),
+        isActive: true,
+      },
+      {
+        title: 'Congreso CAISEB 2024 — ISTPET',
+        content:
+          'El Instituto Traversari participó exitosamente en el II Congreso Académico Internacional CAISEB 2024. ' +
+          'Felicitamos a los estudiantes y docentes que presentaron sus trabajos de investigación en el área de prácticas preprofesionales.',
+        type: 'SUCCESS',
+        startDate: daysAgo(180),
+        isActive: false,
+      },
+    ],
+  });
+
+  // Notificaciones para todos los estudiantes con prácticas activas
+  const notifMessages = [
+    { title: 'Documento rechazado', message: 'Tu F02 - Plan de Prácticas fue rechazado. Revisa los comentarios del tutor.', type: 'ERROR' },
+    { title: 'Documento aprobado', message: 'Tu F01 - Solicitud de Inicio fue aprobada. Continúa con el siguiente formulario.', type: 'SUCCESS' },
+    { title: 'Recordatorio de asistencia', message: 'No has registrado asistencia en los últimos 3 días. Verifica tu registro.', type: 'WARNING' },
+    { title: 'Evaluación disponible', message: 'Tu evaluación empresarial ha sido completada. Puedes revisarla en tu perfil.', type: 'INFO' },
+    { title: 'Visita de monitoreo', message: 'Se ha programado una visita de monitoreo presencial para el próximo miércoles.', type: 'INFO' },
+    { title: 'Documento en revisión', message: 'Tu F04 - Informe de Avance está siendo revisado por el coordinador.', type: 'INFO' },
+    { title: 'Horas completadas', message: '¡Felicidades! Has completado el 75% de las horas requeridas.', type: 'SUCCESS' },
+    { title: 'Documento incumplido', message: 'El plazo para entregar F03 ha vencido. El documento ha sido marcado como incumplido.', type: 'ERROR' },
+  ];
+
+  for (let i = 0; i < students.length; i++) {
+    const s = students[i];
+    const numNotifs = randInt(1, 4);
+    for (let n = 0; n < numNotifs; n++) {
+      const notif = notifMessages[(i + n) % notifMessages.length];
+      await prisma.inAppNotification.create({
+        data: {
+          userId: s.id,
+          title: notif.title,
+          message: notif.message,
+          type: notif.type,
+          isRead: n === 0 ? false : randInt(0, 1) === 1,
+          link: n % 2 === 0 ? '/dashboard/documentos' : '/dashboard/asistencia',
+          createdAt: daysAgo(randInt(0, 30)),
+        },
       });
     }
   }
 
-  // 9. Auditoría Masiva (1200+ Logs)
-  console.log('Inyectando 1200+ Logs de Auditoría para Análisis de Salud...');
-  const cats = ['AUTH', 'HTTP', 'SYSTEM', 'PRIVACY', 'GPS'];
-  const logs: Prisma.SystemLogCreateManyInput[] = [];
-  for (let i = 0; i < 1200; i++) {
-    logs.push({
-      level: i % 50 === 0 ? 'ERROR' : i % 20 === 0 ? 'WARN' : 'INFO',
-      category: cats[i % 5],
-      message: `Evento de Sistema ID-${i}: ${i % 3 === 0 ? 'Sincronización exitosa' : 'Acceso a módulo detectado'}`,
-      actorEmail: 'admin@istpet.edu.ec',
-      statusCode: i % 50 === 0 ? 500 : 200,
-      durationMs: randInt(50, 1500),
-      createdAt: daysAgo(randInt(0, 60))
-    });
-    if (logs.length >= 100) {
-      await prisma.systemLog.createMany({ data: logs });
-      logs.length = 0;
-    }
-  }
-
-  // 10. Email Logs (Correos enviados por el sistema)
-  console.log('Simulando Historial de Correos (Email Logs)...');
-  const emailLogs: Prisma.EmailLogCreateManyInput[] = [];
-  for (let i = 0; i < 50; i++) {
-    emailLogs.push({
-      to: `estudiante${i}@est.edu`,
-      subject: i % 4 === 0 ? 'Alerta: Documento Rechazado' : 'Notificación de Prácticas',
-      status: i % 10 === 0 ? 'FALLIDO' : 'EXITO',
-      error: i % 10 === 0 ? 'MTA Connection timeout' : null,
-      sentAt: daysAgo(randInt(1, 30)),
-      metadata: { reason: 'System Event' }
-    });
-  }
-  await prisma.emailLog.createMany({ data: emailLogs });
-
-  // 11. Gobernanza Final (Notificaciones, Anuncios, Ajustes)
-  console.log('Sellando con Gobernanza, Notificaciones y LOPDP...');
-  
-  await prisma.announcement.createMany({ data: [
-    { title: 'BIENVENIDOS AL PERIODO 2026-A', content: 'Iniciamos el nuevo ciclo de prácticas. No olviden cargar su F01 antes del viernes.', type: 'INFO', startDate: daysAgo(5) },
-    { title: '️ MANTENIMIENTO PROGRAMADO', content: 'La plataforma estará fuera de servicio el sábado de 02:00 a 04:00 por actualización de seguridad.', type: 'WARNING', startDate: daysAgo(1) },
-    { title: 'PROCESO DE EVALUACIÓN ABIERTO', content: 'Tutores empresariales ya pueden calificar a sus pasantes asignados.', type: 'SUCCESS', startDate: daysAgo(2) }
-  ]});
-
-  for (let i = 0; i < 10; i++) {
+  // Notificaciones para tutores y coordinadores
+  for (const tutor of tutorsAcad.slice(0, 5)) {
     await prisma.inAppNotification.create({
-      data: { userId: students[i].id, title: 'Recordatorio', message: 'Tienes documentos pendientes por subir.', type: 'WARNING' }
+      data: {
+        userId: tutor.id,
+        title: 'Documentos pendientes de revisión',
+        message: 'Tienes 3 documentos esperando tu revisión.',
+        type: 'WARNING',
+        isRead: false,
+        link: '/tutor/documentos',
+      },
+    });
+  }
+  for (const coord of coordinators) {
+    await prisma.inAppNotification.create({
+      data: {
+        userId: coord.id,
+        title: 'Informe mensual disponible',
+        message: 'El informe de seguimiento del mes de abril está listo para descarga.',
+        type: 'INFO',
+        isRead: false,
+        link: '/coordinador/reportes',
+      },
     });
   }
 
-  await prisma.dataRequest.create({ data: { userId: students[0].id, type: 'ACCESO', details: 'Solicito copia de mis datos personales según LOPDP.', status: 'COMPLETADA', response: 'Datos enviados al correo institucional.' } });
-  await prisma.dataRequest.create({ data: { userId: students[1].id, type: 'CANCELACION', details: 'Solicito eliminación de cuenta por retiro de la carrera.', status: 'PENDIENTE' } });
+  console.log('   ✓ 6 anuncios y ~200 notificaciones creados.\n');
 
-  await prisma.systemSetting.createMany({ data: [
-    { key: 'attendance_radius', value: '250', category: 'GPS', description: 'Radio permitido para marcaje en metros' },
-    { key: 'session_timeout', value: '7200', category: 'AUTH', description: 'Tiempo de sesión en segundos' },
-    { key: 'smtp_host', value: 'smtp.istpet.edu.ec', category: 'EMAIL' }
-  ]});
+  // ─── 11. SOLICITUDES ARCO (LOPDP) ─────────────────────────────────────────
+  console.log('🔒 [11/12] Creando solicitudes ARCO (LOPDP)...');
+  const arcoRequests = [
+    { student: students[0], type: 'ACCESO', details: 'Solicito copia completa de mis datos personales almacenados en el sistema, conforme al Art. 18 de la LOPDP.', status: 'COMPLETADA', response: 'Se envió el reporte completo de datos personales al correo institucional del solicitante.' },
+    { student: students[1], type: 'CANCELACION', details: 'Solicito la eliminación de mi cuenta y datos personales por retiro voluntario de la institución.', status: 'EN_REVISION', response: null },
+    { student: students[2], type: 'RECTIFICACION', details: 'Mi nombre completo está registrado incorrectamente. El correcto es con tilde en la é.', status: 'COMPLETADA', response: 'Se corrigió el nombre en el sistema. Verificar en el perfil de usuario.' },
+    { student: students[3], type: 'OPOSICION', details: 'Me opongo al uso de mis datos para comunicaciones de terceros. Solo autorizo usos académicos directos.', status: 'PENDIENTE', response: null },
+    { student: students[4], type: 'ACCESO', details: 'Requiero el listado de todas las entidades con las que se han compartido mis datos.', status: 'PENDIENTE', response: null },
+    { student: students[5], type: 'CANCELACION', details: 'Solicito la anonimización de mis datos de asistencia GPS después de finalizar las prácticas.', status: 'COMPLETADA', response: 'Datos GPS anonimizados. Se mantiene el registro de horas sin coordenadas exactas.' },
+  ];
 
-  console.log('\nMASTER SEED v11.0 FINALIZADO EXITOSAMENTE.');
-  console.log('──────────────────────────────────────────────────────');
-  console.log(`Resumen: 50 Estudiantes | ${companiesData.length} Empresas | 1200+ Logs | Pasantías (Historial Completo) | +50 Correos Simulados`);
+  for (const req of arcoRequests) {
+    await prisma.dataRequest.create({
+      data: {
+        userId: req.student.id,
+        type: req.type,
+        details: req.details,
+        status: req.status,
+        response: req.response,
+        createdAt: daysAgo(randInt(5, 45)),
+      },
+    });
+  }
+  console.log(`   ✓ ${arcoRequests.length} solicitudes ARCO creadas.\n`);
+
+  // ─── 12. CONFIGURACIONES DEL SISTEMA ──────────────────────────────────────
+  console.log('⚙️  [12/12] Configurando ajustes del sistema...');
+  await prisma.systemSetting.createMany({
+    data: [
+      { key: 'attendance_radius_meters', value: '250', category: 'GPS', description: 'Radio máximo permitido para el registro de asistencia por GPS (metros).' },
+      { key: 'attendance_max_distance_km', value: '0.5', category: 'GPS', description: 'Distancia máxima tolerada antes de emitir alerta de irregularidad (km).' },
+      { key: 'session_timeout_seconds', value: '7200', category: 'AUTH', description: 'Tiempo de inactividad antes de cerrar sesión automáticamente (segundos).' },
+      { key: 'max_login_attempts', value: '5', category: 'AUTH', description: 'Número máximo de intentos fallidos antes de bloquear la cuenta.' },
+      { key: 'lockout_duration_minutes', value: '30', category: 'AUTH', description: 'Duración del bloqueo de cuenta después de superar los intentos fallidos.' },
+      { key: 'smtp_host', value: 'smtp.istpet.edu.ec', category: 'EMAIL', description: 'Servidor SMTP para envío de correos institucionales.' },
+      { key: 'smtp_port', value: '587', category: 'EMAIL', description: 'Puerto del servidor SMTP.' },
+      { key: 'smtp_sender', value: 'noreply@istpet.edu.ec', category: 'EMAIL', description: 'Dirección de correo remitente para notificaciones automáticas.' },
+      { key: 'document_max_size_mb', value: '10', category: 'GENERAL', description: 'Tamaño máximo permitido para subir documentos (MB).' },
+      { key: 'allowed_file_types', value: 'pdf,docx,jpg,png', category: 'GENERAL', description: 'Tipos de archivo permitidos para carga de documentos.' },
+      { key: 'lopdp_version_current', value: '1.0', category: 'GENERAL', description: 'Versión actual de la política de protección de datos LOPDP.' },
+      { key: 'webauthn_enabled', value: 'true', category: 'AUTH', description: 'Habilitar autenticación biométrica/WebAuthn para usuarios con credencial registrada.' },
+    ],
+  });
+  console.log('   ✓ 12 configuraciones del sistema registradas.\n');
+
+  // ─── RESUMEN FINAL ────────────────────────────────────────────────────────
+  const counts = {
+    careers: await prisma.career.count(),
+    templates: await prisma.documentTemplate.count(),
+    companies: await prisma.company.count(),
+    agreements: await prisma.agreement.count(),
+    users: await prisma.user.count(),
+    credentials: await prisma.userCredential.count(),
+    internships: await prisma.internship.count(),
+    statusHistory: await prisma.internshipStatusHistory.count(),
+    attendances: await prisma.attendance.count(),
+    activityPhotos: await prisma.activityPhoto.count(),
+    documents: await prisma.document.count(),
+    docVersions: await prisma.documentVersion.count(),
+    docComments: await prisma.documentComment.count(),
+    evaluations: await prisma.evaluation.count(),
+    monitoringVisits: await prisma.monitoringVisit.count(),
+    systemLogs: await prisma.systemLog.count(),
+    emailLogs: await prisma.emailLog.count(),
+    announcements: await prisma.announcement.count(),
+    notifications: await prisma.inAppNotification.count(),
+    dataRequests: await prisma.dataRequest.count(),
+    settings: await prisma.systemSetting.count(),
+  };
+
+  console.log('═══════════════════════════════════════════════════════════');
+  console.log('✅ MASTER SEED v13.0 — ISTPET "Mayor Pedro Traversari" OK');
+  console.log('═══════════════════════════════════════════════════════════');
+  console.log('\n📊 RESUMEN DE REGISTROS CREADOS:');
+  console.log('─────────────────────────────────────────────────────');
+  console.log(`  🎓 Carreras                  : ${counts.careers}`);
+  console.log(`  📋 Plantillas de documentos  : ${counts.templates}`);
+  console.log(`  🏢 Empresas                  : ${counts.companies}`);
+  console.log(`  🤝 Convenios                 : ${counts.agreements}`);
+  console.log(`  👥 Usuarios (todos los roles): ${counts.users}`);
+  console.log(`  🔑 Credenciales WebAuthn     : ${counts.credentials}`);
+  console.log(`  📚 Prácticas preprofesionales: ${counts.internships}`);
+  console.log(`  🔄 Historial de estados      : ${counts.statusHistory}`);
+  console.log(`  📍 Registros de asistencia   : ${counts.attendances}`);
+  console.log(`  📸 Fotos de actividades      : ${counts.activityPhotos}`);
+  console.log(`  📄 Documentos                : ${counts.documents}`);
+  console.log(`  📑 Versiones de documentos   : ${counts.docVersions}`);
+  console.log(`  💬 Comentarios en documentos : ${counts.docComments}`);
+  console.log(`  ⭐ Evaluaciones              : ${counts.evaluations}`);
+  console.log(`  🏫 Visitas de monitoreo      : ${counts.monitoringVisits}`);
+  console.log(`  📜 Logs del sistema          : ${counts.systemLogs}`);
+  console.log(`  📧 Logs de email             : ${counts.emailLogs}`);
+  console.log(`  📢 Anuncios                  : ${counts.announcements}`);
+  console.log(`  🔔 Notificaciones in-app     : ${counts.notifications}`);
+  console.log(`  🔒 Solicitudes ARCO (LOPDP)  : ${counts.dataRequests}`);
+  console.log(`  ⚙️  Configuraciones del sistema: ${counts.settings}`);
+  console.log('─────────────────────────────────────────────────────\n');
+  console.log('  🔐 Credenciales de acceso (contraseña universal: password123):');
+  console.log('     admin@istpet.edu.ec                  → ADMIN');
+  console.log('     coordinador.tic@istpet.edu.ec        → COORDINADOR (TIC)');
+  console.log('     coordinador.adm@istpet.edu.ec        → COORDINADOR (Admin)');
+  console.log('     coordinador.edu@istpet.edu.ec        → COORDINADOR (Educación)');
+  console.log('     tutor.desarrol1@istpet.edu.ec        → TUTOR (Software)');
+  console.log('     tutor.mecanica1@istpet.edu.ec        → TUTOR (Automotriz)');
+  console.log('     tutor.gastrono1@istpet.edu.ec        → TUTOR (Gastronomía)');
+  console.log('     estudiante1@est.istpet.edu.ec        → ESTUDIANTE');
+  console.log('     bloqueado@est.istpet.edu.ec          → cuenta bloqueada (test)');
+  console.log('');
+  console.log('  🏫 Instituto: I.S.T. "Mayor Pedro Traversari" — ISTPET');
+  console.log('     Av. Matilde Álvarez y Hugo Díaz Romero, Chillogallo, Quito');
+  console.log('     Tel: 02 303 2894 | admisiones@istpet.edu.ec');
+  console.log('═══════════════════════════════════════════════════════════\n');
 }
 
 main()
-  .catch((e) => { console.error('Error fatal en seed:', e); process.exit(1); })
-  .finally(async () => { await prisma.$disconnect(); });
+  .catch((e) => {
+    console.error('\n❌ Error fatal en seed:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
