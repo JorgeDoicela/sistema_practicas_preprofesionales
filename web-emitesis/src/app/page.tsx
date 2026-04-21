@@ -437,7 +437,7 @@ export default function Home() {
                             Todo el ciclo de vida, en un solo lugar
                         </h2>
                         <p className="text-slate-500 mt-3 text-sm leading-relaxed">
-                            28 módulos NestJS interconectados — desde la autenticación hasta la integración SIGAFI.
+                            28 módulos NestJS interconectados — desde la autenticación hasta la certificación institucional.
                         </p>
                     </div>
 
@@ -512,7 +512,7 @@ export default function Home() {
                                     { icon: <Lock />, title: "LOPDP + ARCO", desc: "Consentimiento versionado y solicitudes A/R/C/O de datos." },
                                     { icon: <ShieldAlert />, title: "Helmet + Throttler", desc: "Cabeceras seguras y rate-limit global 100 req/min." },
                                     { icon: <BookOpen />, title: "Swagger OpenAPI", desc: "Docs en /api/docs con Bearer persistido y tags por módulo." },
-                                    { icon: <Network />, title: "Bridge SIGAFI", desc: "Sincronización con sistema académico externo (matrícula, GPA)." },
+                                    { icon: <Network />, title: "Bridge Académico", desc: "Sincronización con sistema académico externo (matrícula, GPA)." },
                                 ]
                             },
                         ].map((cat, ci) => (
