@@ -5,7 +5,7 @@
  * Objetivo: Mostrar el sistema como si tuviera 6 meses de uso real intenso.
  */
 
-import { PrismaClient, Role, DocumentStatus, EvaluationType } from '@prisma/client';
+import { PrismaClient, Role, DocumentStatus, EvaluationType, Career, Company, User, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -67,7 +67,7 @@ async function main() {
     { name: 'Marketing Digital', faculty: 'Ciencias Administrativas', hours: 160 },
   ];
 
-  const careers = [];
+  const careers: Career[] = [];
   for (const c of careersData) {
     careers.push(await prisma.career.create({ 
       data: { name: c.name, faculty: c.faculty, config: { requiredHours: c.hours } } 
@@ -95,7 +95,7 @@ async function main() {
     { name: 'Thoughtworks Ecuador', ruc: '1794455667001', address: 'Quito, Shyris', rep: 'Ana Paredes', email: 'jobs@thoughtworks.com' },
   ];
 
-  const companies = [];
+  const companies: Company[] = [];
   for (const c of companiesData) {
     companies.push(await prisma.company.create({ 
       data: { ruc: c.ruc, name: c.name, address: c.address, representative: c.rep, email: c.email } 
@@ -112,14 +112,14 @@ async function main() {
   console.log('Inyectando Identidades por Rol (Admin, Coord, Tutores, Estudiantes)...');
   await prisma.user.create({ data: { email: 'admin@istpet.edu.ec', password, fullName: 'Admin General', role: Role.ADMIN, ...lopdp } });
   
-  const coordinators = [];
+  const coordinators: User[] = [];
   for (let i = 1; i <= 3; i++) {
     coordinators.push(await prisma.user.create({ 
       data: { email: `coordinador${i}@istpet.edu.ec`, password, fullName: `Coordinador ${i}`, role: Role.COORDINADOR, ...lopdp } 
     }));
   }
 
-  const tutorsAcad = [];
+  const tutorsAcad: User[] = [];
   for (let i = 0; i < 8; i++) {
     const career = careers[i % careers.length];
     tutorsAcad.push(await prisma.user.create({ 
@@ -127,14 +127,14 @@ async function main() {
     }));
   }
 
-  const tutorsEmp = [];
+  const tutorsEmp: User[] = [];
   for (let i = 0; i < companies.length; i++) {
     tutorsEmp.push(await prisma.user.create({ 
       data: { email: `supervisor@${companies[i].email.split('@')[1]}`, password, fullName: getRandomName() + ' (Supv. ' + companies[i].name + ')', role: Role.TUTOR_EMPRESARIAL, companyId: companies[i].id, ...lopdp } 
     }));
   }
 
-  const students = [];
+  const students: User[] = [];
   for (let i = 0; i < 50; i++) {
     const career = careers[i % careers.length];
     students.push(await prisma.user.create({ 
@@ -292,7 +292,7 @@ async function main() {
   // 9. Auditoría Masiva (1200+ Logs)
   console.log('Inyectando 1200+ Logs de Auditoría para Análisis de Salud...');
   const cats = ['AUTH', 'HTTP', 'SYSTEM', 'PRIVACY', 'GPS'];
-  const logs = [];
+  const logs: Prisma.SystemLogCreateManyInput[] = [];
   for (let i = 0; i < 1200; i++) {
     logs.push({
       level: i % 50 === 0 ? 'ERROR' : i % 20 === 0 ? 'WARN' : 'INFO',
@@ -311,7 +311,7 @@ async function main() {
 
   // 10. Email Logs (Correos enviados por el sistema)
   console.log('Simulando Historial de Correos (Email Logs)...');
-  const emailLogs = [];
+  const emailLogs: Prisma.EmailLogCreateManyInput[] = [];
   for (let i = 0; i < 50; i++) {
     emailLogs.push({
       to: `estudiante${i}@est.edu`,
