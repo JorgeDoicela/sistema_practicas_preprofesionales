@@ -184,19 +184,14 @@ async function main() {
     { name: 'Gastronomía',                        faculty: 'Cultura, Deporte y Gastronomía',               modalidad: Modalidad.SEMIPRESENCIAL, hours: 160 },
   ];
 
-  const careers: Career[] = [];
-  for (const c of careersData) {
-    careers.push(
-      await prisma.career.create({
-        data: {
-          name: c.name,
-          faculty: c.faculty,
-          modalidad: c.modalidad,
-          config: { requiredHours: c.hours },
-        },
-      }),
-    );
-  }
+  const careers = await (prisma.career as any).createManyAndReturn({
+    data: careersData.map(c => ({
+      name: c.name,
+      faculty: c.faculty,
+      modalidad: c.modalidad,
+      config: { requiredHours: c.hours },
+    })),
+  });
   console.log(`   ✓ ${careers.length} carreras creadas.\n`);
 
   // ─── 3. DOCUMENT TEMPLATES (por carrera + globales) ──────────────────────
@@ -214,20 +209,9 @@ async function main() {
     { name: 'F10 - Certificado de Finalización', sortOrder: 10, isRequired: true, isCertificateSlot: true },
   ];
 
-  const globalTemplates: DocumentTemplate[] = [];
-  for (const t of globalTemplatesData) {
-    globalTemplates.push(
-      await prisma.documentTemplate.create({
-        data: {
-          name: t.name,
-          sortOrder: t.sortOrder,
-          isRequired: t.isRequired,
-          isCertificateSlot: t.isCertificateSlot ?? false,
-          careerId: null,
-        },
-      }),
-    );
-  }
+  const globalTemplates = await (prisma.documentTemplate as any).createManyAndReturn({
+    data: globalTemplatesData.map((t, idx) => ({ ...t, sortOrder: idx + 1, isRequired: true })),
+  });
 
   // Plantillas específicas por carrera del ISTPET
   const careerSW    = careers.find((c) => c.name === 'Desarrollo de Software')!;
@@ -239,7 +223,6 @@ async function main() {
   const careerEdu   = careers.find((c) => c.name === 'Educación Inicial')!;
   const careerDepo  = careers.find((c) => c.name === 'Entrenamiento Deportivo')!;
 
-  const careerSpecificTemplates: DocumentTemplate[] = [];
   const csTemplateData = [
     // Desarrollo de Software
     { name: 'F-SW-01 - Enlace al Repositorio de Código (GitHub/GitLab)', sortOrder: 8, careerId: careerSW.id },
@@ -264,13 +247,10 @@ async function main() {
     { name: 'F-DEP-01 - Plan de Entrenamiento Individualizado',           sortOrder: 8, careerId: careerDepo.id },
     { name: 'F-DEP-02 - Ficha de Evaluación Física del Deportista',       sortOrder: 9, careerId: careerDepo.id },
   ];
-  for (const t of csTemplateData) {
-    careerSpecificTemplates.push(
-      await prisma.documentTemplate.create({
-        data: { name: t.name, sortOrder: t.sortOrder, isRequired: true, careerId: t.careerId },
-      }),
-    );
-  }
+
+  const careerSpecificTemplates = await (prisma.documentTemplate as any).createManyAndReturn({
+    data: csTemplateData.map(t => ({ name: t.name, sortOrder: t.sortOrder, isRequired: true, careerId: t.careerId })),
+  });
 
   const allTemplates = [...globalTemplates, ...careerSpecificTemplates];
   console.log(`   ✓ ${allTemplates.length} plantillas creadas (${globalTemplates.length} globales + ${careerSpecificTemplates.length} específicas por carrera).\n`);
@@ -310,38 +290,31 @@ async function main() {
     { name: 'Restaurant Zazu',                      ruc: '1792100450001', address: 'Quito, Mariano Aguilera 331 y La Pradera',        rep: 'Chef Rodrigo Pacheco', email: 'practicas@zazuquito.com',       convenio: 'Activo'     },
   ];
 
-  const companies: Company[] = [];
-  for (const c of companiesData) {
-    companies.push(
-      await prisma.company.create({
-        data: {
-          ruc: c.ruc,
-          name: c.name,
-          address: c.address,
-          representative: c.rep,
-          email: c.email,
-        },
-      }),
-    );
-  }
+  const companies = await (prisma.company as any).createManyAndReturn({
+    data: companiesData.map(c => ({
+      ruc: c.ruc,
+      name: c.name,
+      address: c.address,
+      representative: c.rep,
+      email: c.email,
+    })),
+  });
 
-  for (let i = 0; i < companies.length; i++) {
-    await prisma.agreement.create({
-      data: {
-        companyId: companies[i].id,
-        startDate: daysAgo(randInt(60, 730)),
-        filePath: docUrl(`CONVENIO_${companies[i].name}`),
-        status: companiesData[i].convenio,
-      },
-    });
-  }
+  await prisma.agreement.createMany({
+    data: companies.map((comp, i) => ({
+      companyId: comp.id,
+      startDate: daysAgo(randInt(60, 730)),
+      filePath: docUrl(`CONVENIO_${comp.name}`),
+      status: companiesData[i].convenio,
+    })),
+  });
   console.log(`   ✓ ${companies.length} empresas y ${companies.length} convenios creados.\n`);
 
   // ─── 5. USUARIOS ──────────────────────────────────────────────────────────
   console.log('👥 [5/12] Creando usuarios por rol...');
 
   // Admin del sistema
-  const admin = await prisma.user.create({
+  const adminUser = await prisma.user.create({
     data: {
       email: 'admin@istpet.edu.ec',
       password,
@@ -359,14 +332,9 @@ async function main() {
     { name: 'Lcda. Carmen Suárez Almeida',    email: 'coordinador.adm@istpet.edu.ec'   },
     { name: 'Lcda. Rosa Herrera Burbano',     email: 'coordinador.edu@istpet.edu.ec'   },
   ];
-  const coordinators: User[] = [];
-  for (const cd of coordsData) {
-    coordinators.push(
-      await prisma.user.create({
-        data: { email: cd.email, password, fullName: cd.name, role: Role.COORDINADOR, ...lopdp },
-      }),
-    );
-  }
+  const coordinators = await (prisma.user as any).createManyAndReturn({
+    data: coordsData.map(cd => ({ email: cd.email, password, fullName: cd.name, role: Role.COORDINADOR, ...lopdp })),
+  });
 
   // Tutores académicos — docentes del ISTPET asignados por carrera
   const tutorsByCareer: Record<string, string[]> = {
@@ -385,76 +353,58 @@ async function main() {
     'Gastronomía':                      ['Chef. Patricia Almeida Salazar', 'Chef. Ricardo Larrea Cisneros'],
   };
 
-  const tutorsAcad: User[] = [];
+  const tutorsAcadData: any[] = [];
   for (let ci = 0; ci < careers.length; ci++) {
     const career = careers[ci];
     const names = tutorsByCareer[career.name] ?? [`Ing. Docente ${career.name} A`, `Ing. Docente ${career.name} B`];
     for (let t = 0; t < names.length; t++) {
-      // Usamos índice de carrera (ci) + índice de tutor (t) para garantizar unicidad
-      tutorsAcad.push(
-        await prisma.user.create({
-          data: {
-            email: `tutor.c${ci + 1}.${t + 1}@istpet.edu.ec`,
-            password,
-            fullName: names[t],
-            role: Role.TUTOR,
-            careerId: career.id,
-            ...lopdp,
-          },
-        }),
-      );
+      tutorsAcadData.push({
+        email: `tutor.c${ci + 1}.${t + 1}@istpet.edu.ec`,
+        password,
+        fullName: names[t],
+        role: Role.TUTOR,
+        careerId: career.id,
+        ...lopdp,
+      });
     }
   }
+  const tutorsAcad = await (prisma.user as any).createManyAndReturn({ data: tutorsAcadData });
 
   // Tutores empresariales (uno por empresa)
-  const tutorsEmp: User[] = [];
-  for (let i = 0; i < companies.length; i++) {
-    const comp = companies[i];
-    tutorsEmp.push(
-      await prisma.user.create({
-        data: {
-          email: `supervisor@${comp.email.split('@')[1]}`,
-          password,
-          fullName: getUniqueName(),
-          role: Role.TUTOR_EMPRESARIAL,
-          companyId: comp.id,
-          ...lopdp,
-        },
-      }),
-    );
-  }
+  const tutorsEmp = await (prisma.user as any).createManyAndReturn({
+    data: companies.map(comp => ({
+      email: `supervisor@${comp.email.split('@')[1]}`,
+      password,
+      fullName: getUniqueName(),
+      role: Role.TUTOR_EMPRESARIAL,
+      companyId: comp.id,
+      ...lopdp,
+    })),
+  });
 
   // Usuarios rol EMPRESA (representantes de empresa con acceso al portal)
-  for (let i = 0; i < 4; i++) {
-    await prisma.user.create({
-      data: {
-        email: `empresa.portal${i + 1}@${companies[i].email.split('@')[1]}`,
-        password,
-        fullName: `Portal Empresa — ${companies[i].name}`,
-        role: Role.EMPRESA,
-        companyId: companies[i].id,
-        ...lopdp,
-      },
-    });
-  }
+  await prisma.user.createMany({
+    data: Array.from({ length: 4 }).map((_, i) => ({
+      email: `empresa.portal${i + 1}@${companies[i].email.split('@')[1]}`,
+      password,
+      fullName: `Portal Empresa — ${companies[i].name}`,
+      role: Role.EMPRESA,
+      companyId: companies[i].id,
+      ...lopdp,
+    })),
+  });
 
   // Estudiantes (60: cubrir todos los escenarios posibles)
-  const students: User[] = [];
-  for (let i = 0; i < 60; i++) {
-    const career = careers[i % careers.length];
-    students.push(
-      await prisma.user.create({
-        data: {
-          email: `estudiante${i + 1}@est.istpet.edu.ec`,
-          password,
-          fullName: getUniqueName(),
-          role: Role.ESTUDIANTE,
-          careerId: career.id,
-          ...lopdp,
-        },
-      }),
-    );
-  }
+  const students = await (prisma.user as any).createManyAndReturn({
+    data: Array.from({ length: 60 }).map((_, i) => ({
+      email: `estudiante${i + 1}@est.istpet.edu.ec`,
+      password,
+      fullName: getUniqueName(),
+      role: Role.ESTUDIANTE,
+      careerId: careers[i % careers.length].id,
+      ...lopdp,
+    })),
+  });
 
   // Usuario con cuenta bloqueada (por intentos fallidos)
   await prisma.user.create({
@@ -478,18 +428,15 @@ async function main() {
   // ─── 6. CREDENCIALES WEBAUTHN ─────────────────────────────────────────────
   console.log('🔑 [6/12] Creando credenciales WebAuthn...');
   // Registrar credencial para el admin y 5 tutores
-  const webauthnUsers = [admin, ...tutorsAcad.slice(0, 5)];
-  for (let i = 0; i < webauthnUsers.length; i++) {
-    const u = webauthnUsers[i];
-    await prisma.userCredential.create({
-      data: {
-        userId: u.id,
-        credentialId: `cred-${u.id.substring(0, 8)}-${i}`,
-        publicKey: `-----BEGIN PUBLIC KEY-----\nMFkwEwYH${Buffer.from(u.id).toString('base64').substring(0, 40)}\n-----END PUBLIC KEY-----`,
-        counter: randInt(1, 50),
-      },
-    });
-  }
+  const webauthnUsers = [adminUser, ...tutorsAcad.slice(0, 5)];
+  await prisma.userCredential.createMany({
+    data: webauthnUsers.map((u, i) => ({
+      userId: u.id,
+      credentialId: `cred-${u.id.substring(0, 8)}-${i}`,
+      publicKey: `-----BEGIN PUBLIC KEY-----\nMFkwEwYH${Buffer.from(u.id).toString('base64').substring(0, 40)}\n-----END PUBLIC KEY-----`,
+      counter: randInt(1, 50),
+    })),
+  });
   console.log(`   ✓ ${webauthnUsers.length} credenciales WebAuthn registradas.\n`);
 
   // ─── 7. PRÁCTICAS CON CICLO DE VIDA COMPLETO ──────────────────────────────
@@ -505,7 +452,9 @@ async function main() {
    * 50-59 (10): En proceso con incumplimientos — asistencia irregular, documentos incumplidos
    */
 
-  const internships: Internship[] = [];
+  let internshipsCreated: Internship[] = [];
+  const internshipsData: any[] = [];
+  const studentInternshipMap: any[] = []; // Para trackear qué estudiante tiene qué index de internship
 
   for (let i = 0; i < students.length; i++) {
     const s = students[i];
@@ -545,152 +494,125 @@ async function main() {
       hoursCompleted = Math.floor(reqHours * 0.4);
     }
 
-    // La modalidad de la práctica se hereda de la carrera, con variaciones
-    // realistas: algunas prácticas presenciales se ejecutan de forma híbrida,
-    // las carreras en línea pueden tener pasantías completamente remotas.
     const careerModalidad = career?.modalidad ?? Modalidad.PRESENCIAL;
     let internshipModalidad: Modalidad;
     if (careerModalidad === Modalidad.EN_LINEA) {
-      // Carreras en línea → prácticas remotas o híbridas
       internshipModalidad = i % 3 === 0 ? Modalidad.HIBRIDA : Modalidad.EN_LINEA;
     } else if (careerModalidad === Modalidad.SEMIPRESENCIAL) {
       internshipModalidad = i % 4 === 0 ? Modalidad.EN_LINEA : Modalidad.SEMIPRESENCIAL;
     } else if (careerModalidad === Modalidad.HIBRIDA) {
       internshipModalidad = i % 2 === 0 ? Modalidad.PRESENCIAL : Modalidad.HIBRIDA;
     } else {
-      // Presencial: mayoría presencial, algunos híbridos
       internshipModalidad = i % 5 === 0 ? Modalidad.HIBRIDA : Modalidad.PRESENCIAL;
     }
 
-    // La location física solo aplica para prácticas presenciales/híbridas
     const hasPhysicalLocation = internshipModalidad === Modalidad.PRESENCIAL || internshipModalidad === Modalidad.HIBRIDA || internshipModalidad === Modalidad.SEMIPRESENCIAL;
     const locationText = hasPhysicalLocation ? company.address : null;
 
-    const internship = await prisma.internship.create({
-      data: {
-        studentId: s.id,
-        tutorId: tutor.id,
-        companyId: company.id,
-        careerId: s.careerId,
-        startDate: daysAgo(startOffset),
-        endDate: status === 'Finalizado' ? daysAgo(5) : null,
-        totalHours: reqHours,
-        status,
-        modalidad: internshipModalidad,
-        location: locationText,
-        businessTutorName: tutorsEmp[i % tutorsEmp.length].fullName,
-        businessTutorEmail: tutorsEmp[i % tutorsEmp.length].email,
-        // GPS solo para prácticas con componente presencial
-        allowedLocations: hasPhysicalLocation ? [
-          {
-            label: 'Sede Principal',
-            lat: -0.1601 + i * 0.001,
-            lng: -78.4701 + i * 0.001,
-            radiusM: 250,
-          },
-          {
-            label: 'Sede Secundaria / Sucursal',
-            lat: -0.2100 + i * 0.001,
-            lng: -78.5000 + i * 0.001,
-            radiusM: 300,
-          },
-        ] : Prisma.JsonNull,
-      },
-    });
-    internships.push(internship);
-
-    // Historial de estados
-    await prisma.internshipStatusHistory.create({
-      data: {
-        internshipId: internship.id,
-        oldStatus: null,
-        newStatus: 'En Proceso',
-        changedById: coordinators[i % coordinators.length].id,
-        createdAt: daysAgo(startOffset),
-      },
-    });
-    if (status === 'Finalizado') {
-      await prisma.internshipStatusHistory.create({
-        data: {
-          internshipId: internship.id,
-          oldStatus: 'En Proceso',
-          newStatus: 'Finalizado',
-          changedById: tutor.id,
-          createdAt: daysAgo(5),
-          reason: 'Horas completadas y documentación aprobada en su totalidad.',
+    internshipsData.push({
+      studentId: s.id,
+      tutorId: tutor.id,
+      companyId: company.id,
+      careerId: s.careerId,
+      startDate: daysAgo(startOffset),
+      endDate: status === 'Finalizado' ? daysAgo(5) : null,
+      totalHours: reqHours,
+      status,
+      modalidad: internshipModalidad,
+      location: locationText,
+      businessTutorName: tutorsEmp[i % tutorsEmp.length].fullName,
+      businessTutorEmail: tutorsEmp[i % tutorsEmp.length].email,
+      allowedLocations: hasPhysicalLocation ? [
+        {
+          label: 'Sede Principal',
+          lat: -0.1601 + i * 0.001,
+          lng: -78.4701 + i * 0.001,
+          radiusM: 250,
         },
+        {
+          label: 'Sede Secundaria / Sucursal',
+          lat: -0.2100 + i * 0.001,
+          lng: -78.5000 + i * 0.001,
+          radiusM: 300,
+        },
+      ] : (Prisma as any).JsonNull,
+    });
+
+    studentInternshipMap.push({
+      index: i,
+      studentId: s.id,
+      tutorId: tutor.id,
+      status,
+      startOffset,
+      hoursCompleted,
+      internshipModalidad,
+      hasPhysicalLocation,
+    });
+  }
+
+  (internshipsCreated as any) = await (prisma.internship as any).createManyAndReturn({ data: internshipsData });
+
+  const historyBatch: any[] = [];
+  const attendanceBatchData: any[] = [];
+  const docsBatchData: any[] = [];
+  const visitsBatchData: any[] = [];
+  const evalBatchData: any[] = [];
+
+  for (let i = 0; i < internshipsCreated.length; i++) {
+    const internship = internshipsCreated[i];
+    const sInfo = studentInternshipMap[i];
+
+    // Historial
+    historyBatch.push({
+      internshipId: internship.id,
+      oldStatus: null,
+      newStatus: 'En Proceso',
+      changedById: coordinators[i % coordinators.length].id,
+      createdAt: sInfo.startOffset ? daysAgo(sInfo.startOffset) : new Date(),
+    });
+    if (sInfo.status === 'Finalizado') {
+      historyBatch.push({
+        internshipId: internship.id,
+        oldStatus: 'En Proceso',
+        newStatus: 'Finalizado',
+        changedById: sInfo.tutorId,
+        createdAt: daysAgo(5),
+        reason: 'Horas completadas y documentación aprobada en su totalidad.',
       });
     }
 
-    // ── Asistencias ──────────────────────────────────────────────────────
-    const numAtt = Math.max(1, Math.min(Math.floor(hoursCompleted / 4), 30));
-    const attendanceIds: string[] = [];
+    // Preparar Asistencias
+    const numAtt = Math.max(1, Math.min(Math.floor(sInfo.hoursCompleted / 4), 30));
     for (let j = 0; j < numAtt; j++) {
-      const checkIn = daysAgo(startOffset - j * 2);
+      const checkIn = daysAgo(sInfo.startOffset - j * 2);
       checkIn.setHours(7 + randInt(0, 1), randInt(0, 59));
       const checkOut = new Date(checkIn);
-      // Escenario 50-59: algunos sin checkout (incumplimiento)
       const missingCheckout = i >= 50 && j % 4 === 0;
       if (!missingCheckout) {
         checkOut.setHours(checkIn.getHours() + randInt(4, 8));
       }
+      const isOnline = sInfo.internshipModalidad === Modalidad.EN_LINEA;
 
-      // Prácticas en línea: coordenadas 0,0 y distancia 0 (no aplica GPS presencial)
-      const isOnline = internshipModalidad === Modalidad.EN_LINEA;
-      const att = await prisma.attendance.create({
-        data: {
-          internshipId: internship.id,
-          checkIn,
-          checkOut: missingCheckout ? null : checkOut,
-          lat: isOnline ? 0 : -0.1601 + i * 0.001,
-          lng: isOnline ? 0 : -78.4701 + i * 0.001,
-          distanceKm: isOnline ? 0 : (randInt(0, 1) === 0 ? 0.05 : 0.15),
-          checkInPhoto: isOnline ? null : photoUrl(`in-${internship.id}-${j}`),
-          checkOutPhoto: (isOnline || missingCheckout) ? null : photoUrl(`out-${internship.id}-${j}`),
-        },
+      attendanceBatchData.push({
+        internshipId: internship.id,
+        checkIn,
+        checkOut: missingCheckout ? null : checkOut,
+        lat: isOnline ? 0 : -0.1601 + i * 0.001,
+        lng: isOnline ? 0 : -78.4701 + i * 0.001,
+        distanceKm: isOnline ? 0 : (randInt(0, 1) === 0 ? 0.05 : 0.15),
+        checkInPhoto: isOnline ? null : photoUrl(`in-${internship.id}-${j}`),
+        checkOutPhoto: (isOnline || missingCheckout) ? null : photoUrl(`out-${internship.id}-${j}`),
+        _meta: { studentIndex: i, attendanceIndex: j } // Metadata temporal
       });
-      attendanceIds.push(att.id);
-
-      // Fotos de actividades (cada 2-3 días)
-      if (j % 2 === 0) {
-        const numPhotos = randInt(1, 3);
-        for (let p = 0; p < numPhotos; p++) {
-          await prisma.activityPhoto.create({
-            data: {
-              attendanceId: att.id,
-              photoUrl: photoUrl(`work-${i}-${j}-${p}`),
-              caption: pick([
-                'Desarrollo de módulo de facturación.',
-                'Reunión de seguimiento con el equipo.',
-                'Pruebas unitarias del componente.',
-                'Capacitación en herramientas internas.',
-                'Revisión de código con el supervisor.',
-                'Diseño de arquitectura del sistema.',
-                'Instalación y configuración de servidores.',
-                'Atención al cliente — área de soporte.',
-              ]),
-            },
-          });
-        }
-      }
     }
 
-    // ── Documentos ────────────────────────────────────────────────────────
-    // SIEMPRE se crea un registro por cada plantilla aplicable a la carrera.
-    // Los documentos no entregados quedan PENDIENTE con filePath null:
-    // son visibles en la UI pero no abribles. El escenario solo determina
-    // cuántos documentos ya tienen archivo y en qué estado se encuentran.
+    // Preparar Documentos
     const applicableTemplates = allTemplates.filter(
-      (t) => t.careerId === null || t.careerId === s.careerId,
+      (t) => t.careerId === null || t.careerId === sInfo.careerId || !t.careerId,
     );
 
-    // Para cada escenario se define hasta qué índice de plantilla el
-    // estudiante "ya avanzó" (submittedUpTo) y qué estado tienen los enviados.
-    // Los índices >= submittedUpTo quedan PENDIENTE sin archivo.
     for (let ti = 0; ti < applicableTemplates.length; ti++) {
       const tmpl = applicableTemplates[ti];
-
-      // ── Calcular estado según escenario ────────────────────────────────
       let docStatus: DocumentStatus = DocumentStatus.PENDIENTE;
       let hasFile = false;
       let submittedAt: Date | null = null;
@@ -700,41 +622,35 @@ async function main() {
       let signatureKey: string | null = null;
 
       if (i < 10) {
-        // FINALIZADO — todo aprobado definitivamente
         docStatus = DocumentStatus.APROBADO_DEFINITIVO;
         hasFile = true;
-        submittedAt = daysAgo(startOffset - 30 + ti * 3);
-        reviewedAt = daysAgo(startOffset - 20 + ti * 2);
+        submittedAt = daysAgo(sInfo.startOffset - 30 + ti * 3);
+        reviewedAt = daysAgo(sInfo.startOffset - 20 + ti * 2);
         if (tmpl.isCertificateSlot) {
           isDigitallySigned = true;
           signatureDate = daysAgo(6);
-          signatureKey = `SHA256:${Buffer.from(s.id).toString('hex').substring(0, 32)}`;
+          signatureKey = `SHA256:${Buffer.from(sInfo.studentId).toString('hex').substring(0, 32)}`;
         }
       } else if (i < 20) {
-        // AVANZADO — primeros aprobados, últimos pendientes
         if (ti === 0) { docStatus = DocumentStatus.APROBADO_DEFINITIVO; hasFile = true; submittedAt = daysAgo(50); reviewedAt = daysAgo(40); }
         else if (ti === 1) { docStatus = DocumentStatus.APROBADO_TUTOR; hasFile = true; submittedAt = daysAgo(35); reviewedAt = daysAgo(25); }
         else if (ti === 2) { docStatus = DocumentStatus.EN_REVISION_TUTOR; hasFile = true; submittedAt = daysAgo(15); }
         else if (ti === 3) { docStatus = DocumentStatus.APROBADO_DEFINITIVO; hasFile = true; submittedAt = daysAgo(30); reviewedAt = daysAgo(20); }
         else { docStatus = DocumentStatus.PENDIENTE; hasFile = false; }
       } else if (i < 30) {
-        // RECHAZOS — con versiones e historial de comentarios
         if (ti === 0) { docStatus = DocumentStatus.APROBADO_DEFINITIVO; hasFile = true; submittedAt = daysAgo(50); reviewedAt = daysAgo(40); }
         else if (ti === 1) { docStatus = DocumentStatus.RECHAZADO_TUTOR; hasFile = true; submittedAt = daysAgo(35); }
         else if (ti === 2) { docStatus = DocumentStatus.RECHAZADO_COORDINADOR; hasFile = true; submittedAt = daysAgo(30); }
         else if (ti === 3) { docStatus = DocumentStatus.EN_REVISION_TUTOR; hasFile = true; submittedAt = daysAgo(10); }
         else { docStatus = DocumentStatus.PENDIENTE; hasFile = false; }
       } else if (i < 40) {
-        // TEMPRANO — F01 aprobado, F02 en revisión, el resto pendiente
         if (ti === 0) { docStatus = DocumentStatus.APROBADO_DEFINITIVO; hasFile = true; submittedAt = daysAgo(20); reviewedAt = daysAgo(15); }
         else if (ti === 1) { docStatus = DocumentStatus.EN_REVISION_TUTOR; hasFile = true; submittedAt = daysAgo(7); }
         else { docStatus = DocumentStatus.PENDIENTE; hasFile = false; }
       } else if (i < 50) {
-        // INICIO — solo F01 enviado y pendiente de revisión, resto sin tocar
         if (ti === 0) { docStatus = DocumentStatus.EN_REVISION_TUTOR; hasFile = true; submittedAt = daysAgo(3); }
         else { docStatus = DocumentStatus.PENDIENTE; hasFile = false; }
       } else {
-        // INCUMPLIMIENTO — F01 aprobado, F03 incumplido, F05 rechazado, resto pendiente
         if (ti === 0) { docStatus = DocumentStatus.APROBADO_DEFINITIVO; hasFile = true; submittedAt = daysAgo(60); reviewedAt = daysAgo(55); }
         else if (ti === 1) { docStatus = DocumentStatus.APROBADO_TUTOR; hasFile = true; submittedAt = daysAgo(45); reviewedAt = daysAgo(40); }
         else if (ti === 2) { docStatus = DocumentStatus.INCUMPLIDO; hasFile = false; }
@@ -743,185 +659,190 @@ async function main() {
         else { docStatus = DocumentStatus.PENDIENTE; hasFile = false; }
       }
 
-      const doc = await prisma.document.create({
-        data: {
-          internshipId: internship.id,
-          templateId: tmpl.id,
-          name: tmpl.name,
-          status: docStatus,
-          filePath: hasFile
-            ? docUrl(i < 30 && (docStatus === DocumentStatus.RECHAZADO_TUTOR || docStatus === DocumentStatus.RECHAZADO_COORDINADOR)
-                ? `${tmpl.name}_V2_${s.fullName}`
-                : `${tmpl.name}_${s.fullName}`)
-            : null,
-          sortOrder: tmpl.sortOrder,
-          isRequired: tmpl.isRequired,
-          isCertificateSlot: tmpl.isCertificateSlot,
-          submittedAt,
-          reviewedAt,
-          isDigitallySigned,
-          signatureDate,
-          signatureKey,
-        },
+      docsBatchData.push({
+        internshipId: internship.id,
+        templateId: tmpl.id,
+        name: tmpl.name,
+        status: docStatus,
+        filePath: hasFile
+          ? docUrl(i < 30 && (docStatus === DocumentStatus.RECHAZADO_TUTOR || docStatus === DocumentStatus.RECHAZADO_COORDINADOR)
+              ? `${tmpl.name}_V2_${students[i].fullName}`
+              : `${tmpl.name}_${students[i].fullName}`)
+          : null,
+        sortOrder: tmpl.sortOrder,
+        isRequired: tmpl.isRequired,
+        isCertificateSlot: tmpl.isCertificateSlot,
+        submittedAt,
+        reviewedAt,
+        isDigitallySigned,
+        signatureDate,
+        signatureKey,
+        _meta: { studentIndex: i, templateIndex: ti, tutorId: sInfo.tutorId, docStatus, submittedAt, reviewedAt, studentId: sInfo.studentId, tmplName: tmpl.name, fullName: students[i].fullName }
       });
-
-      // ── Comentarios y versiones según estado ──────────────────────────
-
-      if (docStatus === DocumentStatus.APROBADO_DEFINITIVO || docStatus === DocumentStatus.APROBADO_TUTOR) {
-        await prisma.documentComment.create({
-          data: { documentId: doc.id, userId: tutor.id, content: pick(approvalComments), createdAt: reviewedAt ?? daysAgo(5) },
-        });
-      }
-
-      if (docStatus === DocumentStatus.EN_REVISION_TUTOR) {
-        await prisma.documentComment.create({
-          data: { documentId: doc.id, userId: s.id, content: '¿Hay alguna observación sobre mi documento? Quedo atento a cualquier corrección.', createdAt: submittedAt ?? daysAgo(3) },
-        });
-      }
-
-      if (docStatus === DocumentStatus.RECHAZADO_TUTOR) {
-        // Versión original rechazada
-        await prisma.documentVersion.create({
-          data: { documentId: doc.id, filePath: docUrl(`${tmpl.name}_V1_${s.fullName}`), observations: 'Primera versión enviada. Rechazada por el tutor académico.', createdAt: daysAgo(randInt(20, 45)) },
-        });
-        await prisma.documentComment.create({
-          data: { documentId: doc.id, userId: tutor.id, content: pick(tutorRejectionComments), createdAt: daysAgo(randInt(12, 20)) },
-        });
-        await prisma.documentComment.create({
-          data: { documentId: doc.id, userId: s.id, content: pick(studentResponses), createdAt: daysAgo(randInt(5, 11)) },
-        });
-      }
-
-      if (docStatus === DocumentStatus.RECHAZADO_COORDINADOR) {
-        await prisma.documentVersion.create({
-          data: { documentId: doc.id, filePath: docUrl(`${tmpl.name}_V1_${s.fullName}`), observations: 'Versión revisada por tutor. Rechazada por coordinación.', createdAt: daysAgo(randInt(20, 35)) },
-        });
-        await prisma.documentComment.create({
-          data: { documentId: doc.id, userId: coordinators[i % coordinators.length].id, content: pick(coordRejectionComments), createdAt: daysAgo(randInt(10, 20)) },
-        });
-        await prisma.documentComment.create({
-          data: { documentId: doc.id, userId: s.id, content: pick(studentResponses), createdAt: daysAgo(randInt(3, 9)) },
-        });
-      }
-
-      if (docStatus === DocumentStatus.INCUMPLIDO) {
-        await prisma.documentComment.create({
-          data: {
-            documentId: doc.id,
-            userId: coordinators[i % coordinators.length].id,
-            content: 'El estudiante no entregó este documento dentro del plazo establecido. Se marca como incumplido según el reglamento vigente.',
-          },
-        });
-      }
-
-      // Versiones adicionales para documentos avanzados con historial
-      if (i < 30 && ti === 3 && docStatus === DocumentStatus.EN_REVISION_TUTOR) {
-        for (let v = 0; v < 2; v++) {
-          await prisma.documentVersion.create({
-            data: {
-              documentId: doc.id,
-              filePath: docUrl(`${tmpl.name}_V${v + 1}_${s.fullName}`),
-              observations: v === 0 ? 'Versión inicial.' : 'Segunda versión con correcciones aplicadas según indicaciones del tutor.',
-              createdAt: daysAgo(15 - v * 4),
-            },
-          });
-        }
-        await prisma.documentComment.create({
-          data: { documentId: doc.id, userId: tutor.id, content: 'Revisando la nueva versión. En breve recibirán retroalimentación detallada.' },
-        });
-      }
     }
 
-    // ── Visitas de monitoreo ──────────────────────────────────────────────
-    const numVisits =
-      i < 10 ? 3 : i < 30 ? 2 : hoursCompleted > 40 ? 1 : 0;
+    // Visitas
+    const numVisits = i < 10 ? 3 : i < 30 ? 2 : sInfo.hoursCompleted > 40 ? 1 : 0;
     for (let v = 0; v < numVisits; v++) {
-      await prisma.monitoringVisit.create({
-        data: {
-          internshipId: internship.id,
-          date: daysAgo(startOffset - v * 20 - 10),
-          type: v % 2 === 0 ? 'PRESENCIAL' : 'VIRTUAL',
-          observations: pick(visitObservations),
-          evidenceUrl: v % 2 === 0 ? photoUrl(`visit-${i}-${v}`) : null,
-        },
+      visitsBatchData.push({
+        internshipId: internship.id,
+        date: daysAgo(sInfo.startOffset - v * 20 - 10),
+        type: v % 2 === 0 ? 'PRESENCIAL' : 'VIRTUAL',
+        observations: pick(visitObservations),
+        evidenceUrl: v % 2 === 0 ? photoUrl(`visit-${i}-${v}`) : null,
       });
     }
 
-    // ── Evaluaciones ──────────────────────────────────────────────────────
+    // Evaluaciones
     if (i < 10) {
-      // Finalizados: ambas evaluaciones completadas
-      await prisma.evaluation.create({
-        data: {
-          internshipId: internship.id,
-          type: EvaluationType.EMPRESARIAL,
-          status: 'COMPLETADO',
-          punctuality: randInt(4, 5),
-          teamwork: randInt(4, 5),
-          technicalSkills: randInt(3, 5),
-          proactivity: randInt(4, 5),
-          attitude: 5,
-          observations: `Excelente desempeño. ${pick(['El estudiante demostró gran capacidad técnica.', 'Se integró perfectamente al equipo de trabajo.', 'Superó las expectativas del área.'])}`,
-        },
+      evalBatchData.push({
+        internshipId: internship.id,
+        type: EvaluationType.EMPRESARIAL,
+        status: 'COMPLETADO',
+        punctuality: randInt(4, 5),
+        teamwork: randInt(4, 5),
+        technicalSkills: randInt(3, 5),
+        proactivity: randInt(4, 5),
+        attitude: 5,
+        observations: `Excelente desempeño. ${pick(['El estudiante demostró gran capacidad técnica.', 'Se integró perfectamente al equipo de trabajo.', 'Superó las expectativas del área.'])}`,
       });
-      await prisma.evaluation.create({
-        data: {
-          internshipId: internship.id,
-          type: EvaluationType.ACADEMICA,
-          status: 'COMPLETADO',
-          punctuality: randInt(4, 5),
-          teamwork: randInt(3, 5),
-          technicalSkills: randInt(4, 5),
-          proactivity: randInt(3, 5),
-          attitude: randInt(4, 5),
-          observations: `Cumple satisfactoriamente con los requisitos académicos. ${pick(['Buen dominio de las herramientas.', 'Aplica correctamente los conocimientos teóricos.', 'Reportes bien estructurados.'])}`,
-        },
+      evalBatchData.push({
+        internshipId: internship.id,
+        type: EvaluationType.ACADEMICA,
+        status: 'COMPLETADO',
+        punctuality: randInt(4, 5),
+        teamwork: randInt(3, 5),
+        technicalSkills: randInt(4, 5),
+        proactivity: randInt(3, 5),
+        attitude: randInt(4, 5),
+        observations: `Cumple satisfactoriamente con los requisitos académicos. ${pick(['Buen dominio de las herramientas.', 'Aplica correctamente los conocimientos teóricos.', 'Reportes bien estructurados.'])}`,
       });
     } else if (i < 20) {
-      // En proceso avanzado: evaluación empresarial completada, académica pendiente
-      await prisma.evaluation.create({
-        data: {
-          internshipId: internship.id,
-          type: EvaluationType.EMPRESARIAL,
-          status: 'COMPLETADO',
-          punctuality: randInt(3, 5),
-          teamwork: randInt(3, 5),
-          technicalSkills: randInt(2, 5),
-          proactivity: randInt(3, 5),
-          attitude: randInt(3, 5),
-          observations: 'Buen progreso durante el periodo de prácticas.',
-        },
+      evalBatchData.push({
+        internshipId: internship.id,
+        type: EvaluationType.EMPRESARIAL,
+        status: 'COMPLETADO',
+        punctuality: randInt(3, 5),
+        teamwork: randInt(3, 5),
+        technicalSkills: randInt(2, 5),
+        proactivity: randInt(3, 5),
+        attitude: randInt(3, 5),
+        observations: 'Buen progreso durante el periodo de prácticas.',
       });
-      await prisma.evaluation.create({
-        data: {
-          internshipId: internship.id,
-          type: EvaluationType.ACADEMICA,
-          status: 'PENDIENTE',
-          punctuality: 0,
-          teamwork: 0,
-          technicalSkills: 0,
-          proactivity: 0,
-          attitude: 0,
-        },
+      evalBatchData.push({
+        internshipId: internship.id,
+        type: EvaluationType.ACADEMICA,
+        status: 'PENDIENTE',
+        punctuality: 0, teamwork: 0, technicalSkills: 0, proactivity: 0, attitude: 0,
       });
     } else if (i < 30) {
-      // Solo evaluación empresarial pendiente
-      await prisma.evaluation.create({
-        data: {
-          internshipId: internship.id,
-          type: EvaluationType.EMPRESARIAL,
-          status: 'PENDIENTE',
-          punctuality: 0,
-          teamwork: 0,
-          technicalSkills: 0,
-          proactivity: 0,
-          attitude: 0,
-        },
+      evalBatchData.push({
+        internshipId: internship.id,
+        type: EvaluationType.EMPRESARIAL,
+        status: 'PENDIENTE',
+        punctuality: 0, teamwork: 0, technicalSkills: 0, proactivity: 0, attitude: 0,
       });
     }
-    // Escenarios 30+ no tienen evaluaciones todavía
   }
 
-  console.log(`   ✓ ${internships.length} prácticas generadas con documentos, asistencias, visitas y evaluaciones.\n`);
+  // Ejecutar batches de nivel 2
+  await prisma.internshipStatusHistory.createMany({ data: historyBatch });
+  const attendancesCreated = await (prisma.attendance as any).createManyAndReturn({
+    data: attendanceBatchData.map(({ _meta, ...d }: any) => d)
+  });
+  const docsCreated = await (prisma.document as any).createManyAndReturn({
+    data: docsBatchData.map(({ _meta, ...d }: any) => d)
+  });
+  await prisma.monitoringVisit.createMany({ data: visitsBatchData });
+  await prisma.evaluation.createMany({ data: evalBatchData });
+
+  // Batches de nivel 3: Fotos de actividades, Comentarios, Versiones
+  const activityPhotoBatch: any[] = [];
+  for (let k = 0; k < attendancesCreated.length; k++) {
+    const att = attendancesCreated[k];
+    const meta = attendanceBatchData[k]._meta;
+    if (meta.attendanceIndex % 2 === 0) {
+      const numPhotos = randInt(1, 3);
+      for (let p = 0; p < numPhotos; p++) {
+        activityPhotoBatch.push({
+          attendanceId: att.id,
+          photoUrl: photoUrl(`work-${meta.studentIndex}-${meta.attendanceIndex}-${p}`),
+          caption: pick([
+            'Desarrollo de módulo de facturación.',
+            'Reunión de seguimiento con el equipo.',
+            'Pruebas unitarias del componente.',
+            'Capacitación en herramientas internas.',
+            'Revisión de código con el supervisor.',
+            'Diseño de arquitectura del sistema.',
+            'Instalación y configuración de servidores.',
+            'Atención al cliente — área de soporte.',
+          ]),
+        });
+      }
+    }
+  }
+  await prisma.activityPhoto.createMany({ data: activityPhotoBatch });
+
+  const docCommentBatch: any[] = [];
+  const docVersionBatch: any[] = [];
+
+  for (let k = 0; k < docsCreated.length; k++) {
+    const doc = docsCreated[k];
+    const meta = docsBatchData[k]._meta;
+
+    if (meta.docStatus === DocumentStatus.APROBADO_DEFINITIVO || meta.docStatus === DocumentStatus.APROBADO_TUTOR) {
+      docCommentBatch.push({
+        documentId: doc.id, userId: meta.tutorId, content: pick(approvalComments), createdAt: meta.reviewedAt ?? daysAgo(5)
+      });
+    }
+
+    if (meta.docStatus === DocumentStatus.EN_REVISION_TUTOR) {
+      docCommentBatch.push({
+        documentId: doc.id, userId: meta.studentId, content: '¿Hay alguna observación sobre mi documento? Quedo atento a cualquier corrección.', createdAt: meta.submittedAt ?? daysAgo(3)
+      });
+    }
+
+    if (meta.docStatus === DocumentStatus.RECHAZADO_TUTOR) {
+      docVersionBatch.push({
+        documentId: doc.id, filePath: docUrl(`${meta.tmplName}_V1_${meta.fullName}`), observations: 'Primera versión enviada. Rechazada por el tutor académico.', createdAt: daysAgo(randInt(20, 45))
+      });
+      docCommentBatch.push({ documentId: doc.id, userId: meta.tutorId, content: pick(tutorRejectionComments), createdAt: daysAgo(randInt(12, 20)) });
+      docCommentBatch.push({ documentId: doc.id, userId: meta.studentId, content: pick(studentResponses), createdAt: daysAgo(randInt(5, 11)) });
+    }
+
+    if (meta.docStatus === DocumentStatus.RECHAZADO_COORDINADOR) {
+      docVersionBatch.push({
+        documentId: doc.id, filePath: docUrl(`${meta.tmplName}_V1_${meta.fullName}`), observations: 'Versión revisada por tutor. Rechazada por coordinación.', createdAt: daysAgo(randInt(20, 35))
+      });
+      docCommentBatch.push({ documentId: doc.id, userId: coordinators[meta.studentIndex % coordinators.length].id, content: pick(coordRejectionComments), createdAt: daysAgo(randInt(10, 20)) });
+      docCommentBatch.push({ documentId: doc.id, userId: meta.studentId, content: pick(studentResponses), createdAt: daysAgo(randInt(3, 9)) });
+    }
+
+    if (meta.docStatus === DocumentStatus.INCUMPLIDO) {
+      docCommentBatch.push({
+        documentId: doc.id, userId: coordinators[meta.studentIndex % coordinators.length].id, content: 'El estudiante no entregó este documento dentro del plazo establecido. Se marca como incumplido según el reglamento vigente.',
+      });
+    }
+
+    if (meta.studentIndex < 30 && meta.templateIndex === 3 && meta.docStatus === DocumentStatus.EN_REVISION_TUTOR) {
+      for (let v = 0; v < 2; v++) {
+        docVersionBatch.push({
+          documentId: doc.id,
+          filePath: docUrl(`${meta.tmplName}_V${v + 1}_${meta.fullName}`),
+          observations: v === 0 ? 'Versión inicial.' : 'Segunda versión con correcciones aplicadas según indicaciones del tutor.',
+          createdAt: daysAgo(15 - v * 4),
+        });
+      }
+      docCommentBatch.push({
+        documentId: doc.id, userId: meta.tutorId, content: 'Revisando la nueva versión. En breve recibirán retroalimentación detallada.'
+      });
+    }
+  }
+
+  await prisma.documentComment.createMany({ data: docCommentBatch });
+  await prisma.documentVersion.createMany({ data: docVersionBatch });
+
+  console.log(`   ✓ ${internshipsCreated.length} prácticas generadas con documentos, asistencias, visitas y evaluaciones.\n`);
 
   // ─── 8. SYSTEM LOGS (1500+) ───────────────────────────────────────────────
   console.log('📜 [8/12] Generando logs de auditoría (1500+)...');
@@ -1083,50 +1004,48 @@ async function main() {
     { title: 'Documento incumplido', message: 'El plazo para entregar F03 ha vencido. El documento ha sido marcado como incumplido.', type: 'ERROR' },
   ];
 
+  const notifBatch: any[] = [];
   for (let i = 0; i < students.length; i++) {
     const s = students[i];
     const numNotifs = randInt(1, 4);
     for (let n = 0; n < numNotifs; n++) {
       const notif = notifMessages[(i + n) % notifMessages.length];
-      await prisma.inAppNotification.create({
-        data: {
-          userId: s.id,
-          title: notif.title,
-          message: notif.message,
-          type: notif.type,
-          isRead: n === 0 ? false : randInt(0, 1) === 1,
-          link: n % 2 === 0 ? '/dashboard/documentos' : '/dashboard/asistencia',
-          createdAt: daysAgo(randInt(0, 30)),
-        },
+      notifBatch.push({
+        userId: s.id,
+        title: notif.title,
+        message: notif.message,
+        type: notif.type,
+        isRead: n === 0 ? false : randInt(0, 1) === 1,
+        link: n % 2 === 0 ? '/dashboard/documentos' : '/dashboard/asistencia',
+        createdAt: daysAgo(randInt(0, 30)),
       });
     }
   }
+  await prisma.inAppNotification.createMany({ data: notifBatch });
 
   // Notificaciones para tutores y coordinadores
+  const extraNotifs: any[] = [];
   for (const tutor of tutorsAcad.slice(0, 5)) {
-    await prisma.inAppNotification.create({
-      data: {
-        userId: tutor.id,
-        title: 'Documentos pendientes de revisión',
-        message: 'Tienes 3 documentos esperando tu revisión.',
-        type: 'WARNING',
-        isRead: false,
-        link: '/tutor/documentos',
-      },
+    extraNotifs.push({
+      userId: tutor.id,
+      title: 'Documentos pendientes de revisión',
+      message: 'Tienes 3 documentos esperando tu revisión.',
+      type: 'WARNING',
+      isRead: false,
+      link: '/tutor/documentos',
     });
   }
   for (const coord of coordinators) {
-    await prisma.inAppNotification.create({
-      data: {
-        userId: coord.id,
-        title: 'Informe mensual disponible',
-        message: 'El informe de seguimiento del mes de abril está listo para descarga.',
-        type: 'INFO',
-        isRead: false,
-        link: '/coordinador/reportes',
-      },
+    extraNotifs.push({
+      userId: coord.id,
+      title: 'Informe mensual disponible',
+      message: 'El informe de seguimiento del mes de abril está listo para descarga.',
+      type: 'INFO',
+      isRead: false,
+      link: '/coordinador/reportes',
     });
   }
+  await prisma.inAppNotification.createMany({ data: extraNotifs });
 
   console.log('   ✓ 6 anuncios y ~200 notificaciones creados.\n');
 
@@ -1141,18 +1060,16 @@ async function main() {
     { student: students[5], type: 'CANCELACION', details: 'Solicito la anonimización de mis datos de asistencia GPS después de finalizar las prácticas.', status: 'COMPLETADA', response: 'Datos GPS anonimizados. Se mantiene el registro de horas sin coordenadas exactas.' },
   ];
 
-  for (const req of arcoRequests) {
-    await prisma.dataRequest.create({
-      data: {
-        userId: req.student.id,
-        type: req.type,
-        details: req.details,
-        status: req.status,
-        response: req.response,
-        createdAt: daysAgo(randInt(5, 45)),
-      },
-    });
-  }
+  await prisma.dataRequest.createMany({
+    data: arcoRequests.map(req => ({
+      userId: req.student.id,
+      type: req.type,
+      details: req.details,
+      status: req.status,
+      response: req.response,
+      createdAt: daysAgo(randInt(5, 45)),
+    })),
+  });
   console.log(`   ✓ ${arcoRequests.length} solicitudes ARCO creadas.\n`);
 
   // ─── 12. CONFIGURACIONES DEL SISTEMA ──────────────────────────────────────
