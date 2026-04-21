@@ -594,7 +594,7 @@ async function main() {
             lng: -78.5000 + i * 0.001,
             radiusM: 300,
           },
-        ] : null,
+        ] : Prisma.JsonNull,
       },
     });
     internships.push(internship);

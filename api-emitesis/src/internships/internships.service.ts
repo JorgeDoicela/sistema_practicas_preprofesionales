@@ -156,7 +156,7 @@ export class InternshipsService {
       const excelBuffer = await this.emailService.generateAssignmentExcelBuffer({
         studentName: internship.student.fullName,
         companyName: internship.company.name,
-        location: internship.location,
+        location: internship.location ?? '—',
         hours: internship.totalHours,
         tutorName: internship.tutor.fullName,
         startDate: startDate,
