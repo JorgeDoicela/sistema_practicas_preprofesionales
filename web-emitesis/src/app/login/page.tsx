@@ -6,7 +6,7 @@ import Image from "next/image";
 import { BRAND_LOGO_SRC } from "@/lib/brand";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Lock, Mail, Eye, EyeOff, AlertTriangle, ShieldCheck, MapPin, Brain, Fingerprint } from "lucide-react";
+import { Lock, Mail, Eye, EyeOff, AlertTriangle, MapPin, Brain, Fingerprint } from "lucide-react";
 import { authService } from "@/services/auth.service";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { sanitizeEmailClient, sanitizePasswordClient } from "@/utils/security";
@@ -88,68 +88,88 @@ export default function LoginPage() {
         }
     };
 
+    const brandTopOnBlue = (
+        <Link href="/" className="flex items-center gap-2.5 focus:outline-none">
+            <div className="rounded-lg bg-white/10 p-1.5 ring-1 ring-white/20">
+                <Image src={BRAND_LOGO_SRC} alt="Logo" width={100} height={40} className="h-7 w-auto object-contain brightness-0 invert" />
+            </div>
+            <span className="text-xs font-bold text-white/80">Portal Académico ISTPET</span>
+        </Link>
+    );
+
+    const brandTopOnWhite = (
+        <Link href="/" className="flex items-center gap-2.5 focus:outline-none">
+            <div className="rounded-lg bg-brand-blue p-1.5">
+                <Image src={BRAND_LOGO_SRC} alt="Logo" width={100} height={40} className="h-7 w-auto object-contain" />
+            </div>
+            <span className="hidden text-xs font-bold text-slate-400 sm:block">Portal Académico ISTPET</span>
+        </Link>
+    );
+
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
-            {/* topbar */}
-            <header className="bg-white border-b border-slate-100 px-6 py-4">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2.5">
-                        <div className="bg-brand-blue p-1.5 rounded-lg">
-                            <Image src={BRAND_LOGO_SRC} alt="Logo" width={100} height={40} className="h-7 w-auto object-contain" />
-                        </div>
-                        <span className="text-xs font-bold text-slate-400 hidden sm:block">Portal Académico ISTPET</span>
-                    </Link>
-                    <Link href="/" className="text-xs font-semibold text-slate-500 hover:text-brand-blue transition-colors">
-                        ← Volver al inicio
-                    </Link>
+        <div className="min-h-screen lg:grid lg:grid-cols-2 bg-slate-50">
+            {/* Izquierda — desktop: todo el bloque es continuo, sin header separado */}
+            <aside className="relative hidden min-h-0 flex-col overflow-hidden bg-brand-blue lg:flex lg:min-h-screen">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand-gold/15 via-transparent to-transparent" />
+
+                <div className="relative z-10 px-8 pt-6 xl:px-12 xl:pt-8">
+                    {brandTopOnBlue}
                 </div>
-            </header>
 
-            {/* main */}
-            <div className="flex-1 grid lg:grid-cols-2">
-
-                {/* left — brand panel */}
-                <div className="hidden lg:flex bg-brand-blue relative overflow-hidden flex-col justify-between p-12">
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand-gold/15 via-transparent to-transparent" />
-
-                    <div className="relative z-10">
-                        <div className="w-14 h-14 rounded-xl bg-brand-gold/20 border border-brand-gold/30 flex items-center justify-center mb-10">
-                            <ShieldCheck className="w-7 h-7 text-brand-gold" />
-                        </div>
-                        <h2 className="text-4xl font-black text-white leading-tight tracking-tight mb-4">
+                <div className="relative z-10 flex flex-1 flex-col justify-between p-8 pb-10 pt-12 xl:p-12 xl:pb-12 xl:pt-16">
+                    <div className="max-w-md">
+                        <h2 className="mb-4 text-4xl font-black leading-tight tracking-tight text-white">
                             Bienvenido al<br />
-                            <span className="text-brand-gold italic">ecosistema EmiTesis</span>
+                            <span className="italic text-brand-gold">ecosistema EmiTesis</span>
                         </h2>
-                        <p className="text-white/60 text-sm leading-relaxed max-w-sm">
+                        <p className="max-w-sm text-sm leading-relaxed text-white/60">
                             Gestión integral de prácticas preprofesionales con IA, geofencing y certificación verificable.
                         </p>
                     </div>
 
-                    <div className="relative z-10 space-y-3">
-                        {[
-                            { icon: <MapPin className="w-4 h-4" />, label: "Asistencia con Geofencing Haversine" },
-                            { icon: <Brain className="w-4 h-4" />, label: "Nexo AI · GPT-4o" },
-                            { icon: <Fingerprint className="w-4 h-4" />, label: "Passkeys WebAuthn FIDO2" },
-                        ].map(f => (
-                            <div key={f.label} className="flex items-center gap-3 text-sm text-white/70">
-                                <div className="w-8 h-8 rounded-lg bg-white/8 border border-white/10 flex items-center justify-center text-brand-gold">
-                                    {f.icon}
+                    <div className="max-w-md space-y-8 pt-10">
+                        <div className="space-y-3">
+                            {[
+                                { icon: <MapPin className="h-4 w-4" />, label: "Asistencia con Geofencing Haversine" },
+                                { icon: <Brain className="h-4 w-4" />, label: "Nexo AI · GPT-4o" },
+                                { icon: <Fingerprint className="h-4 w-4" />, label: "Passkeys WebAuthn FIDO2" },
+                            ].map((f) => (
+                                <div key={f.label} className="flex items-center gap-3 text-sm text-white/70">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.08] text-brand-gold">
+                                        {f.icon}
+                                    </div>
+                                    {f.label}
                                 </div>
-                                {f.label}
-                            </div>
-                        ))}
+                            ))}
+                        </div>
 
-                        <p className="text-[10px] text-white/30 pt-4 border-t border-white/8">
+                        <p className="max-w-sm border-t border-white/8 pt-4 text-[11px] leading-relaxed text-white/40">
                             Al ingresar acepta la{" "}
-                            <Link href="/privacidad" className="text-brand-gold/70 hover:text-brand-gold underline-offset-2 hover:underline transition-colors">
+                            <Link href="/privacidad" className="text-brand-gold/70 underline-offset-2 transition-colors hover:text-brand-gold hover:underline">
                                 política de privacidad LOPDP
                             </Link>
                         </p>
                     </div>
                 </div>
+            </aside>
 
-                {/* right — form */}
-                <div className="flex items-center justify-center p-6 py-12">
+            {/* Derecha (y pantalla completa en móvil) */}
+            <div className="relative flex min-h-screen flex-col bg-slate-50">
+                <header className="flex items-center justify-between px-6 py-4 xl:px-12 xl:py-5 lg:hidden">
+                    <div className="lg:hidden">{brandTopOnWhite}</div>
+                    <Link href="/" className="text-xs font-semibold text-slate-500 transition-colors hover:text-brand-blue">
+                        ← Volver al inicio
+                    </Link>
+                </header>
+
+                <Link
+                    href="/"
+                    className="absolute right-8 top-6 hidden text-xs font-semibold text-slate-500 transition-colors hover:text-brand-blue xl:right-12 xl:top-8 lg:block"
+                >
+                    ← Volver al inicio
+                </Link>
+
+                <div className="flex flex-1 items-center justify-center p-6 py-12 lg:py-16">
                     <motion.div
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
