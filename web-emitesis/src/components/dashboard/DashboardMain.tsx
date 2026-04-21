@@ -525,9 +525,9 @@ export function DashboardMain() {
                   onChange={(e) => setSelectedCareerId(e.target.value)}
                   className="pl-4 pr-10 py-2.5 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-xs font-black text-[#003366] uppercase tracking-widest appearance-none focus:outline-none focus:ring-2 focus:ring-[#C5A059]/20"
                 >
-                  <option value="">🌎 Toda la Institución</option>
+                  <option value="">Toda la Institución</option>
                   {careers.map((c) => (
-                    <option key={c.id} value={c.id}>🎓 {c.name}</option>
+                    <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
                 <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 rotate-90 pointer-events-none" />

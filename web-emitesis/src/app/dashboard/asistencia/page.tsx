@@ -1270,7 +1270,7 @@ export default function AsistenciaPage() {
                       </div>
                       {aiAvailable && (
                         <p className="text-[9px] text-slate-400 font-bold px-1">
-                          ✨ Agente IA disponible — analiza la imagen y sugiere una descripción automáticamente
+                          Agente IA disponible — analiza la imagen y sugiere una descripción automáticamente
                         </p>
                       )}
                     </div>

@@ -216,7 +216,7 @@ export class EmailService {
     }
 
     async sendDocumentNotificationToTutor(email: string, studentName: string, documentName: string, isLate = false) {
-        const subject = `${isLate ? '⚠ ENTREGA TARDÍA: ' : 'Nueva Entrega: '}${documentName} - ${studentName}`;
+        const subject = `${isLate ? 'ENTREGA TARDÍA: ' : 'Nueva Entrega: '}${documentName} - ${studentName}`;
         try {
             const content = `
                 <p>Se ha recibido una nueva entrega documental pendiente de revisión académica.</p>
@@ -267,7 +267,7 @@ export class EmailService {
     }
 
     async sendDeadlineReminder(email: string, studentName: string, documentName: string, dueDate: Date) {
-        const subject = `⚠ Recordatorio de Plazo: ${documentName}`;
+        const subject = `Recordatorio de Plazo: ${documentName}`;
         try {
             const content = `
                 <p>Hola <span class="highlight">${studentName}</span>,</p>
@@ -413,7 +413,7 @@ export class EmailService {
     }
 
     async sendIncumplimientoAlertToTutor(email: string, tutorName: string, studentName: string, documentName: string) {
-        const subject = `⚠ ALERTA DE INCUMPLIMIENTO: ${documentName} - ${studentName}`;
+        const subject = `ALERTA DE INCUMPLIMIENTO: ${documentName} - ${studentName}`;
         try {
             const content = `
                 <p>Estimado/a <span class="highlight">${tutorName}</span>,</p>

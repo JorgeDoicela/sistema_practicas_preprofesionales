@@ -283,9 +283,9 @@ export function DocumentTemplatesView() {
                     value={careerId}
                     onChange={e => setCareerId(e.target.value)}
                   >
-                    <option value="">🌎 GLOBAL (Toda la institución)</option>
+                    <option value="">GLOBAL (Toda la institución)</option>
                     {careers.map(c => (
-                      <option key={c.id} value={c.id}>🎓 {c.name}</option>
+                      <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>
                 </div>

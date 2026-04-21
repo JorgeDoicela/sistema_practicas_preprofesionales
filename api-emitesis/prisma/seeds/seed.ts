@@ -27,11 +27,11 @@ const lastNames = ['Larrea', 'Vaca', 'Ortiz', 'Gallegos', 'Salazar', 'Méndez', 
 const getRandomName = () => `${firstNames[randInt(0, firstNames.length - 1)]} ${lastNames[randInt(0, lastNames.length - 1)]}`;
 
 async function main() {
-  console.log('\n🚀  INICIANDO INYECCIÓN MAESTRA EMITESIS v11.0 [MODO DEMO REALISTA]');
+  console.log('\n INICIANDO INYECCIÓN MAESTRA EMITESIS v11.0 [MODO DEMO REALISTA]');
   console.log('──────────────────────────────────────────────────────');
 
   // 1. Limpieza de Seguridad (Orden estricto de integridad referencial)
-  console.log('🧹 Sincronizando Purga de Datos...');
+  console.log('Sincronizando Purga de Datos...');
   await prisma.activityPhoto.deleteMany();
   await prisma.attendance.deleteMany();
   await prisma.documentVersion.deleteMany();
@@ -58,7 +58,7 @@ async function main() {
   const lopdp = { lopdpAccepted: true, lopdpAcceptedAt: daysAgo(60), lopdpVersion: '1.0' };
 
   // 2. Fundamentos de Gobernanza (Carreras)
-  console.log('🎓 Estructurando Facultades y Carreras...');
+  console.log('Estructurando Facultades y Carreras...');
   const careersData = [
     { name: 'Desarrollo de Software', faculty: 'Tecnologías de la Información', hours: 160 },
     { name: 'Ciberseguridad', faculty: 'Tecnologías de la Información', hours: 240 },
@@ -84,7 +84,7 @@ async function main() {
   for (const t of templates) { await prisma.documentTemplate.create({ data: t }); }
 
   // 3. Ecosistema de Empresas
-  console.log('🏢 Entidades y Convenios Corporativos (12+ Entidades)...');
+  console.log('Entidades y Convenios Corporativos (12+ Entidades)...');
   const companiesData = [
     { name: 'Telefónica Tech', ruc: '1791234567001', address: 'Quito, Ekopark', rep: 'Andrés Gallegos', email: 'rrhh@telefonica.com' },
     { name: 'Banco Pichincha', ruc: '1790011223001', address: 'Quito, Av. Amazonas', rep: 'Lucía Mendoza', email: 'talento@pichincha.com' },
@@ -109,7 +109,7 @@ async function main() {
   }
 
   // 4. Actores del Sistema
-  console.log('👥 Inyectando Identidades por Rol (Admin, Coord, Tutores, Estudiantes)...');
+  console.log('Inyectando Identidades por Rol (Admin, Coord, Tutores, Estudiantes)...');
   await prisma.user.create({ data: { email: 'admin@istpet.edu.ec', password, fullName: 'Admin General', role: Role.ADMIN, ...lopdp } });
   
   const coordinators = [];
@@ -143,7 +143,7 @@ async function main() {
   }
 
   // 5. Generación Espacial de Prácticas
-  console.log('🚀 Modelando 50 Escenarios de Ciclo de Vida (Éxito, Riesgo, Inicio)...');
+  console.log('Modelando 50 Escenarios de Ciclo de Vida (Éxito, Riesgo, Inicio)...');
   
   for (let i = 0; i < students.length; i++) {
     const s = students[i];
@@ -290,7 +290,7 @@ async function main() {
   }
 
   // 9. Auditoría Masiva (1200+ Logs)
-  console.log('🔍 Inyectando 1200+ Logs de Auditoría para Análisis de Salud...');
+  console.log('Inyectando 1200+ Logs de Auditoría para Análisis de Salud...');
   const cats = ['AUTH', 'HTTP', 'SYSTEM', 'PRIVACY', 'GPS'];
   const logs = [];
   for (let i = 0; i < 1200; i++) {
@@ -310,7 +310,7 @@ async function main() {
   }
 
   // 10. Email Logs (Correos enviados por el sistema)
-  console.log('📧 Simulando Historial de Correos (Email Logs)...');
+  console.log('Simulando Historial de Correos (Email Logs)...');
   const emailLogs = [];
   for (let i = 0; i < 50; i++) {
     emailLogs.push({
@@ -325,12 +325,12 @@ async function main() {
   await prisma.emailLog.createMany({ data: emailLogs });
 
   // 11. Gobernanza Final (Notificaciones, Anuncios, Ajustes)
-  console.log('🔒 Sellando con Gobernanza, Notificaciones y LOPDP...');
+  console.log('Sellando con Gobernanza, Notificaciones y LOPDP...');
   
   await prisma.announcement.createMany({ data: [
-    { title: '👋 BIENVENIDOS AL PERIODO 2026-A', content: 'Iniciamos el nuevo ciclo de prácticas. No olviden cargar su F01 antes del viernes.', type: 'INFO', startDate: daysAgo(5) },
-    { title: '⚠️ MANTENIMIENTO PROGRAMADO', content: 'La plataforma estará fuera de servicio el sábado de 02:00 a 04:00 por actualización de seguridad.', type: 'WARNING', startDate: daysAgo(1) },
-    { title: '✅ PROCESO DE EVALUACIÓN ABIERTO', content: 'Tutores empresariales ya pueden calificar a sus pasantes asignados.', type: 'SUCCESS', startDate: daysAgo(2) }
+    { title: 'BIENVENIDOS AL PERIODO 2026-A', content: 'Iniciamos el nuevo ciclo de prácticas. No olviden cargar su F01 antes del viernes.', type: 'INFO', startDate: daysAgo(5) },
+    { title: '️ MANTENIMIENTO PROGRAMADO', content: 'La plataforma estará fuera de servicio el sábado de 02:00 a 04:00 por actualización de seguridad.', type: 'WARNING', startDate: daysAgo(1) },
+    { title: 'PROCESO DE EVALUACIÓN ABIERTO', content: 'Tutores empresariales ya pueden calificar a sus pasantes asignados.', type: 'SUCCESS', startDate: daysAgo(2) }
   ]});
 
   for (let i = 0; i < 10; i++) {
@@ -348,11 +348,11 @@ async function main() {
     { key: 'smtp_host', value: 'smtp.istpet.edu.ec', category: 'EMAIL' }
   ]});
 
-  console.log('\n✅ MASTER SEED v11.0 FINALIZADO EXITOSAMENTE.');
+  console.log('\nMASTER SEED v11.0 FINALIZADO EXITOSAMENTE.');
   console.log('──────────────────────────────────────────────────────');
   console.log(`Resumen: 50 Estudiantes | ${companiesData.length} Empresas | 1200+ Logs | Pasantías (Historial Completo) | +50 Correos Simulados`);
 }
 
 main()
-  .catch((e) => { console.error('❌ Error fatal en seed:', e); process.exit(1); })
+  .catch((e) => { console.error('Error fatal en seed:', e); process.exit(1); })
   .finally(async () => { await prisma.$disconnect(); });

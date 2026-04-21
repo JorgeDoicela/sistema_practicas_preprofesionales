@@ -147,7 +147,7 @@ export function DoubleConfirmModal({
                     <ShieldAlert className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-black text-rose-200 uppercase tracking-[0.3em] mb-1">⚠ Acción Irreversible</p>
+                    <p className="text-[10px] font-black text-rose-200 uppercase tracking-[0.3em] mb-1">Acción Irreversible</p>
                     <h3 className="text-lg font-black text-white">Confirmación Final</h3>
                   </div>
                   <button

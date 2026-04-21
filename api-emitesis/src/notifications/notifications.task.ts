@@ -58,7 +58,7 @@ export class NotificationsTask {
         // RF-NOTIF-02: Notificación In-App para vencimiento
         await this.notificationsService.createInApp(
           doc.internship.studentId,
-          '⚠️ Plazo próximo a vencer',
+          '️ Plazo próximo a vencer',
           `El documento "${doc.name}" vence mañana. Asegúrate de cargarlo a tiempo.`,
           'WARNING',
           '/dashboard/documentos'
