@@ -1,62 +1,79 @@
 # Arquitectura Técnica y Topología de Despliegue
 
-Este documento define la estructura física y lógica del ecosistema EmiTesis, garantizando un despliegue escalable, proactivo y de alta disponibilidad.
+Este documento define la estructura física y lógica del ecosistema EmiTesis, garantizando un despliegue escalable, proactivo, trazable y de alta disponibilidad corporativa.
 
-## 1. Stack Tecnológico Industrializado
+---
 
-El sistema emplea un conjunto de tecnologías seleccionadas para maximizar la seguridad, la mantenibilidad y la inteligencia artificial integrada.
+## 1. Stack Tecnológico Industrializado (Technology Stack)
 
-| Categoría | Tecnología | Implementación y Valor Técnico |
+El sistema emplea un conjunto de tecnologías de última generación meticulosamente seleccionadas para maximizar la seguridad perimetral, la persistencia de datos relacionales y la mantenibilidad a largo plazo.
+
+| Categoría | Tecnología Empleada | Propósito Arquitectónico y Valor Técnico |
 | :--- | :--- | :--- |
-| **IA Engine** | OpenAI GPT-4o | Motor de inteligencia artificial contextual que asiste a los estudiantes en tiempo real basándose en su propio expediente académico. |
-| **Backend Core** | NestJS 11+ | Arquitectura modular con **Interceptores de Transformación** y **Filtros de Excepción Globales** para estandarización total de API. |
-| **Frontend** | Next.js 16+ | Uso intensivo de **Skeleton Loading** y componentes de alto rendimiento para una UX premium persistente. |
-| **Observabilidad** | Custom Health Checks | Monitoreo proactivo de la salud del sistema (DB, AI, Storage) mediante el endpoint `/api/health`. |
-| **Seguridad** | WebAuthn / RBAC | Soporte para biometría (simulado/futuro) y control de acceso granular por roles industriales (Admin, Coordinador, Tutor, Estudiante, Empresa). |
-| **Almacenamiento**| Vercel Blob | Gestión distribuida de documentos y evidencias fotográficas con alta disponibilidad. |
+| **Backend Core** | NestJS (Node.js) | El núcleo orquestador. Desarrollado en TypeScript bajo paradigmas de Inyección de Dependencias. Utiliza **Interceptores Globales** y **Filtros de Excepción** para una homogeneidad de API RESTful perfecta. |
+| **Frontend Framework** | Next.js 16+ (App Router) | Interfaz transaccional (Client/SSR). Emplea `Skeleton Loading` interactivos, renderizado parcial y manejo de vistas Reactivas con Tailwind CSS. |
+| **Persistencia ORM** | Prisma 5 | Wrapper de base de datos *Type-Safe*. Garantiza migraciones consistentes de esquema y permite un `Seed` algorítmico avanzado para simulaciones de carga. |
+| **Motor Relacional** | PostgreSQL | Almacenamiento maestro de datos (Statefulness). Maneja más de 20 uniones y jerarquías referenciales críticas (*Cascade Deletions*). |
+| **Motor de Inteligencia**| OpenAI GPT-4o vía API | Motor de inferencia incrustado asíncronamente en los copilotajes y evaluación de reportes de texto e imágenes (OCR semántico). |
+| **Distribución Estructurada**| Vercel Blob Storage | CDN inmutable para almacenamiento descentralizado de documentos PDF gigantescos, archivos fotográficos y evidencias satelitales. Encriptado en reposo. |
+| **Transporte de Red** | HTTPS / WebSockets (Socket.io) | Manejo bidireccional seguro (TLS) y tráfico asíncrono para notificaciones In-App en vivo sin cuellos de botella mediante Polling. |
 
-## 2. Arquitectura de Resiliencia (Lógica)
+---
 
-El sistema implementa un "Core de Resiliencia" que actúa como un sobre protector para todas las transacciones:
+## 2. Abstracción del Modelo C4
 
-### 2.1 Interceptores y Filtros Globales
-- **TransformInterceptor**: Envuelve cada respuesta exitosa en un formato estándar `{ success: true, data: T, timestamp: string }`.
-- **HttpExceptionFilter**: Intercepta fallos del servidor y los traduce a respuestas JSON amigables, evitando fugas de información técnica (stack traces) hacia el cliente.
+La separación de preocupaciones (Separation of Concerns) se aplica estructuralmente:
 
-### 2.2 Motor de IA Contextual
-El `AiService` no es un chatbot genérico; utiliza `gpt-4o` con un **System Prompt dinámico** que inyecta:
-- Estado actual de las prácticas del estudiante.
-- Conteo de horas y documentos pendientes.
-- Contexto de la empresa y tutores asignados.
+### Contexto (Nivel 1)
+EmiTesis actúa como el "Control Tower" entre sistemas externos (MTA de correos electrónicos, Proveedores OIDC, Motores de IA en la nube) y Entidades Reales (Estudiantes, Coordinadores de Carrera). Todo flujo interactivo pasa por validación central.
 
-## 3. Topología de Despliegue (Física)
-
-Mantenemos una arquitectura de contenedores orquestada por Docker para garantizar portabilidad absoluta.
-
+### Contenedores (Nivel 2)
 ```mermaid
 graph TD
-    Client[Browser/Mobile] -->|HTTPS| Proxy[Nginx/Vercel Proxy]
-    Proxy -->|APIPrefix| API[API Cluster - NestJS]
-    Proxy -->|Static/SSR| Web[Frontend - Next.js]
+    ClientFrontend[Aplicación Web Next.js\nInterfaz Reactiva UI] -->|RESTful & WebSockets| APIGateway[Core API NestJS\nServicios Interceptados]
     
-    subgraph "Core Services"
-        API -->|Prisma| DB[(PostgreSQL)]
-        API -->|SDK| AI[OpenAI GPT-4o]
-        API -->|SDK| Blob[Vercel Blob Storage]
-    end
-    
-    subgraph "Monitoring"
-        Health[Health Monitor] -.->|Check| API
-        Health -.->|Check| DB
+    subgraph "Nube Híbrida / Managed Services"
+        APIGateway -->|Conexión Pool Prisma| DB[(PostgreSQL Master\nData Relacional)]
+        APIGateway -->|SDK Vercel| Storage[Vercel Blob Storage\nRepositiorio Físico]
+        APIGateway -->|API Rest REST| AI[Motor GPT-4o\nProcesamiento Semántico]
+        APIGateway -->|SMTP TLS| MailService[Nodemailer/SMTP\nGestión de Notificaciones]
     end
 ```
 
-## 4. Gestión de Salud (Observabilidad)
+---
 
-El sistema expone un dashboard de salud técnico (`/api/health`) que verifica:
-1.  **Database**: Conectividad y latencia de Prisma.
-2.  **AI Service**: Disponibilidad de la API de OpenAI.
-3.  **Storage**: Acceso de escritura/lectura al storage de evidencias.
+## 3. Arquitectura Lógica Defensiva (Resiliencia)
+
+El backend de EmiTesis no expone servicios al cliente de manera cruda; requiere transicionar por un **Tunnel de Resiliencia**. Cada petición HTTP atraviesa:
+
+1. **Helmet Middleware + CORS Layer:** Filtrado perimetral contra XSS, ataques de enmarcado (Clickjacking) y limitación de agentes remotos.
+2. **Passport JWT Auth Guard:** Resolución criptográfica de la sesión de WebAuthn o Bearer Token del cliente.
+3. **Roles Guard (RBAC):** Una muralla que comprueba recursivamente en base de datos si el JWT decodificado tiene autorización algorítmica para el controlador final.
+
+### El Estándar de Retorno Constante (TransformInterceptor)
+Cualquier endpoint que devuelva código 201 o 200, será transformado automáticamente en el servidor para evitar discrepancias que corrompan el parseo del front-end. Esto asegura que _todas_ las respuestas tengan la máscara geométrica: 
+```typescript
+{
+  "success": true,
+  "data": { ... payload original ... },
+  "timestamp": "2026-04-21T01:00:00Z"
+}
+```
 
 ---
-Este diseño arquitectónico garantiza que **EmiTesis** pueda escalar para soportar miles de estudiantes simultáneos con una degradación mínima del rendimiento.
+
+## 4. Estrategia del Motor Contextual IA (Hybrid Copilot)
+
+El `AiService` (NestJS) no es un sistema de autocompletado en blanco; su lógica integra un **System Prompt inyectado en tiempo real**. 
+Antes de disparar a OpenAI, el sistema:
+1. Extrae de Postgres el ID del estudiante, las horas validadas y el estado actual (e.g. `EN_REVISION_TUTOR`).
+2. Forma el contexto e interpola variables.
+3. Lo envía como *System Context* al GPT-4o asegurando un soporte extremadamente técnico y acoplado a la academia ("Zero-Hallucination Policy").
+
+---
+
+## 5. Cron Jobs y Automatización 
+
+La salud institucional requiere auditorías automáticas invisibles:
+*   Módulo `@nestjs/schedule` que se ejecuta asíncronamente (Diario, a las 02:00 AM) para realizar tareas de "Garbage Collection" (Borrado de documentos huérfanos que nunca se finalizaron y saturación en Vercel Blob).
+*   Monitoreo por inactividad prolongada y envíos agrupados de recordatorios de evaluación empresarial (via SMTP/Email).

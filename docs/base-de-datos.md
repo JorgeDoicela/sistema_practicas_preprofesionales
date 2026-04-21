@@ -1,99 +1,69 @@
-# Arquitectura de Datos y Diccionario de Base de Datos
+# Base de Datos y Estrategia de Seeding Masivo
 
-El sistema utiliza **PostgreSQL 16** gestionado a través de **Prisma ORM**. La estructura ha sido diseñada para garantizar la integridad referencial, la inmutabilidad de los registros de asistencia y el cumplimiento de la normativa de protección de datos (LOPDP).
+Este documento cubre el mapeo transaccional que utiliza Prisma ORM integrado en PostgreSQL para asegurar persistencia y la estrategia de siembra para simulación industrial.
 
-## 1. Modelos del Sistema Industrializado
+---
 
-### 1.1 Núcleo de Prácticas
-- **Internship (Asignación)**: Entidad central que une al Estudiante, Empresa y Tutores. Almacena las ubicaciones permitidas (JSON), el estado del test de actitud y las coordenadas principales.
-- **Attendance (Asistencia)**: Registro inmutable de entradas y salidas. Incluye geolocalización, biometría y **activityPhotoKey** para evidencias visuales.
-- **Evaluation (Evaluación Dual)**: Almacena puntajes de aptitud y actitud. Diferencia entre evaluaciones de tipo `ACADEMICA` y `EMPRESARIAL`.
+## 1. Diseño Entidad-Relación y Estructura Nuclear
 
-### 1.2 Monitoreo y Seguimiento 360
-- **MonitoringVisit (Visita de Campo)**: Registro de las visitas de supervisión realizadas por el tutor académico. Almacena fecha, observaciones y resultados de la verificación in situ.
-- **Document (Gestión Documental)**: Rastreo del ciclo de vida de los 21+ documentos obligatorios, incluyendo validaciones y plantillas.
-
-### 1.3 Auditoría e Inteligencia
-- **SystemLog (Auditoría Industrial)**: Registro de eventos de seguridad, acceso a datos sensibles (LOPDP) y errores sistémicos. Esencial para el cumplimiento normativo.
-- **AiChatLog**: Registro de las interacciones del estudiante con el Copilot de IA, permitiendo refinar el conocimiento del asistente.
-
-### 1.4 Comunicación y Privacidad
-- **Announcement (Avisos Masivos)**: Gestión de notificaciones globales para roles específicos.
-- **PrivacyRequest (LOPDP/ARCO)**: Gestión de solicitudes ciudadanas sobre sus datos personales (Acceso, Rectificación, Cancelación, Oposición).
-
-## 2. Diagrama Entidad-Relación (Conceptual)
+El diagrama está optimizado para Normalización 3NF en datos tabulares y denormalización ligera en historiales en volumen (utilizando campos tipo `Json`) para alto rendimiento en lecturas.
 
 ```mermaid
 erDiagram
-        string id PK "UUID"
-        string ruc UK "Identificación fiscal única"
-        string name "Nombre comercial"
-        string address "Dirección física"
-        string representative "Representante legal"
-        string email "Contacto corporativo"
-    }
-
-    AGREEMENT {
-        string id PK "UUID"
-        string companyId FK "Relación con Company"
-        datetime startDate "Inicio de vigencia"
-        string filePath "Ruta al PDF firmado"
-        string status "Estado (Activo, Vencido)"
-    }
-
-    INTERNSHIP {
-        string id PK "UUID"
-        string studentId FK "Relación con User (ESTUDIANTE)"
-        string tutorId FK "Relación con User (TUTOR)"
-        string companyId FK "Relación con Company"
-        datetime startDate "Fecha de inicio"
-        datetime endDate "Fecha de culminación proyectada"
-        int totalHours "Total de horas a cumplir"
-        string location "Ubicación detallada"
-        float lat "Latitud de la empresa"
-        float lng "Longitud de la empresa"
-        string status "Enum: En Proceso, Finalizado"
-    }
-
-    DOCUMENT {
-        string id PK "UUID"
-        string internshipId FK "Relación con Internship"
-        string name "Nombre del formato obligatorio"
-        string filePath "Ruta en Storage (Vercel Blob)"
-        DocumentStatus status "Enum: PENDIENTE, EN_REVISION, etc."
-        string observations "Feedback del tutor/coordinador"
-        datetime startDate "Apertura para subida"
-        datetime dueDate "Fecha límite"
-        datetime submittedAt "Fecha de entrega"
-    }
-
-    ATTENDANCE {
-        string id PK "UUID"
-        string internshipId FK "Relación con Internship"
-        datetime checkIn "Entrada"
-        datetime checkOut "Salida"
-        float lat "Captura GPS"
-        float lng "Captura GPS"
-        float distanceKm "Distancia calculada vs Empresa"
-    }
+    USER ||--o{ INTERNSHIP_AS_STUDENT : participa
+    USER ||--o{ INTERNSHIP_AS_TUTOR : supervisa
+    USER ||--o{ CREDENTIAL : "WebAuthn"
+    USER ||--o{ DATA_REQUEST : "Derechos LOPDP"
+    
+    COMPANY ||--|{ AGREEMENT : firma
+    COMPANY ||--|{ INTERNSHIP : aloja
+    COMPANY ||--o{ USER : "RRHH"
+    
+    CAREER ||--|{ USER : enseña
+    CAREER ||--|{ DOCUMENT_TEMPLATE : hereda
+    
+    INTERNSHIP ||--|{ ATTENDANCE : asiste
+    INTERNSHIP ||--|{ DOCUMENT : genera
+    INTERNSHIP ||--|{ EVALUATION : recibe
+    INTERNSHIP ||--o{ STATUS_HISTORY : "Logs Modificaciones"
+    
+    ATTENDANCE ||--|{ ACTIVITY_PHOTO : evidencia
 ```
 
-## 2. Diccionario de Datos: Atributos Especiales
+---
 
-### Gestión de Seguridad (Modelo `User`)
-*   `failedAttempts`: Contador incremental que se dispara ante logins fallidos.
-*   `lockoutUntil`: Sello de tiempo (Timestamp) que impide el acceso a la cuenta por 15 minutos tras 5 fallos.
-*   `resetToken`: Cadena alfanumérica única generada mediante `crypto.randomBytes(32)` para flujos de recuperación.
+## 2. Tablas Transversales de Seguridad y Auditoría Operativa
 
-### Control de Prácticas (Modelo `Internship`)
-*   `totalHours`: Horas validadas por el sistema. No se puede cerrar la práctica si las asistencias no cubren el total.
-*   `lat / lng`: Almacenan las coordenadas de la empresa para el algoritmo de validación de presencia.
+Una aplicación empresarial debe poder trazar el "quién, qué y cuándo" sin necesidad imperativa de revisar backups de base de datos o logs planos del orquestador.
 
-## 3. Consideraciones de Integridad y Rendimiento
+1. **`SystemLog` (Bitácora Maestra):**
+   Posee indexación doble `category + createdAt(Desc)` para guardar los milisegundos de consulta, errores fatales, alertas y comportamientos de usuarios del sistema. Es la fuente del "Dashboard de Salud Institucional" para ver peticiones HTTP/500 en vivo.
+2. **`EmailLog` (Registro de Fallos de Red):**
+   Almacena temporalmente los ecos (Bounce/Bugs) y despachos exitosos asíncronos del Nodemailer, conteniendo qué formato se envió ("EXITO/FALLIDO") asegurando que nadie mienta alegando "no recibí el correo de rechazo".
+3. **`InternshipStatusHistory` (Time-Travel Debugging):**
+   Graba las mutaciones históricas del estado de la pasantía. (e.g. Cuándo se pasó de "En Proceso" a "Finalizado" y bajo qué Autorizador).
+4. **`DataRequest` (Flujo Legal ARCO):**
+   Centralización legal en caso de que un estudiante invoque su derecho a que borren toda su data fotográfica y GPS basándose en la normativa LOPDP. 
 
-El diseño de la base de datos prioriza la consistencia y la seguridad del dato mediante las siguientes estrategias:
+---
 
-1.  **Validación de Tipos (Type Safety):** Gracias al uso de Prisma, el esquema de datos está sincronizado matemáticamente con el código fuente. Esto previene que se almacenen datos inconsistentes o tipos incorrectos, asegurando la calidad de la información desde la raíz.
-2.  **Garantía de Relaciones:** PostgreSQL asegura la integridad referencial. Todas las relaciones entre estudiantes, tutores y empresas están estrictamente supervisadas a nivel de base de datos para evitar registros huérfanos.
-3.  **Transaccionalidad Atómica:** Operaciones críticas, como la creación de una práctica con sus documentos obligatorios, se ejecutan en transacciones. Esto garantiza que el sistema nunca quede en un estado incompleto si ocurre un fallo.
-4.  **Geolocalización Precisa:** El uso de tipos Double Precision para las coordenadas permite una exactitud milimétrica en el cálculo de distancias para el control de asistencia (geofencing).
+## 3. Gestión Documental Algorítmica
+
+El núcleo de los requisitos es el mapeo entre Formatos Generales e Instanciaciones:
+
+*   **`DocumentTemplate`:** Representa un documento configurado para la Institución o una Carrera (Ej. `F01 - Planilla de Aceptación`). Controla el ordenamiento (Sort Priority), si es obligatorio u opcional y su visibilidad en el ecosistema.
+*   **`Document`:** Instanciación física de ese Template, perteneciente al Pasantías del Jugador, acoplado con estados, observaciones e indexación de URLs a Vercel Blob. 
+*   **`DocumentComment` / `DocumentVersion`:** Para guardar el historial cuando el tutor se los rechaza y el estudiante hace iteraciones corrigiendo fallos.
+
+---
+
+## 4. Estrategia de Inyección y Simulación ("Master Seeder v11.0")
+
+El archivo `prisma/seeds/seed.ts` no inyecta simplemente 3 usuarios genéricos; utiliza un **algoritmo hiperrealista probabilístico** para pre-llenar postgres. 
+
+El comando `npx prisma db seed` borra de forma segura jerárquicamente la base y reconstruye:
+- **50 Estudiantes Modelados Matemáticamente:** 10 asumen escenarios "exitosos", otros 20 escenarios estancados o críticos de plazos vencidos.
+- **20 Días de Marcación Simulados:** Distorsiones geomatemáticas y simulacros de fechas de hace 90 días, poblados con URLs de evidencia dummy y fotos random.
+- **Purga de Fallos:** Inyección forzada de historiales de error simulados (Logs HTTP 500), Notificaciones (In-App), Mails fallidos y Data Privacy Requests para llenar el panel de administrador y analizar interfaces con data.
+
+Este seeder convierte tu base local en 30 segundos en el equivalente a una plataforma con meses intensos de estrés de producción.

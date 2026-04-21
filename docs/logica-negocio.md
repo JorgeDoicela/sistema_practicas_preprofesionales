@@ -1,71 +1,68 @@
-# Lógica de Negocio y Reglas Técnicas
+# Lógica de Negocio y Reglas Institucionales Industriales
 
-Este documento detalla las reglas de nivel industrial que gobiernan el comportamiento del ecosistema EmiTesis, asegurando la calidad académica y el cumplimiento normativo.
-
-## 1. Ciclo de Vida del Estudiante (Roadmap Industrial)
-
-El proceso de prácticas se ha gamificado y estandarizado en 4 etapas críticas:
-1.  **Asignación**: Vinculación de estudiante-tutor-empresa.
-2.  **Ejecución (Marcaje 360)**: Registro diario de asistencia con validación de geofencing (GPS) y biometría.
-3.  **Monitoreo y Evidencia**: Subida obligatoria de fotos de actividades diaria para validación por parte del tutor empresarial.
-4.  **Evaluación y Cierre**: Generación de certificado tras cumplir el 100% de horas y aprobaciones.
-
-## 2. Reglas de Validación de Asistencia (RF-ATT-LOC)
-
-- **Geofencing**: El sistema valida que el estudiante se encuentre dentro de un radio de **X metros** (configurable por locación) de los puntos permitidos definidos por la empresa.
-- **Biometría Progresiva**: Si el dispositivo lo permite, se solicita validación biométrica para evitar el "marcaje por terceros".
-- **Evidencia Visual**: No se permite cerrar una jornada de asistencia sin la carga de al menos una **foto de actividad** que demuestre el trabajo realizado ese día.
-
-## 3. Modelo de Evaluación Dual (RF-07)
-
-A diferencia de sistemas tradicionales, EmiTesis emplea un modelo de evaluación cruzada:
-- **Evaluación Empresarial**: Enfocada en aptitudes técnicas, proactividad y actitud en el entorno laboral.
-- **Evaluación Académica**: Enfocada en el cumplimiento de los objetivos de aprendizaje y la calidad de los informes entregados.
-- **Dual Performance Glance**: Los coordinadores pueden ver ambos puntajes lado a lado para detectar discrepancias en el rendimiento.
-
-## 4. Inteligencia Artificial Contextual (AI Copilot)
-
-The system uses AI for autonomous technical support:
-- **Zero-Hallucination Policy**: La IA solo responde basándose en el expediente actual del estudiante y las reglas de negocio del ISTPET.
-- **Asistencia Proactiva**: Identifica documentos faltantes o proximidad a la finalización de horas para alertar al estudiante.
-
-## 5. Protocolo de Monitoreo 360 (Tutor Académico)
-
-- **Visitas de Campo**: Los tutores académicos deben registrar al menos una visita de monitoreo presencial o virtual, documentando evidencias en el sistema.
-- **Alertas Tempranas**: Si un estudiante deja de marcar por más de 3 días hábiles, el sistema genera una alerta crítica para el tutor académico.
+Este documento detalla las normativas inviolables ("Hard-Rules") y máquinas de estado que estructuran el ecosistema EmiTesis, previniendo errores humanos y forzando el cumplimiento de la calidad académica.
 
 ---
-Estas reglas garantizan que el título de técnico/tecnólogo esté respaldado por un proceso de prácticas verificable y de alta calidad.
 
-### 2.1 Flujo de Revisión (State Machine)
-Los documentos siguen un flujo jerárquico estricto de aprobación:
+## 1. El Ciclo de Vida Secuencial de Pasantías
+
+El ecosistema obliga a que los 6 actores pasen por un _Roadmap_ sin excepciones de salto de fase. Si una fase se retrasa, el resto del ciclo (incluyendo la graduación) queda pausado algorítmicamente.
+
+### Fase I: Asignación e Inicialización (`Start-Offset`)
+Toda práctica debe ser oficialmente asignada por un **Coordinador** antes de ser operada.
+*   **Aprobación del Convenio:** La asignación exige matemáticamente que la empresa vinculada posea un convenio (`Agreement`) con estado "Activo". Un convenio caduco detiene el sub-módulo de asignación para todos sus estantes.
+*   **Targeting de Horas:** La carrera (e.g. Ciberseguridad, Desarrollo de Software) determina directamente (`requiredHours`) mediante un `JSON` en la base de datos el target mínimo requerido, usualmente 160 o 240 horas.
+
+### Fase II: Marcaje 360 y Cumplimiento Geofencing
+Módulo diario y repetitivo a cargo exclusivo del `ESTUDIANTE`.
+*   **Radio GPS:** A través de la fórmula *Haversine*, el marcaje intercepta las coordenadas. Todo registro a una lejanía superior a la establecida (X metros de tolerancia fijada en la base de datos) es bloqueado por el cliente, catalogado o vetado.
+*   **Seguimiento Biométrico Inyectado:** Una credencial de huella virtual u OIDC (WebAuthn) se demanda si el dispositivo es capaz, para mitigar completamente los "falsos check-in".
+*   **Fotos Evidenciales Obligatorias:** Un marcaje sin una foto de trabajo (ActivityPhoto) impide que se procese la jornada como válida.
+
+### Fase III: Máscara Multidimensional de Evaluación (Performance Dual)
+El fin de una práctica exige una revisión matemática dividida:
+*   **Tutor Empresarial (`EMPRESARIAL`):** Califica aptitud corporativa, proactividad y trabajo en equipo del estudiante `[Escala Absoluta Numérica]`.
+*   **Tutor Académico (`ACADEMICA`):** Califica la concordancia y calidad técnica de los documentos `[DocumentTemplates]`.
+*   **Dashboard Visual:** El coordinador analiza ambas métricas. Diferencias abismales alertan por bandera investigativa.
+
+---
+
+## 2. Documentación Restringida y Máquina de Estados (State Machines)
+
+Los documentos ya no son estáticos; tienen vida propia a través de un **Flujo de Bloqueo de Nodos (Cascade Approval)**.
 
 ```mermaid
 stateDiagram-v2
     [*] --> PENDIENTE
-    PENDIENTE --> EN_REVISION_TUTOR: Estudiante sube archivo
-    EN_REVISION_TUTOR --> RECHAZADO_TUTOR: Tutor observa
-    RECHAZADO_TUTOR --> EN_REVISION_TUTOR: Re-subida
-    EN_REVISION_TUTOR --> APROBADO_TUTOR: Tutor valida
-    APROBADO_TUTOR --> APROBADO_DEFINITIVO: Coordinador firma
-    APROBADO_TUTOR --> RECHAZADO_COORDINADOR: Coordinador observa
-    RECHAZADO_COORDINADOR --> EN_REVISION_TUTOR: Re-validación
-    APROBADO_DEFINITIVO --> [*]
+    PENDIENTE --> EN_REVISION_TUTOR: Estudiante Sube/Actualiza Documento (Vercel Blob)
+    EN_REVISION_TUTOR --> RECHAZADO_TUTOR: Observación y Re-itero Académico
+    RECHAZADO_TUTOR --> EN_REVISION_TUTOR: Sube Corrección
+    EN_REVISION_TUTOR --> APROBADO_TUTOR: Visado Primario Exitoso
+    
+    APROBADO_TUTOR --> APROBADO_DEFINITIVO: Sellado Final (Coordinador)
+    APROBADO_TUTOR --> RECHAZADO_COORDINADOR: Fallo de Calidad
+    RECHAZADO_COORDINADOR --> EN_REVISION_TUTOR: Cíclo de Reparación
+    
+    APROBADO_DEFINITIVO --> [*]: Archivo Congelado (Inmutable)
 ```
 
-### 2.2 Restricciones Temporales
-*   **Disponibilidad:** Los formatos para descarga solo son visibles si la fecha actual es mayor o igual a `startDate`.
-*   **Bloqueo de Edición:** Una vez que un documento alcanza el estado `APROBADO_DEFINITIVO`, el sistema bloquea cualquier intento de actualización de archivos o metadatos.
+**Restricción Crucial (`Immutability Protocol`):**
+Cualquier documento PDF que ingrese algorítmicamente en el estado `APROBADO_DEFINITIVO` se sella. Los Delete requests provenientes del front-end o los Update requests son desechados (HTTP 403 Forbidden). Esto garantiza la preservación legal.
 
-## 3. Control de Asistencia mediante Geofencing
+---
 
-El sistema implementa una validación física del estudiante en el sitio de práctica:
-1. **Captura:** Al realizar Check-In/Check-Out, se capturan las coordenadas GPS desde el cliente.
-2. **Cálculo:** Se aplica la fórmula de Haversine para determinar la distancia entre el estudiante y el centro de práctica registrado.
-3. **Registro de Desviación:** Si la distancia excede el margen permitido (ej. 500m), el registro se marca con una advertencia en el reporte del tutor.
+## 3. Disparadores Automáticos y Control de Hilos
 
-## 4. Sistema de Notificaciones Automáticas
-El módulo `EmailService` dispara eventos inyectados de forma asíncrona:
-*   **Bienvenida:** Registro de empresa exitoso.
-*   **Asignación:** Notificación al estudiante con detalles de la empresa y horas.
-*   **Alertas:** Documentos próximos a vencer o rechazados.
+### "Email Queue" y Cronómetro de Vencimiento
+Cada documento posee implícitamente variables `startDate` (Fecha de Inicio) y `dueDate` (Fecha Límite). 
+
+*   **Advertencia Amarilla:** Inyección proactiva de recordatorios `InAppNotification` y alertas de correo cuando el `dueDate` se acerca a su ventana final (-48h).
+*   **Tolerancia Cero (Timeout Action):** Si el cronómetro finaliza y el estudiante no subió la evidencia, la base de datos lanza un estado de rebote de plazos mediante un Job Automatizado (`@Cron`).
+
+---
+
+## 4. Agente IA (Zero-Hallucination Guardrails)
+
+El soporte interno del sistema se maneja enteramente mediante Inteligencia Artificial.
+1.  **Contextualización Pre-Ejecución:** En lugar de lanzar un modelo general de IA y "ver qué pasa", NextJS inyecta el estado logístico exacto del estudiante (p.ej.: "Faltan 16 horas y el Formulario F02 fue rechazado").
+2.  **Anti-Alucinaciones:** El system prompt instruye obligatoriamente evitar inventar normativas. Únicamente puede utilizar los protocolos de graduación inyectados en la memoria temporal activa de la plataforma.

@@ -1,104 +1,100 @@
-# Emitesis: Sistema de Prácticas Preprofesionales
+# EmiTesis: Sistema de Gobernanza y Gestión de Prácticas Preprofesionales
 
-Emitesis no es solo un gestor de archivos; es una plataforma diseñada para digitalizar y automatizar el ciclo de vida completo de las prácticas preprofesionales en el instituto. El objetivo central es eliminarel manejo manual de documentos y asegurar que el proceso cumpla con los estándares de control y validación requeridos institucionalmente.
+> Plataforma centralizada y automatizada para la digitalización integral, auditoría y trazabilidad del ciclo de vida de las prácticas preprofesionales a nivel institucional.
 
-## Los 4 Actores Principales
-
-El sistema opera bajo un modelo de gestión por roles, asegurando que cada usuario tenga acceso solo a lo que le compete:
-
-*   **Administrador:** El "arquitecto" del sistema; gestiona el funcionamiento técnico, usuarios y configuraciones globales.
-*   **Coordinador de Prácticas:** El "director de orquesta"; registra convenios con empresas, asigna estudiantes a sus plazas y tutores, y da la validación final a todo el proceso.
-*   **Tutor Académico:** El "supervisor"; configura las fechas de entrega y realiza la primera revisión de la documentación del estudiante.
-*   **Estudiante:** El "protagonista"; registra su asistencia diaria mediante GPS y gestiona sus 8 documentos obligatorios.
-
-## Los 8 Módulos Funcionales
-
-El sistema se divide en módulos que cubren desde el primer contacto con la empresa hasta la graduación del proceso:
-
-| Módulo | Descripción Clave | Requerimiento |
-| :--- | :--- | :--- |
-| **Autenticación** | Acceso seguro mediante credenciales institucionales y bloqueo por intentos fallidos. | RF-AUT-001 |
-| **Convenios** | Registro de acuerdos con empresas y notificación automática vía correo para la firma del documento. | RF-CON-001 |
-| **Gestión Usuarios** | Control total sobre quién entra al sistema y qué rol desempeña. | RF-USR-001 |
-| **Asignación** | Vinculación del estudiante con una empresa activa, un tutor y la definición de horas a cumplir. | RF-ASG-001 |
-| **Gestión Documental** | El corazón del sistema: flujo de subida, revisión y aprobación de los 8 documentos obligatorios. | RF-DOC-001 |
-| **Asistencia** | Registro diario con verificación de ubicación geográfica (Geofencing). | RF-ASI-001 |
-| **Certificación** | Generación automática del certificado en PDF una vez cumplidas las horas y documentos. | RF-CERT-001 |
-| **Notificaciones** | Alertas automáticas por correo ante aprobaciones, rechazos o plazos por vencer. | RF-NOT-001 |
-
-## El Flujo de los 8 Documentos
-
-Uno de los puntos más innovadores de Emitesis es su flujo de validación en cascada para los documentos obligatorios:
-
-1.  **Subida:** El estudiante descarga el formato, lo llena y lo sube en PDF.
-2.  **Filtro 1 (Tutor):** El tutor aprueba o rechaza con comentarios. Si rechaza, el estudiante corrige y reintenta.
-3.  **Filtro 2 (Coordinador):** Una vez aprobado por el tutor, el coordinador da el visto bueno definitivo.
-4.  **Bloqueo de Integridad:** Tras la aprobación final, el documento se bloquea; no puede ser borrado ni modificado, garantizando la trazabilidad.
-
-## Control de Asistencia Inteligente
-
-Para evitar registros falsos, el sistema no solo guarda la hora, sino que valida la ubicación del estudiante. Se utiliza la Fórmula de Haversine para calcular que el estudiante esté realmente en la empresa:
-
-$$d = 2r \arcsin\left(\sqrt{\sin^2\left(\frac{lat_2-lat_1}{2}\right) + \cos(lat_1) \cos(lat_2) \sin^2\left(\frac{lon_2-lon_1}{2}\right)}\right)$$
-
-El sistema permite el registro solo si la distancia $d$ es menor a 200 metros del punto de práctica definido.
-
-## Calidad de Software (ISO/IEC 25010)
-
-El proyecto se rige por atributos de calidad estrictos, aspirando a un nivel profesional:
-
-*   **Seguridad:** Contraseñas cifradas con BCrypt y sesiones con tiempo de expiración.
-*   **Rendimiento:** Respuestas del sistema en menos de 2 segundos.
-*   **Disponibilidad:** Operatividad del 99.9%.
-*   **Trazabilidad:** Logs de auditoría para cada acción crítica realizada por cualquier usuario.
-
-En resumen, el proyecto busca transformar un proceso burocrático pesado en una experiencia fluida, segura y auditable.
+EmiTesis es un ecosistema digital de grado empresarial (*Enterprise-grade*) diseñado para administrar de inicio a fin el proceso de pasantías y prácticas institucionales. Sustituyendo el manejo físico o disperso de documentos, EmiTesis orquesta la interacción entre autoridades, instituciones corporativas y estudiantes, garantizando la **seguridad documental**, **control de asistencia preciso mediante Geofencing**, e integración con **Inteligencia Artificial para soporte proactivo**.
 
 ---
 
-## Instalación y Despliegue (Clonación)
+## 🎯 Resumen Ejecutivo
 
-Sigue estos pasos para clonar y ejecutar el proyecto en tu entorno local.
+Históricamente, la administración de pasantías presenta retos críticos: falsificación de registros de asistencia, demoras en el flujo burocrático de revisión documental, y dificultad en la supervisión real (véase [La Problemática y Propuesta de Valor](./docs/problematica.md)). 
 
-### 1. Clonar el Repositorio
+EmiTesis soluciona estos obstáculos a través de un ecosistema interconectado basado en 3 pilares estructurales:
+1. **Verificación Estricta (Geofencing y Biometría):** Garantiza que cada hora registrada sea legítima.
+2. **Validación en Cascada (Nested Approvals):** Flujos de validación estricta multinivel para documentos legales y académicos.
+3. **Observabilidad 360°:** Integración del seguimiento empresarial con el rendimiento y soporte asistido por AI (GPT-4o).
 
-Abre tu terminal y ejecuta el siguiente comando para clonar el repositorio completo (que incluye tanto el backend como el frontend):
+---
 
+## 🏗 Arquitectura y Stack Tecnológico
+
+El sistema se compone de una arquitectura **Hybrid Universal Bridge**, segmentando responsabilidades entre una API altamente resiliente y un cliente interactivo y predictivo.
+
+| Capa | Tecnologías Clave | Propósito Estratégico |
+| :--- | :--- | :--- |
+| **Frontend UI** | Next.js 16 (App Router), React 19, Tailwind CSS | Interfaces Premium reactivas, protección de rutas y renderizado optimizado (SSR/CSR). |
+| **Backend Core** | NestJS 11+, TypeScript, JWT, OAuth (WebAuthn) | Procesamiento robusto, interceptores globales y tareas automáticas asíncronas (CRON). |
+| **Motor de Base de Datos** | PostgreSQL, Prisma ORM 5+ | Manejo de consistencia de alta presión, relaciones y logs de auditoría masivos. |
+| **Document Storage** | Vercel Blob, PDF.js | Almacenamiento perenne de evidencias fotográficas, documentos firmados y convenios. |
+| **AI Copilot** | OpenAI GPT-4o | Asistente contextual con directrices anti-alucinaciones "Zero-Hallucination Policy". |
+
+📘 *Más detalles en [Arquitectura Técnica y Topología](./docs/arquitectura.md).*
+
+---
+
+## 👥 Gobernanza de Roles (RBAC)
+
+La integridad del sistema depende de una separación de responsabilidades absoluta:
+
+1. **👑 Administrador:** Orquestador de la plataforma; gestiona analíticas de salud del sistema, carreras, cronogramas y limpieza en caliente (Hot Maintenance).
+2. **👔 Coordinador de Prácticas:** Regulador del ecosistema; aprueba documentos en última instancia, maneja convenios corporativos y emite la certificación final.
+3. **📜 Tutor Académico:** Monitor educativo; da primera revisión a documentos y valida el progreso de objetivos.
+4. **🏢 Empresa (RRHH/Convenio):** Entidad legal enmarcada en el sistema, agrupa tutores empresariales.
+5. **🛠️ Tutor Empresarial:** Supervisor en campo; responsable de realizar las evaluaciones duales técnicas.
+6. **🎓 Estudiante:** El protagonista en campo; registra asistencia geo-localizada, somete documentos a iteración y requiere retroalimentación contínua.
+
+📘 *Más detalles en [Lógica de Negocio y Reglas Técnicas](./docs/logica-negocio.md).*
+
+---
+
+## 🚀 Instalación y Despliegue Local
+
+Para orquestar este ecosistema en un entorno local para propósitos de Desarrollo o Auditoría de Código:
+
+### 1. Clonar el repositorio completo
 ```bash
 git clone https://github.com/TU_USUARIO/TU_REPOSITORIO.git
 cd sistema_practicas_preprofesionales
 ```
 
-*(Nota: Reemplaza la URL con la de tu repositorio de GitHub)*
-
-### 2. Estructura del Proyecto
-
-El proyecto está dividido en dos partes principales:
-*   `api-emitesis/`: API principal o Backend.
-*   `web-emitesis/`: Interfaz de usuario o Frontend.
-
-### 3. Levantar el Backend (`api-emitesis`)
-
+### 2. Infraestructura Backend (`api-emitesis`)
+El núcleo de procesamiento lógico y acceso a base de datos.
 ```bash
 cd api-emitesis
-# Instalar dependencias
 npm install
-# Configurar las variables de entorno (Crear archivo .env basado en un .env.example si existe)
-# Levantar el servidor en modo desarrollo
+
+# Instanciar servicios de DB (Si usas un .env propio)
+npx prisma generate 
+
+# Configurar variables de entorno y lanzar API 
 npm run start:dev
 ```
+*(Nota: Incluye un seeder maestro `npx prisma db seed` con más de 1200 logs de ambiente demo)*.
 
-### 4. Levantar el Frontend (`web-emitesis`)
-
-Abre una nueva terminal en la raíz del proyecto y navega al frontend:
-
+### 3. Entorno de Experiencia Cliente (`web-emitesis`)
+Aplicación frontend que consume el puerto `3000` (Backend).
 ```bash
-cd web-emitesis
-# Instalar dependencias
-npm install
-# Configurar variables de entorno necesarias (.env)
-# Iniciar el servidor de desarrollo
-npm run dev # o el comando que aplique según el framework (ej. npm start)
+cd ../web-emitesis
+npm install 
+npm run dev
 ```
 
-¡Con esto, ambos entornos deberían estar corriendo localmente!
+---
+
+## 📚 Documentación Institucional
+
+Este repositorio cuenta con un nivel de especificación detallado destinado a Desarrolladores, Arquitectos y DevOps. Recomendamos fuertemente revisar los documentos en estricto orden para entender el sistema de manera global:
+
+1. 🌍 **[Planteamiento de la Problemática y Solución](./docs/problematica.md)**
+2. 🏛 **[Arquitectura y Topología de Despliegue](./docs/arquitectura.md)**
+3. ⚙️ **[Lógica de Negocio y State Machines](./docs/logica-negocio.md)**
+4. 🗄 **[Diseño de Base de Datos y Estrategia de Seeding](./docs/base-de-datos.md)**
+5. 🛡 **[Políticas de Seguridad y Privacidad LOPDP](./docs/seguridad.md)**
+6. 🔌 **[Documentación de Componentes y Guía de Desarrollo](./docs/desarrollo.md)**
+7. 📖 **[Endpoints del API y Especificaciones](./docs/api-guia.md)**
+8. 👩‍💻 **[Manual de Usuario](./docs/manual-usuario.md)**
+9. ... *y guías de Devops y Mantenimiento alojadas en la misma carpeta base*.
+
+---
+**EmiTesis © 2026** - Transformando la trazabilidad burocrática en operabilidad inteligente.
