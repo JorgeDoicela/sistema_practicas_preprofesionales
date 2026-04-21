@@ -29,6 +29,18 @@ api.interceptors.response.use(
     return response.data;
   },
   (error) => {
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('role');
+      toast.error('Sesión expirada', {
+        description: 'Por seguridad, vuelve a iniciar sesión.',
+      });
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
+    }
+
     if (error.response?.status === 429) {
       toast.error('Demasiadas peticiones', {
         description: 'Has superado el límite de intentos permitidos. Por favor, espera unos minutos antes de reintentar.',

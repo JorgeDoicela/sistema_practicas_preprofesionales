@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PrivacyConsentDto, ArcoRequestDto } from './dto/privacy-actions.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PrivacyService {
@@ -11,14 +12,22 @@ export class PrivacyService {
       throw new BadRequestException('Debe aceptar la política de privacidad para continuar.');
     }
 
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        lopdpAccepted: true,
-        lopdpAcceptedAt: new Date(),
-        lopdpVersion: dto.version,
-      },
-    });
+    try {
+      return await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          lopdpAccepted: true,
+          lopdpAcceptedAt: new Date(),
+          lopdpVersion: dto.version,
+        },
+      });
+    } catch (error) {
+      // Si el token contiene un userId obsoleto (p.ej. después de un reseed), forzar re-login.
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new UnauthorizedException('Tu sesión ya no es válida. Inicia sesión nuevamente.');
+      }
+      throw error;
+    }
   }
 
   async createArcoRequest(userId: string, dto: ArcoRequestDto) {
