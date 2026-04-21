@@ -4,6 +4,7 @@ import {
   ConflictException,
   ForbiddenException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -145,7 +146,8 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException('Usuario no encontrado');
+      // Token válido pero usuario inexistente (p. ej. después de reseed): forzar re-login.
+      throw new UnauthorizedException('Tu sesión ya no es válida. Inicia sesión nuevamente.');
     }
 
     return user;

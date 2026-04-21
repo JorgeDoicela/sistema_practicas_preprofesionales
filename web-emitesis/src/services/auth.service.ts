@@ -8,6 +8,11 @@ export const api = axios.create({
   baseURL: API_URL,
 });
 
+type RetryableConfig = {
+  __retryCount?: number;
+  method?: string;
+};
+
 // Interceptor para incluir el token en cada petición
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
@@ -29,6 +34,19 @@ api.interceptors.response.use(
     return response.data;
   },
   (error) => {
+    const config = (error.config || {}) as RetryableConfig;
+    const isNetworkError = !error.response && error.code === 'ERR_NETWORK';
+    const isGetRequest = (config.method || '').toLowerCase() === 'get';
+    const retryCount = config.__retryCount ?? 0;
+
+    // Reintento corto para cortes transitorios de API en modo dev (reinicios por watch).
+    if (isNetworkError && isGetRequest && retryCount < 2) {
+      config.__retryCount = retryCount + 1;
+      return new Promise((resolve) => {
+        setTimeout(() => resolve(api(config)), 350);
+      });
+    }
+
     if (error.response?.status === 401 && typeof window !== 'undefined') {
       localStorage.removeItem('token');
       localStorage.removeItem('user');

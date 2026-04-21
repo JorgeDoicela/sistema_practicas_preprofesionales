@@ -40,23 +40,46 @@ export class SystemLogsService {
    */
   async append(input: CreateSystemLogInput): Promise<void> {
     try {
-      const log = await this.prisma.systemLog.create({
-        data: {
-          level: input.level,
-          category: input.category,
-          message: this.truncate(input.message, MAX_MESSAGE),
-          method: input.method ?? null,
-          path: input.path != null ? this.truncate(String(input.path), MAX_PATH) : null,
-          statusCode: input.statusCode ?? null,
-          userId: input.userId ?? null,
-          actorEmail: input.actorEmail != null ? this.truncate(String(input.actorEmail), 320) : null,
-          ip: input.ip != null ? this.truncate(String(input.ip), 64) : null,
-          durationMs: input.durationMs ?? null,
-          ...(input.metadata !== undefined && input.metadata !== null
-            ? { metadata: input.metadata as Prisma.InputJsonValue }
-            : {}),
-        },
-      });
+      const baseData = {
+        level: input.level,
+        category: input.category,
+        message: this.truncate(input.message, MAX_MESSAGE),
+        method: input.method ?? null,
+        path: input.path != null ? this.truncate(String(input.path), MAX_PATH) : null,
+        statusCode: input.statusCode ?? null,
+        actorEmail: input.actorEmail != null ? this.truncate(String(input.actorEmail), 320) : null,
+        ip: input.ip != null ? this.truncate(String(input.ip), 64) : null,
+        durationMs: input.durationMs ?? null,
+        ...(input.metadata !== undefined && input.metadata !== null
+          ? { metadata: input.metadata as Prisma.InputJsonValue }
+          : {}),
+      };
+
+      let log;
+      try {
+        log = await this.prisma.systemLog.create({
+          data: {
+            ...baseData,
+            userId: input.userId ?? null,
+          },
+        });
+      } catch (error) {
+        // Si el userId no existe (sesión vieja tras reseed), guardar el log sin FK para no romper el flujo.
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2003' &&
+          input.userId
+        ) {
+          log = await this.prisma.systemLog.create({
+            data: {
+              ...baseData,
+              userId: null,
+            },
+          });
+        } else {
+          throw error;
+        }
+      }
 
       // Emitir via WebSockets para monitoreo en vivo (Solo para administradores suscritos a este evento)
       this.gateway.sendBroadcast('liveLog', log);
