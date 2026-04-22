@@ -40,6 +40,8 @@ model User {
   notifications        InAppNotification[]
   statusChanges        InternshipStatusHistory[]
   documentComments     DocumentComment[]
+  chatRoomMembers      ChatRoomMember[]
+  sentMessages         ChatMessage[]
 }
 
 /// Registro de actividad del sistema (peticiones HTTP, eventos relevantes, etc.)
@@ -329,6 +331,59 @@ enum Role {
   TUTOR_EMPRESARIAL
   ESTUDIANTE
   EMPRESA
+}
+
+/// Chat: controla qué pares de roles pueden intercambiar mensajes.
+model ChatPermission {
+  id        String   @id @default(uuid())
+  fromRole  Role
+  toRole    Role
+  isEnabled Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([fromRole, toRole])
+}
+
+/// Chat: sala de conversación (1:1 o grupal).
+model ChatRoom {
+  id        String           @id @default(uuid())
+  name      String?
+  isGroup   Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  members   ChatRoomMember[]
+  messages  ChatMessage[]
+}
+
+/// Chat: miembros de una sala.
+model ChatRoomMember {
+  id       String   @id @default(uuid())
+  roomId   String
+  userId   String
+  joinedAt DateTime @default(now())
+  room     ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+}
+
+/// Chat: mensajes individuales.
+model ChatMessage {
+  id           String    @id @default(uuid())
+  roomId       String
+  senderId     String
+  content      String
+  readAt       DateTime?
+  createdAt    DateTime  @default(now())
+  /// RF-LOPDP: eliminación por el remitente (dentro de la ventana permitida)
+  deletedAt    DateTime?
+  /// RF-LOPDP: anonimización por solicitud ARCO-Cancelación
+  isAnonymized Boolean   @default(false)
+  room         ChatRoom  @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  sender       User      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, createdAt(sort: Desc)])
+  @@index([senderId, isAnonymized])
 }
 
 enum DocumentStatus {

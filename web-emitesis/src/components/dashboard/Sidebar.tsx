@@ -24,6 +24,7 @@ import {
     BarChart3,
     Star,
     ClipboardCheck,
+    MessageSquare,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { User as UserType } from "@/types/user";
@@ -37,6 +38,7 @@ const MENUS: Record<string, Array<{ icon: React.ElementType; label: string; href
     ADMIN: [
         { icon: LayoutDashboard, label: "Tablero",               href: "/dashboard" },
         { icon: Settings,        label: "Configuración Sistema", href: "/admin/configuracion" },
+        { icon: MessageSquare,   label: "Permisos de Chat",      href: "/admin/chat-config" },
         { icon: BarChart3,       label: "Salud y Métricas",      href: "/admin/salud" },
         { icon: Star,            label: "Anuncios Globales",     href: "/admin/anuncios" },
         { icon: FileText,        label: "Plantillas",             href: "/coordinador/plantillas-documentos" },

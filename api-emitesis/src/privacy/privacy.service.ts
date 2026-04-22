@@ -2,10 +2,14 @@ import { Injectable, NotFoundException, BadRequestException, UnauthorizedExcepti
 import { PrismaService } from '../prisma/prisma.service';
 import { PrivacyConsentDto, ArcoRequestDto } from './dto/privacy-actions.dto';
 import { Prisma } from '@prisma/client';
+import { ChatService } from '../chat/chat.service';
 
 @Injectable()
 export class PrivacyService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private chatService: ChatService,
+  ) {}
 
   async recordConsent(userId: string, dto: PrivacyConsentDto) {
     if (!dto.accepted) {
@@ -86,8 +90,11 @@ export class PrivacyService {
         documents: a.documents.map(d => ({ name: d.name, status: d.status })),
       })),
       rightsRequests: user.dataRequests,
+      // RF-LOPDP Art. 18 & 20: incluir historial de chat en la portabilidad de datos
+      chatHistory: await this.chatService.getChatDataExport(userId),
       exportTimestamp: new Date().toISOString(),
-      institution: "ISTPET - Instituto Superior Tecnológico Mayor Pedro Traversari"
+      institution: "ISTPET - Instituto Superior Tecnológico Mayor Pedro Traversari",
+      legalNotice: "Exportación de datos personales conforme al Art. 18 y 20 de la Ley Orgánica de Protección de Datos Personales (LOPDP) de Ecuador.",
     };
   }
 
@@ -116,16 +123,26 @@ export class PrivacyService {
   }
 
   async respondToRequest(requestId: string, response: string, status: string) {
-    return this.prisma.dataRequest.update({
+    const request = await this.prisma.dataRequest.findUnique({
       where: { id: requestId },
-      data: {
-        response,
-        status,
-        updatedAt: new Date(),
-      },
-      include: {
-        user: true
-      }
     });
+
+    const updated = await this.prisma.dataRequest.update({
+      where: { id: requestId },
+      data: { response, status, updatedAt: new Date() },
+      include: { user: true },
+    });
+
+    // RF-LOPDP Art. 22: si se aprueba una solicitud de CANCELACION,
+    // anonimizar automáticamente los mensajes de chat del usuario.
+    if (
+      request &&
+      request.type === 'CANCELACION' &&
+      status === 'COMPLETADA'
+    ) {
+      await this.chatService.anonymizeUserChatData(request.userId);
+    }
+
+    return updated;
   }
 }

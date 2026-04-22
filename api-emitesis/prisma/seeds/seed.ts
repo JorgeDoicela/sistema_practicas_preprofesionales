@@ -1072,6 +1072,23 @@ async function main() {
   });
   console.log(`   ✓ ${arcoRequests.length} solicitudes ARCO creadas.\n`);
 
+  // ─── 12b. PERMISOS DE CHAT ────────────────────────────────────────────────
+  console.log('💬 [12b] Inicializando permisos de chat por roles...');
+  const allRoles = [Role.ADMIN, Role.COORDINADOR, Role.TUTOR, Role.TUTOR_EMPRESARIAL, Role.ESTUDIANTE, Role.EMPRESA];
+  const chatPermPairs: { fromRole: Role; toRole: Role }[] = [];
+  for (const fromRole of allRoles) {
+    for (const toRole of allRoles) {
+      if (fromRole !== toRole) {
+        chatPermPairs.push({ fromRole, toRole });
+      }
+    }
+  }
+  await prisma.chatPermission.createMany({
+    data: chatPermPairs.map(p => ({ fromRole: p.fromRole, toRole: p.toRole, isEnabled: false })),
+    skipDuplicates: true,
+  });
+  console.log(`   ✓ ${chatPermPairs.length} pares de permisos de chat creados (todos deshabilitados por defecto).\n`);
+
   // ─── 12. CONFIGURACIONES DEL SISTEMA ──────────────────────────────────────
   console.log('⚙️  [12/12] Configurando ajustes del sistema...');
   await prisma.systemSetting.createMany({

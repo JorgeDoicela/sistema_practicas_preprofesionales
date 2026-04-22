@@ -30,6 +30,7 @@ import { EvaluationsModule } from './evaluations/evaluations.module';
 import { ExportModule } from './export/export.module';
 import { AutomationModule } from './automation/automation.module';
 import { CoreModule } from './core/core.module';
+import { ChatModule } from './chat/chat.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
@@ -69,6 +70,7 @@ import { APP_GUARD } from '@nestjs/core';
     ExportModule,
     CoreModule,
     AutomationModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [

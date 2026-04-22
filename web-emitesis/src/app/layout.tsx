@@ -37,6 +37,8 @@ import { Footer } from "@/components/navigation/Footer";
 import { PrivacyConsentWrapper } from "@/components/auth/PrivacyConsentWrapper";
 import { ReCaptchaProviderWrapper } from "@/components/providers/ReCaptchaProviderWrapper";
 import { SocketProvider } from "@/providers/SocketProvider";
+import { ChatProvider } from "@/providers/ChatProvider";
+import ChatWidgetLoader from "@/components/chat/ChatWidgetLoader";
 import { Toaster } from "sonner";
 
 export default function RootLayout({
@@ -50,11 +52,14 @@ export default function RootLayout({
         <Navbar />
         <main className="min-h-screen">
           <SocketProvider>
-            <ReCaptchaProviderWrapper>
-              <PrivacyConsentWrapper>
-                {children}
-              </PrivacyConsentWrapper>
-            </ReCaptchaProviderWrapper>
+            <ChatProvider>
+              <ReCaptchaProviderWrapper>
+                <PrivacyConsentWrapper>
+                  {children}
+                </PrivacyConsentWrapper>
+              </ReCaptchaProviderWrapper>
+              <ChatWidgetLoader />
+            </ChatProvider>
           </SocketProvider>
         </main>
         <Footer />
