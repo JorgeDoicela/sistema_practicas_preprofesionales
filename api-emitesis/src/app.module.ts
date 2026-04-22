@@ -31,6 +31,8 @@ import { ExportModule } from './export/export.module';
 import { AutomationModule } from './automation/automation.module';
 import { CoreModule } from './core/core.module';
 import { ChatModule } from './chat/chat.module';
+import { CareersModule } from './careers/careers.module';
+import { AbsencesModule } from './absences/absences.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
@@ -71,6 +73,8 @@ import { APP_GUARD } from '@nestjs/core';
     CoreModule,
     AutomationModule,
     ChatModule,
+    CareersModule,
+    AbsencesModule,
   ],
   controllers: [AppController],
   providers: [

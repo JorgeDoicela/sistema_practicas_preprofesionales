@@ -44,6 +44,7 @@ model User {
   notifications        InAppNotification[]
   statusChanges        InternshipStatusHistory[]
   documentComments     DocumentComment[]
+  absenceReviews       Absence[]               @relation("AbsenceReviewer")
   chatRoomMembers      ChatRoomMember[]
   sentMessages         ChatMessage[]
 }
@@ -128,6 +129,7 @@ model Internship {
   evaluations  Evaluation[]
   monitoringVisits MonitoringVisit[]
   statusHistory    InternshipStatusHistory[]
+  absences         Absence[]
   company     Company      @relation(fields: [companyId], references: [id])
   career      Career?      @relation(fields: [careerId], references: [id])
   student     User         @relation("StudentInternship", fields: [studentId], references: [id])
@@ -257,6 +259,7 @@ model Document {
   isDigitallySigned Boolean   @default(false)
   signatureDate     DateTime?
   signatureKey      String?   // Hash del certificado o referencia al sello
+  verificationCode  String?   @unique  // Código único para verificación pública QR
 
   versions          DocumentVersion[]
   comments          DocumentComment[]
@@ -304,6 +307,27 @@ model ActivityPhoto {
   caption      String?
   createdAt    DateTime   @default(now())
   attendance   Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+}
+
+/// Ausencias justificadas del estudiante durante la práctica
+model Absence {
+  id           String     @id @default(uuid())
+  internshipId String
+  date         DateTime
+  reason       String
+  type         String     @default("ENFERMEDAD") // ENFERMEDAD, PERSONAL, LABORAL, OTRA
+  filePath     String?    // Documento justificativo (certificado médico, etc.)
+  status       String     @default("PENDIENTE")  // PENDIENTE, APROBADA, RECHAZADA
+  reviewNotes  String?
+  reviewedById String?
+  reviewedAt   DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  internship   Internship @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+  reviewedBy   User?      @relation("AbsenceReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([internshipId])
+  @@index([date])
 }
 
 /// RF-LOPDP: Solicitudes de derechos ARCO (Acceso, Rectificación, Cancelación, Oposición)

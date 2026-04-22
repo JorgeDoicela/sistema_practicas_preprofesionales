@@ -855,6 +855,34 @@ function StudentInternshipCard({
                         </button>
                      </div>
                      
+                     {/* Historial de estados */}
+                     {internship.statusHistory && internship.statusHistory.length > 0 && (
+                       <div className="mb-5">
+                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Historial de Estados</p>
+                         <div className="space-y-2">
+                           {internship.statusHistory.slice(0, 5).map((s: any) => (
+                             <div key={s.id} className="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl">
+                               <div className={cn(
+                                 "w-2 h-2 rounded-full mt-1.5 flex-shrink-0",
+                                 s.newStatus === 'Finalizado' ? "bg-green-500" :
+                                 s.newStatus === 'Suspendida' ? "bg-amber-500" :
+                                 s.newStatus === 'Retirada' ? "bg-red-500" : "bg-blue-500"
+                               )} />
+                               <div className="flex-1 min-w-0">
+                                 <div className="flex items-center gap-2 flex-wrap">
+                                   <span className="text-[10px] font-black text-[#003366]">{s.newStatus}</span>
+                                   {s.oldStatus && <span className="text-[10px] text-slate-400">← {s.oldStatus}</span>}
+                                   <span className="text-[10px] text-slate-300">{new Date(s.createdAt).toLocaleDateString("es-EC")}</span>
+                                 </div>
+                                 {s.reason && <p className="text-xs text-slate-500 mt-0.5 truncate">{s.reason}</p>}
+                                 {s.changedBy && <p className="text-[10px] text-slate-400">Por: {s.changedBy.fullName}</p>}
+                               </div>
+                             </div>
+                           ))}
+                         </div>
+                       </div>
+                     )}
+
                      {!attendance ? (
                         <div className="py-10 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-slate-300" /></div>
                      ) : (
@@ -865,6 +893,7 @@ function StudentInternshipCard({
                                    <th className="px-4 py-3 text-left font-black uppercase text-slate-400">Fecha</th>
                                    <th className="px-4 py-3 text-left font-black uppercase text-slate-400">Entrada</th>
                                    <th className="px-4 py-3 text-left font-black uppercase text-slate-400">Salida</th>
+                                   <th className="px-4 py-3 text-left font-black uppercase text-slate-400">Actividades</th>
                                 </tr>
                              </thead>
                              <tbody className="divide-y text-slate-400">
@@ -873,6 +902,11 @@ function StudentInternshipCard({
                                       <td className="px-4 py-3 font-bold">{new Date(h.checkIn).toLocaleDateString()}</td>
                                       <td className="px-4 py-3 font-bold">{new Date(h.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                                       <td className="px-4 py-3 font-bold">{h.checkOut ? new Date(h.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</td>
+                                      <td className="px-4 py-3 max-w-[180px]">
+                                        {h.activityDescription
+                                          ? <span className="text-slate-600 line-clamp-2">{h.activityDescription}</span>
+                                          : <span className="text-slate-300">—</span>}
+                                      </td>
                                    </tr>
                                 ))}
                              </tbody>

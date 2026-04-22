@@ -19,6 +19,7 @@ const RULES: { match: RegExp; allow: Role[] }[] = [
   { match: /^\/dashboard\/asistencia/, allow: [ROLES.ADMIN, ROLES.COORDINADOR, ROLES.TUTOR_ACADEMICO, ROLES.ESTUDIANTE] },
   { match: /^\/dashboard\/configuracion/, allow: [ROLES.ADMIN, ROLES.COORDINADOR, ROLES.TUTOR_ACADEMICO, ROLES.ESTUDIANTE] },
   { match: /^\/dashboard\/mi-evaluacion/, allow: [ROLES.ADMIN, ROLES.ESTUDIANTE] },
+  { match: /^\/dashboard\/ausencias/, allow: [ROLES.ADMIN, ROLES.ESTUDIANTE] },
   { match: /^\/dashboard\/?$/, allow: [ROLES.ADMIN, ROLES.COORDINADOR, ROLES.TUTOR_ACADEMICO, ROLES.ESTUDIANTE] },
   // Rutas legacy de tutor (alias de /tutor-academico)
   { match: /^\/tutor(\/|$)/, allow: [ROLES.ADMIN, ROLES.TUTOR_ACADEMICO] },
@@ -51,8 +52,8 @@ export function canRoleAccessPath(role: Role | undefined, pathname: string): boo
     return dashRoles.includes(role);
   }
 
-  // Rutas públicas (login, registro, reset-password, raíz) accesibles sin rol
-  const PUBLIC_PATHS = ["/", "/login", "/registro", "/reset-password", "/forgot-password"];
+  // Rutas públicas (login, registro, reset-password, raíz, verificar certificados) accesibles sin rol
+  const PUBLIC_PATHS = ["/", "/login", "/registro", "/reset-password", "/forgot-password", "/olvido-password", "/verificar"];
   if (PUBLIC_PATHS.some((pub) => p === pub || p.startsWith(pub + "/"))) {
     return true;
   }

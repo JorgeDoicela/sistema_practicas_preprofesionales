@@ -25,6 +25,8 @@ import {
     Star,
     ClipboardCheck,
     MessageSquare,
+    CalendarOff,
+    List,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { User as UserType } from "@/types/user";
@@ -41,12 +43,14 @@ const MENUS: Record<string, Array<{ icon: React.ElementType; label: string; href
         { icon: MessageSquare,   label: "Permisos de Chat",      href: "/admin/chat-config" },
         { icon: BarChart3,       label: "Salud y Métricas",      href: "/admin/salud" },
         { icon: Star,            label: "Anuncios Globales",     href: "/admin/anuncios" },
+        { icon: GraduationCap,   label: "Carreras",              href: "/admin/carreras" },
         { icon: FileText,        label: "Plantillas",             href: "/coordinador/plantillas-documentos" },
         { icon: ScrollText,      label: "Auditoría de Sistema",   href: "/admin/logs" },
         { icon: ShieldAlert,     label: "Cumplimiento LOPDP",    href: "/admin/privacidad" },
         { icon: Users,           label: "Usuarios",              href: "/admin/usuarios" },
         { icon: UserPlus,        label: "Asignaciones",          href: "/coordinador/asignacion" },
-        { icon: Handshake,       label: "Convenios",             href: "/coordinador/convenios" },
+        { icon: List,            label: "Lista Convenios",       href: "/coordinador/convenios/list" },
+        { icon: Handshake,       label: "Nuevo Convenio",        href: "/coordinador/convenios" },
         { icon: GraduationCap,   label: "Gestión Estudiantes",   href: "/coordinador/estudiantes" },
         { icon: ClipboardCheck,  label: "Evaluaciones",          href: "/coordinador/evaluaciones" },
         { icon: FileStack,       label: "Documentos",            href: "/dashboard/documentos" },
@@ -55,7 +59,9 @@ const MENUS: Record<string, Array<{ icon: React.ElementType; label: string; href
         { icon: LayoutDashboard, label: "Tablero",               href: "/dashboard" },
         { icon: FileText,        label: "Plantillas",             href: "/coordinador/plantillas-documentos" },
         { icon: UserPlus,        label: "Asignaciones",          href: "/coordinador/asignacion" },
-        { icon: Handshake,       label: "Convenios",             href: "/coordinador/convenios" },
+        { icon: List,            label: "Lista Convenios",       href: "/coordinador/convenios/list" },
+        { icon: Handshake,       label: "Nuevo Convenio",        href: "/coordinador/convenios" },
+        { icon: CalendarOff,     label: "Ausencias",             href: "/coordinador/ausencias" },
         { icon: GraduationCap,   label: "Gestión Estudiantes",   href: "/coordinador/estudiantes" },
         { icon: ClipboardCheck,  label: "Evaluaciones",          href: "/coordinador/evaluaciones" },
         { icon: BarChart3,       label: "Reportes",              href: "/coordinador/reportes" },
@@ -66,6 +72,7 @@ const MENUS: Record<string, Array<{ icon: React.ElementType; label: string; href
         { icon: GraduationCap,   label: "Mis Estudiantes",       href: "/tutor-academico/estudiantes" },
         { icon: FileStack,       label: "Documentos",            href: "/dashboard/documentos" },
         { icon: CalendarCheck,   label: "Asistencia Pasantes",   href: "/tutor-academico/asistencia" },
+        { icon: CalendarOff,     label: "Ausencias Pendientes",  href: "/tutor-academico/ausencias" },
     ],
     TUTOR_EMPRESARIAL: [
         { icon: LayoutDashboard, label: "Tablero",               href: "/empresa/dashboard" },
@@ -76,6 +83,7 @@ const MENUS: Record<string, Array<{ icon: React.ElementType; label: string; href
         { icon: LayoutDashboard, label: "Tablero",               href: "/dashboard" },
         { icon: FileStack,       label: "Mis Documentos",        href: "/dashboard/documentos" },
         { icon: CalendarCheck,   label: "Asistencia",            href: "/dashboard/asistencia" },
+        { icon: CalendarOff,     label: "Mis Ausencias",         href: "/dashboard/ausencias" },
         { icon: Star,            label: "Mi Evaluación",         href: "/dashboard/mi-evaluacion" },
     ],
     EMPRESA: [

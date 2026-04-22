@@ -1407,6 +1407,12 @@ function HistoryRow({ record, expanded, onToggle }: {
                   <p className="text-[9px] font-bold">Sin fotos en este registro</p>
                 </div>
               )}
+              {record.activityDescription && (
+                <div className="flex-1 min-w-0">
+                  <p className="text-[8px] font-black text-[#003366] uppercase tracking-widest mb-1">Actividades del Día</p>
+                  <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 rounded-xl p-3">{record.activityDescription}</p>
+                </div>
+              )}
             </div>
           </motion.div>
         )}

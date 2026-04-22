@@ -6,12 +6,19 @@ import { Roles } from '../auth/strategies/roles.decorator';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('certification')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('certification')
 export class CertificationController {
   constructor(private readonly certificationService: CertificationService) {}
 
+  /** Endpoint PÚBLICO — verifica autenticidad de un certificado por código */
+  @Get('verify/:code')
+  @ApiOperation({ summary: 'Verificar autenticidad de certificado (público)' })
+  async verifyCertificate(@Param('code') code: string) {
+    return this.certificationService.verifyCertificate(code);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('check/:internshipId')
   @Roles('COORDINADOR', 'ADMIN')
   @ApiOperation({ summary: 'Verificar elegibilidad para certificado' })
@@ -19,9 +26,11 @@ export class CertificationController {
     return this.certificationService.checkEligibility(internshipId);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('generate/:internshipId')
   @Roles('COORDINADOR', 'ADMIN')
-  @ApiOperation({ summary: 'Generar certificate de culminación' })
+  @ApiOperation({ summary: 'Generar certificado de culminación' })
   async generateCertificate(@Param('internshipId') internshipId: string) {
     return this.certificationService.generateCertificate(internshipId);
   }

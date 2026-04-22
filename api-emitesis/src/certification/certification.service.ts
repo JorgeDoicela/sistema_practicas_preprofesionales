@@ -7,6 +7,7 @@ import * as puppeteer from 'puppeteer';
 import * as handlebars from 'handlebars';
 import * as fs from 'fs';
 import * as path from 'path';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class CertificationService {
@@ -16,6 +17,39 @@ export class CertificationService {
     private storageService: StorageService,
     private emailService: EmailService,
   ) {}
+
+  async verifyCertificate(code: string) {
+    const doc = await this.prisma.document.findFirst({
+      where: { verificationCode: code, isCertificateSlot: true },
+      include: {
+        internship: {
+          include: {
+            student: { select: { fullName: true, cedula: true } },
+            company: { select: { name: true, ruc: true } },
+            tutor: { select: { fullName: true } },
+          },
+        },
+      },
+    });
+
+    if (!doc || doc.status !== 'APROBADO_DEFINITIVO') {
+      throw new NotFoundException('Certificado no encontrado o no válido');
+    }
+
+    return {
+      valid: true,
+      verificationCode: code,
+      student: doc.internship.student.fullName,
+      cedula: doc.internship.student.cedula,
+      company: doc.internship.company.name,
+      tutor: doc.internship.tutor.fullName,
+      totalHours: doc.internship.totalHours,
+      startDate: doc.internship.startDate,
+      endDate: doc.internship.endDate,
+      issuedAt: doc.reviewedAt,
+      certificateUrl: doc.filePath,
+    };
+  }
 
   async checkEligibility(internshipId: string) {
     const internship = await this.prisma.internship.findUnique({
@@ -148,6 +182,8 @@ export class CertificationService {
       },
     });
 
+    const verificationCode = randomBytes(8).toString('hex').toUpperCase();
+
     if (certDoc) {
         await this.prisma.document.update({
             where: { id: certDoc.id },
@@ -155,7 +191,8 @@ export class CertificationService {
                 filePath: uploadResult.url,
                 status: 'APROBADO_DEFINITIVO',
                 submittedAt: new Date(),
-                reviewedAt: new Date()
+                reviewedAt: new Date(),
+                verificationCode,
             }
         });
     }
@@ -175,6 +212,7 @@ export class CertificationService {
 
     return {
       url: uploadResult.url,
+      verificationCode,
       message: 'Certificado generado exitosamente',
     };
   }
