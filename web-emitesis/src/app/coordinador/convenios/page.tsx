@@ -47,7 +47,7 @@ export default function RegistrarConvenioPage() {
         endDate: "",
         type: "GENERAL",
         maxInterns: 1,
-        acessVerified: false
+        accessVerified: false
     });
     const [file, setFile] = useState<File | null>(null);
 
@@ -319,13 +319,13 @@ export default function RegistrarConvenioPage() {
                             <div className="flex items-start gap-3 p-4 bg-[#003366]/5 rounded-2xl border border-[#003366]/10">
                                 <input 
                                     type="checkbox" 
-                                    id="acessVerified"
+                                    id="accessVerified"
                                     required
                                     className="mt-1 w-4 h-4 rounded border-slate-300 text-[#003366] focus:ring-[#003366]/20"
-                                    checked={form.acessVerified}
-                                    onChange={(e) => setForm(prev => ({ ...prev, acessVerified: e.target.checked }))}
+                                    checked={form.accessVerified}
+                                    onChange={(e) => setForm(prev => ({ ...prev, accessVerified: e.target.checked }))}
                                 />
-                                <label htmlFor="acessVerified" className="text-xs text-slate-600 leading-relaxed cursor-pointer">
+                                <label htmlFor="accessVerified" className="text-xs text-slate-600 leading-relaxed cursor-pointer">
                                     <span className="font-bold text-[#003366]">Declaración de Cumplimiento:</span> Confirmo que esta empresa cumple con todos los estándares y requisitos legales exigidos por el <span className="font-bold">ACESS (Ecuador)</span> para la recepción de estudiantes en prácticas preprofesionales.
                                 </label>
                             </div>

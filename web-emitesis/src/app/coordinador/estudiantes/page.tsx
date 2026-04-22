@@ -85,7 +85,10 @@ export default function GestionEstudiantesPage() {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const res: any = await internshipsService.findAll();
+      // Pasar careerId del coordinador para aislamiento de datos (obligatorio en el backend)
+      const userStr = localStorage.getItem("user");
+      const careerId = userStr ? (JSON.parse(userStr) as Record<string, unknown>).careerId as string | undefined : undefined;
+      const res: any = await internshipsService.findAll(1, 200, careerId);
       const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
       setInternships(list);
     } catch (error) {

@@ -64,12 +64,11 @@ export class InternshipsService {
         if (!student) throw new BadRequestException('Estudiante no encontrado');
 
         // RF-CAREER: Carga automática de horas sugeridas por carrera si no se envían
-        let finalHours = totalHours;
-        if ((!finalHours || finalHours === 0) && student.career?.config) {
-          const config = student.career.config as any;
-          if (config.requiredHours) {
-            finalHours = config.requiredHours;
-          }
+        const FALLBACK_HOURS = 160;
+        let finalHours = totalHours && totalHours > 0 ? totalHours : 0;
+        if (!finalHours) {
+          const config = student.career?.config as any;
+          finalHours = config?.requiredHours || FALLBACK_HOURS;
         }
 
         const newInternship = await tx.internship.create({
@@ -215,12 +214,11 @@ export class InternshipsService {
     const skip = (page - 1) * limit;
 
     const where: any = {};
-    // Si es coordinador, obligatoriamente filtramos por su carrera (aislamiento)
-    if (filter?.role === 'COORDINADOR' && filter?.careerId) {
+    if (filter?.careerId) {
       where.careerId = filter.careerId;
-    } else if (filter?.careerId) {
-      // Si el admin envía un filtro específico
-      where.careerId = filter.careerId;
+    } else if (filter?.role === 'COORDINADOR') {
+      // Si el coordinador no envía careerId, no listar nada (evitar fuga de datos)
+      return { items: [], meta: { total: 0, page, lastPage: 0 } };
     }
 
     const [items, total] = await Promise.all([

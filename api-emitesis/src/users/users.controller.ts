@@ -46,8 +46,7 @@ export class UsersController {
 
   @Post()
   @Roles(Role.ADMIN)
-  create(@Body() createUserDto: CreateUserDto, @Req() req: { user: { userId: string } }) {
-    const currentUserId = req.user.userId;
+  create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 

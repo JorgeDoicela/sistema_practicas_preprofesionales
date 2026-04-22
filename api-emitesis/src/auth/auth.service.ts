@@ -244,6 +244,8 @@ export class AuthService {
         email: user.email,
         fullName: user.fullName,
         role: user.role,
+        careerId: (user as any).careerId ?? null,
+        cedula: (user as any).cedula ?? null,
         isTwoFactorEnabled: (user as any).isTwoFactorEnabled || false,
       }
     };

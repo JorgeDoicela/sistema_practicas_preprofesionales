@@ -142,15 +142,19 @@ export class CertificationService {
     const templateSource = fs.readFileSync(templatePath, 'utf8');
     const template = handlebars.compile(templateSource);
 
+    const localeOpts: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'long', year: 'numeric' };
     const certificateData = {
       studentName: internship.student.fullName,
+      studentCedula: internship.student.cedula ?? '',
       companyName: internship.company.name,
       tutorName: internship.tutor.fullName,
       totalHours: eligibility.details.totalHours,
-      startDate: internship.startDate.toLocaleDateString(),
-      endDate: new Date().toLocaleDateString(),
+      startDate: internship.startDate.toLocaleDateString('es-EC', localeOpts),
+      endDate: internship.endDate
+        ? internship.endDate.toLocaleDateString('es-EC', localeOpts)
+        : new Date().toLocaleDateString('es-EC', localeOpts),
       certificateId: internship.id.split('-')[0].toUpperCase(),
-      issueDate: new Date().toLocaleDateString(),
+      issueDate: new Date().toLocaleDateString('es-EC', localeOpts),
     };
 
     const html = template(certificateData);
@@ -160,18 +164,22 @@ export class CertificationService {
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
-    const page = await browser.newPage();
-    await page.setContent(html);
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      landscape: true,
-      printBackground: true,
-    });
-    await browser.close();
+    let pdfBuffer: Buffer;
+    try {
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+      pdfBuffer = Buffer.from(await page.pdf({
+        format: 'A4',
+        landscape: true,
+        printBackground: true,
+      }));
+    } finally {
+      await browser.close();
+    }
 
     // Subir a Storage
     const fileName = `certificates/${internshipId}/certificado-${Date.now()}.pdf`;
-    const uploadResult = await this.storageService.upload(fileName, Buffer.from(pdfBuffer), {
+    const uploadResult = await this.storageService.upload(fileName, pdfBuffer, {
         contentType: 'application/pdf',
     });
 
@@ -190,6 +198,21 @@ export class CertificationService {
             data: {
                 filePath: uploadResult.url,
                 status: 'APROBADO_DEFINITIVO',
+                submittedAt: new Date(),
+                reviewedAt: new Date(),
+                verificationCode,
+            }
+        });
+    } else {
+        // No existía un slot de certificado; crear el documento directamente
+        await this.prisma.document.create({
+            data: {
+                internshipId,
+                name: 'Certificado de culminación',
+                filePath: uploadResult.url,
+                status: 'APROBADO_DEFINITIVO',
+                isCertificateSlot: true,
+                isRequired: false,
                 submittedAt: new Date(),
                 reviewedAt: new Date(),
                 verificationCode,
