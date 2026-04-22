@@ -45,12 +45,25 @@ export const aiService = {
 
   /**
    * RF-AI-01: Pre-verificación de documentos (Escaneo inicial por IA).
+   * @param systemHours - Horas esperadas según la práctica del estudiante (para validación cruzada)
+   * @param studentName - Nombre del estudiante para verificar si aparece en el documento
    */
-  async preVerifyDocument(documentName: string, base64Image: string): Promise<{ isValid: boolean; feedback: string }> {
-    const data = await api.post<{ isValid: boolean; feedback: string }>('/ai/pre-verify', { documentName, base64Image });
+  async preVerifyDocument(
+    documentName: string,
+    base64Image: string,
+    systemHours?: number,
+    studentName?: string,
+  ): Promise<{ isValid: boolean; feedback: string; hoursFound?: number }> {
+    const data = await api.post<{ isValid: boolean; feedback: string; hoursFound?: number }>('/ai/pre-verify', {
+      documentName,
+      base64Image,
+      ...(systemHours !== undefined && { systemHours }),
+      ...(studentName && { studentName }),
+    });
     return {
       isValid: data?.isValid ?? true,
-      feedback: data?.feedback || 'IA no disponible para pre-verificación en este momento.'
+      feedback: data?.feedback || 'IA no disponible para pre-verificación en este momento.',
+      hoursFound: data?.hoursFound,
     };
   },
 

@@ -4,7 +4,7 @@ import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
 import { RolesGuard } from '../auth/strategies/roles.guard';
 import { Roles } from '../auth/strategies/roles.decorator';
 import { Role } from '@prisma/client';
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber, Min, Max } from 'class-validator';
 
 class SuggestDescriptionDto {
   @IsString()
@@ -44,17 +44,28 @@ class PreVerifyDto {
 }
 
 class RiskAssessmentDto {
-  @IsNotEmpty()
+  @IsNumber()
+  @Min(0) @Max(100)
   healthScore: number;
-  @IsNotEmpty()
+
+  @IsNumber()
+  @Min(0)
   docsApproved: number;
-  @IsNotEmpty()
+
+  @IsNumber()
+  @Min(0)
   docsTotal: number;
-  @IsNotEmpty()
+
+  @IsNumber()
+  @Min(0)
   hoursDone: number;
-  @IsNotEmpty()
+
+  @IsNumber()
+  @Min(0)
   hoursTotal: number;
-  @IsNotEmpty()
+
+  @IsNumber()
+  @Min(0)
   daysActive: number;
 }
 

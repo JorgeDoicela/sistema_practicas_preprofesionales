@@ -167,8 +167,18 @@ export class AiService {
 
     const content = response.choices[0]?.message?.content;
     if (!content) return { isValid: true, feedback: 'Error en la respuesta de IA.' };
-    
-    return JSON.parse(content as string);
+
+    try {
+      const parsed = JSON.parse(content);
+      return {
+        isValid: parsed.isValid ?? true,
+        feedback: parsed.feedback ?? 'Sin observaciones del modelo.',
+        hoursFound: parsed.hoursFound ?? undefined,
+      };
+    } catch {
+      this.logger.error('preVerifyDocument: respuesta del modelo no es JSON válido', content);
+      return { isValid: true, feedback: 'No se pudo interpretar la respuesta de la IA.' };
+    }
   }
 
   /**

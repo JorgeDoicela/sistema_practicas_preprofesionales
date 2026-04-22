@@ -30,6 +30,7 @@ interface AICopilotProps {
 
 export function AICopilot({ user, internship }: AICopilotProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -41,6 +42,10 @@ export function AICopilot({ user, internship }: AICopilotProps) {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    aiService.isAvailable().then(setAiAvailable).catch(() => setAiAvailable(false));
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -135,8 +140,14 @@ export function AICopilot({ user, internship }: AICopilotProps) {
                 <div>
                   <h4 className="text-lg font-black tracking-tight">Nexo AI</h4>
                   <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                    <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-widest">En línea</span>
+                    <div className={cn(
+                      "w-1.5 h-1.5 rounded-full",
+                      aiAvailable === null ? "bg-slate-400 animate-pulse" :
+                      aiAvailable ? "bg-emerald-400 animate-pulse" : "bg-red-400"
+                    )} />
+                    <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-widest">
+                      {aiAvailable === null ? "Conectando..." : aiAvailable ? "En línea" : "Sin conexión IA"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -217,13 +228,15 @@ export function AICopilot({ user, internship }: AICopilotProps) {
                   <input 
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                    placeholder="Escribe tu duda aquí..."
-                    className="flex-1 bg-transparent border-none outline-none px-3 text-sm font-medium text-slate-700"
+                    onKeyDown={(e) => e.key === "Enter" && !isTyping && aiAvailable && handleSend()}
+                    placeholder={aiAvailable === false ? "IA no disponible en este momento" : "Escribe tu duda aquí..."}
+                    disabled={!aiAvailable || isTyping}
+                    className="flex-1 bg-transparent border-none outline-none px-3 text-sm font-medium text-slate-700 disabled:text-slate-400"
                   />
                   <button 
                     onClick={handleSend}
-                    className="w-10 h-10 bg-[#003366] text-white rounded-xl flex items-center justify-center hover:bg-[#004488] transition-colors"
+                    disabled={!aiAvailable || isTyping}
+                    className="w-10 h-10 bg-[#003366] text-white rounded-xl flex items-center justify-center hover:bg-[#004488] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <Send className="w-4 h-4" />
                   </button>

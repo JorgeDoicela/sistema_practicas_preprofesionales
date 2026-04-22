@@ -125,11 +125,13 @@ export default function DocumentosPage() {
       try {
         const base64 = await getFirstPageAsBase64(file);
         
-        // Obtener horas del sistema para validación cruzada (IA v4)
-        const internship = internships[0]; // En dashboard estudiante suele haber una principal
+        // Obtener horas del sistema y nombre del estudiante para validación cruzada (IA v4)
+        const internship = internships[0];
         const systemHours = internship?.totalHours;
+        const userStr = localStorage.getItem("user");
+        const studentName = userStr ? (JSON.parse(userStr) as { fullName?: string }).fullName : undefined;
 
-        const result = await aiService.preVerifyDocument(docName, base64);
+        const result = await aiService.preVerifyDocument(docName, base64, systemHours, studentName);
         
         if (!result.isValid) {
           setAiFeedback(result);

@@ -227,7 +227,7 @@ export default function GestionEstudiantesPage() {
         docsTotal: documents.length,
         hoursDone: att?.summary?.totalHours || 0,
         hoursTotal: i.totalHours || 0,
-        daysActive: i.startDate ? Math.floor((new Date().getTime() - new Date(i.startDate).getTime()) / (1000 * 60 * 60 * 24)) : 0
+        daysActive: i.startDate ? Math.max(0, Math.floor((new Date().getTime() - new Date(i.startDate).getTime()) / (1000 * 60 * 60 * 24))) : 0
       };
       
       const res = await aiService.getRiskAssessment(indicators);

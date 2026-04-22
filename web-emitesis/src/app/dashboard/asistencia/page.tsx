@@ -25,6 +25,7 @@ import { useWebAuthn } from "@/hooks/useWebAuthn";
 import { useCamera } from "@/hooks/useCamera";
 import { aiService } from "@/services/ai.service";
 import { Sparkles } from "lucide-react";
+import { toast } from "sonner";
 import dynamic from "next/dynamic";
 
 const LeafletMap = dynamic(() => import("@/components/dashboard/MapComponent"), {
@@ -420,6 +421,7 @@ export default function AsistenciaPage() {
       setActivityCaption(suggestion);
     } catch (err) {
       console.error("Error al sugerir descripción:", err);
+      toast.error("No se pudo obtener la sugerencia de IA. Intenta de nuevo.");
     } finally {
       setSuggestingCaption(false);
     }
