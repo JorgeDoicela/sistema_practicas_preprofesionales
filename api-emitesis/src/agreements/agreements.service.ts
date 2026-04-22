@@ -14,7 +14,7 @@ export class AgreementsService {
   ) {}
 
   async create(createAgreementDto: CreateAgreementDto, filePath: string) {
-    const { ruc, companyName, address, representative, email, startDate } = createAgreementDto;
+    const { ruc, companyName, address, city, representative, email, phone, sector, startDate, endDate, type, maxInterns } = createAgreementDto;
 
     // Validación de RUC (Backend Integrity)
     if (!validateEcuadorianRUC(ruc)) {
@@ -29,15 +29,21 @@ export class AgreementsService {
           update: {
             name: companyName,
             address,
+            ...(city !== undefined && { city }),
             representative,
             email,
+            ...(phone !== undefined && { phone }),
+            ...(sector !== undefined && { sector }),
           },
           create: {
             ruc,
             name: companyName,
             address,
+            city,
             representative,
             email,
+            phone,
+            sector,
           },
         });
 
@@ -53,6 +59,9 @@ export class AgreementsService {
           data: {
             companyId: company.id,
             startDate: new Date(startDate),
+            endDate: endDate ? new Date(endDate) : null,
+            type: type ?? 'GENERAL',
+            maxInterns: maxInterns ?? 1,
             filePath: filePath,
             status: 'Activo',
           },

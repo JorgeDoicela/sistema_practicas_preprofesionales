@@ -16,7 +16,10 @@ import {
     User,
     Mail,
     MapPin,
-    Hash
+    Hash,
+    Phone,
+    Layers,
+    Users
 } from "lucide-react";
 import { agreementsService } from "@/services/agreements.service";
 import { useRouter } from "next/navigation";
@@ -35,9 +38,15 @@ export default function RegistrarConvenioPage() {
         ruc: "",
         companyName: "",
         address: "",
+        city: "",
         representative: "",
         email: "",
+        phone: "",
+        sector: "",
         startDate: new Date().toISOString().split('T')[0],
+        endDate: "",
+        type: "GENERAL",
+        maxInterns: 1,
         acessVerified: false
     });
     const [file, setFile] = useState<File | null>(null);
@@ -83,9 +92,14 @@ export default function RegistrarConvenioPage() {
             ruc: 13,
             companyName: 300,
             address: 500,
+            city: 100,
             representative: 200,
             email: 254,
+            phone: 20,
+            sector: 150,
             startDate: 32,
+            endDate: 32,
+            type: 20,
         };
         const cleanForm = Object.keys(form).reduce((acc: Record<string, string>, key) => {
             const v = (form as Record<string, unknown>)[key];
@@ -105,6 +119,7 @@ export default function RegistrarConvenioPage() {
         try {
             const formData = new FormData();
             Object.entries(cleanForm).forEach(([key, value]) => formData.append(key, value as string));
+            formData.append("maxInterns", String(form.maxInterns));
             formData.append("file", file);
 
             await agreementsService.create(formData);
@@ -219,6 +234,48 @@ export default function RegistrarConvenioPage() {
                             </div>
 
                             <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ciudad / Cantón</label>
+                                <div className="relative">
+                                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                    <input 
+                                        name="city"
+                                        value={form.city}
+                                        onChange={handleInputChange}
+                                        placeholder="Ej: Quito, Guayaquil"
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Teléfono de Contacto</label>
+                                <div className="relative">
+                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                    <input 
+                                        name="phone"
+                                        value={form.phone}
+                                        onChange={handleInputChange}
+                                        placeholder="Ej: 0987654321"
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2 md:col-span-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Sector Económico / Actividad Principal</label>
+                                <div className="relative">
+                                    <Layers className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                    <input 
+                                        name="sector"
+                                        value={form.sector}
+                                        onChange={handleInputChange}
+                                        placeholder="Ej: Tecnología, Salud, Educación, Manufactura"
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Representante Legal</label>
                                 <div className="relative">
                                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
@@ -276,6 +333,35 @@ export default function RegistrarConvenioPage() {
 
                         <div className="grid md:grid-cols-2 gap-8">
                             <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tipo de Convenio</label>
+                                <select
+                                    name="type"
+                                    value={form.type}
+                                    onChange={(e) => setForm(prev => ({ ...prev, type: e.target.value }))}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
+                                >
+                                    <option value="GENERAL">General</option>
+                                    <option value="ESPECIFICO">Específico</option>
+                                    <option value="MARCO">Marco</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cupos Máximos de Pasantes</label>
+                                <div className="relative">
+                                    <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                    <input 
+                                        type="number"
+                                        min={1}
+                                        max={50}
+                                        value={form.maxInterns}
+                                        onChange={(e) => setForm(prev => ({ ...prev, maxInterns: parseInt(e.target.value) || 1 }))}
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fecha de Firma</label>
                                 <div className="relative">
                                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
@@ -291,6 +377,21 @@ export default function RegistrarConvenioPage() {
                             </div>
 
                             <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fecha de Vencimiento</label>
+                                <div className="relative">
+                                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                    <input 
+                                        name="endDate"
+                                        type="date"
+                                        value={form.endDate}
+                                        onChange={handleInputChange}
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
+                                    />
+                                </div>
+                                <p className="text-[10px] text-slate-400 ml-1">Dejar en blanco si es indefinido</p>
+                            </div>
+
+                            <div className="space-y-2 md:col-span-2">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Archivo del Convenio (PDF)</label>
                                 <div className={`relative border-2 border-dashed rounded-xl p-4 transition-colors ${file ? 'border-green-200 bg-green-50' : 'border-slate-200 bg-slate-50 hover:border-[#003366]/20'}`}>
                                     <input 

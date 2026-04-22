@@ -52,4 +52,22 @@ export class UpdateUserDto {
   @Transform(({ value }) => (value === '' || value === null ? undefined : value))
   @IsUUID('4')
   careerId?: string;
+
+  @IsOptional()
+  @StripControlChars()
+  @MaxLength(10)
+  @IsString()
+  cedula?: string;
+
+  @IsOptional()
+  @StripControlChars()
+  @MaxLength(20)
+  @IsString()
+  phone?: string;
+
+  @IsOptional()
+  @StripControlChars()
+  @MaxLength(50)
+  @IsString()
+  ciclo?: string;
 }

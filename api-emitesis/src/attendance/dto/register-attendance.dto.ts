@@ -22,4 +22,9 @@ export class RegisterAttendanceDto {
   @IsString()
   @MaxLength(2048)
   checkOutPhotoUrl?: string;  // RF-15: URL de foto de salida
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  activityDescription?: string;  // Descripción de actividades realizadas en el día
 }

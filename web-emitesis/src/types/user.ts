@@ -8,7 +8,11 @@ export interface User {
   isActive: boolean;
   createdAt: string;
   companyId?: string | null;
+  careerId?: string | null;
   isTwoFactorEnabled?: boolean;
+  cedula?: string | null;
+  phone?: string | null;
+  ciclo?: string | null;
 }
 
 export interface UserCompanyProfile {
@@ -16,7 +20,10 @@ export interface UserCompanyProfile {
   name: string;
   ruc: string;
   address: string;
+  city?: string;
   email: string;
+  phone?: string;
+  sector?: string;
   representative: string;
 }
 

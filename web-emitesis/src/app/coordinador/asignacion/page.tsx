@@ -17,6 +17,10 @@ import {
   Trash2,
   Plus,
   PlusCircle,
+  Phone,
+  Award,
+  FileText,
+  Layers,
 } from 'lucide-react';
 import { usersService } from '@/services/users.service';
 import { agreementsService } from '@/services/agreements.service';
@@ -57,10 +61,15 @@ export default function AsignacionPage() {
     companyId: '',
     tutorId: '',
     startDate: new Date().toISOString().split('T')[0],
+    endDate: '',
     totalHours: 240,
+    modalidad: 'PRESENCIAL',
     location: '',
+    activityDescription: '',
     businessTutorName: '',
     businessTutorEmail: '',
+    businessTutorPhone: '',
+    businessTutorPosition: '',
   });
 
   const [allowedLocations, setAllowedLocations] = useState<AllowedLocation[]>([
@@ -270,6 +279,37 @@ export default function AsignacionPage() {
                   </div>
                 </div>
 
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fecha Fin Estimada</label>
+                  <div className="relative">
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                    <input 
+                      type="date"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-12 pr-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
+                      value={form.endDate}
+                      onChange={(e) => setForm({...form, endDate: e.target.value})}
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-400 ml-1">Opcional — se calculará al completar horas</p>
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Modalidad de Práctica</label>
+                  <div className="relative">
+                    <Layers className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                    <select
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-12 pr-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none appearance-none"
+                      value={form.modalidad}
+                      onChange={(e) => setForm({...form, modalidad: e.target.value})}
+                    >
+                      <option value="PRESENCIAL">Presencial</option>
+                      <option value="SEMIPRESENCIAL">Semipresencial</option>
+                      <option value="EN_LINEA">En Línea</option>
+                      <option value="HIBRIDA">Híbrida</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div className="space-y-2 md:col-span-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Dirección Institucional / Lugar de Prácticas</label>
                   <div className="relative">
@@ -380,13 +420,30 @@ export default function AsignacionPage() {
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tutor Empresarial (Nombre)</label>
-                  <input 
-                    type="text"
-                    placeholder="Nombre del supervisor en empresa"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
-                    value={form.businessTutorName}
-                    onChange={(e) => setForm({...form, businessTutorName: e.target.value})}
-                  />
+                  <div className="relative">
+                    <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                    <input 
+                      type="text"
+                      placeholder="Nombre del supervisor en empresa"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-11 pr-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
+                      value={form.businessTutorName}
+                      onChange={(e) => setForm({...form, businessTutorName: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tutor Empresarial (Cargo)</label>
+                  <div className="relative">
+                    <Award className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                    <input 
+                      type="text"
+                      placeholder="Ej: Jefe de RRHH, Supervisor TI"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-11 pr-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
+                      value={form.businessTutorPosition}
+                      onChange={(e) => setForm({...form, businessTutorPosition: e.target.value})}
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -398,6 +455,34 @@ export default function AsignacionPage() {
                     value={form.businessTutorEmail}
                     onChange={(e) => setForm({...form, businessTutorEmail: e.target.value})}
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tutor Empresarial (Teléfono)</label>
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                    <input 
+                      type="tel"
+                      placeholder="Ej: 0987654321"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-11 pr-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
+                      value={form.businessTutorPhone}
+                      onChange={(e) => setForm({...form, businessTutorPhone: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Descripción de Actividades a Realizar</label>
+                  <div className="relative">
+                    <FileText className="absolute left-4 top-4 text-slate-300" size={16} />
+                    <textarea 
+                      placeholder="Describa las actividades y responsabilidades que tendrá el pasante en la empresa..."
+                      rows={3}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-11 pr-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none resize-none"
+                      value={form.activityDescription}
+                      onChange={(e) => setForm({...form, activityDescription: e.target.value})}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

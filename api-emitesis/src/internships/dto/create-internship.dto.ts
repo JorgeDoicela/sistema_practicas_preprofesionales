@@ -53,6 +53,32 @@ export class CreateInternshipDto {
   @IsEmail({}, { message: 'Correo del tutor empresarial no válido' })
   businessTutorEmail?: string;
 
+  @IsOptional()
+  @StripControlChars()
+  @MaxLength(30)
+  @IsString()
+  businessTutorPhone?: string;
+
+  @IsOptional()
+  @StripControlChars()
+  @MaxLength(150)
+  @IsString()
+  businessTutorPosition?: string;
+
+  @IsOptional()
+  @StripControlChars()
+  @MaxLength(1000)
+  @IsString()
+  activityDescription?: string;
+
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
+
+  @IsOptional()
+  @IsString()
+  modalidad?: string;
+
   // RF-ATT-LOC: Coordenadas iniciales para geocerca
   @IsOptional()
   initialLat?: number;

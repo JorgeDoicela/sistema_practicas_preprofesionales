@@ -20,7 +20,7 @@ export class InternshipsService {
   ) {}
 
   async create(dto: CreateInternshipDto) {
-    const { studentId, companyId, tutorId, startDate, totalHours, location, businessTutorName, businessTutorEmail, initialLat, initialLng, initialRadius } = dto;
+    const { studentId, companyId, tutorId, startDate, endDate, totalHours, location, modalidad, businessTutorName, businessTutorEmail, businessTutorPhone, businessTutorPosition, activityDescription, initialLat, initialLng, initialRadius } = dto;
 
     // A1: Estudiante ya asignado
     const activeInternship = await this.prisma.internship.findFirst({
@@ -79,10 +79,15 @@ export class InternshipsService {
             tutorId,
             careerId: student.careerId,
             startDate: start,
+            endDate: endDate ? new Date(endDate) : undefined,
             totalHours: finalHours,
             location,
+            modalidad: (modalidad as any) ?? 'PRESENCIAL',
             businessTutorName,
             businessTutorEmail,
+            businessTutorPhone,
+            businessTutorPosition,
+            activityDescription,
             status: 'En Proceso',
             lat: initialLat,
             lng: initialLng,

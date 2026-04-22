@@ -26,6 +26,10 @@ model User {
   twoFactorSecret      String?
   isTwoFactorEnabled   Boolean      @default(false)
   webauthnChallenge    String?
+  // Datos personales/contacto
+  cedula               String?      @unique  // Cédula de identidad (obligatoria en documentos Ecuador)
+  phone                String?               // Teléfono de contacto
+  ciclo                String?               // Ciclo/nivel académico (ej: "5to Ciclo") — para estudiantes
   // RF-LOPDP: Cumplimiento Ley de Protección de Datos Ecuador
   lopdpAccepted       Boolean      @default(false)
   lopdpAcceptedAt     DateTime?
@@ -73,19 +77,25 @@ model Company {
   address        String
   representative String
   email          String
+  phone          String?               // Teléfono principal de contacto
+  city           String?               // Ciudad / cantón
+  sector         String?               // Sector económico / actividad principal
   users          User[]
   agreements     Agreement[]
   internships    Internship[]
 }
 
 model Agreement {
-  id        String   @id @default(uuid())
-  companyId String
-  startDate DateTime
-  filePath  String
-  status    String   @default("Activo")
-  createdAt DateTime @default(now())
-  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  id         String    @id @default(uuid())
+  companyId  String
+  startDate  DateTime
+  endDate    DateTime?           // Fecha de vencimiento del convenio (renovación requerida)
+  type       String    @default("GENERAL")  // GENERAL, ESPECIFICO, MARCO
+  maxInterns Int?      @default(1)          // Cupos máximos de pasantes simultáneos
+  filePath   String
+  status     String    @default("Activo")
+  createdAt  DateTime  @default(now())
+  company    Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
 
 model Internship {
@@ -101,8 +111,11 @@ model Internship {
   modalidad         Modalidad    @default(PRESENCIAL)
   /// Descripción libre del lugar físico o virtual de la práctica
   location          String?
-  businessTutorName  String?
-  businessTutorEmail String?
+  businessTutorName     String?
+  businessTutorEmail    String?
+  businessTutorPhone    String?  // Teléfono del tutor/supervisor empresarial
+  businessTutorPosition String?  // Cargo del tutor empresarial (ej: Jefe de RRHH)
+  activityDescription   String?  // Descripción general de las actividades a realizar
   lat               Float?
   lng               Float?
   /// RF-ATT-LOC: Array JSON de ubicaciones permitidas [{label,lat,lng,radiusM?}]
@@ -269,17 +282,18 @@ model DocumentVersion {
 }
 
 model Attendance {
-  id             String          @id @default(uuid())
-  internshipId   String
-  checkIn        DateTime
-  checkOut       DateTime?
-  lat            Float
-  lng            Float
-  distanceKm     Float?
-  checkInPhoto   String?         // RF-15: foto de entrada
-  checkOutPhoto  String?         // RF-15: foto de salida
-  activityPhotos ActivityPhoto[] // RF-17: fotos de actividades
-  internship     Internship      @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+  id                  String          @id @default(uuid())
+  internshipId        String
+  checkIn             DateTime
+  checkOut            DateTime?
+  lat                 Float
+  lng                 Float
+  distanceKm          Float?
+  checkInPhoto        String?         // RF-15: foto de entrada
+  checkOutPhoto       String?         // RF-15: foto de salida
+  activityDescription String?         // Descripción de actividades realizadas en el día (diario de prácticas)
+  activityPhotos      ActivityPhoto[] // RF-17: fotos de actividades
+  internship          Internship      @relation(fields: [internshipId], references: [id], onDelete: Cascade)
 }
 
 // RF-17: Fotos de actividades diarias

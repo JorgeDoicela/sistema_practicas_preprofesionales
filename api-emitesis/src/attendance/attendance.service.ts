@@ -118,6 +118,7 @@ export class AttendanceService {
         lng,
         distanceKm: nearestDist,
         checkInPhoto: dto.checkInPhotoUrl,
+        activityDescription: dto.activityDescription,
       },
     });
   }
@@ -167,6 +168,7 @@ export class AttendanceService {
       data: {
         checkOut: new Date(),
         checkOutPhoto: dto.checkOutPhotoUrl,
+        ...(dto.activityDescription && { activityDescription: dto.activityDescription }),
       },
     });
   }

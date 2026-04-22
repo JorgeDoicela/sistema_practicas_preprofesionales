@@ -56,12 +56,18 @@ export default function UsuariosManagementPage() {
     password?: string;
     role: UserRole;
     isActive: boolean;
+    cedula?: string;
+    phone?: string;
+    ciclo?: string;
   }>({
     fullName: '',
     email: '',
     password: '',
     role: 'ESTUDIANTE',
-    isActive: true
+    isActive: true,
+    cedula: '',
+    phone: '',
+    ciclo: '',
   });
   const [is2faModalOpen, setIs2faModalOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -112,9 +118,12 @@ export default function UsuariosManagementPage() {
       setForm({
         fullName: user.fullName,
         email: user.email,
-        password: '', // Empty password when editing
+        password: '',
         role: user.role,
-        isActive: user.isActive
+        isActive: user.isActive,
+        cedula: (user as any).cedula || '',
+        phone: (user as any).phone || '',
+        ciclo: (user as any).ciclo || '',
       });
     } else {
       setEditingUser(null);
@@ -123,6 +132,9 @@ export default function UsuariosManagementPage() {
         email: '',
         password: '',
         role: 'ESTUDIANTE',
+        cedula: '',
+        phone: '',
+        ciclo: '',
         isActive: true
       });
     }
@@ -427,6 +439,43 @@ export default function UsuariosManagementPage() {
                     <option value="ADMIN">Administrador</option>
                     <option value="EMPRESA">Representante de Empresa</option>
                   </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cédula de Identidad</label>
+                    <input 
+                      type="text"
+                      maxLength={10}
+                      value={form.cedula}
+                      onChange={(e) => setForm({...form, cedula: e.target.value})}
+                      className="w-full bg-slate-50 border-none rounded-2xl py-4 px-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
+                      placeholder="Ej: 1712345678"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Teléfono</label>
+                    <input 
+                      type="tel"
+                      maxLength={15}
+                      value={form.phone}
+                      onChange={(e) => setForm({...form, phone: e.target.value})}
+                      className="w-full bg-slate-50 border-none rounded-2xl py-4 px-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
+                      placeholder="Ej: 0987654321"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ciclo / Nivel Académico <span className="text-slate-300">(para Estudiantes)</span></label>
+                  <input 
+                    type="text"
+                    maxLength={50}
+                    value={form.ciclo}
+                    onChange={(e) => setForm({...form, ciclo: e.target.value})}
+                    className="w-full bg-slate-50 border-none rounded-2xl py-4 px-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
+                    placeholder="Ej: 5to Ciclo, Sexto Semestre"
+                  />
                 </div>
 
                 <div className="flex items-center gap-3 py-4">
