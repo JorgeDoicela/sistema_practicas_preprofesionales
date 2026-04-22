@@ -22,6 +22,8 @@ import {
   Clock,
   AlertCircle,
   Loader2,
+  PauseCircle,
+  LogOut,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -69,6 +71,11 @@ export default function GestionEstudiantesPage() {
   const [aiAnalysis, setAiAnalysis] = useState<Record<string, string>>({});
   const [docVersions, setDocVersions] = useState<any[]>([]);
   const [loadingVersions, setLoadingVersions] = useState(false);
+
+  // Estado: modal Suspender / Retirar / Reactivar
+  const [statusModal, setStatusModal] = useState<{ internshipId: string; action: 'Suspendida' | 'Retirada' | 'En Proceso' } | null>(null);
+  const [statusReason, setStatusReason] = useState("");
+  const [changingStatus, setChangingStatus] = useState(false);
 
   const reviewAnnotationsRef = useRef<PdfReviewAnnotationsPayload>({ version: 1, items: [] });
   const handleReviewAnnotationsChange = useCallback((p: PdfReviewAnnotationsPayload) => {
@@ -192,6 +199,21 @@ export default function GestionEstudiantesPage() {
     }
   };
 
+  const handleChangeStatus = async () => {
+    if (!statusModal || !statusReason.trim()) return;
+    setChangingStatus(true);
+    try {
+      await internshipsService.changeStatus(statusModal.internshipId, statusModal.action, statusReason.trim());
+      await loadData();
+      setStatusModal(null);
+      setStatusReason("");
+    } catch (error: any) {
+      alert(error.message || "Error al cambiar estado");
+    } finally {
+      setChangingStatus(false);
+    }
+  };
+
   const handleAIAnalysis = async (i: any, att: any) => {
     setAnalyzingId(i.id);
     try {
@@ -264,6 +286,7 @@ export default function GestionEstudiantesPage() {
                 onReviewClick={handleReviewClick}
                 onGenerateCertificate={() => handleGenerateCertificate(internship.id)}
                 onExportAttendance={handleExportAttendance}
+                onChangeStatus={(action: 'Suspendida' | 'Retirada' | 'En Proceso') => { setStatusModal({ internshipId: internship.id, action }); setStatusReason(""); }}
                 onAIAnalyze={() => handleAIAnalysis(internship, attendanceData[internship.id])}
                 analyzing={analyzingId === internship.id}
                 analysis={aiAnalysis[internship.id]}
@@ -415,6 +438,77 @@ export default function GestionEstudiantesPage() {
           </>
         )}
       </AnimatePresence>
+      {/* Modal Suspender / Retirar práctica */}
+      <AnimatePresence>
+        {statusModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setStatusModal(null)}
+              className="fixed inset-0 bg-[#003366]/50 backdrop-blur-[2px] z-[200]"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed z-[201] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-[2rem] shadow-2xl p-8"
+            >
+                <div className={cn(
+                "w-12 h-12 rounded-2xl flex items-center justify-center mb-5",
+                statusModal.action === 'Suspendida' ? "bg-amber-50 text-amber-600" :
+                statusModal.action === 'En Proceso' ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+              )}>
+                {statusModal.action === 'Suspendida' ? <PauseCircle className="w-6 h-6" /> :
+                 statusModal.action === 'En Proceso' ? <CheckCircle2 className="w-6 h-6" /> :
+                 <LogOut className="w-6 h-6" />}
+              </div>
+              <h3 className="text-xl font-black text-[#003366] mb-1">
+                {statusModal.action === 'Suspendida' ? 'Suspender Práctica' :
+                 statusModal.action === 'En Proceso' ? 'Reactivar Práctica' : 'Retirar Estudiante'}
+              </h3>
+              <p className="text-sm text-slate-500 font-medium mb-6">
+                {statusModal.action === 'Suspendida'
+                  ? 'La práctica quedará en pausa temporal. Se puede reactivar posteriormente.'
+                  : statusModal.action === 'En Proceso'
+                  ? 'La práctica volverá al estado activo. Indique el motivo de la reactivación.'
+                  : 'El estudiante será marcado como retirado. Esta acción impide la generación del certificado.'}
+              </p>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">
+                Motivo <span className="text-rose-500">*</span>
+              </label>
+              <textarea
+                value={statusReason}
+                onChange={(e) => setStatusReason(e.target.value)}
+                placeholder="Indique el motivo del cambio de estado..."
+                className="w-full min-h-[100px] p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-[#003366] transition-all text-sm font-medium mb-6"
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setStatusModal(null)}
+                  className="h-12 bg-slate-100 text-[#003366] rounded-2xl font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleChangeStatus}
+                  disabled={changingStatus || !statusReason.trim()}
+                  className={cn(
+                    "h-12 rounded-2xl font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 disabled:opacity-50",
+                    statusModal.action === 'Suspendida' ? "bg-amber-500 text-white hover:bg-amber-600" :
+                    statusModal.action === 'En Proceso' ? "bg-emerald-500 text-white hover:bg-emerald-600" :
+                    "bg-rose-500 text-white hover:bg-rose-600"
+                  )}
+                >
+                  {changingStatus ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                  Confirmar
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </DashboardLayout>
   );
 }
@@ -432,6 +526,7 @@ function StudentInternshipCard({
   onReviewClick, 
   onGenerateCertificate,
   onExportAttendance,
+  onChangeStatus,
   onAIAnalyze,
   analyzing,
   analysis
@@ -489,6 +584,18 @@ function StudentInternshipCard({
                         Completado
                     </div>
                  )}
+                 {internship.status === 'Suspendida' && (
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                        <PauseCircle className="w-3.5 h-3.5" />
+                        Suspendida
+                    </div>
+                 )}
+                 {internship.status === 'Retirada' && (
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-rose-700 bg-rose-50 px-3 py-1 rounded-full border border-rose-200">
+                        <LogOut className="w-3.5 h-3.5" />
+                        Retirada
+                    </div>
+                 )}
               </div>
            </div>
         </div>
@@ -513,6 +620,33 @@ function StudentInternshipCard({
             >
                <FileSpreadsheet className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
             </button>
+            {internship.status === 'En Proceso' && (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onChangeStatus('Suspendida'); }}
+                  className="p-3 bg-white border border-slate-200 text-slate-400 rounded-xl hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-all flex items-center justify-center group/btn"
+                  title="Suspender práctica"
+                >
+                  <PauseCircle className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onChangeStatus('Retirada'); }}
+                  className="p-3 bg-white border border-slate-200 text-slate-400 rounded-xl hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all flex items-center justify-center group/btn"
+                  title="Retirar estudiante"
+                >
+                  <LogOut className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+                </button>
+              </>
+            )}
+            {internship.status === 'Suspendida' && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onChangeStatus('En Proceso'); }}
+                className="p-3 bg-amber-50 border border-amber-200 text-amber-600 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all flex items-center justify-center group/btn"
+                title="Reactivar práctica"
+              >
+                <CheckCircle2 className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+              </button>
+            )}
         </div>
       </div>
 

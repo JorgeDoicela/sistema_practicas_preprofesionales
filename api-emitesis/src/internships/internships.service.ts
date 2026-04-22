@@ -448,13 +448,13 @@ export class InternshipsService {
 
   async changeStatus(id: string, newStatus: string, actorId: string, reason?: string) {
     const internship = await this.prisma.internship.findUnique({
-      where: { id }
+      where: { id },
+      select: { studentId: true, tutorId: true, status: true },
     });
 
     if (!internship) throw new NotFoundException('Asignación no encontrada');
 
-    return this.prisma.$transaction(async (tx) => {
-      // 1. Registrar en el historial
+    const updated = await this.prisma.$transaction(async (tx) => {
       await tx.internshipStatusHistory.create({
         data: {
           internshipId: id,
@@ -462,14 +462,40 @@ export class InternshipsService {
           newStatus: newStatus,
           changedById: actorId,
           reason: reason || 'Cambio manual por autoridad',
-        }
+        },
       });
 
-      // 2. Actualizar la pasantía
       return tx.internship.update({
         where: { id },
         data: { status: newStatus },
       });
     });
+
+    // Notificaciones in-app
+    const statusLabel: Record<string, string> = {
+      Suspendida: 'Suspendida temporalmente',
+      Retirada: 'Marcada como Retirada',
+      'En Proceso': 'Reactivada',
+      Finalizado: 'Finalizada',
+    };
+    const label = statusLabel[newStatus] ?? newStatus;
+    const notifReason = reason ? ` Motivo: ${reason}` : '';
+
+    await Promise.allSettled([
+      this.notificationsService.createInApp(
+        internship.studentId,
+        `Práctica ${label}`,
+        `Tu práctica preprofesional ha sido ${label.toLowerCase()}.${notifReason}`,
+        newStatus === 'Retirada' ? 'ERROR' : newStatus === 'Suspendida' ? 'WARNING' : 'SUCCESS',
+      ),
+      this.notificationsService.createInApp(
+        internship.tutorId,
+        `Estado de práctica actualizado: ${label}`,
+        `La práctica de tu estudiante ha sido ${label.toLowerCase()}.${notifReason}`,
+        newStatus === 'Retirada' ? 'WARNING' : 'INFO',
+      ),
+    ]);
+
+    return updated;
   }
 }

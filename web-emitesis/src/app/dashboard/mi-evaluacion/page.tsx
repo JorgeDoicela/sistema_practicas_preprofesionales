@@ -7,12 +7,11 @@ import {
   Award,
   Building2,
   GraduationCap,
-  User,
   Clock,
-  CheckCircle2,
   AlertCircle,
   Loader2,
   TrendingUp,
+  Trophy,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -48,6 +47,7 @@ export default function MiEvaluacionPage() {
   const [loading, setLoading] = useState(true);
   const [internship, setInternship] = useState<any>(null);
   const [evaluations, setEvaluations] = useState<any[]>([]);
+  const [finalGrade, setFinalGrade] = useState<number | null>(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -61,8 +61,12 @@ export default function MiEvaluacionPage() {
       const primary = internships[0];
       setInternship(primary);
 
-      const evs = await evaluationsService.findByInternship(primary.id);
+      const [evs, gradeRes] = await Promise.all([
+        evaluationsService.findByInternship(primary.id),
+        evaluationsService.getGrade(primary.id),
+      ]);
       setEvaluations(Array.isArray(evs) ? evs : []);
+      setFinalGrade(gradeRes?.grade ?? null);
     } catch (error) {
       console.error("Error cargando evaluaciones:", error);
     } finally {
@@ -115,26 +119,84 @@ export default function MiEvaluacionPage() {
             </p>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Tarjeta Académica */}
-            <EvalCard 
-              type="ACADEMICA"
-              title="Evaluación Académica"
-              subtitle="Tutor del Instituto (ISTPET)"
-              evaluation={evalAcademica}
-              icon={<GraduationCap className="w-6 h-6" />}
-              color="blue"
-            />
+          <div className="space-y-8">
+            {/* Nota Final Ponderada */}
+            {finalGrade !== null && finalGrade > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-gradient-to-br from-[#003366] to-[#001a44] rounded-[2.5rem] p-10 text-white shadow-2xl shadow-blue-900/30 relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 p-10 opacity-5">
+                  <Trophy className="w-40 h-40" />
+                </div>
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                  <div>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 bg-[#C5A059] rounded-2xl flex items-center justify-center">
+                        <Trophy className="w-5 h-5 text-white" />
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#C5A059]">
+                        Calificación Final
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-black text-white/70 mb-1">Nota Ponderada (50% Académica + 50% Empresarial)</h3>
+                    <p className="text-sm text-white/40 font-medium">Evaluación dual según reglamento de prácticas IST</p>
+                  </div>
+                  <div className="text-center md:text-right">
+                    <div className="flex items-end gap-2 justify-center md:justify-end">
+                      <span className={cn(
+                        "text-7xl font-black tracking-tighter",
+                        finalGrade >= 7 ? "text-emerald-400" : finalGrade >= 5 ? "text-[#C5A059]" : "text-rose-400"
+                      )}>
+                        {finalGrade.toFixed(2)}
+                      </span>
+                      <span className="text-2xl font-black text-white/30 mb-2">/10</span>
+                    </div>
+                    <p className={cn(
+                      "text-[10px] font-black uppercase tracking-widest mt-1",
+                      finalGrade >= 7 ? "text-emerald-400" : finalGrade >= 5 ? "text-[#C5A059]" : "text-rose-400"
+                    )}>
+                      {finalGrade >= 7 ? "Aprobado — Excelente" : finalGrade >= 5 ? "Aprobado" : "En proceso de evaluación"}
+                    </p>
+                  </div>
+                </div>
+                {/* Barra de progreso */}
+                <div className="relative z-10 mt-8 h-2 bg-white/10 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(finalGrade / 10) * 100}%` }}
+                    transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
+                    className={cn(
+                      "h-full rounded-full",
+                      finalGrade >= 7 ? "bg-emerald-400" : finalGrade >= 5 ? "bg-[#C5A059]" : "bg-rose-400"
+                    )}
+                  />
+                </div>
+              </motion.div>
+            )}
 
-            {/* Tarjeta Empresarial */}
-            <EvalCard 
-              type="EMPRESARIAL"
-              title="Evaluación Empresarial"
-              subtitle="Tutor de la Empresa/Institución"
-              evaluation={evalEmpresarial}
-              icon={<Building2 className="w-6 h-6" />}
-              color="gold"
-            />
+            <div className="grid lg:grid-cols-2 gap-8">
+              {/* Tarjeta Académica */}
+              <EvalCard 
+                type="ACADEMICA"
+                title="Evaluación Académica"
+                subtitle="Tutor del Instituto (ISTPET)"
+                evaluation={evalAcademica}
+                icon={<GraduationCap className="w-6 h-6" />}
+                color="blue"
+              />
+
+              {/* Tarjeta Empresarial */}
+              <EvalCard 
+                type="EMPRESARIAL"
+                title="Evaluación Empresarial"
+                subtitle="Tutor de la Empresa/Institución"
+                evaluation={evalEmpresarial}
+                icon={<Building2 className="w-6 h-6" />}
+                color="gold"
+              />
+            </div>
           </div>
         )}
       </div>

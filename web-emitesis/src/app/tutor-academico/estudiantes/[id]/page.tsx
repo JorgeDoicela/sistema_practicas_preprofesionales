@@ -35,7 +35,9 @@ export default function StudentDetailPage() {
   const [newVisit, setNewVisit] = useState<Partial<MonitoringVisitPayload>>({
     type: 'PRESENCIAL',
     date: new Date().toISOString().split('T')[0],
-    observations: ''
+    location: '',
+    observations: '',
+    recommendations: '',
   });
 
   // Evaluation form state
@@ -102,11 +104,13 @@ export default function StudentDetailPage() {
         internshipId: id as string,
         date: newVisit.date,
         type: newVisit.type as 'PRESENCIAL' | 'VIRTUAL',
-        observations: newVisit.observations
+        location: newVisit.location || undefined,
+        observations: newVisit.observations,
+        recommendations: newVisit.recommendations || undefined,
       });
       await loadData();
       setIsVisitModalOpen(false);
-      setNewVisit({ type: 'PRESENCIAL', date: new Date().toISOString().split('T')[0], observations: '' });
+      setNewVisit({ type: 'PRESENCIAL', date: new Date().toISOString().split('T')[0], location: '', observations: '', recommendations: '' });
     } catch (error: any) {
       alert(error.message);
     } finally {
@@ -340,9 +344,20 @@ export default function StudentDetailPage() {
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
+                          {visit.location && (
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1">
+                              <MapPin className="w-3 h-3" />{visit.location}
+                            </p>
+                          )}
                           <p className="text-sm text-slate-600 font-medium leading-relaxed italic">
                             "{visit.observations}"
                           </p>
+                          {visit.recommendations && (
+                            <p className="mt-3 text-xs text-amber-700 bg-amber-50 rounded-xl px-3 py-2 font-medium border border-amber-100">
+                              <span className="font-black uppercase tracking-wide text-[9px]">Recomendaciones: </span>
+                              {visit.recommendations}
+                            </p>
+                          )}
                           <div className="mt-4 flex items-center gap-2">
                             <span className={cn(
                               "text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter",
@@ -398,6 +413,12 @@ export default function StudentDetailPage() {
                       description="Constancia en sus reportes y cumplimiento de cronograma."
                       value={evalScores.punctuality} 
                       onChange={(v) => setEvalScores(prev => ({ ...prev, punctuality: v }))} 
+                    />
+                    <EvaluationMetric 
+                      label="Trabajo en Equipo" 
+                      description="Colaboración, comunicación y relaciones interpersonales en la empresa receptora."
+                      value={evalScores.teamwork} 
+                      onChange={(v) => setEvalScores(prev => ({ ...prev, teamwork: v }))} 
                     />
                   </div>
 
@@ -500,12 +521,33 @@ export default function StudentDetailPage() {
                 </div>
 
                 <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Lugar / Dirección</label>
+                  <input
+                    type="text"
+                    value={newVisit.location ?? ''}
+                    onChange={(e) => setNewVisit(prev => ({ ...prev, location: e.target.value }))}
+                    placeholder="Ej: Av. República E7-230, oficina 3..."
+                    className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-[#003366] transition-all text-sm font-medium"
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Observaciones</label>
                   <textarea 
                     value={newVisit.observations}
                     onChange={(e) => setNewVisit(prev => ({ ...prev, observations: e.target.value }))}
                     placeholder="Detalle los hallazgos de la visita..."
                     className="w-full min-h-[120px] p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-[#003366] transition-all text-sm font-medium italic"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Recomendaciones al estudiante</label>
+                  <textarea
+                    value={newVisit.recommendations ?? ''}
+                    onChange={(e) => setNewVisit(prev => ({ ...prev, recommendations: e.target.value }))}
+                    placeholder="Sugerencias de mejora o acciones a tomar..."
+                    className="w-full min-h-[80px] p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-[#003366] transition-all text-sm font-medium italic"
                   />
                 </div>
 

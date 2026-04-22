@@ -37,5 +37,9 @@ export const internshipsService = {
 
   async syncSigafi(id: string) {
     return api.post(`/internships/${id}/sync-sigafi`);
-  }
+  },
+
+  async changeStatus(id: string, status: string, reason?: string) {
+    return api.patch(`/internships/${id}/status`, { status, reason });
+  },
 };

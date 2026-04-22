@@ -18,9 +18,17 @@ export class CreateVisitDto {
   @IsNotEmpty()
   type: VisitType;
 
+  @IsOptional()
+  @IsString()
+  location?: string;
+
   @IsString()
   @IsNotEmpty()
   observations: string;
+
+  @IsOptional()
+  @IsString()
+  recommendations?: string;
 
   @IsOptional()
   @IsString()

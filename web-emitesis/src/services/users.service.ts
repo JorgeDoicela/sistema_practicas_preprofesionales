@@ -6,6 +6,10 @@ export const usersService = {
     return api.get('/users/me');
   },
 
+  async updateMe(data: { fullName?: string; password?: string }): Promise<UserProfile> {
+    return api.patch('/users/me', data);
+  },
+
   async findAll() {
     return api.get('/users');
   },

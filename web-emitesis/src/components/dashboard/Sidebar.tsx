@@ -63,6 +63,7 @@ const MENUS: Record<string, Array<{ icon: React.ElementType; label: string; href
     ],
     TUTOR_ACADEMICO: [
         { icon: LayoutDashboard, label: "Tablero",               href: "/tutor-academico/dashboard" },
+        { icon: GraduationCap,   label: "Mis Estudiantes",       href: "/tutor-academico/estudiantes" },
         { icon: FileStack,       label: "Documentos",            href: "/dashboard/documentos" },
         { icon: CalendarCheck,   label: "Asistencia Pasantes",   href: "/tutor-academico/asistencia" },
     ],
@@ -79,7 +80,6 @@ const MENUS: Record<string, Array<{ icon: React.ElementType; label: string; href
     ],
     EMPRESA: [
         { icon: LayoutDashboard, label: "Tablero",               href: "/empresa/dashboard" },
-        { icon: GraduationCap,   label: "Mis Pasantes",          href: "/empresa/dashboard" },
         { icon: CalendarCheck,   label: "Asistencia Pasantes",   href: "/empresa/asistencia" },
         { icon: FlaskConical,    label: "Tests de Aptitud",      href: "/empresa/dashboard" },
     ],

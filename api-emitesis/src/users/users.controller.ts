@@ -73,6 +73,25 @@ export class UsersController {
     return this.usersService.findProfile(req.user.userId);
   }
 
+  @Patch('me')
+  @Roles(
+    Role.ADMIN,
+    Role.COORDINADOR,
+    Role.TUTOR,
+    Role.TUTOR_EMPRESARIAL,
+    Role.ESTUDIANTE,
+    Role.EMPRESA,
+  )
+  updateMe(
+    @Req() req: { user: { userId: string } },
+    @Body() body: { fullName?: string; password?: string },
+  ) {
+    const allowed: { fullName?: string; password?: string } = {};
+    if (body.fullName?.trim()) allowed.fullName = body.fullName.trim();
+    if (body.password?.trim()) allowed.password = body.password.trim();
+    return this.usersService.update(req.user.userId, allowed, req.user.userId);
+  }
+
   @Get(':id')
   @Roles(Role.ADMIN)
   findOne(@Param('id') id: string) {

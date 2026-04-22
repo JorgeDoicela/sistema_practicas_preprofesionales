@@ -32,6 +32,15 @@ export const evaluationsService = {
     return response.json();
   },
 
+  async getGrade(internshipId: string): Promise<{ internshipId: string; grade: number }> {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/evaluations/internship/${internshipId}/grade`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!response.ok) return { internshipId, grade: 0 };
+    return response.json();
+  },
+
   async findByInternship(internshipId: string) {
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/evaluations/internship/${internshipId}`, {

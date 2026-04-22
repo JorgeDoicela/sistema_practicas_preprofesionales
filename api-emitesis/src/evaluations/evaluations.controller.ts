@@ -29,4 +29,11 @@ export class EvaluationsController {
   async findByInternship(@Param('id') id: string) {
     return this.evaluationsService.findByInternship(id);
   }
+
+  @Get('internship/:id/grade')
+  @Roles(Role.ESTUDIANTE, Role.TUTOR, Role.COORDINADOR, Role.ADMIN)
+  async getInternshipGrade(@Param('id') id: string) {
+    const grade = await this.evaluationsService.calculateInternshipGrade(id);
+    return { internshipId: id, grade };
+  }
 }

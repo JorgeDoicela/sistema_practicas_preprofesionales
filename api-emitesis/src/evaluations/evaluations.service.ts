@@ -1,13 +1,15 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEvaluationDto } from './dto/evaluation.dto';
 import { SettingsService } from '../settings/settings.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class EvaluationsService {
   constructor(
     private prisma: PrismaService,
     private settings: SettingsService,
+    private notificationsService: NotificationsService,
   ) {}
 
   async createOrUpdate(dto: CreateEvaluationDto) {
@@ -22,23 +24,34 @@ export class EvaluationsService {
       throw new NotFoundException('Internship no encontrado');
     }
 
-    return this.prisma.evaluation.upsert({
+    const result = await this.prisma.evaluation.upsert({
       where: {
         internshipId_type: {
           internshipId,
           type: data.type as any,
         },
       },
-      update: {
-        ...data,
-        status: 'COMPLETADO',
-      },
-      create: {
-        internshipId,
-        ...data,
-        status: 'COMPLETADO',
-      },
+      update: { ...data, status: 'COMPLETADO' },
+      create: { internshipId, ...data, status: 'COMPLETADO' },
     });
+
+    // Notificar al estudiante que recibió una evaluación
+    const typeLabel = data.type === 'ACADEMICA' ? 'académica (Tutor)' : 'empresarial (Empresa)';
+    const internshipData = await this.prisma.internship.findUnique({
+      where: { id: internshipId },
+      select: { studentId: true },
+    });
+    if (internshipData) {
+      await this.notificationsService.createInApp(
+        internshipData.studentId,
+        `Nueva evaluación ${typeLabel}`,
+        `Has recibido tu evaluación ${typeLabel}. Revísala en tu portal de evaluaciones.`,
+        'SUCCESS',
+        '/dashboard/mi-evaluacion',
+      );
+    }
+
+    return result;
   }
 
   async findByInternship(internshipId: string) {

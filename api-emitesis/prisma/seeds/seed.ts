@@ -1083,11 +1083,28 @@ async function main() {
       }
     }
   }
+  // Canales académicos activos por defecto en un IST
+  const academicPairs: Array<[Role, Role]> = [
+    [Role.TUTOR, Role.COORDINADOR],
+    [Role.COORDINADOR, Role.TUTOR],
+    [Role.TUTOR, Role.ESTUDIANTE],
+    [Role.ESTUDIANTE, Role.TUTOR],
+    [Role.COORDINADOR, Role.ESTUDIANTE],
+    [Role.ESTUDIANTE, Role.COORDINADOR],
+  ];
+  const isAcademicPair = (from: Role, to: Role) =>
+    academicPairs.some(([f, t]) => f === from && t === to);
+
   await prisma.chatPermission.createMany({
-    data: chatPermPairs.map(p => ({ fromRole: p.fromRole, toRole: p.toRole, isEnabled: false })),
+    data: chatPermPairs.map(p => ({
+      fromRole: p.fromRole,
+      toRole: p.toRole,
+      isEnabled: isAcademicPair(p.fromRole, p.toRole),
+    })),
     skipDuplicates: true,
   });
-  console.log(`   ✓ ${chatPermPairs.length} pares de permisos de chat creados (todos deshabilitados por defecto).\n`);
+  const enabledCount = chatPermPairs.filter(p => isAcademicPair(p.fromRole, p.toRole)).length;
+  console.log(`   ✓ ${chatPermPairs.length} pares de permisos de chat creados (${enabledCount} canales académicos activos por defecto).\n`);
 
   // ─── 12. CONFIGURACIONES DEL SISTEMA ──────────────────────────────────────
   console.log('⚙️  [12/12] Configurando ajustes del sistema...');

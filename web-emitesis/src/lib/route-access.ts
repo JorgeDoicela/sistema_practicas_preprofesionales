@@ -5,17 +5,25 @@ import { Role, ROLES, ROLE_REDIRECTS } from "@/constants/roles";
  * Alineado con los 6 roles del sistema y con los guards de la API.
  */
 const RULES: { match: RegExp; allow: Role[] }[] = [
+  // ── Rutas protegidas (orden: más específico primero) ───────────────────────
   { match: /^\/admin(\/|$)/, allow: [ROLES.ADMIN] },
   { match: /^\/coordinador(\/|$)/, allow: [ROLES.ADMIN, ROLES.COORDINADOR] },
   { match: /^\/tutor-academico\/perfil/, allow: [ROLES.ADMIN, ROLES.TUTOR_ACADEMICO] },
   { match: /^\/tutor-academico(\/|$)/, allow: [ROLES.ADMIN, ROLES.TUTOR_ACADEMICO] },
   { match: /^\/empresa\/perfil/, allow: [ROLES.ADMIN, ROLES.EMPRESA, ROLES.TUTOR_EMPRESARIAL] },
   { match: /^\/empresa(\/|$)/, allow: [ROLES.ADMIN, ROLES.EMPRESA, ROLES.TUTOR_EMPRESARIAL] },
+  // Rutas del estudiante (ruta canónica y aliases legacy)
+  { match: /^\/estudiante(\/|$)/, allow: [ROLES.ADMIN, ROLES.ESTUDIANTE] },
   { match: /^\/dashboard\/perfil/, allow: [ROLES.ADMIN, ROLES.COORDINADOR, ROLES.TUTOR_ACADEMICO, ROLES.ESTUDIANTE] },
   { match: /^\/dashboard\/documentos/, allow: [ROLES.ADMIN, ROLES.COORDINADOR, ROLES.TUTOR_ACADEMICO, ROLES.ESTUDIANTE] },
   { match: /^\/dashboard\/asistencia/, allow: [ROLES.ADMIN, ROLES.COORDINADOR, ROLES.TUTOR_ACADEMICO, ROLES.ESTUDIANTE] },
   { match: /^\/dashboard\/configuracion/, allow: [ROLES.ADMIN, ROLES.COORDINADOR, ROLES.TUTOR_ACADEMICO, ROLES.ESTUDIANTE] },
+  { match: /^\/dashboard\/mi-evaluacion/, allow: [ROLES.ADMIN, ROLES.ESTUDIANTE] },
   { match: /^\/dashboard\/?$/, allow: [ROLES.ADMIN, ROLES.COORDINADOR, ROLES.TUTOR_ACADEMICO, ROLES.ESTUDIANTE] },
+  // Rutas legacy de tutor (alias de /tutor-academico)
+  { match: /^\/tutor(\/|$)/, allow: [ROLES.ADMIN, ROLES.TUTOR_ACADEMICO] },
+  // Rutas legacy de tutor empresarial (alias de /empresa)
+  { match: /^\/tutor-empresarial(\/|$)/, allow: [ROLES.ADMIN, ROLES.TUTOR_EMPRESARIAL, ROLES.EMPRESA] },
 ];
 
 export function normalizePathname(pathname: string): string {
@@ -43,7 +51,14 @@ export function canRoleAccessPath(role: Role | undefined, pathname: string): boo
     return dashRoles.includes(role);
   }
 
-  return true;
+  // Rutas públicas (login, registro, reset-password, raíz) accesibles sin rol
+  const PUBLIC_PATHS = ["/", "/login", "/registro", "/reset-password", "/forgot-password"];
+  if (PUBLIC_PATHS.some((pub) => p === pub || p.startsWith(pub + "/"))) {
+    return true;
+  }
+
+  // Cualquier otra ruta protegida sin regla explícita → denegar por defecto
+  return false;
 }
 
 export function getHomePathForRole(role: Role): string {

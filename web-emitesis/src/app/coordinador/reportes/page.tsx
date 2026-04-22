@@ -58,7 +58,7 @@ export default function ReportesPage() {
         {/* Header */}
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">Administración</span>
+            <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">Coordinación</span>
             <h2 className="text-4xl font-black text-[#003366] tracking-tight">
               Módulo de <span className="text-slate-400">Reportes</span>
             </h2>

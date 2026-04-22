@@ -48,8 +48,25 @@ export class CertificationService {
     const summary = await this.attendanceService.getSummary(internshipId);
     const hoursMet = summary.totalHours >= internship.totalHours;
 
+    // 3. Verificar que existan ambas evaluaciones (académica y empresarial)
+    const evaluations = await this.prisma.evaluation.findMany({
+      where: { internshipId },
+    });
+    const hasAcademica = evaluations.some((e) => e.type === 'ACADEMICA');
+    const hasEmpresarial = evaluations.some((e) => e.type === 'EMPRESARIAL');
+    const missingEvals: string[] = [];
+    if (!hasAcademica) missingEvals.push('Evaluación académica (Tutor)');
+    if (!hasEmpresarial) missingEvals.push('Evaluación empresarial (Empresa)');
+
+    // 4. Verificar que el estado de la práctica no sea Suspendida o Retirada
+    if (internship.status === 'Suspendida' || internship.status === 'Retirada') {
+      throw new BadRequestException(
+        `No se puede generar el certificado: la práctica está en estado "${internship.status}".`,
+      );
+    }
+
     return {
-      eligible: missingDocs.length === 0 && hoursMet,
+      eligible: missingDocs.length === 0 && hoursMet && missingEvals.length === 0,
       details: {
         approvedDocsCount: approvedDocs.length,
         totalRequiredDocs: requiredSlots.length,
@@ -57,6 +74,9 @@ export class CertificationService {
         totalHours: summary.totalHours,
         requiredHours: internship.totalHours,
         hoursMet,
+        hasAcademica,
+        hasEmpresarial,
+        missingEvals,
       },
     };
   }

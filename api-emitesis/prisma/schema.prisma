@@ -192,15 +192,17 @@ model Evaluation {
 }
 
 model MonitoringVisit {
-  id           String     @id @default(uuid())
-  internshipId String
-  date         DateTime
-  type         String     @default("PRESENCIAL") // PRESENCIAL, VIRTUAL
-  observations String
-  evidenceUrl  String?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  internship   Internship @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+  id              String     @id @default(uuid())
+  internshipId    String
+  date            DateTime
+  type            String     @default("PRESENCIAL") // PRESENCIAL, VIRTUAL
+  location        String?
+  observations    String
+  recommendations String?
+  evidenceUrl     String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  internship      Internship @relation(fields: [internshipId], references: [id], onDelete: Cascade)
 
   @@index([internshipId])
 }

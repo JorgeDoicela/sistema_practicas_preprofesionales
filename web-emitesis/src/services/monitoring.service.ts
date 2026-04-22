@@ -4,7 +4,9 @@ export interface MonitoringVisitPayload {
   internshipId: string;
   date: string;
   type: 'PRESENCIAL' | 'VIRTUAL';
+  location?: string;
   observations: string;
+  recommendations?: string;
   evidenceUrl?: string;
 }
 

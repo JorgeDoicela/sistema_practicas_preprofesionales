@@ -105,8 +105,10 @@ export function DashboardMain() {
   const [careers, setCareers] = useState<any[]>([]);
   const [selectedCareerId, setSelectedCareerId] = useState<string>("");
   
-  // Asistencia hoy ... (resto de estados igual)
   const [todayAttendance, setTodayAttendance] = useState<any>(null);
+  const [attendanceSummary, setAttendanceSummary] = useState<{
+    totalHours: number; requiredHours: number; progressPercentage: number; remainingHours: number;
+  } | null>(null);
   const [loc, setLoc] = useState<{lat: number, lng: number} | null>(null);
   const [exporting, setExporting] = useState(false);
 
@@ -155,6 +157,16 @@ export function DashboardMain() {
         setInternships(list);
         setTodayAttendance(attRes?.data || attRes || null);
         setAgreementsCount(null);
+
+        const activeInternship = list.find((i: InternshipRow) => isActiveInternship(i.status)) || list[0];
+        if (activeInternship?.id) {
+          try {
+            const summaryRes: any = await attendancesService.getSummary(activeInternship.id);
+            setAttendanceSummary(summaryRes?.data || summaryRes || null);
+          } catch {
+            setAttendanceSummary(null);
+          }
+        }
 
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition((pos) => {
@@ -706,11 +718,32 @@ export function DashboardMain() {
                     <BarChart3 className="w-6 h-6 text-[#C5A059]" />
                  </div>
                  <h4 className="text-xl font-black tracking-tight mb-2">Resumen de Horas</h4>
-                 <p className="text-sm text-white/60 font-medium mb-6">Visualiza tu progreso acumulado de este periodo.</p>
-                 <div className="flex items-end gap-3">
-                    <span className="text-4xl font-black text-[#C5A059]">{internships[0]?.attendances?.length || 0}</span>
-                    <span className="text-xs font-bold text-white/40 uppercase mb-2">Días registrados</span>
-                 </div>
+                 <p className="text-sm text-white/60 font-medium mb-4">Progreso acumulado de horas de práctica.</p>
+                 {attendanceSummary ? (
+                   <>
+                     <div className="flex items-end gap-3 mb-4">
+                       <span className="text-4xl font-black text-[#C5A059]">{attendanceSummary.totalHours.toFixed(1)}</span>
+                       <span className="text-xs font-bold text-white/40 uppercase mb-2">
+                         / {attendanceSummary.requiredHours} h requeridas
+                       </span>
+                     </div>
+                     <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-2">
+                       <div
+                         className="h-full bg-[#C5A059] rounded-full transition-all"
+                         style={{ width: `${attendanceSummary.progressPercentage}%` }}
+                       />
+                     </div>
+                     <div className="flex justify-between text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                       <span>{attendanceSummary.progressPercentage.toFixed(1)}% completado</span>
+                       <span>{attendanceSummary.remainingHours.toFixed(1)} h restantes</span>
+                     </div>
+                   </>
+                 ) : (
+                   <div className="flex items-end gap-3">
+                     <span className="text-4xl font-black text-[#C5A059]">{internships[0]?.attendances?.length || 0}</span>
+                     <span className="text-xs font-bold text-white/40 uppercase mb-2">Registros</span>
+                   </div>
+                 )}
               </div>
             </section>
           )}
