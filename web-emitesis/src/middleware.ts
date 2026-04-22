@@ -5,15 +5,18 @@ import type { NextRequest } from 'next/server';
 const PUBLIC_PREFIXES = [
   '/',
   '/login',
-  '/registro',
   '/olvido-password',
   '/reset-password',
-  '/verificar',  // página pública de verificación de certificados
+  '/verificar',  // página pública de verificación de certificados QR
   '/_next',
   '/api',
   '/images',
   '/manifest.json',
   '/favicon',
+  '/nosotros',
+  '/servicios',
+  '/privacidad',
+  '/empresas',
 ];
 
 function isPublicPath(pathname: string): boolean {

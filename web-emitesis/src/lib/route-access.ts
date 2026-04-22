@@ -52,8 +52,11 @@ export function canRoleAccessPath(role: Role | undefined, pathname: string): boo
     return dashRoles.includes(role);
   }
 
-  // Rutas públicas (login, registro, reset-password, raíz, verificar certificados) accesibles sin rol
-  const PUBLIC_PATHS = ["/", "/login", "/registro", "/reset-password", "/forgot-password", "/olvido-password", "/verificar"];
+  // Rutas públicas accesibles sin rol
+  const PUBLIC_PATHS = [
+    "/", "/login", "/reset-password", "/olvido-password",
+    "/verificar", "/nosotros", "/servicios", "/privacidad", "/empresas",
+  ];
   if (PUBLIC_PATHS.some((pub) => p === pub || p.startsWith(pub + "/"))) {
     return true;
   }

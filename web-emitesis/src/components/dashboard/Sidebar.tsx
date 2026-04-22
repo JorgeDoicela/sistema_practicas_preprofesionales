@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import type { ElementType } from "react";
 import { cn } from "@/lib/utils";
 import {
     LayoutDashboard,
@@ -17,7 +18,7 @@ import {
     FileText,
     UserPlus,
     GraduationCap,
-    FlaskConical,
+    BookOpen,
     Handshake,
     ScrollText,
     ShieldAlert,
@@ -36,14 +37,14 @@ import { getProfilePathForRole } from "@/lib/profile-route";
 // ── Menús por rol ──────────────────────────────────────────────────────────
 // Las claves deben coincidir exactamente con los valores de Role en el backend
 
-const MENUS: Record<string, Array<{ icon: React.ElementType; label: string; href: string }>> = {
+const MENUS: Record<string, Array<{ icon: ElementType; label: string; href: string }>> = {
     ADMIN: [
         { icon: LayoutDashboard, label: "Tablero",               href: "/dashboard" },
         { icon: Settings,        label: "Configuración Sistema", href: "/admin/configuracion" },
         { icon: MessageSquare,   label: "Permisos de Chat",      href: "/admin/chat-config" },
         { icon: BarChart3,       label: "Salud y Métricas",      href: "/admin/salud" },
         { icon: Star,            label: "Anuncios Globales",     href: "/admin/anuncios" },
-        { icon: GraduationCap,   label: "Carreras",              href: "/admin/carreras" },
+        { icon: BookOpen,        label: "Carreras",              href: "/admin/carreras" },
         { icon: FileText,        label: "Plantillas",             href: "/coordinador/plantillas-documentos" },
         { icon: ScrollText,      label: "Auditoría de Sistema",   href: "/admin/logs" },
         { icon: ShieldAlert,     label: "Cumplimiento LOPDP",    href: "/admin/privacidad" },
@@ -77,7 +78,6 @@ const MENUS: Record<string, Array<{ icon: React.ElementType; label: string; href
     TUTOR_EMPRESARIAL: [
         { icon: LayoutDashboard, label: "Tablero",               href: "/empresa/dashboard" },
         { icon: CalendarCheck,   label: "Asistencia Pasantes",   href: "/empresa/asistencia" },
-        { icon: FlaskConical,    label: "Tests de Aptitud",      href: "/empresa/dashboard" },
     ],
     ESTUDIANTE: [
         { icon: LayoutDashboard, label: "Tablero",               href: "/dashboard" },
@@ -89,7 +89,6 @@ const MENUS: Record<string, Array<{ icon: React.ElementType; label: string; href
     EMPRESA: [
         { icon: LayoutDashboard, label: "Tablero",               href: "/empresa/dashboard" },
         { icon: CalendarCheck,   label: "Asistencia Pasantes",   href: "/empresa/asistencia" },
-        { icon: FlaskConical,    label: "Tests de Aptitud",      href: "/empresa/dashboard" },
     ],
 };
 
@@ -204,7 +203,7 @@ export function Sidebar() {
 // ── SidebarItem ────────────────────────────────────────────────────────────
 
 interface SidebarItemProps {
-    icon: React.ElementType;
+    icon: ElementType;
     label: string;
     href: string;
     active: boolean;
