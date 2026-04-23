@@ -484,6 +484,12 @@ export const es = {
       title: "El Nexo entre el",
       titleHighlight: "Talento y la Industria",
       subtitle: "Gestione pasantías, convenios y talento joven con la plataforma líder en gobernanza de prácticas preprofesionales.",
+      cta: "Comenzar ahora",
+      privacy: "Ver política LOPDP",
+    },
+    stats: {
+      title: "Portal Corporativo",
+      subtitle: "Entidades Receptoras",
       items: [
         { v: "100%", l: "Digital" },
         { v: "CES", l: "Normativa" },

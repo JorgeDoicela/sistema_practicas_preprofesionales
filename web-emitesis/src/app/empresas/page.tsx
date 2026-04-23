@@ -33,7 +33,7 @@ export default function EmpresasPage() {
                                 {t.companies.hero.label}
                             </div>
                             <h1 className="text-5xl md:text-6xl font-black text-white leading-tight tracking-tight mb-6">
-                                {t.companies.hero.title1}<br />
+                                {t.companies.hero.title}<br />
                                 <span className="text-brand-gold italic">{t.companies.hero.titleHighlight}</span>
                             </h1>
                             <p className="text-white/65 text-lg leading-relaxed mb-10 max-w-lg">

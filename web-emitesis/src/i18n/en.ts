@@ -480,21 +480,12 @@ export const en = {
   },
   companies: {
     hero: {
-      label: "Strategic Alliances",
-      title1: "Power your talent",
-      titleHighlight: "with ISTPET.",
-      subtitle: "Join our network of Receiving Entities and contribute to the training of the country's future professionals while strengthening your workforce.",
       label: "For Companies and Organizations",
       title: "The Link between",
       titleHighlight: "Talent and Industry",
       subtitle: "Manage internships, agreements, and young talent with the leading platform in professional practice governance.",
-      items: [
-        { v: "100%", l: "Digital" },
-        { v: "CES", l: "Regulatory" },
-        { v: "RUC", l: "Unique ID" },
-        { v: "0", l: "Physical paperwork" },
-      ],
-      features: ["Versioned digital agreement", "Dual evaluation with 5 rubrics", "SHA-256 electronic signature"],
+      cta: "Get started",
+      privacy: "View LOPDP policy",
     },
     stats: {
       title: "Corporate Portal",
