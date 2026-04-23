@@ -4,11 +4,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ─── Smooth theme transitions ─────────────────────────── */
-:root {
-  color-scheme: light dark;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -111,7 +106,7 @@
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
 }
 
-/* Media-query fallback: when JS hasn't loaded yet or user hasn't set preference */
+/* Media-query fallback for when JS hasn't run yet */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --background: #020617;
@@ -141,7 +136,6 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    /* Smooth theme transition on all elements */
     transition-property: background-color, border-color, color;
     transition-duration: 200ms;
     transition-timing-function: ease;
@@ -192,3 +186,92 @@
     }
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   GLOBAL DARK MODE OVERRIDES — Flat selectors (max browser compat)
+   Override hardcoded Tailwind classes system-wide when .dark on <html>
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── Backgrounds ── */
+.dark .bg-white,
+.dark [class~="bg-white"]           { background-color: #0F172A !important; }
+.dark .bg-slate-50                  { background-color: #0F172A !important; }
+.dark .bg-slate-100                 { background-color: #1E293B !important; }
+.dark .bg-slate-200                 { background-color: #1E293B !important; }
+
+/* ── Text colors ── */
+.dark .text-slate-900               { color: #F1F5F9 !important; }
+.dark .text-slate-800               { color: #E2E8F0 !important; }
+.dark .text-slate-700               { color: #CBD5E1 !important; }
+.dark .text-slate-600               { color: #94A3B8 !important; }
+.dark .text-slate-500               { color: #64748B !important; }
+.dark .text-slate-400               { color: #64748B !important; }
+
+/* ── Brand blue → sky on dark ── */
+.dark .text-brand-blue              { color: #38BDF8 !important; }
+
+/* ── Borders ── */
+.dark .border-slate-100             { border-color: #1E293B !important; }
+.dark .border-slate-200             { border-color: #1E293B !important; }
+.dark .border-slate-300             { border-color: #334155 !important; }
+
+/* ── Divider lines (h-px elements) ── */
+.dark .h-px.bg-slate-200            { background-color: #334155 !important; }
+.dark .flex-1.h-px                  { background-color: #334155 !important; }
+
+/* ── Inline code ── */
+.dark code                          { background-color: #1E293B !important; color: #94A3B8 !important; }
+
+/* ── Category pill backgrounds ── */
+.dark .bg-blue-50                   { background-color: rgba(56, 189, 248, 0.08) !important; }
+.dark .bg-amber-50                  { background-color: rgba(251, 191, 36, 0.08) !important; }
+.dark .bg-emerald-50                { background-color: rgba(52, 211, 153, 0.08) !important; }
+.dark .bg-purple-50                 { background-color: rgba(167, 139, 250, 0.08) !important; }
+.dark .bg-rose-50                   { background-color: rgba(251, 113, 133, 0.08) !important; }
+.dark .bg-cyan-50                   { background-color: rgba(34, 211, 238, 0.08) !important; }
+.dark .bg-indigo-50                 { background-color: rgba(129, 140, 248, 0.08) !important; }
+
+/* ── Hover overrides ── */
+.dark .hover\:bg-white:hover        { background-color: #1E293B !important; }
+.dark .hover\:bg-slate-50:hover     { background-color: #1E293B !important; }
+.dark .hover\:border-brand-blue\/20:hover { border-color: rgba(56, 189, 248, 0.2) !important; }
+
+/* ── Main page root wrapper ── */
+.dark .min-h-screen                 { background-color: #020617 !important; }
+
+/* ── Timeline circle buttons ── */
+.dark .border-slate-200.rounded-full { border-color: #334155 !important; }
+
+/* ── Box shadows in dark (reduce harshness) ── */
+.dark .shadow-sm                    { box-shadow: 0 1px 3px 0 rgba(0,0,0,0.5) !important; }
+.dark .shadow-md                    { box-shadow: 0 4px 8px -1px rgba(0,0,0,0.6) !important; }
+.dark .shadow-lg                    { box-shadow: 0 10px 20px -3px rgba(0,0,0,0.6) !important; }
+.dark .shadow-xl                    { box-shadow: 0 20px 30px -5px rgba(0,0,0,0.6) !important; }
+.dark .shadow-2xl                   { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8) !important; }
+
+/* ── Media query fallback (when .dark is NOT yet set by JS but OS is dark) ── */
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) .bg-white            { background-color: #0F172A !important; }
+  html:not([data-theme="light"]) .bg-slate-50         { background-color: #0F172A !important; }
+  html:not([data-theme="light"]) .bg-slate-100        { background-color: #1E293B !important; }
+  html:not([data-theme="light"]) .bg-slate-200        { background-color: #1E293B !important; }
+  html:not([data-theme="light"]) .text-slate-900      { color: #F1F5F9 !important; }
+  html:not([data-theme="light"]) .text-slate-800      { color: #E2E8F0 !important; }
+  html:not([data-theme="light"]) .text-slate-700      { color: #CBD5E1 !important; }
+  html:not([data-theme="light"]) .text-slate-600      { color: #94A3B8 !important; }
+  html:not([data-theme="light"]) .text-slate-500      { color: #64748B !important; }
+  html:not([data-theme="light"]) .text-brand-blue     { color: #38BDF8 !important; }
+  html:not([data-theme="light"]) .border-slate-100    { border-color: #1E293B !important; }
+  html:not([data-theme="light"]) .border-slate-200    { border-color: #1E293B !important; }
+  html:not([data-theme="light"]) .bg-blue-50          { background-color: rgba(56, 189, 248, 0.08) !important; }
+  html:not([data-theme="light"]) .bg-amber-50         { background-color: rgba(251, 191, 36, 0.08) !important; }
+  html:not([data-theme="light"]) .bg-emerald-50       { background-color: rgba(52, 211, 153, 0.08) !important; }
+  html:not([data-theme="light"]) .bg-purple-50        { background-color: rgba(167, 139, 250, 0.08) !important; }
+  html:not([data-theme="light"]) .bg-rose-50          { background-color: rgba(251, 113, 133, 0.08) !important; }
+  html:not([data-theme="light"]) .bg-cyan-50          { background-color: rgba(34, 211, 238, 0.08) !important; }
+  html:not([data-theme="light"]) .bg-indigo-50        { background-color: rgba(129, 140, 248, 0.08) !important; }
+  html:not([data-theme="light"]) .min-h-screen        { background-color: #020617 !important; }
+  html:not([data-theme="light"]) .h-px.bg-slate-200   { background-color: #334155 !important; }
+  html:not([data-theme="light"]) .flex-1.h-px         { background-color: #334155 !important; }
+}
+
