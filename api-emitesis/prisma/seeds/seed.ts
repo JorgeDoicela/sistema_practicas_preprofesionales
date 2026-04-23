@@ -129,28 +129,24 @@ async function main() {
 
     // ─── 1. LIMPIEZA (orden estricto de integridad referencial) ──────────────
     console.log('🧹 [1/12] Purgando base de datos...');
-    await prisma.activityPhoto.deleteMany();
-    await prisma.attendance.deleteMany();
-    await prisma.documentVersion.deleteMany();
-    await prisma.documentComment.deleteMany();
-    await prisma.document.deleteMany();
-    await prisma.documentTemplate.deleteMany();
-    await prisma.monitoringVisit.deleteMany();
-    await prisma.evaluation.deleteMany();
-    await prisma.internshipStatusHistory.deleteMany();
-    await prisma.internship.deleteMany();
-    await prisma.agreement.deleteMany();
-    await prisma.userCredential.deleteMany();
-    await prisma.dataRequest.deleteMany();
-    await prisma.inAppNotification.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.career.deleteMany();
-    await prisma.company.deleteMany();
-    await prisma.emailLog.deleteMany();
-    await prisma.systemSetting.deleteMany();
-    await prisma.announcement.deleteMany();
-    await prisma.systemLog.deleteMany();
-    console.log('   ✓ Base de datos limpia.\n');
+    const tables = [
+        'activityPhoto', 'attendance', 'documentVersion', 'documentComment', 'document',
+        'documentTemplate', 'monitoringVisit', 'evaluation', 'internshipStatusHistory',
+        'internship', 'agreement', 'userCredential', 'dataRequest', 'inAppNotification',
+        'user', 'career', 'company', 'emailLog', 'systemSetting', 'announcement', 'systemLog'
+    ];
+
+    for (const table of tables) {
+        try {
+            await (prisma as any)[table].deleteMany();
+        } catch (error) {
+            // Ignorar errores si la tabla no existe (P2021)
+            if ((error as any).code !== 'P2021') {
+                console.warn(`   ⚠ No se pudo purgar la tabla ${table}:`, (error as any).message);
+            }
+        }
+    }
+    console.log('   ✓ Base de datos purgada.\n');
 
     const password = await bcrypt.hash('password123', 10);
     const lopdp = {

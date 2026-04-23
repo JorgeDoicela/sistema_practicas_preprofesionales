@@ -42,9 +42,18 @@ envs.forEach(env => {
 // 2. Generar Prisma Client
 run('npx prisma generate', apiDir);
 
-// 3. Resetear Base de Datos (Solicitado por el usuario para pruebas)
-console.log('\n\x1b[31m[IMPORTANTE]\x1b[0m Se procederá a resetear y sembrar (seed) la base de datos...');
-run('npx prisma migrate reset --force', apiDir);
+// 3. Sincronizar Base de Datos
+const isVercel = process.env.VERCEL === '1' || !!process.env.CI;
+
+if (isVercel) {
+  console.log('\n\x1b[36m[INFO]\x1b[0m Entorno de CI/Vercel detectado. Usando "migrate deploy"...');
+  run('npx prisma migrate deploy', apiDir);
+  console.log('\x1b[36m[INFO]\x1b[0m Ejecutando seed de base de datos...');
+  run('npx prisma db seed', apiDir);
+} else {
+  console.log('\n\x1b[31m[IMPORTANTE]\x1b[0m Se procederá a resetear y sembrar (seed) la base de datos...');
+  run('npx prisma migrate reset --force', apiDir);
+}
 
 console.log('\n===================================================');
 console.log('\x1b[32m   CONFIGURACIÓN COMPLETADA CON ÉXITO   \x1b[0m');
