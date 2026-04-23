@@ -5,8 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { authService } from '@/services/auth.service';
 import { sanitizePasswordClient } from '@/utils/security';
+import { useLanguage } from '@/providers/LanguageProvider';
 
 function ResetPasswordForm() {
+  const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -26,7 +28,7 @@ function ResetPasswordForm() {
     e.preventDefault();
     
     if (password !== confirmPassword) {
-      setMessage({ type: 'error', text: 'Las contraseñas no coinciden.' });
+      setMessage({ type: 'error', text: t.resetPassword.mismatch });
       return;
     }
 
@@ -38,7 +40,7 @@ function ResetPasswordForm() {
     try {
       const cleanPassword = sanitizePasswordClient(password);
       await authService.resetPassword(token, cleanPassword);
-      setMessage({ type: 'success', text: 'Contraseña actualizada con éxito. Redirigiendo al login...' });
+      setMessage({ type: 'success', text: t.resetPassword.success });
       setTimeout(() => {
         router.push('/login');
       }, 3000);
@@ -54,11 +56,11 @@ function ResetPasswordForm() {
       <div className="text-center space-y-4">
         <p className="text-red-500 font-medium">Enlace inválido o expirado.</p>
         <Link href="/olvido-password" className="text-[#003366] hover:underline">
-          Solicitar un nuevo enlace
+          {t.forgotPassword.submit}
         </Link>
         <p className="pt-4">
           <Link href="/privacidad" className="text-xs text-slate-500 hover:text-[#003366] underline-offset-2 hover:underline">
-            Aviso de privacidad
+            {t.login.privacyLink}
           </Link>
         </p>
       </div>
@@ -69,7 +71,7 @@ function ResetPasswordForm() {
     <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Nueva Contraseña</label>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.resetPassword.password}</label>
           <input
             type="password"
             required
@@ -80,7 +82,7 @@ function ResetPasswordForm() {
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Confirmar Contraseña</label>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.resetPassword.confirm}</label>
           <input
             type="password"
             required
@@ -99,7 +101,7 @@ function ResetPasswordForm() {
           loading ? 'opacity-50 cursor-not-allowed' : ''
         }`}
       >
-        {loading ? 'Actualizando...' : 'Actualizar Contraseña'}
+        {loading ? t.resetPassword.submitting : t.resetPassword.submit}
       </button>
       {message && (
         <div className={`p-4 rounded-xl text-xs font-bold text-center border mt-4 ${
@@ -113,21 +115,23 @@ function ResetPasswordForm() {
 }
 
 export default function ResetPasswordPage() {
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] px-4 py-12">
       <div className="max-w-md w-full space-y-6 md:space-y-8 bg-white p-5 sm:p-8 md:p-10 rounded-2xl shadow-xl border border-gray-100">
         <div className="text-center">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#003366] tracking-tight">Establecer Nueva Contraseña</h2>
-          <p className="mt-2 text-sm text-gray-500">Por favor, ingresa tu nueva contraseña institucional</p>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#003366] tracking-tight">{t.resetPassword.title}</h2>
+          <p className="mt-2 text-sm text-gray-500">{t.resetPassword.subtitle}</p>
         </div>
 
-        <Suspense fallback={<div className="text-center">Cargando...</div>}>
+        <Suspense fallback={<div className="text-center">{t.common.loading}</div>}>
           <ResetPasswordForm />
         </Suspense>
 
         <p className="text-center text-xs text-slate-500 pt-4">
           <Link href="/privacidad" className="text-[#003366] font-semibold hover:underline underline-offset-2">
-            Aviso de privacidad (LOPDP)
+            {t.login.privacyLink}
           </Link>
         </p>
       </div>

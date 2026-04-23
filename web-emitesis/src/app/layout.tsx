@@ -42,6 +42,7 @@ import ChatWidgetLoader from "@/components/chat/ChatWidgetLoader";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { ThemeScript } from "@/components/providers/ThemeScript";
+import { LanguageProvider } from "@/providers/LanguageProvider";
 
 export default function RootLayout({
   children,
@@ -55,21 +56,23 @@ export default function RootLayout({
       </head>
       <body className={`${montserrat.variable} ${roboto.variable} font-body antialiased bg-background text-foreground`}>
         <ThemeProvider>
-          <Navbar />
-          <main className="min-h-screen">
-            <SocketProvider>
-              <ChatProvider>
-                <ReCaptchaProviderWrapper>
-                  <PrivacyConsentWrapper>
-                    {children}
-                  </PrivacyConsentWrapper>
-                </ReCaptchaProviderWrapper>
-                <ChatWidgetLoader />
-              </ChatProvider>
-            </SocketProvider>
-          </main>
-          <Footer />
-          <Toaster position="top-right" richColors />
+          <LanguageProvider>
+            <Navbar />
+            <main className="min-h-screen">
+              <SocketProvider>
+                <ChatProvider>
+                  <ReCaptchaProviderWrapper>
+                    <PrivacyConsentWrapper>
+                      {children}
+                    </PrivacyConsentWrapper>
+                  </ReCaptchaProviderWrapper>
+                  <ChatWidgetLoader />
+                </ChatProvider>
+              </SocketProvider>
+            </main>
+            <Footer />
+            <Toaster position="top-right" richColors />
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

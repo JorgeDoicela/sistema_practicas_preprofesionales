@@ -63,7 +63,7 @@ async function createConfiguredApp(): Promise<INestApplication> {
   app.use(helmet());
 
   /** Industrial Core: Estandarización de respuestas y errores */
-  app.useGlobalInterceptors(new TransformInterceptor());
+  // app.useGlobalInterceptors(new TransformInterceptor());
   app.useGlobalFilters(new HttpExceptionFilter());
   
   /** Resilience: Permitir que el servidor cierre conexiones limpiamente */

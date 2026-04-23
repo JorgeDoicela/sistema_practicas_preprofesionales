@@ -4,9 +4,11 @@ import Image from "next/image";
 import { Globe2, Building2, ShieldCheck } from "lucide-react";
 import { BRAND_LOGO_SRC } from "@/lib/brand";
 import { usePathname } from "next/navigation";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 export function Footer() {
     const pathname = usePathname();
+    const { t } = useLanguage();
 
     const hiddenRoutes = [
         "/login",
@@ -30,6 +32,15 @@ export function Footer() {
     });
 
     if (isHidden) return null;
+
+    const navLinks = [
+        { name: t.footer.links.about,     path: '/nosotros' },
+        { name: t.footer.links.services,  path: '/servicios' },
+        { name: t.footer.links.companies, path: '/empresas' },
+        { name: t.footer.links.privacy,   path: '/privacidad' },
+        { name: t.footer.links.support,   path: '#' },
+    ];
+
     return (
         <footer className="bg-slate-50 py-20 px-6 border-t border-slate-200">
             <div className="max-w-7xl mx-auto">
@@ -47,7 +58,7 @@ export function Footer() {
                             <span className="text-xs font-black uppercase tracking-[0.3em] text-brand-blue">Emitesis</span>
                         </div>
                         <p className="text-sm font-medium text-slate-500 max-w-sm leading-relaxed mb-8">
-                            Sistema de Gestión de Prácticas Preprofesionales del Instituto Superior Tecnológico &quot;Mayor Pedro Traversari&quot;. Innovación y Excelencia Académica.
+                            {t.footer.description}
                         </p>
                         <div className="flex gap-4">
                             {[Globe2, Building2, ShieldCheck].map((Icon, i) => (
@@ -58,15 +69,9 @@ export function Footer() {
                         </div>
                     </div>
                     <div>
-                        <p className="text-[10px] font-black text-brand-blue uppercase tracking-widest mb-8">Navegación</p>
+                        <p className="text-[10px] font-black text-brand-blue uppercase tracking-widest mb-8">{t.footer.navigation}</p>
                         <ul className="space-y-4">
-                            {[
-                                { name: 'Sobre Emitesis', path: '/nosotros' },
-                                { name: 'Servicios Académicos', path: '/servicios' },
-                                { name: 'Portal Empresas', path: '/empresas' },
-                                { name: 'Datos personales (LOPDP)', path: '/privacidad' },
-                                { name: 'Soporte Técnico', path: '#' }
-                            ].map(item => (
+                            {navLinks.map(item => (
                                 <li key={item.name}>
                                     <Link href={item.path} className="text-[11px] font-bold text-slate-400 hover:text-brand-blue uppercase transition-colors tracking-tighter">
                                         {item.name}
@@ -76,15 +81,15 @@ export function Footer() {
                         </ul>
                     </div>
                     <div>
-                        <p className="text-[10px] font-black text-brand-blue uppercase tracking-widest mb-8">Contacto</p>
+                        <p className="text-[10px] font-black text-brand-blue uppercase tracking-widest mb-8">{t.footer.contact}</p>
                         <div className="space-y-4">
                             <div>
-                                <p className="text-[9px] font-black text-brand-gold uppercase tracking-widest mb-1">Escríbenos</p>
+                                <p className="text-[9px] font-black text-brand-gold uppercase tracking-widest mb-1">{t.footer.writeUs}</p>
                                 <p className="text-sm font-bold text-brand-blue">vinculacion@istpet.edu.ec</p>
                             </div>
                             <div>
-                                <p className="text-[9px] font-black text-brand-gold uppercase tracking-widest mb-1">Ubicación</p>
-                                <p className="text-sm font-bold text-brand-blue">Quito, Ecuador - Sector Chillogallo</p>
+                                <p className="text-[9px] font-black text-brand-gold uppercase tracking-widest mb-1">{t.footer.location}</p>
+                                <p className="text-sm font-bold text-brand-blue">{t.footer.locationValue}</p>
                             </div>
                         </div>
                     </div>
@@ -92,14 +97,14 @@ export function Footer() {
 
                 <div className="pt-10 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-6">
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                        © 2026 ISTPET – Emitesis. Desarrollado por Cristhofer Steve Parreño Poma.
+                        {t.footer.copyright}
                     </p>
                     <div className="flex flex-wrap items-center justify-center gap-6">
                         <Link
                             href="/privacidad"
                             className="text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-brand-blue transition-colors"
                         >
-                            Privacidad
+                            {t.footer.privacyLink}
                         </Link>
                     </div>
                 </div>

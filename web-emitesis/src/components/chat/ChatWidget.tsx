@@ -5,90 +5,21 @@ import { MessageCircle, X, Send, ChevronLeft, Search, Users, Wifi, WifiOff, Tras
 import { useChat, type ChatMessage, type ChatRoom } from "@/providers/ChatProvider";
 import ChatPrivacyNotice from "./ChatPrivacyNotice";
 import { format, isToday, isYesterday, isSameDay } from "date-fns";
-import { es } from "date-fns/locale";
+import { es, enUS } from "date-fns/locale";
 import { API_URL } from "@/lib/api-base";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 const PRIVACY_NOTICE_KEY = "chat_privacy_notice_accepted";
 const DELETE_WINDOW_HOURS = 24;
 
-// ── Utilidades ──────────────────────────────────────────────────────────────
-
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Administrador",
-  COORDINADOR: "Coordinador",
-  TUTOR: "Tutor Académico",
-  TUTOR_EMPRESARIAL: "Tutor Empresarial",
-  ESTUDIANTE: "Estudiante",
-  EMPRESA: "Empresa",
-};
-
-const ROLE_COLORS: Record<string, string> = {
-  ADMIN: "bg-red-100 text-red-700",
-  COORDINADOR: "bg-blue-100 text-blue-700",
-  TUTOR: "bg-green-100 text-green-700",
-  TUTOR_EMPRESARIAL: "bg-orange-100 text-orange-700",
-  ESTUDIANTE: "bg-violet-100 text-violet-700",
-  EMPRESA: "bg-amber-100 text-amber-700",
-};
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map(w => w[0])
-    .join("")
-    .toUpperCase();
-}
-
-function formatMsgTime(date: string | Date) {
-  const d = new Date(date);
-  if (isToday(d)) return format(d, "HH:mm");
-  if (isYesterday(d)) return `Ayer ${format(d, "HH:mm")}`;
-  return format(d, "d MMM HH:mm", { locale: es });
-}
-
-function dateSeparatorLabel(date: Date) {
-  if (isToday(date)) return "Hoy";
-  if (isYesterday(date)) return "Ayer";
-  return format(date, "EEEE d 'de' MMMM", { locale: es });
-}
-
-// ── Sub-componentes ─────────────────────────────────────────────────────────
-
-function OnlineDot({ online }: { online: boolean }) {
-  return (
-    <span
-      className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${
-        online ? "bg-green-400" : "bg-slate-300"
-      }`}
-    />
-  );
-}
-
-function Avatar({
-  name,
-  size = "md",
-  online,
-}: {
-  name: string;
-  size?: "sm" | "md";
-  online?: boolean;
-}) {
-  const cls =
-    size === "sm"
-      ? "h-8 w-8 text-xs"
-      : "h-10 w-10 text-sm";
-  return (
-    <div className={`relative shrink-0 flex items-center justify-center rounded-full bg-[#003366] text-white font-semibold ${cls}`}>
-      {initials(name)}
-      {online !== undefined && <OnlineDot online={online} />}
-    </div>
-  );
-}
+const locales: Record<string, any> = { es, en: enUS };
 
 // ── Componente principal ────────────────────────────────────────────────────
 
 export default function ChatWidget() {
+  const { t, lang } = useLanguage();
+  const currentLocale = locales[lang] || es;
+
   const {
     connected,
     rooms,
@@ -123,6 +54,46 @@ export default function ChatWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  const ROLE_LABELS: Record<string, string> = {
+    ADMIN: t.sidebar.roles.ADMIN,
+    COORDINADOR: t.sidebar.roles.COORDINADOR,
+    TUTOR: t.sidebar.roles.TUTOR_ACADEMICO,
+    TUTOR_EMPRESARIAL: t.sidebar.roles.TUTOR_EMPRESARIAL,
+    ESTUDIANTE: t.sidebar.roles.ESTUDIANTE,
+    EMPRESA: t.sidebar.roles.EMPRESA,
+  };
+
+  const ROLE_COLORS: Record<string, string> = {
+    ADMIN: "bg-red-100 text-red-700",
+    COORDINADOR: "bg-blue-100 text-blue-700",
+    TUTOR: "bg-green-100 text-green-700",
+    TUTOR_EMPRESARIAL: "bg-orange-100 text-orange-700",
+    ESTUDIANTE: "bg-violet-100 text-violet-700",
+    EMPRESA: "bg-amber-100 text-amber-700",
+  };
+
+  const initials = (name: string) => {
+    return name
+      .split(" ")
+      .slice(0, 2)
+      .map(w => w[0])
+      .join("")
+      .toUpperCase();
+  };
+
+  const formatMsgTime = (date: string | Date) => {
+    const d = new Date(date);
+    if (isToday(d)) return format(d, "HH:mm");
+    if (isYesterday(d)) return `${t.chat.yesterday} ${format(d, "HH:mm")}`;
+    return format(d, "d MMM HH:mm", { locale: currentLocale });
+  };
+
+  const dateSeparatorLabel = (date: Date) => {
+    if (isToday(date)) return t.chat.today;
+    if (isYesterday(date)) return t.chat.yesterday;
+    return format(date, "EEEE d 'de' MMMM", { locale: currentLocale });
+  };
+
   useEffect(() => {
     try {
       const u = JSON.parse(localStorage.getItem("user") ?? "{}");
@@ -136,7 +107,10 @@ export default function ChatWidget() {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then(r => r.ok ? r.json() : null)
-        .then(data => { if (data?.value) setRetentionDays(parseInt(data.value, 10) || 730); })
+        .then(res => {
+          const val = (res && typeof res === 'object' && 'success' in res) ? res.data?.value : res?.value;
+          if (val) setRetentionDays(parseInt(val, 10) || 730);
+        })
         .catch(() => {});
     }
   }, []);
@@ -162,7 +136,7 @@ export default function ChatWidget() {
     if (view === "chat") inputRef.current?.focus();
   }, [view]);
 
-  if (!myId) return null;
+  // ── Helpers ──
 
   const activeRoom = rooms.find(r => r.id === activeRoomId);
   const otherMember = activeRoom?.members.find(m => m.id !== myId);
@@ -173,7 +147,7 @@ export default function ChatWidget() {
     .filter(id => id !== myId)
     .map(id => {
       const member = activeRoom?.members.find(m => m.id === id);
-      return member?.fullName.split(" ")[0] ?? "Alguien";
+      return member?.fullName.split(" ")[0] ?? t.chat.someone;
     });
 
   const filteredContacts = contacts.filter(
@@ -204,23 +178,15 @@ export default function ChatWidget() {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.ok && activeRoomId) {
-        // Recargar historial para reflejar el borrado
-        const token2 = localStorage.getItem("token");
-        if (token2) {
-          const hist = await fetch(`${API_URL}/chat/rooms/${activeRoomId}/messages`, {
-            headers: { Authorization: `Bearer ${token2}` },
-          });
-          if (hist.ok) {
-            const data = await hist.json();
-            // Propagar al contexto mediante openRoomById (recarga historial)
-            openRoomById(activeRoomId);
-          }
-        }
+      const json = await res.json();
+      const isSuccess = (json && typeof json === 'object' && 'success' in json) ? json.success : res.ok;
+      
+      if (isSuccess && activeRoomId) {
+        openRoomById(activeRoomId);
       }
     } catch {}
     setDeletingMsgId(null);
-  }, [refreshRooms]);
+  }, [activeRoomId, openRoomById]);
 
   const handleSend = useCallback(() => {
     const text = input.trim();
@@ -278,6 +244,8 @@ export default function ChatWidget() {
     return acc;
   }, []);
 
+  if (!myId) return null;
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -286,7 +254,7 @@ export default function ChatWidget() {
       <button
         onClick={() => setOpen(o => !o)}
         className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#003366] shadow-xl hover:bg-[#004080] transition-all active:scale-95"
-        aria-label="Chat"
+        aria-label={t.chat.floatingLabel}
       >
         {open ? (
           <X className="h-5 w-5 text-white" />
@@ -330,7 +298,7 @@ export default function ChatWidget() {
                     {otherMember.fullName}
                   </p>
                   <p className={`text-[10px] ${isOtherOnline ? "text-green-300" : "text-white/50"}`}>
-                    {isOtherOnline ? "En línea" : "Desconectado"}
+                    {isOtherOnline ? t.chat.online : t.chat.offline}
                   </p>
                 </div>
               </button>
@@ -338,14 +306,13 @@ export default function ChatWidget() {
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-4 w-4 text-white/80" />
                 <span className="text-sm font-semibold text-white">
-                  {view === "contacts" ? "Nueva conversación" : "Mensajes"}
+                  {view === "contacts" ? t.chat.newConversation : t.chat.messages}
                 </span>
               </div>
             )}
 
             <div className="flex items-center gap-2">
-              {/* Indicador de conexión */}
-              <span title={connected ? "Conectado" : "Sin conexión"}>
+              <span title={connected ? t.chat.connected : t.chat.disconnected}>
                 {connected ? (
                   <Wifi className="h-3.5 w-3.5 text-green-300" />
                 ) : (
@@ -359,15 +326,15 @@ export default function ChatWidget() {
                   className="rounded-full bg-white/10 px-2.5 py-1 text-xs text-white hover:bg-white/20 transition-colors flex items-center gap-1"
                 >
                   {view === "contacts" ? (
-                    <><ChevronLeft className="h-3 w-3" /> Chats</>
+                    <><ChevronLeft className="h-3 w-3" /> {t.chat.chats}</>
                   ) : (
-                    <><Users className="h-3 w-3" /> Nuevo</>
+                    <><Users className="h-3 w-3" /> {t.chat.new}</>
                   )}
                 </button>
               )}
               <button
                 onClick={() => setShowPrivacyNotice(true)}
-                title="Aviso de privacidad LOPDP"
+                title={t.nav.privacyLink}
                 className="text-[#C5A059] hover:text-white transition-colors"
               >
                 <ShieldCheck className="h-4 w-4" />
@@ -386,7 +353,7 @@ export default function ChatWidget() {
                 <input
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  placeholder={view === "contacts" ? "Buscar contacto..." : "Buscar conversación..."}
+                  placeholder={view === "contacts" ? t.chat.searchContactPlaceholder : t.chat.searchPlaceholder}
                   className="flex-1 bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400"
                 />
               </div>
@@ -402,18 +369,18 @@ export default function ChatWidget() {
                 {filteredRooms.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-3 px-6 text-center">
                     <MessageCircle className="h-10 w-10 text-slate-200" />
-                    <p className="text-sm font-medium text-slate-500">Sin conversaciones</p>
+                    <p className="text-sm font-medium text-slate-500">{t.chat.noRooms}</p>
                     <p className="text-xs text-slate-400">
                       {contacts.length > 0
-                        ? "Inicia una nueva conversación con un contacto."
-                        : "El administrador debe habilitar los permisos de chat."}
+                        ? t.chat.noRoomsSub
+                        : t.chat.noContactsSub}
                     </p>
                     {contacts.length > 0 && (
                       <button
                         onClick={() => setView("contacts")}
                         className="text-xs font-medium text-[#003366] underline underline-offset-2"
                       >
-                        Ver contactos disponibles
+                        {t.chat.viewContacts}
                       </button>
                     )}
                   </div>
@@ -427,7 +394,10 @@ export default function ChatWidget() {
                         onClick={() => handleSelectRoom(room.id)}
                         className="flex w-full items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100/80 last:border-0 text-left"
                       >
-                        <Avatar name={other?.fullName ?? "?"} online={isOnline} />
+                        <div className={`relative shrink-0 flex items-center justify-center h-10 w-10 text-sm rounded-full bg-[#003366] text-white font-semibold`}>
+                          {initials(other?.fullName ?? "?")}
+                          <span className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${isOnline ? "bg-green-400" : "bg-slate-300"}`} />
+                        </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-0.5">
                             <span className="text-sm font-medium text-slate-800 truncate">
@@ -442,8 +412,8 @@ export default function ChatWidget() {
                           <div className="flex items-center justify-between">
                             <p className="text-xs text-slate-500 truncate max-w-[170px]">
                               {room.lastMessage
-                                ? (room.lastMessage.senderId === myId ? "Tú: " : "") + room.lastMessage.content
-                                : <em className="not-italic text-slate-400">Sin mensajes</em>}
+                                ? (room.lastMessage.senderId === myId ? `${t.chat.you}: ` : "") + room.lastMessage.content
+                                : <em className="not-italic text-slate-400">{t.chat.emptyMessages}</em>}
                             </p>
                             {room.unreadCount > 0 && (
                               <span className="ml-1 flex h-4 min-w-[1rem] shrink-0 items-center justify-center rounded-full bg-[#C5A059] px-1 text-[10px] font-bold text-white">
@@ -465,14 +435,11 @@ export default function ChatWidget() {
                 {filteredContacts.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-2 px-6 text-center">
                     <Users className="h-10 w-10 text-slate-200" />
-                    <p className="text-sm font-medium text-slate-500">Sin contactos disponibles</p>
-                    <p className="text-xs text-slate-400">
-                      El administrador debe habilitar los permisos de chat entre tu rol y otros roles.
-                    </p>
+                    <p className="text-sm font-medium text-slate-500">{t.chat.noContacts}</p>
+                    <p className="text-xs text-slate-400">{t.chat.noContactsSub}</p>
                   </div>
                 ) : (
                   <>
-                    {/* Agrupar por context */}
                     {Array.from(
                       new Set(filteredContacts.map(c => c.context ?? ROLE_LABELS[c.role] ?? c.role)),
                     ).map(group => {
@@ -492,7 +459,10 @@ export default function ChatWidget() {
                                 onClick={() => handleOpenRoom(contact.id)}
                                 className="flex w-full items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100/80 last:border-0 text-left"
                               >
-                                <Avatar name={contact.fullName} size="sm" online={isOnline} />
+                                <div className={`relative shrink-0 flex items-center justify-center h-8 w-8 text-xs rounded-full bg-[#003366] text-white font-semibold`}>
+                                  {initials(contact.fullName)}
+                                  <span className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${isOnline ? "bg-green-400" : "bg-slate-300"}`} />
+                                </div>
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-medium text-slate-800 truncate">
                                     {contact.fullName}
@@ -502,7 +472,7 @@ export default function ChatWidget() {
                                       {ROLE_LABELS[contact.role] ?? contact.role}
                                     </span>
                                     {isOnline && (
-                                      <span className="text-[10px] text-green-500 font-medium">En línea</span>
+                                      <span className="text-[10px] text-green-500 font-medium">{t.chat.online}</span>
                                     )}
                                   </div>
                                 </div>
@@ -520,7 +490,6 @@ export default function ChatWidget() {
             {/* Vista de chat */}
             {view === "chat" && (
               <div className="flex flex-col h-full">
-                {/* Contexto / info de la sala */}
                 {otherMember && (
                   <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 border-b border-slate-100 shrink-0">
                     <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${ROLE_COLORS[otherMember.role] ?? "bg-slate-100 text-slate-600"}`}>
@@ -530,11 +499,10 @@ export default function ChatWidget() {
                   </div>
                 )}
 
-                {/* Mensajes */}
                 <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1 min-h-0">
                   {messagesWithSeparators.length === 0 && (
                     <div className="flex flex-col items-center justify-center h-full text-center gap-2">
-                      <p className="text-xs text-slate-400">Sé el primero en escribir</p>
+                      <p className="text-xs text-slate-400">{t.chat.writeFirst}</p>
                     </div>
                   )}
 
@@ -553,8 +521,8 @@ export default function ChatWidget() {
 
                     const msg = item as ChatMessage;
                     const isMe = msg.senderId === myId;
-                    const isDeleted = !!(msg as any).deletedAt || msg.content === "[Mensaje eliminado]";
-                    const isAnonymized = msg.content === "[Contenido eliminado — solicitud de privacidad LOPDP]";
+                    const isDeleted = !!(msg as any).deletedAt || msg.content === "[Mensaje eliminado]" || msg.content === t.chat.deleted;
+                    const isAnonymized = msg.content === t.chat.anonymized;
                     const hoursOld = (Date.now() - new Date(msg.createdAt).getTime()) / 3_600_000;
                     const canDelete = isMe && !isDeleted && !isAnonymized && hoursOld <= DELETE_WINDOW_HOURS;
 
@@ -565,7 +533,6 @@ export default function ChatWidget() {
                         onClick={e => e.stopPropagation()}
                       >
                         <div className="relative group flex items-end gap-1">
-                          {/* Menú de opciones (solo mensajes propios dentro de ventana) */}
                           {canDelete && (
                             <div className={`order-first shrink-0 ${isMe ? "order-last" : ""}`}>
                               <button
@@ -582,10 +549,10 @@ export default function ChatWidget() {
                                     className="flex w-full items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-50 transition-colors"
                                   >
                                     <Trash2 className="h-3.5 w-3.5" />
-                                    {deletingMsgId === msg.id ? "Eliminando..." : "Eliminar mensaje"}
+                                    {deletingMsgId === msg.id ? t.chat.deleting : t.chat.deleteMessage}
                                   </button>
                                   <p className="px-3 pb-1.5 text-[10px] text-slate-400">
-                                    Art. 22 LOPDP · ventana 24 h
+                                    Art. 22 LOPDP · 24h
                                   </p>
                                 </div>
                               )}
@@ -614,7 +581,6 @@ export default function ChatWidget() {
                     );
                   })}
 
-                  {/* Indicador de typing */}
                   {typingNames.length > 0 && (
                     <div className="flex items-start gap-1.5">
                       <div className="rounded-2xl rounded-bl-sm bg-slate-100 px-3 py-2 flex items-center gap-1">
@@ -623,7 +589,7 @@ export default function ChatWidget() {
                         <span className="h-1.5 w-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:300ms]" />
                       </div>
                       <span className="text-[10px] text-slate-400 self-end pb-0.5">
-                        {typingNames.join(", ")} {typingNames.length === 1 ? "escribe..." : "escriben..."}
+                        {typingNames.join(", ")} {typingNames.length === 1 ? t.chat.typingSingle : t.chat.typingPlural}
                       </span>
                     </div>
                   )}
@@ -643,7 +609,7 @@ export default function ChatWidget() {
                   value={input}
                   onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
-                  placeholder="Escribe un mensaje… (Enter para enviar)"
+                  placeholder={t.chat.inputPlaceholder}
                   rows={1}
                   className="flex-1 resize-none rounded-xl bg-slate-100 px-3 py-2 text-sm text-slate-800 outline-none placeholder:text-slate-400 max-h-24 overflow-y-auto leading-snug"
                   style={{ minHeight: 36 }}
@@ -659,16 +625,16 @@ export default function ChatWidget() {
               </div>
               <div className="flex items-center justify-between mt-1">
                 <span className="text-[10px] text-slate-400">
-                  Shift+Enter nueva línea
+                  {t.chat.shiftEnter}
                 </span>
                 <button
                   type="button"
                   onClick={() => setShowPrivacyNotice(true)}
                   className="flex items-center gap-0.5 text-[10px] text-slate-400 hover:text-[#C5A059] transition-colors"
-                  title="Los mensajes se conservan según la política de retención LOPDP"
+                  title="LOPDP Policy"
                 >
                   <ShieldCheck className="h-3 w-3" />
-                  <span>LOPDP · {retentionDays}d</span>
+                  <span>{t.chat.retention.replace('{days}', retentionDays.toString())}</span>
                 </button>
               </div>
             </div>

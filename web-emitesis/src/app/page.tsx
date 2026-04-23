@@ -13,6 +13,7 @@ import {
     Camera, Eye, MessageSquare, History, Mail, Radio, Stamp, FileText,
     AlertTriangle, KeyRound, BookOpen, Gauge, GitBranch, Activity
 } from "lucide-react";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 /* ── helpers ── */
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
@@ -23,6 +24,7 @@ const SectionLabel = ({ children }: { children: React.ReactNode }) => (
 );
 
 export default function Home() {
+    const { t } = useLanguage();
     return (
         <div className="min-h-screen bg-white text-slate-900 overflow-x-hidden">
 
@@ -43,7 +45,7 @@ export default function Home() {
                             className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white/80 text-[10px] font-semibold uppercase tracking-widest mb-10"
                         >
                             <Star className="w-3 h-3 fill-brand-gold text-brand-gold" />
-                            Plataforma Institucional ISTPET · EmiTesis
+                            {t.home.hero.badge}
                         </motion.div>
 
                         {/* headline */}
@@ -53,10 +55,10 @@ export default function Home() {
                             transition={{ delay: 0.1, duration: 0.7 }}
                             className="text-5xl sm:text-6xl xl:text-7xl font-black text-white leading-[1.05] tracking-tight mb-7"
                         >
-                            Gobernanza digital<br />
-                            de las{" "}
-                            <span className="text-brand-gold italic">Prácticas</span>{" "}
-                            Preprofesionales.
+                            {t.home.hero.title1}<br />
+                            {t.home.hero.title2}{" "}
+                            <span className="text-brand-gold italic">{t.home.hero.titleHighlight}</span>{" "}
+                            {t.home.hero.title3}
                         </motion.h1>
 
                         {/* sub */}
@@ -66,10 +68,9 @@ export default function Home() {
                             transition={{ delay: 0.2, duration: 0.7 }}
                             className="text-white/75 text-lg leading-relaxed mb-10 max-w-2xl"
                         >
-                            Sistema <span className="text-white font-semibold">Enterprise-grade</span> con{" "}
-                            <span className="text-brand-gold font-semibold">Nexo AI</span>, geofencing
-                            multi-sede, passkeys biométricas y firma electrónica SHA-256. Desde
-                            la asignación hasta el certificado QR verificable.
+                            {t.home.hero.subtitle
+                                .replace('{highlight1}', t.home.hero.subtitleHighlight1)
+                                .replace('{highlight2}', t.home.hero.subtitleHighlight2)}
                         </motion.p>
 
                         {/* CTAs */}
@@ -83,14 +84,14 @@ export default function Home() {
                                 href="/login"
                                 className="inline-flex items-center gap-2.5 bg-white text-brand-blue px-8 py-4 rounded-xl font-bold text-sm hover:bg-brand-gold hover:text-white transition-all shadow-xl group"
                             >
-                                Acceder al Sistema
+                                {t.home.hero.cta}
                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                             </Link>
                             <Link
                                 href="#modulos"
                                 className="inline-flex items-center gap-2 border border-white/30 text-white px-8 py-4 rounded-xl font-semibold text-sm hover:bg-white/10 transition-all"
                             >
-                                Explorar módulos
+                                {t.home.hero.ctaExplore}
                                 <ChevronRight className="w-4 h-4" />
                             </Link>
                         </motion.div>
@@ -103,10 +104,10 @@ export default function Home() {
                             className="grid grid-cols-2 sm:grid-cols-4 gap-3"
                         >
                             {[
-                                { value: "28+", label: "Módulos" },
-                                { value: "6",   label: "Roles RBAC" },
-                                { value: "2",   label: "Cron Jobs" },
-                                { value: "100%", label: "Trazabilidad" },
+                                { value: "28+", label: t.home.hero.kpis.modules },
+                                { value: "6",   label: t.home.hero.kpis.roles },
+                                { value: "2",   label: t.home.hero.kpis.cron },
+                                { value: "100%", label: t.home.hero.kpis.traceability },
                             ].map(k => (
                                 <div key={k.label} className="bg-white/8 backdrop-blur border border-white/15 rounded-2xl p-4">
                                     <p className="text-2xl sm:text-3xl font-black text-brand-gold leading-none break-words">{k.value}</p>
@@ -147,56 +148,29 @@ export default function Home() {
             <section className="py-24 px-6 lg:px-10 bg-slate-50">
                 <div className="max-w-7xl mx-auto">
                     <div className="max-w-2xl mb-16">
-                        <SectionLabel>Pilares del sistema</SectionLabel>
+                        <SectionLabel>{t.home.pillars.label}</SectionLabel>
                         <h2 className="text-2xl md:text-4xl font-black text-brand-blue leading-tight tracking-tight">
-                            Tres columnas que sostienen la integridad institucional
+                            {t.home.pillars.title}
                         </h2>
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-6">
-                        {[
-                            {
-                                num: "01",
-                                icon: <MapPin className="w-6 h-6" />,
-                                title: "Verificación Estricta",
-                                tag: "Geofencing · Biometría",
-                                desc: "Fórmula Haversine contra múltiples sedes (allowedLocations JSON), radio por sede, foto de entrada/salida y passkeys FIDO2 con userVerification obligatorio.",
-                                points: ["Haversine multi-sede", "Passkeys WebAuthn FIDO2", "Foto entrada / salida"],
-                                accent: "border-blue-500",
-                                iconBg: "bg-blue-500",
-                            },
-                            {
-                                num: "02",
-                                icon: <Workflow className="w-6 h-6" />,
-                                title: "Validación en Cascada",
-                                tag: "Nested Approvals · Versionado",
-                                desc: "7 estados documentales, versionado automático, hilos de feedback, anotaciones JSON y firma electrónica SHA-256 con sello ISTPET-SIG.",
-                                points: ["7 estados documentales", "Versionado + comentarios", "Sello SHA-256 ISTPET"],
-                                accent: "border-amber-500",
-                                iconBg: "bg-amber-500",
-                            },
-                            {
-                                num: "03",
-                                icon: <Brain className="w-6 h-6" />,
-                                title: "Observabilidad 360°",
-                                tag: "Nexo AI · GPT-4o",
-                                desc: "Copilot contextual, descripción de fotos por visión, pre-verificación OCR con cruce de nombre y horas, y risk assessment Bajo / Medio / Alto.",
-                                points: ["GPT-4o Vision + OCR", "Risk scoring predictivo", "Zero-Hallucination policy"],
-                                accent: "border-purple-500",
-                                iconBg: "bg-purple-500",
-                            },
-                        ].map((p, i) => (
+                        {t.home.pillars.items.map((p, i) => (
                             <motion.div
                                 key={i}
                                 initial={{ opacity: 0, y: 28 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.1 }}
                                 viewport={{ once: true }}
-                                className={`bg-white rounded-2xl border-t-4 ${p.accent} p-5 sm:p-8 shadow-sm hover:shadow-lg transition-shadow`}
+                                className={`bg-white rounded-2xl border-t-4 ${
+                                    i === 0 ? "border-blue-500" : i === 1 ? "border-amber-500" : "border-purple-500"
+                                } p-5 sm:p-8 shadow-sm hover:shadow-lg transition-shadow`}
                             >
                                 <div className="flex items-start justify-between mb-6">
-                                    <div className={`w-12 h-12 rounded-xl ${p.iconBg} text-white flex items-center justify-center`}>
-                                        {p.icon}
+                                    <div className={`w-12 h-12 rounded-xl ${
+                                        i === 0 ? "bg-blue-500" : i === 1 ? "bg-amber-500" : "bg-purple-500"
+                                    } text-white flex items-center justify-center`}>
+                                        {i === 0 ? <MapPin /> : i === 1 ? <Workflow /> : <Brain />}
                                     </div>
                                     <span className="text-5xl font-black text-slate-100 leading-none select-none">{p.num}</span>
                                 </div>
@@ -224,25 +198,20 @@ export default function Home() {
                     <div className="grid lg:grid-cols-2 gap-14 items-center">
                         {/* left */}
                         <div>
-                            <SectionLabel>Inteligencia Artificial</SectionLabel>
+                            <SectionLabel>{t.home.ai.label}</SectionLabel>
                             <h2 className="text-2xl md:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-5">
-                                Conoce a{" "}
-                                <span className="text-brand-gold italic">Nexo</span>,
-                                <br />el copiloto del ISTPET
+                                {t.home.ai.title1}{" "}
+                                <span className="text-brand-gold italic">{t.home.ai.titleHighlight}</span>,
+                                <br />{t.home.ai.title2}
                             </h2>
                             <p className="text-white/65 leading-relaxed mb-8 max-w-lg">
-                                Asistente <span className="text-white font-semibold">GPT-4o</span> con capacidad de visión y{" "}
-                                <span className="text-brand-gold font-semibold">Zero-Hallucination Policy</span>. Entiende
-                                el contexto del estudiante, lee documentos y predice el riesgo académico.
+                                {t.home.ai.subtitle
+                                    .replace('{gpt4o}', t.home.ai.gpt4o)
+                                    .replace('{zeroHallucination}', t.home.ai.zeroHallucination)}
                             </p>
 
                             <div className="space-y-3">
-                                {[
-                                    { icon: <Eye className="w-4 h-4" />, title: "GPT-4o Vision", desc: "Describe actividades desde fotos y extrae texto de la primera página del PDF." },
-                                    { icon: <FileCheck2 className="w-4 h-4" />, title: "Pre-verificación OCR", desc: "Cruza horas del documento contra las registradas en el sistema antes del envío." },
-                                    { icon: <Gauge className="w-4 h-4" />, title: "Risk Assessment", desc: "Health Score + progreso de horas → nivel Bajo / Medio / Alto para el coordinador." },
-                                    { icon: <MessageSquare className="w-4 h-4" />, title: "Copilot contextual", desc: "Resuelve dudas en español, sin salirse del alcance institucional del ISTPET." },
-                                ].map((item, i) => (
+                                {t.home.ai.features.map((item, i) => (
                                     <motion.div
                                         key={i}
                                         initial={{ opacity: 0, x: -16 }}
@@ -252,7 +221,7 @@ export default function Home() {
                                         className="flex gap-3 p-4 rounded-xl bg-white/6 border border-white/10 hover:bg-white/10 transition-colors group"
                                     >
                                         <div className="w-9 h-9 rounded-lg bg-brand-gold/20 text-brand-gold flex items-center justify-center flex-shrink-0 group-hover:bg-brand-gold group-hover:text-white transition-colors">
-                                            {item.icon}
+                                            {i === 0 ? <Eye /> : i === 1 ? <FileCheck2 /> : i === 2 ? <Gauge /> : <MessageSquare />}
                                         </div>
                                         <div>
                                             <p className="text-sm font-bold text-white mb-0.5">{item.title}</p>
@@ -277,11 +246,11 @@ export default function Home() {
                                     </div>
                                     <div>
                                         <p className="text-sm font-bold text-white">Nexo AI</p>
-                                        <p className="text-[10px] text-brand-gold font-semibold">gpt-4o · en línea</p>
+                                        <p className="text-[10px] text-brand-gold font-semibold">{t.home.ai.chatOnline}</p>
                                     </div>
                                     <div className="ml-auto flex items-center gap-1.5">
                                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                                        <span className="text-[10px] text-white/40">activo</span>
+                                        <span className="text-[10px] text-white/40">{t.home.ai.chatActive}</span>
                                     </div>
                                 </div>
 
@@ -290,7 +259,7 @@ export default function Home() {
                                     {/* user */}
                                     <div className="flex justify-end">
                                         <div className="max-w-[80%] bg-brand-blue px-4 py-3 rounded-2xl rounded-br-sm">
-                                            <p className="text-sm text-white/90">¿Por qué fue rechazado mi informe de actividades?</p>
+                                            <p className="text-sm text-white/90">{t.home.ai.chatQuestion}</p>
                                         </div>
                                     </div>
                                     {/* ai */}
@@ -300,11 +269,9 @@ export default function Home() {
                                         </div>
                                         <div className="max-w-[85%] bg-white/8 border border-white/10 px-4 py-3 rounded-2xl rounded-bl-sm">
                                             <p className="text-sm text-white/85 leading-relaxed">
-                                                Las horas reportadas en tu documento{" "}
-                                                <span className="font-bold text-amber-400">(142 h)</span> no coinciden
-                                                con las registradas en el sistema{" "}
-                                                <span className="font-bold text-emerald-400">(156 h)</span>. Corrige el
-                                                campo y vuelve a subirlo.
+                                                {t.home.ai.chatAnswer
+                                                    .replace('{reported}', '(142 h)')
+                                                    .replace('{system}', '(156 h)')}
                                             </p>
                                         </div>
                                     </div>
@@ -312,10 +279,9 @@ export default function Home() {
                                     <div className="flex items-start gap-2.5 bg-amber-500/10 border border-amber-500/25 rounded-xl p-3.5">
                                         <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                                         <div>
-                                            <p className="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-1">Risk Assessment · Nivel Medio</p>
+                                            <p className="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-1">{t.home.ai.riskTitle}</p>
                                             <p className="text-xs text-white/70 leading-relaxed">
-                                                Health Score 62/100 · 3 documentos pendientes. Se recomienda
-                                                seguimiento del coordinador esta semana.
+                                                {t.home.ai.riskDesc}
                                             </p>
                                         </div>
                                     </div>
@@ -324,7 +290,7 @@ export default function Home() {
                                 {/* input bar */}
                                 <div className="px-5 py-4 border-t border-white/8 flex items-center gap-3">
                                     <div className="flex-1 bg-white/8 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white/35">
-                                        Escribe tu pregunta…
+                                        {t.home.ai.chatPlaceholder}
                                     </div>
                                     <button className="w-9 h-9 rounded-xl bg-brand-gold flex items-center justify-center">
                                         <ArrowRight className="w-4 h-4 text-white" />
@@ -340,64 +306,15 @@ export default function Home() {
             <section id="roles" className="py-24 px-6 lg:px-10 bg-white">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center max-w-2xl mx-auto mb-16">
-                        <SectionLabel>Gobernanza RBAC</SectionLabel>
-                        <h2 className="text-2xl md:text-4xl font-black text-brand-blue tracking-tight">Seis portales, una plataforma</h2>
+                        <SectionLabel>{t.home.roles.label}</SectionLabel>
+                        <h2 className="text-2xl md:text-4xl font-black text-brand-blue tracking-tight">{t.home.roles.title}</h2>
                         <p className="text-slate-500 mt-3 text-sm leading-relaxed">
-                            Separación absoluta de responsabilidades. Cada rol accede solo a lo que le corresponde.
+                            {t.home.roles.subtitle}
                         </p>
                     </div>
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-                        {[
-                            {
-                                role: "Administrador",
-                                icon: <UserCog className="w-5 h-5" />,
-                                gradient: "from-purple-500 to-indigo-600",
-                                border: "border-t-purple-500",
-                                features: ["Analytics 24h", "ARCO Requests", "System Logs", "Hot Maintenance"],
-                                desc: "Orquestador total: usuarios, carreras, anuncios, salud del sistema y limpieza en caliente de archivos huérfanos.",
-                            },
-                            {
-                                role: "Coordinador de Prácticas",
-                                icon: <ShieldCheck className="w-5 h-5" />,
-                                gradient: "from-sky-600 to-blue-700",
-                                border: "border-t-sky-600",
-                                features: ["Asignación masiva", "Firma SHA-256", "Plantillas .docx", "Export Excel"],
-                                desc: "Aprobación definitiva con firma electrónica, convenios corporativos y emisión del certificado QR final.",
-                            },
-                            {
-                                role: "Tutor Académico",
-                                icon: <GraduationCap className="w-5 h-5" />,
-                                gradient: "from-teal-500 to-emerald-600",
-                                border: "border-t-teal-500",
-                                features: ["Anotaciones JSON", "Visitas monitoreo", "Feedback iterativo", "Evaluación académica"],
-                                desc: "Primera revisión con anotaciones PDF, visitas presenciales/virtuales y hilos de comentarios.",
-                            },
-                            {
-                                role: "Empresa (RRHH)",
-                                icon: <Building2 className="w-5 h-5" />,
-                                gradient: "from-orange-500 to-red-500",
-                                border: "border-t-orange-500",
-                                features: ["Perfil RUC", "Tutores empresariales", "Convenios activos", "Talento asignado"],
-                                desc: "Entidad legal del convenio. Gestiona tutores, perfil corporativo y acuerdos con fecha y estado.",
-                            },
-                            {
-                                role: "Tutor Empresarial",
-                                icon: <Briefcase className="w-5 h-5" />,
-                                gradient: "from-amber-500 to-yellow-500",
-                                border: "border-t-amber-500",
-                                features: ["Evaluación dual", "5 rúbricas", "Validación de horas", "Observaciones"],
-                                desc: "Evaluación empresarial sobre puntualidad, equipo, técnica, proactividad y actitud.",
-                            },
-                            {
-                                role: "Estudiante",
-                                icon: <Users className="w-5 h-5" />,
-                                gradient: "from-blue-500 to-cyan-600",
-                                border: "border-t-blue-500",
-                                features: ["Check-in GPS", "Photo activities", "Nexo AI", "Certificado QR"],
-                                desc: "Check-in Haversine multi-sede, fotos con descripción AI, passkeys biométricas y copiloto Nexo.",
-                            },
-                        ].map((a, i) => (
+                        {t.home.roles.items.map((a, i) => (
                             <motion.div
                                 key={i}
                                 initial={{ opacity: 0, y: 24 }}
@@ -405,11 +322,25 @@ export default function Home() {
                                 transition={{ delay: i * 0.07 }}
                                 viewport={{ once: true }}
                                 whileHover={{ y: -4 }}
-                                className={`bg-white border border-slate-100 border-t-4 ${a.border} rounded-2xl p-6 shadow-sm hover:shadow-md transition-all`}
+                                className={`bg-white border border-slate-100 border-t-4 ${
+                                    i === 0 ? "border-t-purple-500" :
+                                    i === 1 ? "border-t-sky-600" :
+                                    i === 2 ? "border-t-teal-500" :
+                                    i === 3 ? "border-t-orange-500" :
+                                    i === 4 ? "border-t-amber-500" :
+                                    "border-t-blue-500"
+                                } rounded-2xl p-6 shadow-sm hover:shadow-md transition-all`}
                             >
                                 <div className="flex items-center gap-3 mb-4">
-                                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${a.gradient} text-white flex items-center justify-center`}>
-                                        {a.icon}
+                                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${
+                                        i === 0 ? "from-purple-500 to-indigo-600" :
+                                        i === 1 ? "from-sky-600 to-blue-700" :
+                                        i === 2 ? "from-teal-500 to-emerald-600" :
+                                        i === 3 ? "from-orange-500 to-red-500" :
+                                        i === 4 ? "from-amber-500 to-yellow-500" :
+                                        "from-blue-500 to-cyan-600"
+                                    } text-white flex items-center justify-center`}>
+                                        {i === 0 ? <UserCog /> : i === 1 ? <ShieldCheck /> : i === 2 ? <GraduationCap /> : i === 3 ? <Building2 /> : i === 4 ? <Briefcase /> : <Users />}
                                     </div>
                                     <h3 className="font-black text-brand-blue text-base leading-tight">{a.role}</h3>
                                 </div>
@@ -432,12 +363,12 @@ export default function Home() {
             <section id="modulos" className="py-24 px-6 lg:px-10 bg-slate-50">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center max-w-2xl mx-auto mb-16">
-                        <SectionLabel>Ecosistema funcional</SectionLabel>
+                        <SectionLabel>{t.home.modules.label}</SectionLabel>
                         <h2 className="text-2xl md:text-4xl font-black text-brand-blue tracking-tight">
-                            Todo el ciclo de vida, en un solo lugar
+                            {t.home.modules.title}
                         </h2>
                         <p className="text-slate-500 mt-3 text-sm leading-relaxed">
-                            28 módulos NestJS interconectados — desde la autenticación hasta la certificación institucional.
+                            {t.home.modules.subtitle}
                         </p>
                     </div>
 
@@ -560,10 +491,10 @@ export default function Home() {
             <section className="py-24 px-6 lg:px-10 bg-slate-900">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center max-w-2xl mx-auto mb-16">
-                        <SectionLabel>Infraestructura técnica</SectionLabel>
-                        <h2 className="text-2xl md:text-4xl font-black text-white tracking-tight">Stack de grado empresarial</h2>
+                        <SectionLabel>{t.home.stack.label}</SectionLabel>
+                        <h2 className="text-2xl md:text-4xl font-black text-white tracking-tight">{t.home.stack.title}</h2>
                         <p className="text-white/50 mt-3 text-sm">
-                            Arquitectura <span className="text-brand-gold font-semibold">Hybrid Universal Bridge</span> con librerías especializadas de primer nivel.
+                            {t.home.stack.subtitle.replace('{highlight}', t.home.stack.highlight)}
                         </p>
                     </div>
 
@@ -625,16 +556,15 @@ export default function Home() {
                     <div className="grid lg:grid-cols-3 gap-14">
                         {/* sticky left */}
                         <div className="lg:sticky lg:top-24 lg:self-start">
-                            <SectionLabel>El flujo legal</SectionLabel>
+                            <SectionLabel>{t.home.flow.label}</SectionLabel>
                             <h2 className="text-2xl md:text-4xl font-black text-brand-blue tracking-tight leading-tight mb-5">
-                                Cómo funciona<br />en Ecuador
+                                {t.home.flow.title.split('en')[0]}<br />{t.home.flow.title.split('en')[1] ? 'en ' + t.home.flow.title.split('en')[1] : ''}
                             </h2>
                             <p className="text-slate-500 text-sm leading-relaxed mb-8">
-                                Proceso bajo normativa CES / SENESCYT, 100% digital, con firma
-                                electrónica institucional y trazabilidad ARCO LOPDP.
+                                {t.home.flow.subtitle}
                             </p>
                             <Link href="/servicios" className="inline-flex items-center gap-2 text-brand-gold font-bold text-sm group">
-                                Ver servicios académicos
+                                {t.home.flow.cta}
                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                             </Link>
                         </div>
@@ -645,15 +575,7 @@ export default function Home() {
                             <div className="absolute left-[17px] top-5 bottom-5 w-px bg-slate-200 hidden sm:block" />
 
                             <div className="space-y-4">
-                                {[
-                                    { title: "Convenio de Cooperación", desc: "Vinculación formal con la empresa (RUC único) y archivo digital versionado." },
-                                    { title: "Plan de Prácticas", desc: "Creación automática de 7-8 documentos obligatorios según config JSON de la carrera." },
-                                    { title: "Asignación y Geofencing", desc: "Tutor académico, tutor empresarial y allowedLocations multi-sede con radio propio." },
-                                    { title: "Ejecución con Evidencia", desc: "Check-in Haversine, fotos descritas por GPT-4o Vision y passkeys FIDO2." },
-                                    { title: "Validación en Cascada", desc: "Tutor revisa con anotaciones JSON; Coordinador firma con sello SHA-256 institucional." },
-                                    { title: "Evaluación Dual", desc: "5 rúbricas académica + empresarial consolidadas en calificación final." },
-                                    { title: "Certificación QR", desc: "Puppeteer + Handlebars genera PDF A4 landscape, subido al Blob y notificado por email." },
-                                ].map((step, i) => (
+                                {t.home.flow.steps.map((step, i) => (
                                     <motion.div
                                         key={i}
                                         initial={{ opacity: 0, x: 20 }}
@@ -686,26 +608,19 @@ export default function Home() {
                 <div className="max-w-7xl mx-auto">
                     <div className="grid lg:grid-cols-2 gap-14 items-center">
                         <div>
-                            <SectionLabel>Seguridad y cumplimiento</SectionLabel>
+                            <SectionLabel>{t.home.security.label}</SectionLabel>
                             <h2 className="text-2xl md:text-4xl font-black text-brand-blue tracking-tight mb-5">
-                                Privacidad por diseño,<br />auditoría por defecto
+                                {t.home.security.title.split(',')[0]},<br />{t.home.security.title.split(',')[1] || ''}
                             </h2>
                             <p className="text-slate-500 leading-relaxed mb-8 text-sm">
-                                EmiTesis cumple con la{" "}
-                                <span className="font-semibold text-brand-blue">LOPDP del Ecuador</span> a nivel
-                                estructural. Los derechos{" "}
-                                <span className="font-semibold">ARCO</span> están implementados como modelo
-                                Prisma <code className="text-xs bg-slate-200 px-1.5 py-0.5 rounded font-mono">DataRequest</code>{" "}
-                                y la portabilidad exporta el perfil completo en JSON.
+                                {t.home.security.subtitle
+                                    .replace('{law}', t.home.security.law)
+                                    .replace('{arco}', t.home.security.arco)
+                                    .replace('{model}', t.home.security.model)}
                             </p>
 
                             <div className="space-y-3">
-                                {[
-                                    { icon: <Lock />, title: "Consentimiento versionado", desc: "lopdpAccepted + lopdpVersion con timestamp; plataforma bloqueada sin aceptación expresa." },
-                                    { icon: <FileText />, title: "Derechos ARCO", desc: "Solicitudes de Acceso, Rectificación, Cancelación y Oposición con estado de seguimiento." },
-                                    { icon: <Database />, title: "Bitácora inmutable", desc: "SystemLog con índice desc, durationMs y metadata JSON; onDelete: SetNull preserva historia." },
-                                    { icon: <ShieldAlert />, title: "Defense in Depth", desc: "Helmet + Throttler 100/min + JWT + RolesGuard + WebAuthn + bloqueo por lockoutUntil." },
-                                ].map((item, i) => (
+                                {t.home.security.features.map((item, i) => (
                                     <motion.div
                                         key={i}
                                         initial={{ opacity: 0, x: -16 }}
@@ -715,7 +630,7 @@ export default function Home() {
                                         className="flex gap-4 p-4 bg-white rounded-xl border border-slate-100 hover:border-brand-blue/20 transition-colors"
                                     >
                                         <div className="w-10 h-10 rounded-xl bg-brand-blue/8 text-brand-blue flex items-center justify-center flex-shrink-0 [&>svg]:w-4 [&>svg]:h-4">
-                                            {item.icon}
+                                            {i === 0 ? <Lock /> : i === 1 ? <FileText /> : i === 2 ? <Database /> : <ShieldAlert />}
                                         </div>
                                         <div>
                                             <p className="font-bold text-slate-800 text-sm mb-0.5">{item.title}</p>
@@ -735,18 +650,12 @@ export default function Home() {
                             <div className="absolute top-0 right-0 w-48 h-48 bg-brand-gold/10 blur-3xl rounded-full" />
                             <div className="relative z-10">
                                 <ShieldCheck className="w-12 h-12 text-brand-gold mb-6" />
-                                <h3 className="text-2xl font-black mb-3">Zero-Trust Architecture</h3>
+                                <h3 className="text-2xl font-black mb-3">{t.home.security.zeroTrust}</h3>
                                 <p className="text-white/60 text-sm leading-relaxed mb-8">
-                                    Cada request se autentica con JWT, cada rol se valida con RolesGuard,
-                                    cada acción queda en SystemLog y las acciones críticas requieren biometría.
+                                    {t.home.security.zeroTrustDesc}
                                 </p>
                                 <div className="grid grid-cols-2 gap-3">
-                                    {[
-                                        { v: "6",       l: "Roles aislados" },
-                                        { v: "7",       l: "Estados doc." },
-                                        { v: "2",       l: "Cron jobs" },
-                                        { v: "100/min", l: "Rate limit" },
-                                    ].map(s => (
+                                    {t.home.security.kpis.map(s => (
                                         <div key={s.l} className="bg-white/6 border border-white/10 rounded-xl p-4">
                                             <p className="text-2xl font-black text-brand-gold">{s.v}</p>
                                             <p className="text-[10px] text-white/50 uppercase tracking-wider mt-1">{s.l}</p>
@@ -770,25 +679,24 @@ export default function Home() {
                     >
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white/70 text-[10px] font-semibold uppercase tracking-widest mb-8">
                             <Sparkles className="w-3 h-3 text-brand-gold" />
-                            Listo para usar
+                            {t.home.cta.badge}
                         </div>
                         <h2 className="text-2xl md:text-4xl lg:text-5xl font-black text-white tracking-tight mb-5">
-                            Únete al ecosistema EmiTesis
+                            {t.home.cta.title}
                         </h2>
                         <p className="text-white/60 mb-10 text-lg leading-relaxed">
-                            Accede con tu rol institucional y descubre cómo la IA, el geofencing
-                            y la firma electrónica redefinen las prácticas preprofesionales.
+                            {t.home.cta.subtitle}
                         </p>
                         <div className="flex flex-col sm:flex-row justify-center gap-4">
                             <Link href="/login" className="inline-flex items-center justify-center gap-2.5 bg-white text-brand-blue px-8 py-4 rounded-xl font-bold text-sm hover:bg-brand-gold hover:text-white transition-all shadow-xl group">
-                                Iniciar sesión
+                                {t.home.cta.login}
                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                             </Link>
                             <Link href="/empresas" className="inline-flex items-center justify-center gap-2 border border-brand-gold text-brand-gold px-8 py-4 rounded-xl font-bold text-sm hover:bg-brand-gold hover:text-white transition-all">
-                                Portal corporativo
+                                {t.home.cta.corporate}
                             </Link>
                             <Link href="/nosotros" className="inline-flex items-center justify-center gap-2 border border-white/25 text-white/80 px-8 py-4 rounded-xl font-semibold text-sm hover:bg-white/10 transition-all">
-                                Conoce el ISTPET
+                                {t.home.cta.about}
                             </Link>
                         </div>
                     </motion.div>

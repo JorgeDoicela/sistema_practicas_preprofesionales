@@ -31,6 +31,7 @@ import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import { AnalyticsOverview } from "./AnalyticsOverview";
 import { attendancesService } from "@/services/attendances.service";
 import { settingsService } from "@/services/settings.service";
+import { useLanguage } from "@/providers/LanguageProvider";
 import dynamic from "next/dynamic";
 
 // Importación dinámica de Leaflet para evitar errores de SSR
@@ -104,6 +105,7 @@ export function DashboardMain() {
   const [closedAnnouncements, setClosedAnnouncements] = useState<string[]>([]);
   const [careers, setCareers] = useState<any[]>([]);
   const [selectedCareerId, setSelectedCareerId] = useState<string>("");
+  const { t } = useLanguage();
   
   const [todayAttendance, setTodayAttendance] = useState<any>(null);
   const [attendanceSummary, setAttendanceSummary] = useState<{
@@ -235,30 +237,30 @@ export function DashboardMain() {
         return {
           cards: [
             {
-              title: "Pasantías activas",
+              title: t.stats.activeInternships,
               value: "0",
-              hint: "Sin asignaciones registradas",
+              hint: t.stats.noAssignment,
               icon: <Users className="w-6 h-6" />,
               color: "bg-blue-500",
             },
             {
-              title: "Convenios activos",
+              title: t.stats.activeAgreements,
               value: String(agrEmpty),
-              hint: "Convenios con estado Activo",
+              hint: t.stats.noAgreements,
               icon: <Building2 className="w-6 h-6" />,
               color: "bg-indigo-500",
             },
             {
-              title: "Horas planificadas",
+              title: t.stats.plannedHours,
               value: "0",
-              hint: "Suma de horas por asignación",
+              hint: t.stats.noHours,
               icon: <Clock className="w-6 h-6" />,
               color: "bg-amber-500",
             },
             {
-              title: "Documentación",
+              title: t.stats.documentation,
               value: "—",
-              hint: "Sin documentos en expedientes",
+              hint: t.stats.noDocs,
               icon: <CheckCircle2 className="w-6 h-6" />,
               color: "bg-emerald-500",
             },
@@ -280,30 +282,30 @@ export function DashboardMain() {
       return {
         cards: [
           {
-            title: "Pasantías activas",
+            title: t.stats.activeInternships,
             value: String(active),
-            hint: `${internships.length} totales en el sistema`,
+            hint: `${internships.length} ${t.common.search}`, // Usando algo similar o literal si falta
             icon: <Users className="w-6 h-6" />,
             color: "bg-blue-500",
           },
           {
-            title: "Convenios activos",
+            title: t.stats.activeAgreements,
             value: String(agr),
-            hint: "Convenios con estado Activo",
+            hint: t.stats.noAgreements,
             icon: <Building2 className="w-6 h-6" />,
             color: "bg-indigo-500",
           },
           {
-            title: "Horas cumplidas",
+            title: t.stats.completedHours,
             value: globalStats ? `${globalStats.totalCompletedHours}h` : "—",
-            hint: globalStats ? `De ${globalStats.totalPlannedHours}h planificadas` : "Suma de todas las horas",
+            hint: globalStats ? `${t.common.back} ${globalStats.totalPlannedHours}h ${t.dashboard.hours.required}` : "—",
             icon: <Clock className="w-6 h-6" />,
             color: "bg-amber-500",
           },
           {
-            title: "Docs. Pendientes",
+            title: t.stats.pendingDocs,
             value: globalStats ? String(globalStats.pendingDocs) : "—",
-            hint: "Esperando revisión de coordinación",
+            hint: t.stats.pendingCoord,
             icon: <FileCheck className="w-6 h-6" />,
             color: "bg-rose-500",
           },
@@ -316,30 +318,30 @@ export function DashboardMain() {
         return {
           cards: [
             {
-              title: "Mis prácticas",
+              title: t.stats.myPractices,
               value: "0",
-              hint: "Aún no tienes una asignación registrada",
+              hint: t.stats.noAssignment,
               icon: <GraduationCap className="w-6 h-6" />,
               color: "bg-blue-500",
             },
             {
-              title: "Horas del programa",
+              title: t.stats.programHours,
               value: "—",
-              hint: "Aparecerán cuando exista tu práctica",
+              hint: t.stats.noHours,
               icon: <Clock className="w-6 h-6" />,
               color: "bg-amber-500",
             },
             {
-              title: "Expediente",
+              title: t.dashboard.hours.records,
               value: "—",
-              hint: "Sin documentos que mostrar",
+              hint: t.stats.noDocs,
               icon: <FileStack className="w-6 h-6" />,
               color: "bg-emerald-500",
             },
             {
-              title: "Asistencia",
+              title: t.stats.attendance,
               value: "—",
-              hint: "Registra entrada desde el módulo de asistencia",
+              hint: t.stats.noAttendance,
               icon: <CheckCircle2 className="w-6 h-6" />,
               color: "bg-indigo-500",
             },
@@ -367,30 +369,30 @@ export function DashboardMain() {
       return {
         cards: [
           {
-            title: "Mis prácticas",
+            title: t.stats.myPractices,
             value: String(internships.length),
-            hint: internships.length ? "Asignaciones registradas" : "Sin asignación aún",
+            hint: internships.length ? t.stats.myPractices : t.stats.noAssignment,
             icon: <GraduationCap className="w-6 h-6" />,
             color: "bg-blue-500",
           },
           {
-            title: "Horas del programa",
+            title: t.stats.programHours,
             value: primary ? String(primary.totalHours ?? 0) : "—",
-            hint: primary?.company?.name ? `Empresa: ${primary.company.name}` : "Detalle de tu plan",
+            hint: primary?.company?.name ? `${t.dashboard.company}: ${primary.company.name}` : t.stats.noHours,
             icon: <Clock className="w-6 h-6" />,
             color: "bg-amber-500",
           },
           {
-            title: "Documentación",
+            title: t.stats.documentation,
             value: `${pct}%`,
-            hint: `${approved} documentos aprobados de ${total || 0}`,
+            hint: `${approved} ${t.common.approved} ${t.common.back} ${total || 0}`,
             icon: <FileStack className="w-6 h-6" />,
             color: "bg-emerald-500",
           },
           {
-            title: "Asistencia",
-            value: incomplete > 0 ? `${incomplete} Pend.` : "Al día",
-            hint: incomplete > 0 ? "Tienes marcados sin salida" : "Todos los registros cerrados",
+            title: t.stats.attendance,
+            value: incomplete > 0 ? `${incomplete} ${t.stats.pending}` : t.stats.upToDate,
+            hint: incomplete > 0 ? t.stats.openPending : t.stats.allClosed,
             icon: <CheckCircle2 className="w-6 h-6" />,
             color: incomplete > 0 ? "bg-rose-500" : "bg-indigo-500",
           },
@@ -403,30 +405,30 @@ export function DashboardMain() {
         return {
           cards: [
             {
-              title: "Pasantes a cargo",
+              title: t.stats.interns,
               value: "0",
-              hint: "No tienes asignaciones como tutor",
+              hint: t.stats.noInternships,
               icon: <Users className="w-6 h-6" />,
               color: "bg-blue-500",
             },
             {
-              title: "En tu revisión",
+              title: t.stats.inProgress,
               value: "0",
-              hint: "Documentos en revisión tutor",
+              hint: t.stats.noDocs,
               icon: <FileStack className="w-6 h-6" />,
               color: "bg-amber-500",
             },
             {
-              title: "Pend. coordinación",
+              title: t.stats.pendingCoord,
               value: "0",
-              hint: "Aprobados por tutor",
+              hint: t.common.approved,
               icon: <FileCheck className="w-6 h-6" />,
               color: "bg-indigo-500",
             },
             {
-              title: "Horas planificadas",
+              title: t.stats.plannedHours,
               value: "0",
-              hint: "Suma de horas de tus pasantías",
+              hint: t.stats.noHours,
               icon: <Clock className="w-6 h-6" />,
               color: "bg-emerald-500",
             },
@@ -451,30 +453,30 @@ export function DashboardMain() {
       return {
         cards: [
           {
-            title: "Pasantes a cargo",
+            title: t.stats.interns,
             value: String(internships.length),
-            hint: "Asignaciones donde eres tutor académico",
+            hint: t.stats.interns,
             icon: <Users className="w-6 h-6" />,
             color: "bg-blue-500",
           },
           {
-            title: "En tu revisión",
+            title: t.stats.inProgress,
             value: String(enRevision),
-            hint: "Documentos en estado En revisión tutor",
+            hint: t.stats.inProgress,
             icon: <FileStack className="w-6 h-6" />,
             color: "bg-amber-500",
           },
           {
-            title: "Pend. coordinación",
+            title: t.stats.pendingCoord,
             value: String(aprobadosTutor),
-            hint: "Aprobados por tutor (siguiente paso: coordinación)",
+            hint: t.stats.pendingCoord,
             icon: <FileCheck className="w-6 h-6" />,
             color: "bg-indigo-500",
           },
           {
-            title: "Horas planificadas",
-            value: hours.toLocaleString("es-EC"),
-            hint: `${pendientes} documentos en estado Pendiente (tus pasantes)`,
+            title: t.stats.plannedHours,
+            value: hours.toLocaleString(t.locale === 'es' ? 'es-EC' : 'en-US'),
+            hint: t.stats.pending,
             icon: <Clock className="w-6 h-6" />,
             color: "bg-emerald-500",
           },
@@ -492,13 +494,13 @@ export function DashboardMain() {
 
   const activityTitle =
     appRole === ROLES.ESTUDIANTE
-      ? "Mis últimos registros de asistencia"
-      : "Actividad reciente en el sistema";
+      ? t.dashboard.activityTitleStudent
+      : t.dashboard.activityTitle;
 
   const activityEmpty =
     appRole === ROLES.ESTUDIANTE
-      ? "Aún no hay registros de asistencia en tu práctica, o tu asignación no incluye historial."
-      : "No hay registros de asistencia recientes para mostrar.";
+      ? t.dashboard.activityEmptyStudent
+      : t.dashboard.activityEmpty;
 
   const verTodoHref =
     appRole === ROLES.ESTUDIANTE
@@ -513,19 +515,19 @@ export function DashboardMain() {
         <div>
           <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
             {appRole === ROLES.ESTUDIANTE
-              ? "Tu espacio"
+              ? t.dashboard.summaryStudent
               : appRole === ROLES.TUTOR_ACADEMICO
-                ? "Resumen académico"
-                : "Resumen institucional"}
+                ? t.dashboard.summaryTutor
+                : t.dashboard.summaryAdmin}
           </span>
           <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
-            Hola,{" "}
+            {t.dashboard.greeting}{" "}
             <span className="text-slate-400">
-              {user?.fullName?.split(" ")[0] || "Usuario"}
+              {user?.fullName?.split(" ")[0] || t.dashboard.defaultUser}
             </span>
           </h2>
           <p className="text-slate-500 font-medium mt-2">
-            Datos en vivo desde la plataforma de prácticas preprofesionales ISTPET.
+            {t.dashboard.liveData}
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
@@ -537,7 +539,7 @@ export function DashboardMain() {
                   onChange={(e) => setSelectedCareerId(e.target.value)}
                   className="pl-4 pr-10 py-2.5 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-xs font-black text-[#003366] uppercase tracking-widest appearance-none focus:outline-none focus:ring-2 focus:ring-[#C5A059]/20"
                 >
-                  <option value="">Toda la Institución</option>
+                  <option value="">{t.dashboard.allInstitution}</option>
                   {careers.map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
@@ -555,14 +557,14 @@ export function DashboardMain() {
                 ) : (
                   <FileDown className="w-4 h-4 text-[#C5A059]" />
                 )}
-                <span className="hidden sm:inline">Reporte Maestro</span>
+                <span className="hidden sm:inline">{t.dashboard.masterReport}</span>
               </button>
             </>
           )}
           <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
             <div className="px-4 py-2 bg-emerald-50 rounded-xl">
               <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
-                {loading ? "Sincronizando…" : error ? "Revisa la API" : "Datos actualizados"}
+                {loading ? t.dashboard.syncing : error ? t.dashboard.apiError : t.dashboard.dataOk}
               </span>
             </div>
           </div>
@@ -633,15 +635,15 @@ export function DashboardMain() {
                        <AlertCircle className="w-6 h-6" />
                     </div>
                     <div>
-                       <h4 className="text-rose-900 font-black uppercase text-xs tracking-widest">Documentos Rechazados</h4>
-                       <p className="text-rose-800/70 text-sm font-medium">Tienes observaciones en tu expediente que requieren corrección inmediata.</p>
+                       <h4 className="text-rose-900 font-black uppercase text-xs tracking-widest">{t.dashboard.alerts.rejectedDocs}</h4>
+                       <p className="text-rose-800/70 text-sm font-medium">{t.dashboard.alerts.rejectedDesc}</p>
                     </div>
                   </div>
                   <Link 
                     href="/dashboard/documentos"
                     className="px-6 py-3 bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all text-center sm:shrink-0"
                   >
-                    Ver Observaciones
+                    {t.dashboard.alerts.viewObservations}
                   </Link>
                 </motion.div>
               )}
@@ -657,15 +659,15 @@ export function DashboardMain() {
                        <Clock className="w-6 h-6" />
                     </div>
                     <div>
-                       <h4 className="text-amber-900 font-black uppercase text-xs tracking-widest">Asistencia Incompleta</h4>
-                       <p className="text-amber-800/70 text-sm font-medium">Parece que olvidaste registrar tu salida en algún día de esta semana.</p>
+                       <h4 className="text-amber-900 font-black uppercase text-xs tracking-widest">{t.dashboard.alerts.incompleteAttendance}</h4>
+                       <p className="text-amber-800/70 text-sm font-medium">{t.dashboard.alerts.incompleteDesc}</p>
                     </div>
                   </div>
                   <Link 
                     href="/dashboard/asistencia"
                     className="px-6 py-3 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all text-center sm:shrink-0"
                   >
-                    Cerrar Asistencia
+                    {t.dashboard.alerts.closeAttendance}
                   </Link>
                 </motion.div>
               )}
@@ -684,21 +686,21 @@ export function DashboardMain() {
                     <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
                       <Clock className="w-5 h-5" />
                     </div>
-                    <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">Asistencia Rápida</h3>
+                    <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">{t.dashboard.attendance.title}</h3>
                   </div>
                   <p className="text-sm text-slate-500 font-medium">
                     {todayAttendance?.checkIn 
                       ? todayAttendance.checkOut 
-                        ? "Has completado tu jornada de hoy. ¡Buen trabajo!"
-                        : "Tu jornada está activa. No olvides registrar tu salida al terminar."
-                      : "Registra tu entrada para iniciar el conteo de horas de hoy."}
+                        ? t.dashboard.attendance.checkInDone
+                        : t.dashboard.attendance.checkInActive
+                      : t.dashboard.attendance.checkInPending}
                   </p>
                   <div className="pt-4 flex flex-col sm:flex-row gap-3">
                     <Link 
                       href="/dashboard/asistencia"
                       className="px-8 py-4 bg-[#003366] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#003366]/90 transition-all text-center"
                     >
-                      {todayAttendance?.checkIn ? "Gestionar Salida" : "Registrar Entrada"}
+                      {todayAttendance?.checkIn ? t.dashboard.attendance.manageExit : t.dashboard.attendance.registerEntry}
                     </Link>
                   </div>
                 </div>
@@ -717,14 +719,14 @@ export function DashboardMain() {
                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-6">
                     <BarChart3 className="w-6 h-6 text-[#C5A059]" />
                  </div>
-                 <h4 className="text-xl font-black tracking-tight mb-2">Resumen de Horas</h4>
-                 <p className="text-sm text-white/60 font-medium mb-4">Progreso acumulado de horas de práctica.</p>
+                 <h4 className="text-xl font-black tracking-tight mb-2">{t.dashboard.hours.title}</h4>
+                 <p className="text-sm text-white/60 font-medium mb-4">{t.dashboard.hours.subtitle}</p>
                  {attendanceSummary ? (
                    <>
                      <div className="flex items-end gap-3 mb-4">
                        <span className="text-2xl md:text-4xl font-black text-[#C5A059]">{attendanceSummary.totalHours.toFixed(1)}</span>
                        <span className="text-xs font-bold text-white/40 uppercase mb-2">
-                         / {attendanceSummary.requiredHours} h requeridas
+                         / {attendanceSummary.requiredHours} h {t.dashboard.hours.required}
                        </span>
                      </div>
                      <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-2">
@@ -734,14 +736,14 @@ export function DashboardMain() {
                        />
                      </div>
                      <div className="flex justify-between text-[10px] font-bold text-white/40 uppercase tracking-widest">
-                       <span>{attendanceSummary.progressPercentage.toFixed(1)}% completado</span>
-                       <span>{attendanceSummary.remainingHours.toFixed(1)} h restantes</span>
+                       <span>{attendanceSummary.progressPercentage.toFixed(1)}% {t.dashboard.hours.completed}</span>
+                       <span>{attendanceSummary.remainingHours.toFixed(1)} h {t.dashboard.hours.remaining}</span>
                      </div>
                    </>
                  ) : (
                    <div className="flex items-end gap-3">
                      <span className="text-2xl md:text-4xl font-black text-[#C5A059]">{internships[0]?.attendances?.length || 0}</span>
-                     <span className="text-xs font-bold text-white/40 uppercase mb-2">Registros</span>
+                     <span className="text-xs font-bold text-white/40 uppercase mb-2">{t.dashboard.hours.records}</span>
                    </div>
                  )}
               </div>
@@ -758,14 +760,14 @@ export function DashboardMain() {
                   <div className="p-2.5 bg-brand-gold/10 text-brand-gold rounded-xl">
                     <PieChart className="w-5 h-5" />
                   </div>
-                  <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">Analíticas de Gestión Institucional</h3>
+                  <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">{t.dashboard.analytics.title}</h3>
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-12">
                   <div className="space-y-6">
                     <div>
                       <div className="flex justify-between mb-2 text-[10px] font-black uppercase tracking-widest">
-                        <span className="text-slate-400">Progreso de Documentación</span>
+                        <span className="text-slate-400">{t.dashboard.analytics.docsProgress}</span>
                         <span className="text-emerald-600">
                           {Math.round((globalStats.approvedDocs / (globalStats.approvedDocs + globalStats.pendingDocs || 1)) * 100)}%
                         </span>
@@ -777,11 +779,11 @@ export function DashboardMain() {
                           className="h-full bg-emerald-500 rounded-full"
                         />
                       </div>
-                      <p className="text-[9px] text-slate-400 mt-2 font-medium">Relación entre documentos con aprobación definitiva vs pendientes de revisión.</p>
+                      <p className="text-[9px] text-slate-400 mt-2 font-medium">{t.dashboard.analytics.docsHint}</p>
                     </div>
                     <div>
                       <div className="flex justify-between mb-2 text-[10px] font-black uppercase tracking-widest">
-                        <span className="text-slate-400">Cumplimiento de Horas</span>
+                        <span className="text-slate-400">{t.dashboard.analytics.hoursProgress}</span>
                         <span className="text-brand-blue">
                           {Math.round((globalStats.totalCompletedHours / (globalStats.totalPlannedHours || 1)) * 100)}%
                         </span>
@@ -793,7 +795,7 @@ export function DashboardMain() {
                           className="h-full bg-brand-blue rounded-full"
                         />
                       </div>
-                      <p className="text-[9px] text-slate-400 mt-2 font-medium">Horas registradas en asistencias frente al total de horas planificadas.</p>
+                      <p className="text-[9px] text-slate-400 mt-2 font-medium">{t.dashboard.analytics.hoursHint}</p>
                     </div>
                   </div>
 

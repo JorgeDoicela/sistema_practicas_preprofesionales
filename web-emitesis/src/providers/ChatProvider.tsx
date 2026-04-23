@@ -96,7 +96,12 @@ async function apiFetch<T>(path: string, token: string): Promise<T> {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error(`API ${res.status}`);
-  return res.json();
+  const json = await res.json();
+  // Si la respuesta viene envuelta por el TransformInterceptor del backend
+  if (json && typeof json === 'object' && 'success' in json && 'data' in json) {
+    return json.data as T;
+  }
+  return json as T;
 }
 
 // ── Provider ──────────────────────────────────────────────────────────────────

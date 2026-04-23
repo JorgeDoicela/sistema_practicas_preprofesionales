@@ -8,10 +8,13 @@ import { Menu, X } from "lucide-react";
 import { BRAND_LOGO_SRC } from "@/lib/brand";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { LanguageToggle } from "@/components/shared/LanguageToggle";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 export function Navbar() {
     const pathname = usePathname();
     const [mobileOpen, setMobileOpen] = useState(false);
+    const { t } = useLanguage();
 
     // Rutas donde NO debe aparecer el Navbar principal
     const hiddenRoutes = [
@@ -27,7 +30,6 @@ export function Navbar() {
         "/olvido-password"
     ];
 
-    // "/empresa" es el área autenticada; "/empresas" es página pública
     const isHidden = hiddenRoutes.some((route) => {
         if (!pathname) return false;
         if (route === "/empresa") {
@@ -39,11 +41,11 @@ export function Navbar() {
     if (isHidden) return null;
 
     const navLinks = [
-        { name: "Inicio", path: "/" },
-        { name: "Servicios", path: "/servicios" },
-        { name: "Empresas", path: "/empresas" },
-        { name: "Nosotros", path: "/nosotros" },
-        { name: "Privacidad", path: "/privacidad" },
+        { name: t.nav.links.home,      path: "/" },
+        { name: t.nav.links.services,  path: "/servicios" },
+        { name: t.nav.links.companies, path: "/empresas" },
+        { name: t.nav.links.about,     path: "/nosotros" },
+        { name: t.nav.links.privacy,   path: "/privacidad" },
     ];
 
     return (
@@ -65,8 +67,8 @@ export function Navbar() {
                             />
                         </motion.div>
                         <div className="border-l border-border pl-3">
-                            <span className="block text-[9px] font-black uppercase tracking-widest text-brand-blue/50 dark:text-sky-400/70 leading-none mb-1">Tecnológico Traversari - ISTPET</span>
-                            <span className="block text-sm font-black text-brand-blue dark:text-sky-300 leading-none">Emitesis</span>
+                            <span className="block text-[9px] font-black uppercase tracking-widest text-brand-blue/50 dark:text-sky-400/70 leading-none mb-1">{t.nav.brandSub}</span>
+                            <span className="block text-sm font-black text-brand-blue dark:text-sky-300 leading-none">{t.nav.brand}</span>
                         </div>
                     </Link>
 
@@ -76,7 +78,7 @@ export function Navbar() {
                             const isActive = pathname === item.path;
                             return (
                                 <Link
-                                    key={item.name}
+                                    key={item.path}
                                     href={item.path}
                                     className={`text-[10px] font-black uppercase tracking-widest transition-all relative group ${
                                         isActive ? "text-brand-blue dark:text-sky-400" : "text-slate-500 dark:text-slate-400 hover:text-brand-blue dark:hover:text-sky-300"
@@ -95,13 +97,14 @@ export function Navbar() {
                     </div>
 
                     {/* Right side */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                        <LanguageToggle />
                         <ThemeToggle />
                         <Link
                             href="/login"
-                            className="bg-brand-blue text-white px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest shadow-xl shadow-blue-900/20 hover:bg-brand-gold hover:scale-105 transition-all focus:outline-none"
+                            className="hidden md:inline-flex bg-brand-blue text-white px-5 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest shadow-xl shadow-blue-900/20 hover:bg-brand-gold hover:scale-105 transition-all focus:outline-none"
                         >
-                            Acceder
+                            {t.nav.login}
                         </Link>
                         {/* Mobile hamburger */}
                         <button
@@ -141,7 +144,7 @@ export function Navbar() {
                                         const isActive = pathname === item.path;
                                         return (
                                             <Link
-                                                key={item.name}
+                                                key={item.path}
                                                 href={item.path}
                                                 onClick={() => setMobileOpen(false)}
                                                 className={`flex items-center justify-between px-5 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${
@@ -157,16 +160,20 @@ export function Navbar() {
                                     })}
                                 </nav>
                                 <div className="px-4 pb-4 flex flex-col gap-2">
+                                    {/* Controles de tema e idioma en móvil */}
                                     <div className="flex items-center justify-between px-1 pb-1">
-                                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Tema</span>
-                                        <ThemeToggle />
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t.nav.theme} / {t.nav.language}</span>
+                                        <div className="flex items-center gap-2">
+                                            <LanguageToggle />
+                                            <ThemeToggle />
+                                        </div>
                                     </div>
                                     <Link
                                         href="/login"
                                         onClick={() => setMobileOpen(false)}
                                         className="block w-full text-center bg-brand-blue text-white py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-brand-gold transition-all"
                                     >
-                                        Acceder al Sistema
+                                        {t.nav.loginFull}
                                     </Link>
                                 </div>
                             </div>

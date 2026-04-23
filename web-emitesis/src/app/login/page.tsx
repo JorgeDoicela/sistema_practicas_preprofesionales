@@ -11,6 +11,9 @@ import { authService } from "@/services/auth.service";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { sanitizeEmailClient, sanitizePasswordClient } from "@/utils/security";
 import { ROLE_REDIRECTS, Role, normalizeApiRoleToAppRole } from "@/constants/roles";
+import { useLanguage } from "@/providers/LanguageProvider";
+import { LanguageToggle } from "@/components/shared/LanguageToggle";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -23,6 +26,7 @@ export default function LoginPage() {
     const [isMfaRequired, setIsMfaRequired] = useState(false);
     const [mfaCode, setMfaCode] = useState("");
     const [mfaUserId, setMfaUserId] = useState<string | null>(null);
+    const { t } = useLanguage();
 
     const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
     const isDev = process.env.NODE_ENV === "development";
@@ -119,20 +123,20 @@ export default function LoginPage() {
                 <div className="relative z-10 flex flex-1 flex-col justify-between p-5 sm:p-8 pb-8 sm:pb-10 pt-10 sm:pt-12 xl:p-12 xl:pb-12 xl:pt-16">
                     <div className="max-w-md">
                         <h2 className="mb-4 text-2xl md:text-3xl xl:text-4xl font-black leading-tight tracking-tight text-white">
-                            Bienvenido al<br />
-                            <span className="italic text-brand-gold">ecosistema EmiTesis</span>
+                            {t.home.hero.title1}<br />
+                            <span className="italic text-brand-gold">{t.home.hero.badge}</span>
                         </h2>
                         <p className="max-w-sm text-sm leading-relaxed text-white/60">
-                            Gestión integral de prácticas preprofesionales con IA, geofencing y certificación verificable.
+                            {t.home.hero.subtitle.replace('{highlight1}', t.home.hero.subtitleHighlight1).replace('{highlight2}', t.home.hero.subtitleHighlight2)}
                         </p>
                     </div>
 
                     <div className="max-w-md space-y-8 pt-10">
                         <div className="space-y-3">
                             {[
-                                { icon: <MapPin className="h-4 w-4" />, label: "Asistencia con Geofencing Haversine" },
-                                { icon: <Brain className="h-4 w-4" />, label: "Nexo AI · GPT-4o" },
-                                { icon: <Fingerprint className="h-4 w-4" />, label: "Passkeys WebAuthn FIDO2" },
+                                { icon: <MapPin className="h-4 w-4" />, label: t.home.pillars.items[0].tag },
+                                { icon: <Brain className="h-4 w-4" />, label: t.home.ai.label },
+                                { icon: <Fingerprint className="h-4 w-4" />, label: t.home.pillars.items[0].tag.split(' · ')[1] },
                             ].map((f) => (
                                 <div key={f.label} className="flex items-center gap-3 text-sm text-white/70">
                                     <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.08] text-brand-gold">
@@ -144,9 +148,9 @@ export default function LoginPage() {
                         </div>
 
                         <p className="max-w-sm border-t border-white/8 pt-4 text-[11px] leading-relaxed text-white/40">
-                            Al ingresar acepta la{" "}
+                            {t.login.privacy}{" "}
                             <Link href="/privacidad" className="text-brand-gold/70 underline-offset-2 transition-colors hover:text-brand-gold hover:underline">
-                                política de privacidad LOPDP
+                                {t.login.privacyLink}
                             </Link>
                         </p>
                     </div>
@@ -157,17 +161,24 @@ export default function LoginPage() {
             <div className="relative flex min-h-screen flex-col bg-slate-50">
                 <header className="flex items-center justify-between px-6 py-4 xl:px-12 xl:py-5 lg:hidden">
                     <div className="lg:hidden">{brandTopOnWhite}</div>
-                    <Link href="/" className="text-xs font-semibold text-slate-500 transition-colors hover:text-brand-blue">
-                        ← Volver al inicio
-                    </Link>
+                    <div className="flex items-center gap-4">
+                        <LanguageToggle />
+                        <Link href="/" className="text-xs font-semibold text-slate-500 transition-colors hover:text-brand-blue">
+                            ← {t.common.back}
+                        </Link>
+                    </div>
                 </header>
 
-                <Link
-                    href="/"
-                    className="absolute right-8 top-6 hidden text-xs font-semibold text-slate-500 transition-colors hover:text-brand-blue xl:right-12 xl:top-8 lg:block"
-                >
-                    ← Volver al inicio
-                </Link>
+                <div className="absolute right-8 top-6 hidden items-center gap-4 lg:flex xl:right-12 xl:top-8">
+                    <LanguageToggle />
+                    <ThemeToggle />
+                    <Link
+                        href="/"
+                        className="text-xs font-semibold text-slate-500 transition-colors hover:text-brand-blue"
+                    >
+                        ← {t.common.back}
+                    </Link>
+                </div>
 
                 <div className="flex flex-1 items-center justify-center p-6 py-12 lg:py-16">
                     <motion.div
@@ -179,20 +190,20 @@ export default function LoginPage() {
                         {!isMfaRequired ? (
                             <>
                                 <div className="mb-8">
-                                    <h1 className="text-2xl sm:text-3xl font-black text-brand-blue tracking-tight mb-2">Iniciar sesión</h1>
-                                    <p className="text-slate-500 text-sm">Ingresa tus credenciales institucionales ISTPET.</p>
+                                    <h1 className="text-2xl sm:text-3xl font-black text-brand-blue tracking-tight mb-2">{t.login.title}</h1>
+                                    <p className="text-slate-500 text-sm">{t.login.subtitle}</p>
                                 </div>
 
                                 <form onSubmit={handleSubmit} className="space-y-5">
                                     {/* email */}
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-slate-600 block">Correo institucional</label>
+                                        <label className="text-xs font-bold text-slate-600 block">{t.login.email}</label>
                                         <div className="relative">
                                             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                             <input
                                                 type="email" required value={email}
                                                 onChange={e => setEmail(e.target.value)}
-                                                placeholder="correo@istpet.edu.ec"
+                                                placeholder={t.login.emailPlaceholder}
                                                 className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue outline-none transition-all placeholder:text-slate-300"
                                             />
                                         </div>
@@ -201,9 +212,9 @@ export default function LoginPage() {
                                     {/* password */}
                                     <div className="space-y-1.5">
                                         <div className="flex items-center justify-between">
-                                            <label className="text-xs font-bold text-slate-600">Contraseña</label>
+                                            <label className="text-xs font-bold text-slate-600">{t.login.password}</label>
                                             <Link href="/olvido-password" className="text-xs font-semibold text-brand-gold hover:text-brand-blue transition-colors">
-                                                ¿Olvidaste tu contraseña?
+                                                {t.login.forgotPassword}
                                             </Link>
                                         </div>
                                         <div className="relative">
@@ -211,7 +222,7 @@ export default function LoginPage() {
                                             <input
                                                 type={showPassword ? "text" : "password"} required value={password}
                                                 onChange={e => setPassword(e.target.value)}
-                                                placeholder="••••••••"
+                                                placeholder={t.login.passwordPlaceholder}
                                                 className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-11 pr-11 text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue outline-none transition-all placeholder:text-slate-300"
                                             />
                                             <button
@@ -254,9 +265,9 @@ export default function LoginPage() {
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                                                 </svg>
-                                                Validando…
+                                                {t.login.submitting}
                                             </span>
-                                        ) : "Entrar al Sistema"}
+                                        ) : t.login.submit}
                                     </button>
                                 </form>
                             </>
@@ -304,7 +315,7 @@ export default function LoginPage() {
                                         onClick={() => setIsMfaRequired(false)}
                                         className="w-full text-xs font-semibold text-slate-400 hover:text-brand-blue transition-colors py-2"
                                     >
-                                        ← Volver al inicio de sesión
+                                        ← {t.login.backToLogin}
                                     </button>
                                 </form>
                             </>
@@ -312,7 +323,7 @@ export default function LoginPage() {
 
                         <p className="text-center text-xs text-slate-400 mt-8">
                             <Link href="/privacidad" className="hover:text-brand-blue transition-colors hover:underline underline-offset-2">
-                                Aviso de privacidad (LOPDP)
+                                {t.login.privacyLink}
                             </Link>
                         </p>
                     </motion.div>

@@ -6,6 +6,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { User as UserType } from "@/types/user";
 import { Search, User, ShieldCheck, ChevronDown, LogOut, Menu } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
+import { useLanguage } from "@/providers/LanguageProvider";
+import { LanguageToggle } from "@/components/shared/LanguageToggle";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
 export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
   const [user, setUser] = useState<UserType | null>(null);
@@ -13,6 +16,7 @@ export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
 
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
@@ -42,7 +46,7 @@ export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
           <button
             onClick={onMenuToggle}
             className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-all"
-            aria-label="Abrir menú"
+            aria-label={t.sidebar.menu.dashboard}
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -54,22 +58,27 @@ export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
             </div>
             <input
               type="text"
-              placeholder="Buscar en el portal..."
+              placeholder={t.common.search + "..."}
               className="bg-slate-100 hover:bg-slate-200/50 border-none rounded-2xl py-2.5 pl-12 pr-6 text-xs font-semibold focus:ring-2 focus:ring-[#003366]/10 w-56 lg:w-80 transition-all outline-none"
             />
           </div>
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-3 md:gap-6">
+        <div className="flex items-center gap-3 md:gap-4">
           
+          <div className="flex items-center gap-2">
+            <LanguageToggle />
+            <ThemeToggle />
+          </div>
+
           <NotificationBell />
 
           {/* User Profile */}
           <div className="flex items-center gap-2 md:gap-4 pl-3 md:pl-6 border-l border-slate-100 relative">
             <div className="text-right hidden sm:block">
               <p className="text-[11px] font-black text-[#003366] uppercase tracking-wider mb-0.5">
-                {user?.fullName || "Usuario ISTPET"}
+                {user?.fullName || t.dashboard.defaultUser}
               </p>
               <div className="flex items-center gap-1.5 justify-end">
                 <ShieldCheck className="w-3 h-3 text-[#C5A059]" />
@@ -105,7 +114,7 @@ export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
                     className="absolute right-0 top-full mt-4 w-60 bg-white rounded-[2rem] shadow-2xl border border-slate-100 z-20 overflow-hidden"
                   >
                     <div className="p-6 border-b border-slate-50">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Cuenta</p>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.sidebar.account}</p>
                       <p className="text-xs font-bold text-[#003366] truncate">{user?.email || "usuario@istpet.edu.ec"}</p>
                     </div>
                     <div className="p-2">
@@ -113,7 +122,7 @@ export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
                           <div className="p-2 bg-slate-100 text-slate-500 rounded-xl group-hover:bg-[#003366]/5 group-hover:text-[#003366] transition-colors">
                             <User className="w-4 h-4" />
                           </div>
-                          <span className="text-[11px] font-black text-slate-600 uppercase tracking-wider">Mi Perfil</span>
+                          <span className="text-[11px] font-black text-slate-600 uppercase tracking-wider">{t.sidebar.myProfile}</span>
                        </button>
                        <button 
                          onClick={handleLogout}
@@ -122,7 +131,7 @@ export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
                           <div className="p-2 bg-red-50 text-red-500 rounded-xl group-hover:bg-red-100 transition-colors">
                             <LogOut className="w-4 h-4" />
                           </div>
-                          <span className="text-[11px] font-black text-red-600 uppercase tracking-wider">Cerrar Sesión</span>
+                          <span className="text-[11px] font-black text-red-600 uppercase tracking-wider">{t.sidebar.logout}</span>
                        </button>
                     </div>
                   </motion.div>

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { ShieldCheck, ExternalLink, X } from "lucide-react";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface Props {
   retentionDays?: number;
@@ -17,13 +18,15 @@ interface Props {
  * Protección de Datos Personales (LOPDP) de Ecuador.
  */
 export default function ChatPrivacyNotice({ retentionDays = 730, onAccept, onClose }: Props) {
+  const { t } = useLanguage();
+
   return (
     <div className="absolute inset-0 z-10 flex flex-col rounded-2xl bg-white overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between bg-[#003366] px-4 py-3 shrink-0">
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-4 w-4 text-[#C5A059]" />
-          <span className="text-sm font-semibold text-white">Aviso de Privacidad</span>
+          <span className="text-sm font-semibold text-white">{t.chatNotice.title}</span>
         </div>
         <button onClick={onClose} className="text-white/60 hover:text-white transition-colors">
           <X className="h-4 w-4" />
@@ -33,81 +36,66 @@ export default function ChatPrivacyNotice({ retentionDays = 730, onAccept, onClo
       {/* Contenido */}
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 text-sm text-slate-700">
         <p className="font-medium text-[#003366]">
-          Antes de usar el chat, te informamos cómo tratamos tus mensajes.
+          {t.chatNotice.intro}
         </p>
 
         <section className="space-y-1.5">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Responsable del tratamiento
+            {t.chatNotice.controller}
           </h3>
           <p>
-            Instituto Superior Tecnológico "Mayor Pedro Traversari" (ISTPET), conforme a la
-            <strong> Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP)</strong>.
+            {t.chatNotice.controllerDesc}
           </p>
         </section>
 
         <section className="space-y-1.5">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Datos que se tratan
+            {t.chatNotice.dataTreated}
           </h3>
           <ul className="list-disc list-inside space-y-1 text-slate-600">
-            <li>Contenido de tus mensajes</li>
-            <li>Fecha y hora de envío</li>
-            <li>Confirmación de lectura</li>
-            <li>Identificador de la sala de conversación</li>
+            {t.chatNotice.dataItems.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
           </ul>
         </section>
 
         <section className="space-y-1.5">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Finalidad y base legal (Art. 7 LOPDP)
+            {t.chatNotice.purpose}
           </h3>
           <p className="text-slate-600">
-            Facilitar la comunicación institucional en el seguimiento de prácticas
-            preprofesionales. Base legal: <em>interés legítimo institucional</em> y
-            consentimiento previo (política de privacidad ya aceptada).
+            {t.chatNotice.purposeDesc}
           </p>
         </section>
 
         <section className="space-y-1.5">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Retención de datos (Art. 16 LOPDP)
+            {t.chatNotice.retention}
           </h3>
           <p className="text-slate-600">
-            Los mensajes se conservan durante{" "}
-            <strong>{retentionDays} días ({Math.round(retentionDays / 365)} año
-            {retentionDays / 365 !== 1 ? "s" : ""})</strong> y se eliminan automáticamente
-            al finalizar ese período.
+            {t.chatNotice.retentionDesc
+              .replace("{days}", retentionDays.toString())
+              .replace("{years}", Math.round(retentionDays / 365).toString())}
           </p>
         </section>
 
         <section className="space-y-1.5">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Tus derechos (Arts. 18–26 LOPDP)
+            {t.chatNotice.rights}
           </h3>
           <ul className="list-disc list-inside space-y-1 text-slate-600">
-            <li>
-              <strong>Acceso y portabilidad:</strong> descarga tu historial de chat desde
-              Configuración → Mis Datos (ARCO).
-            </li>
-            <li>
-              <strong>Supresión:</strong> puedes eliminar tus propios mensajes dentro de
-              las <strong>24 horas</strong> siguientes al envío.
-            </li>
-            <li>
-              <strong>Cancelación total:</strong> presenta una solicitud ARCO-Cancelación
-              en el módulo de Privacidad; tus mensajes serán anonimizados.
-            </li>
+            {t.chatNotice.rightsItems.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
           </ul>
         </section>
 
         <section className="space-y-1.5">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Seguridad (Art. 37 LOPDP)
+            {t.chatNotice.security}
           </h3>
           <p className="text-slate-600">
-            Las conversaciones están protegidas con autenticación JWT y solo son
-            accesibles por los participantes autorizados según los permisos institucionales.
+            {t.chatNotice.securityDesc}
           </p>
         </section>
 
@@ -115,7 +103,7 @@ export default function ChatPrivacyNotice({ retentionDays = 730, onAccept, onClo
           href="/dashboard/configuracion"
           className="inline-flex items-center gap-1.5 text-xs text-[#003366] underline underline-offset-2 hover:text-[#C5A059] transition-colors"
         >
-          Ver módulo de Privacidad y derechos ARCO
+          {t.chatNotice.viewPrivacyModule}
           <ExternalLink className="h-3 w-3" />
         </a>
       </div>
@@ -126,10 +114,10 @@ export default function ChatPrivacyNotice({ retentionDays = 730, onAccept, onClo
           onClick={onAccept}
           className="w-full rounded-xl bg-[#003366] py-2.5 text-sm font-semibold text-white hover:bg-[#004080] transition-colors active:scale-95"
         >
-          Entendido — Continuar al chat
+          {t.chatNotice.acceptBtn}
         </button>
         <p className="mt-2 text-center text-[10px] text-slate-400">
-          Al continuar confirmas que has leído este aviso (Art. 13 LOPDP Ecuador).
+          {t.chatNotice.footerText}
         </p>
       </div>
     </div>

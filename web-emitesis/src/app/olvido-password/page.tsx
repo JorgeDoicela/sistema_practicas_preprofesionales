@@ -9,8 +9,10 @@ import { authService } from '@/services/auth.service';
 import { sanitizeEmailClient } from '@/utils/security';
 import { BRAND_LOGO_SRC } from '@/lib/brand';
 import { Mail, ArrowLeft, CheckCircle2, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { useLanguage } from '@/providers/LanguageProvider';
 
 export default function ForgotPasswordPage() {
+    const { t } = useLanguage();
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -41,7 +43,7 @@ export default function ForgotPasswordPage() {
             await authService.forgotPassword(cleanEmail, token || 'dev_bypass');
             setMessage({
                 type: 'success',
-                text: 'Si el correo está registrado, recibirás un enlace de recuperación en los próximos minutos.',
+                text: t.forgotPassword.success,
             });
             setEmail('');
         } catch (error: any) {
@@ -60,10 +62,10 @@ export default function ForgotPasswordPage() {
                         <div className="bg-brand-blue p-1.5 rounded-lg">
                             <Image src={BRAND_LOGO_SRC} alt="Logo" width={100} height={40} className="h-7 w-auto object-contain" />
                         </div>
-                        <span className="text-xs font-bold text-slate-400 hidden sm:block">Portal Académico ISTPET</span>
+                        <span className="text-xs font-bold text-slate-400 hidden sm:block">{t.nav.brandSub}</span>
                     </Link>
                     <Link href="/login" className="text-xs font-semibold text-slate-500 hover:text-brand-blue transition-colors">
-                        ← Volver al login
+                        ← {t.forgotPassword.backToLogin}
                     </Link>
                 </div>
             </header>
@@ -84,10 +86,10 @@ export default function ForgotPasswordPage() {
                     {/* heading */}
                     <div className="text-center mb-8">
                         <h1 className="text-2xl sm:text-3xl font-black text-brand-blue tracking-tight mb-2">
-                            ¿Olvidaste tu contraseña?
+                            {t.forgotPassword.title}
                         </h1>
                         <p className="text-slate-500 text-sm leading-relaxed">
-                            Ingresa tu correo institucional y te enviaremos un enlace seguro para restablecerla.
+                            {t.forgotPassword.subtitle}
                         </p>
                     </div>
 
@@ -102,7 +104,7 @@ export default function ForgotPasswordPage() {
                                 <CheckCircle2 className="w-8 h-8 text-emerald-500" />
                             </div>
                             <div>
-                                <p className="font-bold text-slate-800 mb-2">Correo enviado</p>
+                                <p className="font-bold text-slate-800 mb-2">{t.common.approved}</p>
                                 <p className="text-sm text-slate-500 leading-relaxed">{message.text}</p>
                             </div>
                             <Link
@@ -110,7 +112,7 @@ export default function ForgotPasswordPage() {
                                 className="inline-flex items-center justify-center gap-2 w-full bg-brand-blue text-white rounded-xl py-3.5 text-sm font-bold hover:bg-brand-gold transition-all"
                             >
                                 <ArrowLeft className="w-4 h-4" />
-                                Volver al inicio de sesión
+                                {t.forgotPassword.backToLogin}
                             </Link>
                         </motion.div>
                     ) : (
@@ -125,7 +127,7 @@ export default function ForgotPasswordPage() {
 
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold text-slate-600 block">
-                                    Correo institucional
+                                    {t.forgotPassword.email}
                                 </label>
                                 <div className="relative">
                                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -136,7 +138,7 @@ export default function ForgotPasswordPage() {
                                         required
                                         value={email}
                                         onChange={e => setEmail(e.target.value)}
-                                        placeholder="ejemplo@istpet.edu.ec"
+                                        placeholder={t.login.emailPlaceholder}
                                         className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue outline-none transition-all placeholder:text-slate-300"
                                     />
                                 </div>
@@ -153,19 +155,19 @@ export default function ForgotPasswordPage() {
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                                         </svg>
-                                        Enviando…
+                                        {t.forgotPassword.submitting}
                                     </span>
-                                ) : 'Enviar instrucciones'}
+                                ) : t.forgotPassword.submit}
                             </button>
 
                             <div className="text-center space-y-2 pt-2">
                                 <Link href="/login" className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-gold hover:text-brand-blue transition-colors">
                                     <ArrowLeft className="w-3.5 h-3.5" />
-                                    Volver al inicio de sesión
+                                    {t.forgotPassword.backToLogin}
                                 </Link>
                                 <div>
                                     <Link href="/privacidad" className="text-xs text-slate-400 hover:text-brand-blue hover:underline underline-offset-2 transition-colors">
-                                        Aviso de privacidad (LOPDP)
+                                        {t.login.privacyLink}
                                     </Link>
                                 </div>
                             </div>

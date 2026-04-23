@@ -34,62 +34,71 @@ import { motion } from "framer-motion";
 import { User as UserType } from "@/types/user";
 import { BRAND_LOGO_SRC } from "@/lib/brand";
 import { getProfilePathForRole } from "@/lib/profile-route";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 // ── Menús por rol ──────────────────────────────────────────────────────────
 // Las claves deben coincidir exactamente con los valores de Role en el backend
 
-const MENUS: Record<string, Array<{ icon: ElementType; label: string; href: string }>> = {
+// MENUS keys now built dynamically inside the component using t.sidebar.menu
+// Static href mapping only:
+type SidebarMenuKey = "dashboard" | "systemConfig" | "chatConfig" | "healthMetrics" | "announcements" |
+  "careers" | "templates" | "auditLogs" | "lopdp" | "users" | "assignments" | "agreementList" |
+  "newAgreement" | "manageStudents" | "evaluations" | "documents" | "reports" | "absences" |
+  "myStudents" | "attendanceInterns" | "pendingAbsences" | "myDocuments" | "attendance" |
+  "myAbsences" | "myEvaluation";
+
+const MENU_DEFS: Record<string, Array<{ icon: ElementType; labelKey: SidebarMenuKey; href: string }>> = {
     ADMIN: [
-        { icon: LayoutDashboard, label: "Tablero",               href: "/dashboard" },
-        { icon: Settings,        label: "Configuración Sistema", href: "/admin/configuracion" },
-        { icon: MessageSquare,   label: "Permisos de Chat",      href: "/admin/chat-config" },
-        { icon: BarChart3,       label: "Salud y Métricas",      href: "/admin/salud" },
-        { icon: Star,            label: "Anuncios Globales",     href: "/admin/anuncios" },
-        { icon: BookOpen,        label: "Carreras",              href: "/admin/carreras" },
-        { icon: FileText,        label: "Plantillas",             href: "/coordinador/plantillas-documentos" },
-        { icon: ScrollText,      label: "Auditoría de Sistema",   href: "/admin/logs" },
-        { icon: ShieldAlert,     label: "Cumplimiento LOPDP",    href: "/admin/privacidad" },
-        { icon: Users,           label: "Usuarios",              href: "/admin/usuarios" },
-        { icon: UserPlus,        label: "Asignaciones",          href: "/coordinador/asignacion" },
-        { icon: List,            label: "Lista Convenios",       href: "/coordinador/convenios/list" },
-        { icon: Handshake,       label: "Nuevo Convenio",        href: "/coordinador/convenios" },
-        { icon: GraduationCap,   label: "Gestión Estudiantes",   href: "/coordinador/estudiantes" },
-        { icon: ClipboardCheck,  label: "Evaluaciones",          href: "/coordinador/evaluaciones" },
-        { icon: FileStack,       label: "Documentos",            href: "/dashboard/documentos" },
+        { icon: LayoutDashboard, labelKey: "dashboard",       href: "/dashboard" },
+        { icon: Settings,        labelKey: "systemConfig",    href: "/admin/configuracion" },
+        { icon: MessageSquare,   labelKey: "chatConfig",      href: "/admin/chat-config" },
+        { icon: BarChart3,       labelKey: "healthMetrics",   href: "/admin/salud" },
+        { icon: Star,            labelKey: "announcements",   href: "/admin/anuncios" },
+        { icon: BookOpen,        labelKey: "careers",         href: "/admin/carreras" },
+        { icon: FileText,        labelKey: "templates",       href: "/coordinador/plantillas-documentos" },
+        { icon: ScrollText,      labelKey: "auditLogs",       href: "/admin/logs" },
+        { icon: ShieldAlert,     labelKey: "lopdp",           href: "/admin/privacidad" },
+        { icon: Users,           labelKey: "users",           href: "/admin/usuarios" },
+        { icon: UserPlus,        labelKey: "assignments",     href: "/coordinador/asignacion" },
+        { icon: List,            labelKey: "agreementList",   href: "/coordinador/convenios/list" },
+        { icon: Handshake,       labelKey: "newAgreement",    href: "/coordinador/convenios" },
+        { icon: GraduationCap,   labelKey: "manageStudents",  href: "/coordinador/estudiantes" },
+        { icon: ClipboardCheck,  labelKey: "evaluations",     href: "/coordinador/evaluaciones" },
+        { icon: FileStack,       labelKey: "documents",       href: "/dashboard/documentos" },
     ],
     COORDINADOR: [
-        { icon: LayoutDashboard, label: "Tablero",               href: "/dashboard" },
-        { icon: FileText,        label: "Plantillas",             href: "/coordinador/plantillas-documentos" },
-        { icon: UserPlus,        label: "Asignaciones",          href: "/coordinador/asignacion" },
-        { icon: List,            label: "Lista Convenios",       href: "/coordinador/convenios/list" },
-        { icon: Handshake,       label: "Nuevo Convenio",        href: "/coordinador/convenios" },
-        { icon: CalendarOff,     label: "Ausencias",             href: "/coordinador/ausencias" },
-        { icon: GraduationCap,   label: "Gestión Estudiantes",   href: "/coordinador/estudiantes" },
-        { icon: ClipboardCheck,  label: "Evaluaciones",          href: "/coordinador/evaluaciones" },
-        { icon: BarChart3,       label: "Reportes",              href: "/coordinador/reportes" },
-        { icon: FileStack,       label: "Documentos",            href: "/dashboard/documentos" },
+        { icon: LayoutDashboard, labelKey: "dashboard",       href: "/dashboard" },
+        { icon: FileText,        labelKey: "templates",       href: "/coordinador/plantillas-documentos" },
+        { icon: UserPlus,        labelKey: "assignments",     href: "/coordinador/asignacion" },
+        { icon: List,            labelKey: "agreementList",   href: "/coordinador/convenios/list" },
+        { icon: Handshake,       labelKey: "newAgreement",    href: "/coordinador/convenios" },
+        { icon: CalendarOff,     labelKey: "absences",        href: "/coordinador/ausencias" },
+        { icon: GraduationCap,   labelKey: "manageStudents",  href: "/coordinador/estudiantes" },
+        { icon: ClipboardCheck,  labelKey: "evaluations",     href: "/coordinador/evaluaciones" },
+        { icon: BarChart3,       labelKey: "reports",         href: "/coordinador/reportes" },
+        { icon: FileStack,       labelKey: "documents",       href: "/dashboard/documentos" },
     ],
     TUTOR_ACADEMICO: [
-        { icon: LayoutDashboard, label: "Tablero",               href: "/tutor-academico/dashboard" },
-        { icon: GraduationCap,   label: "Mis Estudiantes",       href: "/tutor-academico/estudiantes" },
-        { icon: FileStack,       label: "Documentos",            href: "/dashboard/documentos" },
-        { icon: CalendarCheck,   label: "Asistencia Pasantes",   href: "/tutor-academico/asistencia" },
-        { icon: CalendarOff,     label: "Ausencias Pendientes",  href: "/tutor-academico/ausencias" },
+        { icon: LayoutDashboard, labelKey: "dashboard",          href: "/tutor-academico/dashboard" },
+        { icon: GraduationCap,   labelKey: "myStudents",          href: "/tutor-academico/estudiantes" },
+        { icon: FileStack,       labelKey: "documents",           href: "/dashboard/documentos" },
+        { icon: CalendarCheck,   labelKey: "attendanceInterns",   href: "/tutor-academico/asistencia" },
+        { icon: CalendarOff,     labelKey: "pendingAbsences",     href: "/tutor-academico/ausencias" },
     ],
     TUTOR_EMPRESARIAL: [
-        { icon: LayoutDashboard, label: "Tablero",               href: "/empresa/dashboard" },
-        { icon: CalendarCheck,   label: "Asistencia Pasantes",   href: "/empresa/asistencia" },
+        { icon: LayoutDashboard, labelKey: "dashboard",         href: "/empresa/dashboard" },
+        { icon: CalendarCheck,   labelKey: "attendanceInterns", href: "/empresa/asistencia" },
     ],
     ESTUDIANTE: [
-        { icon: LayoutDashboard, label: "Tablero",               href: "/dashboard" },
-        { icon: FileStack,       label: "Mis Documentos",        href: "/dashboard/documentos" },
-        { icon: CalendarCheck,   label: "Asistencia",            href: "/dashboard/asistencia" },
-        { icon: CalendarOff,     label: "Mis Ausencias",         href: "/dashboard/ausencias" },
-        { icon: Star,            label: "Mi Evaluación",         href: "/dashboard/mi-evaluacion" },
+        { icon: LayoutDashboard, labelKey: "dashboard",    href: "/dashboard" },
+        { icon: FileStack,       labelKey: "myDocuments",  href: "/dashboard/documentos" },
+        { icon: CalendarCheck,   labelKey: "attendance",   href: "/dashboard/asistencia" },
+        { icon: CalendarOff,     labelKey: "myAbsences",   href: "/dashboard/ausencias" },
+        { icon: Star,            labelKey: "myEvaluation", href: "/dashboard/mi-evaluacion" },
     ],
     EMPRESA: [
-        { icon: LayoutDashboard, label: "Tablero",               href: "/empresa/dashboard" },
-        { icon: CalendarCheck,   label: "Asistencia Pasantes",   href: "/empresa/asistencia" },
+        { icon: LayoutDashboard, labelKey: "dashboard",         href: "/empresa/dashboard" },
+        { icon: CalendarCheck,   labelKey: "attendanceInterns", href: "/empresa/asistencia" },
     ],
 };
 
@@ -103,6 +112,7 @@ interface SidebarProps {
 export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     const pathname = usePathname();
     const [user, setUser] = useState<UserType | null>(null);
+    const { t } = useLanguage();
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
@@ -113,7 +123,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
     const role: string = user?.role ?? "";
     const profileHref = getProfilePathForRole(role);
-    const menuItems = MENUS[role] ?? MENUS["ESTUDIANTE"];
+    const menuDefs = MENU_DEFS[role] ?? MENU_DEFS["ESTUDIANTE"];
+    const menuItems = menuDefs.map(item => ({ ...item, label: t.sidebar.menu[item.labelKey] }));
     const isEmpresaRole = role === "EMPRESA" || role === "TUTOR_EMPRESARIAL";
 
     return (
@@ -135,7 +146,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <button
                 onClick={onClose}
                 className="lg:hidden absolute top-4 right-4 w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-colors z-10"
-                aria-label="Cerrar menú"
+                aria-label={t.sidebar.closeMenu}
             >
                 <X className="w-4 h-4" />
             </button>
@@ -155,14 +166,14 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     </div>
                     <div>
                         <h1 className="text-xl font-black tracking-tight leading-none">EMITESIS</h1>
-                        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[#C5A059] mt-1">Prácticas Preprofesionales</p>
+                        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[#C5A059] mt-1">{t.sidebar.subtitle}</p>
                     </div>
                 </div>
             </div>
 
             {/* Main Navigation */}
             <nav data-tour="sidebar-navigation" className="flex-1 px-4 overflow-y-auto">
-                <p className="px-4 text-[9px] font-black uppercase tracking-[0.3em] text-white/30 mb-4">Menú Principal</p>
+                <p className="px-4 text-[9px] font-black uppercase tracking-[0.3em] text-white/30 mb-4">{t.sidebar.mainMenu}</p>
                 <div className="space-y-1.5">
                     {menuItems.map((item) => (
                         <SidebarItem
@@ -174,11 +185,11 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 </div>
 
                 <div className="mt-8">
-                    <p className="px-4 text-[9px] font-black uppercase tracking-[0.3em] text-white/30 mb-4">Cuenta</p>
+                    <p className="px-4 text-[9px] font-black uppercase tracking-[0.3em] text-white/30 mb-4">{t.sidebar.account}</p>
                     <div className="space-y-1.5">
                         <SidebarItem
                             icon={UserCircle}
-                            label="Mi perfil"
+                            label={t.sidebar.myProfile}
                             href={profileHref}
                             active={
                                 pathname === profileHref ||
@@ -188,7 +199,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                         {!isEmpresaRole && (
                             <SidebarItem
                                 icon={Settings}
-                                label="Configuración"
+                                label={t.sidebar.settings}
                                 href="/dashboard/configuracion"
                                 active={pathname === "/dashboard/configuracion"}
                             />
@@ -221,7 +232,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     className="w-full flex items-center gap-4 px-5 py-4 text-white/50 hover:text-red-400 hover:bg-red-400/5 rounded-2xl transition-all group"
                 >
                     <LogOut className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                    <span className="text-[11px] font-black uppercase tracking-[0.2em]">Cerrar Sesión</span>
+                    <span className="text-[11px] font-black uppercase tracking-[0.2em]">{t.sidebar.logout}</span>
                 </button>
             </div>
         </aside>
