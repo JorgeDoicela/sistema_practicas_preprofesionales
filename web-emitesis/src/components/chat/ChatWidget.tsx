@@ -334,7 +334,7 @@ export default function ChatWidget() {
               )}
               <button
                 onClick={() => setShowPrivacyNotice(true)}
-                title={t.nav.privacyLink}
+                title={t.nav.links.privacy}
                 className="text-[#C5A059] hover:text-white transition-colors"
               >
                 <ShieldCheck className="h-4 w-4" />

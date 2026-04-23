@@ -105,7 +105,7 @@ export function DashboardMain() {
   const [closedAnnouncements, setClosedAnnouncements] = useState<string[]>([]);
   const [careers, setCareers] = useState<any[]>([]);
   const [selectedCareerId, setSelectedCareerId] = useState<string>("");
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   
   const [todayAttendance, setTodayAttendance] = useState<any>(null);
   const [attendanceSummary, setAttendanceSummary] = useState<{
@@ -475,7 +475,7 @@ export function DashboardMain() {
           },
           {
             title: t.stats.plannedHours,
-            value: hours.toLocaleString(t.locale === 'es' ? 'es-EC' : 'en-US'),
+            value: hours.toLocaleString(locale === 'es' ? 'es-EC' : 'en-US'),
             hint: t.stats.pending,
             icon: <Clock className="w-6 h-6" />,
             color: "bg-emerald-500",
