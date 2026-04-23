@@ -17,8 +17,8 @@ const locales: Record<string, any> = { es, en: enUS };
 // ── Componente principal ────────────────────────────────────────────────────
 
 export default function ChatWidget() {
-  const { t, lang } = useLanguage();
-  const currentLocale = locales[lang] || es;
+  const { t, locale } = useLanguage();
+  const currentLocale = locales[locale] || es;
 
   const {
     connected,
