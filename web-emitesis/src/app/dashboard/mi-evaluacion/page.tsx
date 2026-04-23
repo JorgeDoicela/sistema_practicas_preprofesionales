@@ -90,7 +90,7 @@ export default function MiEvaluacionPage() {
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
               Mi Desempeño Profesional
             </span>
-            <h2 className="text-4xl font-black text-[#003366] tracking-tight">
+            <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
               HUB de <span className="text-slate-400">Evaluación Dual</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
@@ -125,12 +125,12 @@ export default function MiEvaluacionPage() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-br from-[#003366] to-[#001a44] rounded-[2.5rem] p-10 text-white shadow-2xl shadow-blue-900/30 relative overflow-hidden"
+                className="bg-gradient-to-br from-[#003366] to-[#001a44] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white shadow-2xl shadow-blue-900/30 relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 p-10 opacity-5">
+                <div className="absolute top-0 right-0 p-4 sm:p-10 opacity-5">
                   <Trophy className="w-40 h-40" />
                 </div>
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-8">
                   <div>
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-10 h-10 bg-[#C5A059] rounded-2xl flex items-center justify-center">
@@ -146,7 +146,7 @@ export default function MiEvaluacionPage() {
                   <div className="text-center md:text-right">
                     <div className="flex items-end gap-2 justify-center md:justify-end">
                       <span className={cn(
-                        "text-7xl font-black tracking-tighter",
+                        "text-5xl sm:text-6xl md:text-7xl font-black tracking-tighter",
                         finalGrade >= 7 ? "text-emerald-400" : finalGrade >= 5 ? "text-[#C5A059]" : "text-rose-400"
                       )}>
                         {finalGrade.toFixed(2)}
@@ -176,7 +176,7 @@ export default function MiEvaluacionPage() {
               </motion.div>
             )}
 
-            <div className="grid lg:grid-cols-2 gap-8">
+            <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
               {/* Tarjeta Académica */}
               <EvalCard 
                 type="ACADEMICA"
@@ -223,10 +223,10 @@ function EvalCard({ type, title, subtitle, evaluation, icon, color }: any) {
       className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden flex flex-col"
     >
       <div className={cn(
-        "p-8 flex items-center justify-between",
+        "p-5 sm:p-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between",
         isBlue ? "bg-[#003366] text-white" : "bg-[#C5A059] text-white"
       )}>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white">
             {icon}
           </div>
@@ -236,14 +236,14 @@ function EvalCard({ type, title, subtitle, evaluation, icon, color }: any) {
           </div>
         </div>
         {evaluation && (
-          <div className="text-right">
-             <span className="text-3xl font-black">{total}</span>
+          <div className="text-left sm:text-right sm:shrink-0">
+             <span className="text-2xl md:text-3xl font-black">{total}</span>
              <span className="text-sm font-black opacity-40 ml-1">/25</span>
           </div>
         )}
       </div>
 
-      <div className="p-8 flex-1 space-y-8">
+      <div className="p-5 sm:p-8 flex-1 space-y-6 sm:space-y-8">
         {!evaluation ? (
           <div className="py-20 text-center space-y-4">
             <Clock className="w-12 h-12 text-slate-200 mx-auto" />

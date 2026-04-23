@@ -508,8 +508,8 @@ export function DashboardMain() {
         : "/coordinador/estudiantes";
 
   return (
-    <div className="space-y-12">
-      <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div className="space-y-8 md:space-y-12">
+      <section className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6">
         <div>
           <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
             {appRole === ROLES.ESTUDIANTE
@@ -518,7 +518,7 @@ export function DashboardMain() {
                 ? "Resumen académico"
                 : "Resumen institucional"}
           </span>
-          <h2 className="text-4xl font-black text-[#003366] tracking-tight">
+          <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
             Hola,{" "}
             <span className="text-slate-400">
               {user?.fullName?.split(" ")[0] || "Usuario"}
@@ -528,7 +528,7 @@ export function DashboardMain() {
             Datos en vivo desde la plataforma de prácticas preprofesionales ISTPET.
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
           {(appRole === ROLES.ADMIN || appRole === ROLES.COORDINADOR) && (
             <>
               <div className="relative">
@@ -626,10 +626,10 @@ export function DashboardMain() {
                 <motion.div 
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
-                  className="bg-rose-50 border border-rose-100 rounded-3xl p-6 flex items-center justify-between gap-6"
+                  className="bg-rose-50 border border-rose-100 rounded-3xl p-4 md:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="p-3 bg-white text-rose-500 rounded-2xl shadow-sm">
+                    <div className="p-3 bg-white text-rose-500 rounded-2xl shadow-sm shrink-0">
                        <AlertCircle className="w-6 h-6" />
                     </div>
                     <div>
@@ -639,7 +639,7 @@ export function DashboardMain() {
                   </div>
                   <Link 
                     href="/dashboard/documentos"
-                    className="px-6 py-3 bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all"
+                    className="px-6 py-3 bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all text-center sm:shrink-0"
                   >
                     Ver Observaciones
                   </Link>
@@ -650,10 +650,10 @@ export function DashboardMain() {
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.1 }}
-                  className="bg-amber-50 border border-amber-100 rounded-3xl p-6 flex items-center justify-between gap-6"
+                  className="bg-amber-50 border border-amber-100 rounded-3xl p-4 md:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="p-3 bg-white text-amber-500 rounded-2xl shadow-sm">
+                    <div className="p-3 bg-white text-amber-500 rounded-2xl shadow-sm shrink-0">
                        <Clock className="w-6 h-6" />
                     </div>
                     <div>
@@ -663,7 +663,7 @@ export function DashboardMain() {
                   </div>
                   <Link 
                     href="/dashboard/asistencia"
-                    className="px-6 py-3 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all"
+                    className="px-6 py-3 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all text-center sm:shrink-0"
                   >
                     Cerrar Asistencia
                   </Link>
@@ -677,8 +677,8 @@ export function DashboardMain() {
 
 
           {appRole === ROLES.ESTUDIANTE && internships.length > 0 && (
-            <section className="grid md:grid-cols-3 gap-8">
-              <div className="md:col-span-2 bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-xl relative overflow-hidden flex flex-col md:flex-row gap-8">
+            <section className="grid md:grid-cols-3 gap-6 md:gap-8">
+              <div className="md:col-span-2 bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-slate-100 shadow-xl relative overflow-hidden flex flex-col md:flex-row gap-6 md:gap-8">
                 <div className="flex-1 space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
@@ -713,7 +713,7 @@ export function DashboardMain() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-[#003366] to-[#002244] rounded-[2.5rem] p-10 text-white shadow-xl flex flex-col justify-center">
+              <div className="bg-gradient-to-br from-[#003366] to-[#002244] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white shadow-xl flex flex-col justify-center">
                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-6">
                     <BarChart3 className="w-6 h-6 text-[#C5A059]" />
                  </div>
@@ -722,7 +722,7 @@ export function DashboardMain() {
                  {attendanceSummary ? (
                    <>
                      <div className="flex items-end gap-3 mb-4">
-                       <span className="text-4xl font-black text-[#C5A059]">{attendanceSummary.totalHours.toFixed(1)}</span>
+                       <span className="text-2xl md:text-4xl font-black text-[#C5A059]">{attendanceSummary.totalHours.toFixed(1)}</span>
                        <span className="text-xs font-bold text-white/40 uppercase mb-2">
                          / {attendanceSummary.requiredHours} h requeridas
                        </span>
@@ -740,7 +740,7 @@ export function DashboardMain() {
                    </>
                  ) : (
                    <div className="flex items-end gap-3">
-                     <span className="text-4xl font-black text-[#C5A059]">{internships[0]?.attendances?.length || 0}</span>
+                     <span className="text-2xl md:text-4xl font-black text-[#C5A059]">{internships[0]?.attendances?.length || 0}</span>
                      <span className="text-xs font-bold text-white/40 uppercase mb-2">Registros</span>
                    </div>
                  )}
@@ -749,7 +749,7 @@ export function DashboardMain() {
           )}
 
           {(appRole === ROLES.ADMIN || appRole === ROLES.COORDINADOR) && globalStats && (
-            <section className="bg-white rounded-[2.5rem] p-10 shadow-2xl shadow-slate-200/50 border border-slate-50 relative overflow-hidden group">
+            <section className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 shadow-2xl shadow-slate-200/50 border border-slate-50 relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-8 opacity-5">
                 <BarChart3 className="w-32 h-32 text-[#003366]" />
               </div>
@@ -761,7 +761,7 @@ export function DashboardMain() {
                   <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">Analíticas de Gestión Institucional</h3>
                 </div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-12">
                   <div className="space-y-6">
                     <div>
                       <div className="flex justify-between mb-2 text-[10px] font-black uppercase tracking-widest">
@@ -827,10 +827,10 @@ export function DashboardMain() {
             </section>
           )}
 
-          <div className="grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
-              <div className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-                <div className="p-8 pb-4 flex items-center justify-between">
+          <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
+            <div className="lg:col-span-2 space-y-6 md:space-y-8">
+              <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+                <div className="p-5 md:p-8 pb-4 flex items-center justify-between">
                   <div>
                     <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">
                       {activityTitle}
@@ -866,8 +866,8 @@ export function DashboardMain() {
               </div>
             </div>
 
-            <div className="space-y-8">
-              <div className="bg-gradient-to-br from-[#C5A059] to-[#8E6F36] rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden">
+            <div className="space-y-6 md:space-y-8">
+              <div className="bg-gradient-to-br from-[#C5A059] to-[#8E6F36] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white shadow-2xl relative overflow-hidden">
                 <div className="relative z-10 space-y-4">
                   <FileCheck className="w-12 h-12 mb-2" />
                   <h3 className="text-2xl font-black tracking-tighter leading-snug">
@@ -961,7 +961,7 @@ function StatCard({ title, value, hint, icon, color }: StatCardProps) {
         </div>
       </div>
       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
-      <h4 className="text-3xl font-black text-[#003366] tracking-tighter">{value}</h4>
+      <h4 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tighter break-words">{value}</h4>
       <p className="text-[10px] font-semibold text-slate-500 mt-3 leading-relaxed">{hint}</p>
     </motion.div>
   );

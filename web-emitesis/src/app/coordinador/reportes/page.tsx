@@ -59,7 +59,7 @@ export default function ReportesPage() {
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">Coordinación</span>
-            <h2 className="text-4xl font-black text-[#003366] tracking-tight">
+            <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
               Módulo de <span className="text-slate-400">Reportes</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">Indicadores globales y exportación de datos oficiales.</p>
@@ -125,16 +125,16 @@ export default function ReportesPage() {
             </section>
 
             {/* Main Content Areas */}
-            <div className="grid lg:grid-cols-3 gap-8">
+            <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
               <div className="lg:col-span-2 space-y-8">
-                 <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
-                    <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+                 <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
+                    <div className="p-4 sm:p-6 md:p-8 border-b border-slate-50 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                        <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">Resumen Ejecutivo</h3>
                        <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-xl">
                           <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Estado: Operativo</span>
                        </div>
                     </div>
-                    <div className="p-10 space-y-8">
+                    <div className="p-5 md:p-10 space-y-6 md:space-y-8">
                        <div className="space-y-4">
                           <div className="flex justify-between items-end">
                              <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Progreso Global de Horas</span>
@@ -151,7 +151,7 @@ export default function ReportesPage() {
                           <p className="text-[10px] font-medium text-slate-400">Suma total de horas registradas comparado con el total planificado en el sistema.</p>
                        </div>
 
-                       <div className="grid grid-cols-2 gap-8 pt-4">
+                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8 pt-4">
                           <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
                              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Eficiencia Operativa</h4>
                              <p className="text-2xl font-black text-[#003366]">Alta</p>
@@ -168,7 +168,7 @@ export default function ReportesPage() {
               </div>
 
               <div className="space-y-8">
-                 <div className="bg-[#003366] rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden group">
+                 <div className="bg-[#003366] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white shadow-2xl relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-white/10 transition-colors" />
                     <div className="relative z-10 space-y-6">
                        <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10">
@@ -195,7 +195,7 @@ export default function ReportesPage() {
                     </div>
                  </div>
 
-                 <div className="bg-amber-50 rounded-[2.5rem] p-8 border border-amber-100">
+                 <div className="bg-amber-50 rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8 border border-amber-100">
                     <div className="flex items-center gap-4 mb-4">
                        <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center">
                           <AlertCircle className="text-white w-5 h-5" />
@@ -233,9 +233,9 @@ function ReportStatCard({ title, value, hint, icon, color }: any) {
   return (
     <motion.div 
       whileHover={{ y: -5 }}
-      className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl relative overflow-hidden group"
+      className="bg-white p-5 sm:p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl relative overflow-hidden group"
     >
-      <div className="flex items-start justify-between mb-8">
+      <div className="flex items-start justify-between mb-6 md:mb-8">
         <div className={cn("p-4 rounded-2xl bg-opacity-10", colorMap[color].split(" ")[0])}>
           {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: cn("w-6 h-6", colorMap[color].split(" ")[1]) })}
         </div>
@@ -244,7 +244,7 @@ function ReportStatCard({ title, value, hint, icon, color }: any) {
         </div>
       </div>
       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
-      <h4 className="text-3xl font-black text-[#003366] tracking-tighter">{value}</h4>
+      <h4 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tighter break-words">{value}</h4>
       <p className="text-[11px] font-semibold text-slate-500 mt-3">{hint}</p>
     </motion.div>
   );

@@ -214,16 +214,16 @@ export default function UsuariosManagementPage() {
     <DashboardLayout>
       <div className="space-y-8">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
               <Shield size={12} /> Administración del Sistema
             </div>
-            <h1 className="text-3xl font-black text-[#003366] tracking-tight">Gestión de Usuarios</h1>
+            <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Gestión de Usuarios</h1>
             <p className="text-slate-500 mt-2">Control centralizado de accesos, roles y perfiles institucionales.</p>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3 md:gap-4">
             <div className="relative">
               <input 
                 type="file" 

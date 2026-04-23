@@ -115,9 +115,9 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] px-4 py-12">
-      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl border border-gray-100">
+      <div className="max-w-md w-full space-y-6 md:space-y-8 bg-white p-5 sm:p-8 md:p-10 rounded-2xl shadow-xl border border-gray-100">
         <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-[#003366] tracking-tight">Establecer Nueva Contraseña</h2>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#003366] tracking-tight">Establecer Nueva Contraseña</h2>
           <p className="mt-2 text-sm text-gray-500">Por favor, ingresa tu nueva contraseña institucional</p>
         </div>
 

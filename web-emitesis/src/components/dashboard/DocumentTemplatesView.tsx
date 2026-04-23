@@ -160,7 +160,7 @@ export function DocumentTemplatesView() {
           <span className="text-[10px] font-black text-brand-gold uppercase tracking-[0.4em] mb-2 block">
             Configuración Estructural
           </span>
-          <h2 className="text-4xl font-black text-brand-blue tracking-tight">
+          <h2 className="text-2xl md:text-4xl font-black text-brand-blue tracking-tight">
             Gestión de <span className="text-slate-400">Plantillas</span>
           </h2>
           <p className="text-slate-500 font-medium mt-2">

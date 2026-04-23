@@ -90,7 +90,7 @@ export default function AdminLogsPage() {
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
               Emitesis X-Ray / Observabilidad
             </span>
-            <h2 className="text-4xl font-black text-[#003366] tracking-tight">
+            <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
               Logs del <span className="text-slate-400">Sistema</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
@@ -118,7 +118,7 @@ export default function AdminLogsPage() {
           </div>
         </section>
 
-        <div className="grid lg:grid-cols-12 gap-8">
+        <div className="grid lg:grid-cols-12 gap-6 md:gap-8">
            {/* Terminal en Vivo */}
            <div className={cn(
              "lg:col-span-12 transition-all duration-700 overflow-hidden",
@@ -137,7 +137,7 @@ export default function AdminLogsPage() {
                      </div>
                      <span className="text-[10px] font-black text-indigo-400 animate-pulse uppercase tracking-widest">● LIVE STREAMING</span>
                   </div>
-                  <div className="flex-1 overflow-y-auto p-8 font-mono text-xs space-y-3 custom-scrollbar scroll-smooth">
+                  <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 font-mono text-xs space-y-3 custom-scrollbar scroll-smooth">
                      {liveLogs.length === 0 ? (
                        <div className="h-full flex items-center justify-center text-slate-600 italic">
                           Esperando eventos del sistema...
@@ -166,7 +166,7 @@ export default function AdminLogsPage() {
            {/* Registro Histórico */}
            <div className="lg:col-span-12">
               <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
-                 <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                 <div className="p-4 sm:p-6 md:p-8 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                        <div className="p-2.5 bg-slate-50 text-slate-400 rounded-xl">
                           <HistoryIcon className="w-5 h-5" />

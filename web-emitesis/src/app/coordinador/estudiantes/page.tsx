@@ -247,7 +247,7 @@ export default function GestionEstudiantesPage() {
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block animate-in fade-in slide-in-from-left-4 duration-700">Coordinación de Prácticas</span>
-            <h2 className="text-4xl font-black text-[#003366] tracking-tight">
+            <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
               Gestión de <span className="text-slate-400">Estudiantes</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">Supervisión global y validación final de expedientes.</p>
@@ -261,7 +261,7 @@ export default function GestionEstudiantesPage() {
                   placeholder="Buscar estudiante o empresa..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-12 pr-6 py-4 bg-white border border-slate-200 rounded-2xl w-full md:w-[350px] outline-none focus:ring-4 focus:ring-[#003366]/5 focus:border-[#003366] transition-all font-medium text-sm shadow-sm"
+                  className="pl-12 pr-6 py-3 md:py-4 bg-white border border-slate-200 rounded-2xl w-full md:w-[350px] outline-none focus:ring-4 focus:ring-[#003366]/5 focus:border-[#003366] transition-all font-medium text-sm shadow-sm"
                 />
              </div>
           </div>
@@ -419,7 +419,7 @@ export default function GestionEstudiantesPage() {
                 </div>
               </div>
 
-              <div className="p-10 border-t border-slate-100 bg-white grid grid-cols-2 gap-4">
+              <div className="p-4 md:p-10 border-t border-slate-100 bg-white grid grid-cols-2 gap-4">
                 <button 
                   onClick={() => handleReviewSubmit('RECHAZADO_COORDINADOR')}
                   disabled={saving || !observations.trim()}
@@ -456,7 +456,7 @@ export default function GestionEstudiantesPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed z-[201] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-[2rem] shadow-2xl p-8"
+              className="fixed z-[201] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(100vw-2rem,28rem)] max-w-md bg-white rounded-[2rem] shadow-2xl p-5 sm:p-8 max-h-[min(90vh,40rem)] overflow-y-auto"
             >
                 <div className={cn(
                 "w-12 h-12 rounded-2xl flex items-center justify-center mb-5",
@@ -544,19 +544,19 @@ function StudentInternshipCard({
     )}>
       <div 
         onClick={onToggle}
-        className="p-8 cursor-pointer flex items-center justify-between group"
+        className="p-5 md:p-8 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
       >
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-4 md:gap-8">
            <div className={cn(
-             "w-16 h-16 rounded-[1.75rem] flex items-center justify-center text-xl font-black transition-all duration-500",
+             "w-12 h-12 md:w-16 md:h-16 rounded-[1.25rem] md:rounded-[1.75rem] flex items-center justify-center text-lg md:text-xl font-black transition-all duration-500 shrink-0",
              isExpanded ? "bg-[#003366] text-white scale-110 rotate-3 shadow-lg shadow-blue-900/20" : "bg-slate-50 text-[#003366] group-hover:bg-slate-100 group-hover:scale-105"
            )}>
              {internship.student.fullName.charAt(0)}
            </div>
            
-           <div>
-              <h3 className="text-xl font-black text-[#003366] mb-1 group-hover:text-[#C5A059] transition-colors">{internship.student.fullName}</h3>
-              <div className="flex flex-wrap gap-6 items-center">
+           <div className="min-w-0">
+              <h3 className="text-base md:text-xl font-black text-[#003366] mb-1 group-hover:text-[#C5A059] transition-colors truncate">{internship.student.fullName}</h3>
+              <div className="flex flex-wrap gap-2 md:gap-6 items-center">
                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
                     <Building2 className="w-3.5 h-3.5" />
                     {internship.company.name}
@@ -603,7 +603,7 @@ function StudentInternshipCard({
            </div>
         </div>
 
-        <div className="flex items-center gap-10">
+        <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-end shrink-0">
            {pendingDocs > 0 && internship.status !== 'Finalizado' && (
              <div className="px-4 py-2 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-3 animate-pulse">
                 <div className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-900/20" />
@@ -661,16 +661,16 @@ function StudentInternshipCard({
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden bg-slate-50/50 border-t border-slate-100"
           >
-            <div className="p-8 space-y-10">
+            <div className="p-4 md:p-8 space-y-8 md:space-y-10">
                {/* Sección de IA Predictiva */}
-               <div className="bg-gradient-to-br from-[#003366] to-[#001122] rounded-[2rem] p-8 text-white relative overflow-hidden group/ia">
-                  <div className="absolute top-0 right-0 p-10 opacity-5 rotate-12 group-hover/ia:rotate-0 transition-transform duration-1000">
-                     <BrainCircuit className="w-32 h-32" />
+               <div className="bg-gradient-to-br from-[#003366] to-[#001122] rounded-[2rem] p-5 sm:p-6 md:p-8 text-white relative overflow-hidden group/ia">
+                  <div className="absolute top-0 right-0 p-4 md:p-8 lg:p-10 opacity-5 rotate-12 group-hover/ia:rotate-0 transition-transform duration-1000">
+                     <BrainCircuit className="w-24 h-24 sm:w-32 sm:h-32" />
                   </div>
                   <div className="relative z-10">
-                     <div className="flex items-center justify-between gap-6 mb-4">
-                        <div className="flex items-center gap-3">
-                           <div className="p-2 bg-[#C5A059] rounded-xl text-white">
+                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6 mb-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                           <div className="p-2 bg-[#C5A059] rounded-xl text-white shrink-0">
                               <Zap className="w-4 h-4" />
                            </div>
                            <h4 className="text-sm font-black uppercase tracking-widest text-[#C5A059]">Emitesis AI Predictor</h4>
@@ -678,7 +678,7 @@ function StudentInternshipCard({
                         <button 
                            onClick={(e) => { e.stopPropagation(); onAIAnalyze(); }}
                            disabled={analyzing}
-                           className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all backdrop-blur-sm border border-white/10 disabled:opacity-50"
+                           className="w-full sm:w-auto shrink-0 px-4 sm:px-6 py-2.5 sm:py-2 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all backdrop-blur-sm border border-white/10 disabled:opacity-50"
                         >
                            {analyzing ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
@@ -709,11 +709,11 @@ function StudentInternshipCard({
 
                {/* Dashboard de Requisitos */}
                {eligibility && (
-                 <div className="grid md:grid-cols-3 gap-6 bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
-                    <div className="space-y-4 border-r border-slate-100 pr-4">
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white p-4 md:p-8 rounded-[2rem] border border-slate-200 shadow-sm">
+                    <div className="space-y-4 md:border-r border-slate-100 md:pr-4">
                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Documentación</h4>
                        <div className="flex items-end gap-3">
-                          <span className="text-3xl font-black text-[#003366]">{eligibility.details.approvedDocsCount < 7 ? (
+                          <span className="text-2xl md:text-3xl font-black text-[#003366]">{eligibility.details.approvedDocsCount < 7 ? (
                              <span className="text-rose-500">{eligibility.details.approvedDocsCount}</span>
                           ) : (
                              <span className="text-emerald-500">7</span>
@@ -727,11 +727,11 @@ function StudentInternshipCard({
                        </p>
                     </div>
 
-                    <div className="space-y-4 border-r border-slate-100 pr-4 pl-4">
+                    <div className="space-y-4 md:border-r border-slate-100 md:pr-4 md:pl-4">
                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Asistencia Total</h4>
                        <div className="flex items-end gap-3">
                           <span className={cn(
-                             "text-3xl font-black",
+                             "text-2xl md:text-3xl font-black",
                              eligibility.details.hoursMet ? "text-emerald-500" : "text-rose-500"
                           )}>{eligibility.details.totalHours}h</span>
                           <span className="text-[10px] font-bold text-slate-400 mb-2 uppercase">de {eligibility.details.requiredHours}h</span>
@@ -787,7 +787,7 @@ function StudentInternshipCard({
                  </div>
                )}
 
-               <div className="grid lg:grid-cols-2 gap-10 opacity-80 filter grayscale-[0.3]">
+               <div className="grid lg:grid-cols-2 gap-6 md:gap-10 opacity-80 filter grayscale-[0.3]">
                   {/* Columna Izquierda: Documentos */}
                   <div className="space-y-4">
                      <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6 pl-2 flex items-center gap-3">

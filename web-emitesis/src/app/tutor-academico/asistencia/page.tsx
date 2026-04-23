@@ -226,7 +226,7 @@ export default function TutorAsistenciaPage() {
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
               Portal de Tutor Académico
             </span>
-            <h2 className="text-4xl font-black text-[#003366] tracking-tight">
+            <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
               Asistencia <span className="text-slate-400">de Pasantes</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
@@ -724,14 +724,14 @@ export default function TutorAsistenciaPage() {
 
 function KpiCard({ icon, title, value, color }: { icon: React.ReactElement; title: string; value: string | number; color: string }) {
   return (
-    <motion.div whileHover={{ y: -4 }} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl">
+    <motion.div whileHover={{ y: -4 }} className="bg-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl">
       <div className={cn("p-4 rounded-2xl inline-flex mb-6", color.replace("bg-", "bg-") + "/10")}>
         {React.cloneElement(icon as React.ReactElement<{ className?: string }>, {
           className: `w-6 h-6 ${color.replace("bg-", "text-")}`,
         })}
       </div>
       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
-      <h4 className="text-3xl font-black text-[#003366] tracking-tighter">{value}</h4>
+      <h4 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tighter break-words">{value}</h4>
     </motion.div>
   );
 }

@@ -101,7 +101,7 @@ export default function EmpresaDashboardPage() {
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
               {userRole === "TUTOR_EMPRESARIAL" ? "Portal de Tutor" : "Portal de Empresa"}
             </span>
-            <h2 className="text-4xl font-black text-[#003366] tracking-tight">
+            <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
               Bienvenido,{" "}
               <span className="text-slate-400">{companyName.split(" ")[0] || "Usuario"}</span>
             </h2>
@@ -129,7 +129,7 @@ export default function EmpresaDashboardPage() {
         </section>
 
         {/* Monitor Seccional */}
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
           <div className="lg:col-span-2 space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
@@ -158,7 +158,7 @@ export default function EmpresaDashboardPage() {
                 </p>
               </div>
             ) : filtered.length === 0 ? (
-              <div className="bg-white rounded-[2.5rem] border border-dashed border-slate-200 p-20 text-center">
+              <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-dashed border-slate-200 p-10 sm:p-16 md:p-20 text-center">
                 <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
                   <GraduationCap className="w-10 h-10 text-slate-300" />
                 </div>
@@ -204,7 +204,7 @@ function KpiCard({ title, value, icon, color }: { title: string; value: string |
   return (
     <motion.div
       whileHover={{ y: -6 }}
-      className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl relative overflow-hidden"
+      className="bg-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl relative overflow-hidden"
     >
       <div className="flex items-start justify-between mb-8">
         <div className={cn("p-4 rounded-2xl bg-opacity-10", color.replace("bg-", "bg-") + "/10")}>
@@ -214,7 +214,7 @@ function KpiCard({ title, value, icon, color }: { title: string; value: string |
         </div>
       </div>
       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
-      <h4 className="text-3xl font-black text-[#003366] tracking-tighter">{value}</h4>
+      <h4 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tighter break-words">{value}</h4>
     </motion.div>
   );
 }

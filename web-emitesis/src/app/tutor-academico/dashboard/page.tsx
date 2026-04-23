@@ -129,7 +129,7 @@ export default function TutorAcademicoDashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-12 max-w-[1600px] mx-auto pb-20">
+      <div className="space-y-8 md:space-y-12 max-w-[1600px] mx-auto pb-20">
 
         {/* Header */}
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -137,7 +137,7 @@ export default function TutorAcademicoDashboardPage() {
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
               Portal de Tutor Académico
             </span>
-            <h2 className="text-4xl font-black text-[#003366] tracking-tight">
+            <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
               Bienvenido,{" "}
               <span className="text-slate-400">{tutorName.split(" ")[0] || "Tutor"}</span>
             </h2>
@@ -148,7 +148,7 @@ export default function TutorAcademicoDashboardPage() {
         </section>
 
         {/* KPIs and Chart Section */}
-        <section className="grid lg:grid-cols-3 gap-8">
+        <section className="grid lg:grid-cols-3 gap-6 md:gap-8">
           <div className="lg:col-span-2 grid sm:grid-cols-2 gap-6">
             <KpiCard
               title="Pasantes Activos"
@@ -181,7 +181,7 @@ export default function TutorAcademicoDashboardPage() {
             />
           </div>
 
-          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl flex flex-col">
+          <div className="bg-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl flex flex-col min-w-0">
             <h3 className="text-lg font-black text-[#003366] mb-6 flex items-center gap-2">
               <FileText className="w-5 h-5 text-[#C5A059]" />
               Estado Documental Global
@@ -340,7 +340,7 @@ function KpiCard({
     <motion.div
       whileHover={{ y: -6 }}
       className={cn(
-        "bg-white p-8 rounded-[2.5rem] border shadow-xl relative overflow-hidden",
+        "bg-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border shadow-xl relative overflow-hidden",
         alert && value > 0 ? "border-red-200" : "border-slate-100"
       )}
     >
@@ -351,7 +351,7 @@ function KpiCard({
         {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: `w-6 h-6 ${color}` })}
       </div>
       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
-      <h4 className={cn("text-3xl font-black tracking-tighter", alert && value > 0 ? "text-red-600" : "text-[#003366]")}>
+      <h4 className={cn("text-2xl md:text-3xl font-black tracking-tighter break-words", alert && value > 0 ? "text-red-600" : "text-[#003366]")}>
         {value}
       </h4>
     </motion.div>

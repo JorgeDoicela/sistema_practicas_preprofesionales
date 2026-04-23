@@ -155,7 +155,7 @@ export function ProfileView() {
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col sm:flex-row sm:items-center gap-6"
       >
-        <div className="w-24 h-24 rounded-3xl bg-[#003366] text-white flex items-center justify-center text-3xl font-black shrink-0 shadow-xl shadow-blue-900/20">
+        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-[#003366] text-white flex items-center justify-center text-2xl sm:text-3xl font-black shrink-0 shadow-xl shadow-blue-900/20">
           {profile.fullName?.charAt(0).toUpperCase() ?? "?"}
         </div>
         <div className="flex-1">

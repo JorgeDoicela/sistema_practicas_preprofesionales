@@ -109,7 +109,7 @@ export default function Home() {
                                 { value: "100%", label: "Trazabilidad" },
                             ].map(k => (
                                 <div key={k.label} className="bg-white/8 backdrop-blur border border-white/15 rounded-2xl p-4">
-                                    <p className="text-3xl font-black text-brand-gold leading-none">{k.value}</p>
+                                    <p className="text-2xl sm:text-3xl font-black text-brand-gold leading-none break-words">{k.value}</p>
                                     <p className="text-white/55 text-[11px] font-medium uppercase tracking-wider mt-1.5">{k.label}</p>
                                 </div>
                             ))}
@@ -148,7 +148,7 @@ export default function Home() {
                 <div className="max-w-7xl mx-auto">
                     <div className="max-w-2xl mb-16">
                         <SectionLabel>Pilares del sistema</SectionLabel>
-                        <h2 className="text-4xl font-black text-brand-blue leading-tight tracking-tight">
+                        <h2 className="text-2xl md:text-4xl font-black text-brand-blue leading-tight tracking-tight">
                             Tres columnas que sostienen la integridad institucional
                         </h2>
                     </div>
@@ -192,7 +192,7 @@ export default function Home() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.1 }}
                                 viewport={{ once: true }}
-                                className={`bg-white rounded-2xl border-t-4 ${p.accent} p-8 shadow-sm hover:shadow-lg transition-shadow`}
+                                className={`bg-white rounded-2xl border-t-4 ${p.accent} p-5 sm:p-8 shadow-sm hover:shadow-lg transition-shadow`}
                             >
                                 <div className="flex items-start justify-between mb-6">
                                     <div className={`w-12 h-12 rounded-xl ${p.iconBg} text-white flex items-center justify-center`}>
@@ -225,7 +225,7 @@ export default function Home() {
                         {/* left */}
                         <div>
                             <SectionLabel>Inteligencia Artificial</SectionLabel>
-                            <h2 className="text-4xl md:text-5xl font-black text-white leading-tight tracking-tight mb-5">
+                            <h2 className="text-2xl md:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-5">
                                 Conoce a{" "}
                                 <span className="text-brand-gold italic">Nexo</span>,
                                 <br />el copiloto del ISTPET
@@ -341,7 +341,7 @@ export default function Home() {
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center max-w-2xl mx-auto mb-16">
                         <SectionLabel>Gobernanza RBAC</SectionLabel>
-                        <h2 className="text-4xl font-black text-brand-blue tracking-tight">Seis portales, una plataforma</h2>
+                        <h2 className="text-2xl md:text-4xl font-black text-brand-blue tracking-tight">Seis portales, una plataforma</h2>
                         <p className="text-slate-500 mt-3 text-sm leading-relaxed">
                             Separación absoluta de responsabilidades. Cada rol accede solo a lo que le corresponde.
                         </p>
@@ -433,7 +433,7 @@ export default function Home() {
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center max-w-2xl mx-auto mb-16">
                         <SectionLabel>Ecosistema funcional</SectionLabel>
-                        <h2 className="text-4xl font-black text-brand-blue tracking-tight">
+                        <h2 className="text-2xl md:text-4xl font-black text-brand-blue tracking-tight">
                             Todo el ciclo de vida, en un solo lugar
                         </h2>
                         <p className="text-slate-500 mt-3 text-sm leading-relaxed">
@@ -561,7 +561,7 @@ export default function Home() {
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center max-w-2xl mx-auto mb-16">
                         <SectionLabel>Infraestructura técnica</SectionLabel>
-                        <h2 className="text-4xl font-black text-white tracking-tight">Stack de grado empresarial</h2>
+                        <h2 className="text-2xl md:text-4xl font-black text-white tracking-tight">Stack de grado empresarial</h2>
                         <p className="text-white/50 mt-3 text-sm">
                             Arquitectura <span className="text-brand-gold font-semibold">Hybrid Universal Bridge</span> con librerías especializadas de primer nivel.
                         </p>
@@ -626,7 +626,7 @@ export default function Home() {
                         {/* sticky left */}
                         <div className="lg:sticky lg:top-24 lg:self-start">
                             <SectionLabel>El flujo legal</SectionLabel>
-                            <h2 className="text-4xl font-black text-brand-blue tracking-tight leading-tight mb-5">
+                            <h2 className="text-2xl md:text-4xl font-black text-brand-blue tracking-tight leading-tight mb-5">
                                 Cómo funciona<br />en Ecuador
                             </h2>
                             <p className="text-slate-500 text-sm leading-relaxed mb-8">
@@ -687,7 +687,7 @@ export default function Home() {
                     <div className="grid lg:grid-cols-2 gap-14 items-center">
                         <div>
                             <SectionLabel>Seguridad y cumplimiento</SectionLabel>
-                            <h2 className="text-4xl font-black text-brand-blue tracking-tight mb-5">
+                            <h2 className="text-2xl md:text-4xl font-black text-brand-blue tracking-tight mb-5">
                                 Privacidad por diseño,<br />auditoría por defecto
                             </h2>
                             <p className="text-slate-500 leading-relaxed mb-8 text-sm">
@@ -772,7 +772,7 @@ export default function Home() {
                             <Sparkles className="w-3 h-3 text-brand-gold" />
                             Listo para usar
                         </div>
-                        <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-5">
+                        <h2 className="text-2xl md:text-4xl lg:text-5xl font-black text-white tracking-tight mb-5">
                             Únete al ecosistema EmiTesis
                         </h2>
                         <p className="text-white/60 mb-10 text-lg leading-relaxed">

@@ -55,7 +55,7 @@ export default function EmpresasPage() {
                             transition={{ delay: 0.2, duration: 0.6 }}
                             className="hidden lg:block"
                         >
-                            <div className="bg-white/8 border border-white/15 rounded-2xl p-8 backdrop-blur">
+                            <div className="bg-white/8 border border-white/15 rounded-2xl p-5 sm:p-8 backdrop-blur">
                                 <div className="flex items-center gap-3 mb-8 pb-6 border-b border-white/10">
                                     <div className="w-12 h-12 rounded-xl bg-brand-gold/20 text-brand-gold flex items-center justify-center">
                                         <Handshake className="w-6 h-6" />
@@ -97,7 +97,7 @@ export default function EmpresasPage() {
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center max-w-2xl mx-auto mb-16">
                         <SectionLabel>Beneficios</SectionLabel>
-                        <h2 className="text-4xl font-black text-brand-blue tracking-tight">¿Por qué unirse?</h2>
+                        <h2 className="text-2xl md:text-4xl font-black text-brand-blue tracking-tight">¿Por qué unirse?</h2>
                         <p className="text-slate-500 mt-3 text-sm leading-relaxed">
                             Más que pasantías: una alianza estratégica con respaldo legal, gestión digital y talento verificado.
                         </p>
@@ -133,7 +133,7 @@ export default function EmpresasPage() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.1 }}
                                 viewport={{ once: true }}
-                                className={`bg-white rounded-2xl border border-slate-100 border-t-4 ${b.border} p-8 shadow-sm hover:shadow-md transition-shadow`}
+                                className={`bg-white rounded-2xl border border-slate-100 border-t-4 ${b.border} p-5 sm:p-8 shadow-sm hover:shadow-md transition-shadow`}
                             >
                                 <div className={`w-11 h-11 rounded-xl ${b.color} text-white flex items-center justify-center mb-5`}>
                                     {b.icon}
@@ -151,7 +151,7 @@ export default function EmpresasPage() {
                 <div className="max-w-5xl mx-auto">
                     <div className="text-center mb-16">
                         <SectionLabel>Proceso de incorporación</SectionLabel>
-                        <h2 className="text-4xl font-black text-brand-blue tracking-tight">Cómo empezar</h2>
+                        <h2 className="text-2xl md:text-4xl font-black text-brand-blue tracking-tight">Cómo empezar</h2>
                         <p className="text-slate-500 mt-3 text-sm">En cuatro pasos su empresa estará lista para recibir pasantes.</p>
                     </div>
 

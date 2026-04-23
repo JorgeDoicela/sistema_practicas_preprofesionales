@@ -166,7 +166,7 @@ export default function EvaluacionesPage() {
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
               Coordinación de Prácticas
             </span>
-            <h2 className="text-4xl font-black text-[#003366] tracking-tight">
+            <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
               Evaluaciones <span className="text-slate-400">de Empresa</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
@@ -332,7 +332,7 @@ export default function EvaluacionesPage() {
                                 Puntaje global
                               </p>
                               <div className="flex items-end gap-2 mb-3">
-                                <span className="text-4xl font-black text-[#003366]">
+                                <span className="text-2xl md:text-4xl font-black text-[#003366]">
                                   {r.evaluation.total}
                                 </span>
                                 <span className="text-xl font-black text-slate-300 mb-1">/ 25</span>
@@ -407,7 +407,7 @@ function KpiCard({
   return (
     <motion.div
       whileHover={{ y: -4 }}
-      className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl"
+      className="bg-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl"
     >
       <div
         className={cn(
@@ -420,7 +420,7 @@ function KpiCard({
         })}
       </div>
       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
-      <h4 className="text-3xl font-black text-[#003366] tracking-tighter">{value}</h4>
+      <h4 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tighter break-words">{value}</h4>
     </motion.div>
   );
 }

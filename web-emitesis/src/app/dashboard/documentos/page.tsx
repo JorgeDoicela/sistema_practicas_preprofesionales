@@ -298,18 +298,18 @@ export default function DocumentosPage() {
     <div className="min-h-screen bg-[#F8FAFC] pb-20">
       {/* Header Section */}
       <div className="bg-white border-b border-white/10 shadow-sm sticky top-0 z-30">
-        <div className="max-w-[1600px] mx-auto px-6 h-24 flex items-center justify-between">
-          <div className="flex items-center gap-5">
-            <div className="w-14 h-14 bg-[#003366] rounded-2xl flex items-center justify-center shadow-lg shadow-blue-900/10">
-              <FileStack className="text-[#C5A059] w-7 h-7" />
+        <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-4 md:h-24 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 md:gap-5 min-w-0">
+            <div className="w-10 h-10 md:w-14 md:h-14 bg-[#003366] rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg shadow-blue-900/10 shrink-0">
+              <FileStack className="text-[#C5A059] w-5 h-5 md:w-7 md:h-7" />
             </div>
-            <div>
-              <h1 className="text-2xl font-black text-[#003366] tracking-tight">Gestión de Documentos</h1>
-              <p className="text-sm text-slate-500 font-medium">Configuración de plazos y seguimiento de expedientes</p>
+            <div className="min-w-0">
+              <h1 className="text-lg md:text-2xl font-black text-[#003366] tracking-tight truncate">Gestión de Documentos</h1>
+              <p className="text-xs md:text-sm text-slate-500 font-medium hidden sm:block">Configuración de plazos y seguimiento de expedientes</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4 shrink-0">
              <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
                 <button 
                   onClick={() => setViewMode('grid')}
@@ -334,7 +334,7 @@ export default function DocumentosPage() {
         </div>
       </div>
 
-      <div className="max-w-[1600px] mx-auto px-6 mt-8">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-6 mt-6 md:mt-8">
         {/* Search and Filters */}
         {userRole !== 'ESTUDIANTE' && (
           <div className="flex flex-col md:flex-row gap-4 mb-8">
@@ -390,7 +390,7 @@ export default function DocumentosPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: idx * 0.05 }}
                   className={cn(
-                    "bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm transition-all relative overflow-hidden group",
+                    "bg-white rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-6 md:p-8 border border-slate-200 shadow-sm transition-all relative overflow-hidden group",
                     isLocked ? "bg-slate-50 opacity-80" : "hover:shadow-xl hover:shadow-[#003366]/5"
                   )}
                 >

@@ -44,7 +44,7 @@ export default function ServiciosPage() {
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center max-w-2xl mx-auto mb-16">
                         <SectionLabel>Por rol</SectionLabel>
-                        <h2 className="text-4xl font-black text-brand-blue tracking-tight">
+                        <h2 className="text-2xl md:text-4xl font-black text-brand-blue tracking-tight">
                             Una experiencia dedicada para cada actor
                         </h2>
                         <p className="text-slate-500 mt-3 text-sm leading-relaxed">
@@ -106,7 +106,7 @@ export default function ServiciosPage() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.1 }}
                                 viewport={{ once: true }}
-                                className={`bg-white rounded-2xl border border-slate-100 border-t-4 ${s.color} p-8 shadow-sm hover:shadow-md transition-shadow`}
+                                className={`bg-white rounded-2xl border border-slate-100 border-t-4 ${s.color} p-5 sm:p-8 shadow-sm hover:shadow-md transition-shadow`}
                             >
                                 <div className="flex items-center gap-3 mb-6">
                                     <div className={`w-11 h-11 rounded-xl ${s.iconBg} text-white flex items-center justify-center`}>
@@ -137,7 +137,7 @@ export default function ServiciosPage() {
                 <div className="max-w-7xl mx-auto relative z-10">
                     <div className="text-center max-w-2xl mx-auto mb-16">
                         <SectionLabel>Tecnología aplicada</SectionLabel>
-                        <h2 className="text-4xl font-black text-white tracking-tight">
+                        <h2 className="text-2xl md:text-4xl font-black text-white tracking-tight">
                             Innovación que genera confianza
                         </h2>
                         <p className="text-white/55 mt-3 text-sm">
@@ -201,7 +201,7 @@ export default function ServiciosPage() {
             <section className="py-20 px-6 lg:px-10 bg-slate-50">
                 <div className="max-w-3xl mx-auto text-center">
                     <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-                        <h2 className="text-3xl font-black text-brand-blue tracking-tight mb-4">
+                        <h2 className="text-2xl md:text-3xl font-black text-brand-blue tracking-tight mb-4">
                             ¿Listo para digitalizar tus prácticas?
                         </h2>
                         <p className="text-slate-500 text-sm mb-8">

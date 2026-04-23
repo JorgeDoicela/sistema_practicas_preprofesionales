@@ -28,6 +28,7 @@ import {
     MessageSquare,
     CalendarOff,
     List,
+    X,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { User as UserType } from "@/types/user";
@@ -94,7 +95,12 @@ const MENUS: Record<string, Array<{ icon: ElementType; label: string; href: stri
 
 // ── Componente Sidebar ─────────────────────────────────────────────────────
 
-export function Sidebar() {
+interface SidebarProps {
+    isOpen?: boolean;
+    onClose?: () => void;
+}
+
+export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     const pathname = usePathname();
     const [user, setUser] = useState<UserType | null>(null);
 
@@ -111,7 +117,29 @@ export function Sidebar() {
     const isEmpresaRole = role === "EMPRESA" || role === "TUTOR_EMPRESARIAL";
 
     return (
-        <aside data-tour="sidebar" className="w-72 bg-[#003366] text-white flex flex-col h-screen sticky top-0 border-r border-white/5 shadow-2xl z-40">
+        <>
+            {/* Overlay solo en móvil */}
+            {isOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-[190] lg:hidden"
+                    onClick={onClose}
+                />
+            )}
+            <aside data-tour="sidebar" className={cn(
+                "w-72 bg-[#003366] text-white flex flex-col h-screen border-r border-white/5 shadow-2xl z-[200]",
+                "fixed top-0 left-0 transition-transform duration-300 ease-in-out",
+                "lg:sticky lg:translate-x-0 lg:shrink-0",
+                isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+            )}>
+            {/* Botón cerrar solo en móvil */}
+            <button
+                onClick={onClose}
+                className="lg:hidden absolute top-4 right-4 w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-colors z-10"
+                aria-label="Cerrar menú"
+            >
+                <X className="w-4 h-4" />
+            </button>
+
             {/* Brand Header */}
             <div className="p-8 pb-12">
                 <div className="flex items-center gap-3 group">
@@ -197,6 +225,7 @@ export function Sidebar() {
                 </button>
             </div>
         </aside>
+        </>
     );
 }
 

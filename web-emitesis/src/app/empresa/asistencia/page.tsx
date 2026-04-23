@@ -120,7 +120,7 @@ export default function EmpresaAsistenciaPage() {
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
               Portal de Empresa
             </span>
-            <h2 className="text-4xl font-black text-[#003366] tracking-tight">
+            <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
               Asistencia <span className="text-slate-400">de Pasantes</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
@@ -147,12 +147,12 @@ export default function EmpresaAsistenciaPage() {
               { icon: <Clock className="w-6 h-6" />, title: "Horas acumuladas", value: `${totalAccum.toFixed(0)}h`, color: "bg-emerald-500" },
               { icon: <CheckCircle2 className="w-6 h-6" />, title: "Total pasantes", value: rows.length, color: "bg-amber-500" },
             ].map((kpi) => (
-              <motion.div key={kpi.title} whileHover={{ y: -4 }} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl">
+              <motion.div key={kpi.title} whileHover={{ y: -4 }} className="bg-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl">
                 <div className={cn("p-4 rounded-2xl inline-flex mb-6", kpi.color.replace("bg-", "bg-") + "/10")}>
                   {React.cloneElement(kpi.icon as React.ReactElement<{ className?: string }>, { className: `w-6 h-6 ${kpi.color.replace("bg-", "text-")}` })}
                 </div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{kpi.title}</p>
-                <h4 className="text-3xl font-black text-[#003366] tracking-tighter">{kpi.value}</h4>
+                <h4 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tighter break-words">{kpi.value}</h4>
               </motion.div>
             ))}
           </section>

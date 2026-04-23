@@ -183,19 +183,19 @@ export default function AsignacionPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-5xl mx-auto space-y-8 pb-20">
+      <div className="max-w-5xl mx-auto px-4 sm:px-0 space-y-6 md:space-y-8 pb-20">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
             <UserPlus size={12} /> Gestión de Prácticas
           </div>
-          <h1 className="text-3xl font-black text-[#003366] tracking-tight">Vincular Estudiante</h1>
+          <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Vincular Estudiante</h1>
           <p className="text-slate-500 mt-2">Asigna un pasante a una empresa y define su tutor académico responsable.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {/* Main Form */}
           <div className="md:col-span-2 space-y-6">
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 space-y-6">
+            <div className="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-slate-100 space-y-6">
               <div className="flex items-center gap-3 mb-2">
                 <GraduationCap className="text-[#C5A059]" size={20} />
                 <h3 className="font-bold text-[#003366] uppercase tracking-widest text-sm">Selección de Actores</h3>
@@ -243,7 +243,7 @@ export default function AsignacionPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 space-y-6">
+            <div className="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-slate-100 space-y-6">
               <div className="flex items-center gap-3 mb-2">
                 <Briefcase className="text-[#C5A059]" size={20} />
                 <h3 className="font-bold text-[#003366] uppercase tracking-widest text-sm">Detalles de la Práctica</h3>
@@ -490,7 +490,7 @@ export default function AsignacionPage() {
 
           {/* Sidebar / Info */}
           <div className="space-y-6">
-            <div className="bg-[#003366] text-white rounded-3xl p-8 shadow-xl">
+            <div className="bg-[#003366] text-white rounded-3xl p-5 md:p-8 shadow-xl">
               <ShieldCheck className="text-[#C5A059] mb-4" size={32} />
               <h4 className="font-bold text-lg mb-2 italic">Aviso de Notificación</h4>
               <p className="text-white/70 text-sm leading-relaxed mb-6">
@@ -514,7 +514,7 @@ export default function AsignacionPage() {
               </button>
             </div>
 
-            <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+            <div className="bg-white rounded-3xl p-5 md:p-8 border border-slate-100 shadow-sm">
               <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">Resumen de Geocercas</h4>
               <div className="space-y-4">
                 <div className="flex justify-between items-center text-xs">

@@ -95,7 +95,7 @@ export default function ConfigurationPage() {
     <DashboardLayout>
       <div className="max-w-4xl mx-auto py-8 px-4">
         <header className="mb-10">
-          <h1 className="text-3xl font-black text-[#003366] tracking-tight mb-2">Configuración de Seguridad</h1>
+          <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight mb-2">Configuración de Seguridad</h1>
           <p className="text-slate-500 text-sm font-medium">Gestiona las capas de protección de tu cuenta institucional.</p>
         </header>
 
@@ -116,8 +116,8 @@ export default function ConfigurationPage() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden"
           >
-            <div className="p-8 md:p-10">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+            <div className="p-5 md:p-8 lg:p-10">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-10">
                 <div className="flex items-center gap-5">
                   <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${user.isTwoFactorEnabled ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
                     <Shield className="w-7 h-7" />
@@ -139,7 +139,7 @@ export default function ConfigurationPage() {
               </div>
 
               {step === "status" ? (
-                <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100">
+                <div className="bg-slate-50 rounded-3xl p-5 md:p-8 border border-slate-100">
                   <h3 className="text-sm font-black text-[#003366] uppercase tracking-widest mb-4">¿Cómo funciona?</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="space-y-3">
@@ -234,7 +234,7 @@ export default function ConfigurationPage() {
             </div>
           </motion.div>
 
-          <div className="p-8 bg-slate-100/50 rounded-[2rem] border border-dashed border-slate-200">
+          <div className="p-5 md:p-8 bg-slate-100/50 rounded-[2rem] border border-dashed border-slate-200">
              <div className="flex items-start gap-4">
                 <AlertCircle className="w-5 h-5 text-[#003366] flex-shrink-0 mt-1" />
                 <div>
@@ -246,7 +246,7 @@ export default function ConfigurationPage() {
              </div>
           </div>
 
-          <div className="p-8 bg-white rounded-[2rem] border border-slate-100 shadow-sm">
+          <div className="p-5 md:p-8 bg-white rounded-[2rem] border border-slate-100 shadow-sm">
             <h3 className="text-sm font-black text-[#003366] uppercase tracking-widest mb-2">
               Datos personales (LOPDP Ecuador)
             </h3>

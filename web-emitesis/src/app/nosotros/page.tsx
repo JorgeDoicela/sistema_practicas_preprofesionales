@@ -40,7 +40,7 @@ export default function NosotrosPage() {
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center max-w-2xl mx-auto mb-16">
                         <SectionLabel>Identidad institucional</SectionLabel>
-                        <h2 className="text-4xl font-black text-brand-blue tracking-tight">Misión y Visión</h2>
+                        <h2 className="text-2xl md:text-4xl font-black text-brand-blue tracking-tight">Misión y Visión</h2>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-6">
@@ -48,7 +48,7 @@ export default function NosotrosPage() {
                             initial={{ opacity: 0, x: -24 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
-                            className="bg-white rounded-2xl border-t-4 border-t-brand-gold border border-slate-100 p-10 shadow-sm"
+                            className="bg-white rounded-2xl border-t-4 border-t-brand-gold border border-slate-100 p-6 md:p-10 shadow-sm"
                         >
                             <div className="w-12 h-12 rounded-xl bg-brand-gold/10 text-brand-gold flex items-center justify-center mb-6">
                                 <Target className="w-6 h-6" />
@@ -91,7 +91,7 @@ export default function NosotrosPage() {
                         <div className="space-y-6">
                             <div>
                                 <SectionLabel>Información institucional</SectionLabel>
-                                <h2 className="text-4xl font-black text-brand-blue tracking-tight">
+                                <h2 className="text-2xl md:text-4xl font-black text-brand-blue tracking-tight">
                                     Conózcanos
                                 </h2>
                             </div>
@@ -170,7 +170,7 @@ export default function NosotrosPage() {
             {/* ── CTA ── */}
             <section className="py-20 px-6 lg:px-10 bg-slate-50">
                 <div className="max-w-3xl mx-auto text-center">
-                    <h2 className="text-3xl font-black text-brand-blue tracking-tight mb-4">
+                    <h2 className="text-2xl md:text-3xl font-black text-brand-blue tracking-tight mb-4">
                         Parte del ISTPET
                     </h2>
                     <p className="text-slate-500 text-sm mb-8">

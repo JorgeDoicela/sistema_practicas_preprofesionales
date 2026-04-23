@@ -55,12 +55,12 @@ export default function CoordinadorAusenciasPage() {
   return (
     <DashboardLayout>
       <div className="max-w-5xl mx-auto py-8 px-4 space-y-8">
-        <div className="flex items-end justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
               <CalendarOff size={12} /> Coordinación
             </div>
-            <h1 className="text-3xl font-black text-[#003366] tracking-tight">Ausencias del Sistema</h1>
+            <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Ausencias del Sistema</h1>
             <p className="text-slate-500 mt-1">Visión global de todas las ausencias registradas.</p>
           </div>
         </div>
@@ -127,7 +127,7 @@ export default function CoordinadorAusenciasPage() {
       {reviewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setReviewModal(null)} />
-          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
+          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-5 sm:p-8 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-xl font-black text-[#003366]">Revisar Ausencia</h2>
               <button onClick={() => setReviewModal(null)} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400"><X size={18} /></button>

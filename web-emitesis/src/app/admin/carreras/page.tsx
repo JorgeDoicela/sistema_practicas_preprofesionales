@@ -102,17 +102,17 @@ export default function CarrerasAdminPage() {
     <DashboardLayout>
       <div className="max-w-5xl mx-auto py-8 px-4 space-y-8">
         {/* Header */}
-        <div className="flex items-end justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
               <GraduationCap size={12} /> Gestión Académica
             </div>
-            <h1 className="text-3xl font-black text-[#003366] tracking-tight">Carreras / Programas</h1>
+            <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Carreras / Programas</h1>
             <p className="text-slate-500 mt-1">Administra las carreras del instituto y sus configuraciones.</p>
           </div>
           <button
             onClick={() => openModal()}
-            className="flex items-center gap-2 bg-[#003366] text-white px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:translate-y-[-2px] transition-all"
+            className="flex w-full sm:w-auto items-center justify-center gap-2 bg-[#003366] text-white px-6 py-3.5 sm:py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:translate-y-[-2px] transition-all shrink-0"
           >
             <Plus size={16} /> Nueva Carrera
           </button>
@@ -200,7 +200,7 @@ export default function CarrerasAdminPage() {
               className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
               className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8">
+              <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-5 sm:p-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-black text-[#003366]">
                     {editingCareer ? "Editar Carrera" : "Nueva Carrera"}

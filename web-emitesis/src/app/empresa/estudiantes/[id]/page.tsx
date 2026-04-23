@@ -177,31 +177,32 @@ export default function EvaluarEstudiantePage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-4xl mx-auto pb-20 space-y-10">
+      <div className="max-w-4xl mx-auto px-4 sm:px-0 pb-20 space-y-8 md:space-y-10">
 
         {/* Header */}
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-4 min-w-0">
+          <div className="flex items-start gap-3 min-w-0">
           <button
             onClick={() => router.push("/empresa/dashboard")}
-            className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors"
+            className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors shrink-0"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div>
+          <div className="min-w-0">
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em]">
               RF-07 · Test de Aptitud y Actitud
             </span>
-            <h2 className="text-3xl font-black text-[#003366] tracking-tight">
+            <h2 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">
               Evaluar Pasante
             </h2>
           </div>
-          <div className="flex-1" />
+          </div>
           {hoursWorked >= internship.totalHours && existingEval && (
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsCertOpen(true)}
-              className="px-6 py-3 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 flex items-center gap-2"
+              className="w-full sm:w-auto sm:ml-auto px-5 sm:px-6 py-3 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
             >
               <FileCheck className="w-4 h-4" /> Generar Certificado
             </motion.button>
@@ -209,9 +210,9 @@ export default function EvaluarEstudiantePage() {
         </div>
 
         {/* Ficha del pasante */}
-        <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8">
+        <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 shadow-sm p-5 md:p-8">
           <div className="flex flex-col md:flex-row md:items-center gap-6">
-            <div className="w-20 h-20 rounded-[1.75rem] bg-[#003366]/5 flex items-center justify-center text-3xl font-black text-[#003366] flex-shrink-0">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] md:rounded-[1.75rem] bg-[#003366]/5 flex items-center justify-center text-2xl md:text-3xl font-black text-[#003366] flex-shrink-0">
               {internship.student.fullName.charAt(0)}
             </div>
             <div className="flex-1 grid md:grid-cols-3 gap-6">
@@ -227,13 +228,13 @@ export default function EvaluarEstudiantePage() {
 
         {/* Evidence Explorer */}
         <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
-          <div className="p-8 border-b border-slate-100 flex items-center justify-between">
+          <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
                <Camera className="w-5 h-5 text-[#C5A059]" />
                <h3 className="text-lg font-black text-[#003366]">Explorador de Evidencias</h3>
             </div>
           </div>
-          <div className="p-8">
+          <div className="p-4 sm:p-6 md:p-8">
             {internship.attendances?.filter((a:any) => a.activityPhotoKey).length === 0 ? (
                <div className="py-12 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200 text-center">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sin evidencias fotográficas aún</p>
@@ -280,7 +281,7 @@ export default function EvaluarEstudiantePage() {
             )}
           </div>
 
-          <div className="p-10 space-y-8">
+          <div className="p-5 md:p-10 space-y-6 md:space-y-8">
             {CRITERIA.map((criterion, idx) => (
               <motion.div
                 key={criterion.key}
@@ -330,7 +331,7 @@ export default function EvaluarEstudiantePage() {
             </div>
 
             {/* Resultado parcial */}
-            <div className="bg-slate-50 rounded-[2rem] p-8 flex flex-col md:flex-row md:items-center gap-6 border border-slate-100">
+            <div className="bg-slate-50 rounded-[2rem] p-4 sm:p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6 border border-slate-100">
               <div className="flex-1">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
                   Puntaje total

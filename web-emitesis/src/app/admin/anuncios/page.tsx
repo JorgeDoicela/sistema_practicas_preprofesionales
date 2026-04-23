@@ -90,7 +90,7 @@ export default function AdminAnnouncementsPage() {
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
               Comunicación Institucional
             </span>
-            <h2 className="text-4xl font-black text-[#003366] tracking-tight">
+            <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
               Gestor de <span className="text-slate-400">Anuncios</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
@@ -112,7 +112,7 @@ export default function AdminAnnouncementsPage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-white rounded-[2.5rem] p-10 border-2 border-dashed border-slate-200 shadow-xl"
+              className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-10 border-2 border-dashed border-slate-200 shadow-xl"
             >
                <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight mb-8">Crear Comunicación</h3>
                <div className="grid gap-6">
@@ -184,9 +184,9 @@ export default function AdminAnnouncementsPage() {
             announcements.map((a) => (
               <div 
                 key={a.id} 
-                className={`bg-white rounded-3xl p-8 border border-slate-100 shadow-lg relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6 ${!a.isActive && 'opacity-60 grayscale'}`}
+                className={`bg-white rounded-3xl p-4 md:p-8 border border-slate-100 shadow-lg relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 ${!a.isActive && 'opacity-60 grayscale'}`}
               >
-                <div className="flex items-start gap-6">
+                <div className="flex items-start gap-3 md:gap-6">
                    <div className={`p-4 rounded-2xl ${
                      a.type === 'SUCCESS' ? 'bg-emerald-50 text-emerald-600' :
                      a.type === 'WARNING' ? 'bg-amber-50 text-amber-600' :

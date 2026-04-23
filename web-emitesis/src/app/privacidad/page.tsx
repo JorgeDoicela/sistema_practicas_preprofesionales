@@ -16,7 +16,7 @@ export default function PrivacidadPage() {
     const contactEmail = getDataProtectionContactEmail();
 
     return (
-        <div className="min-h-screen bg-slate-50 pt-28 pb-20 px-6">
+        <div className="min-h-screen bg-slate-50 pt-24 sm:pt-28 pb-16 sm:pb-20 px-4 sm:px-6">
             {/* bg ornaments */}
             <div className="fixed top-0 right-0 w-96 h-96 bg-blue-100/20 rounded-full blur-3xl -z-10 pointer-events-none" />
             <div className="fixed bottom-0 left-0 w-80 h-80 bg-brand-gold/5 rounded-full blur-3xl -z-10 pointer-events-none" />
@@ -30,22 +30,22 @@ export default function PrivacidadPage() {
                 </Link>
 
                 {/* header card */}
-                <div className="bg-brand-blue rounded-2xl p-8 mb-6 relative overflow-hidden">
+                <div className="bg-brand-blue rounded-2xl p-5 sm:p-8 mb-6 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-40 h-40 bg-brand-gold/15 rounded-full blur-3xl" />
-                    <div className="relative z-10 flex items-center gap-4">
+                    <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-4">
                         <div className="w-14 h-14 rounded-xl bg-brand-gold/20 border border-brand-gold/30 flex items-center justify-center flex-shrink-0">
                             <ShieldCheck className="w-7 h-7 text-brand-gold" />
                         </div>
                         <div>
                             <p className="text-[10px] font-bold text-brand-gold uppercase tracking-[0.3em] mb-1">ISTPET · Emitesis</p>
-                            <h1 className="text-2xl font-black text-white tracking-tight">Política de Privacidad Institucional</h1>
+                            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">Política de Privacidad Institucional</h1>
                             <p className="text-white/50 text-xs mt-1">Cumplimiento LOPDP Ecuador · Versión 1.0 · Abril 2026</p>
                         </div>
                     </div>
                 </div>
 
                 {/* intro */}
-                <div className="bg-white rounded-2xl border border-slate-100 p-8 mb-6 shadow-sm">
+                <div className="bg-white rounded-2xl border border-slate-100 p-5 sm:p-8 mb-6 shadow-sm">
                     <p className="text-slate-600 leading-relaxed text-sm">
                         El presente documento constituye el{" "}
                         <strong className="text-brand-blue">Aviso de Privacidad</strong> para el tratamiento de datos
@@ -87,7 +87,7 @@ export default function PrivacidadPage() {
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-100">
 
                     {/* section 01 */}
-                    <div className="p-8">
+                    <div className="p-5 sm:p-8">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
                                 <span className="text-xs font-black text-brand-blue">01</span>
@@ -101,7 +101,7 @@ export default function PrivacidadPage() {
                     </div>
 
                     {/* section 02 */}
-                    <div className="p-8">
+                    <div className="p-5 sm:p-8">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
                                 <span className="text-xs font-black text-brand-blue">02</span>
@@ -125,7 +125,7 @@ export default function PrivacidadPage() {
                     </div>
 
                     {/* section 03 */}
-                    <div className="p-8">
+                    <div className="p-5 sm:p-8">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
                                 <span className="text-xs font-black text-brand-blue">03</span>
@@ -160,7 +160,7 @@ export default function PrivacidadPage() {
                     </div>
 
                     {/* section 04 */}
-                    <div className="p-8">
+                    <div className="p-5 sm:p-8">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
                                 <span className="text-xs font-black text-brand-blue">04</span>

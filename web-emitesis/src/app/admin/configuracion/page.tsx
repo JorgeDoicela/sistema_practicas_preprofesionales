@@ -65,7 +65,7 @@ export default function AdminSettingsPage() {
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
               Configuración Avanzada
             </span>
-            <h2 className="text-4xl font-black text-[#003366] tracking-tight">
+            <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
               Parámetros del <span className="text-slate-400">Sistema</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
@@ -98,14 +98,14 @@ export default function AdminSettingsPage() {
              <span className="text-[10px] font-black uppercase tracking-widest">Cargando parámetros…</span>
           </div>
         ) : (
-          <div className="grid gap-10">
+          <div className="grid gap-6 md:gap-10">
             {sections.map(section => {
               const sectionSettings = settings.filter(s => s.category === section.id);
               if (sectionSettings.length === 0) return null;
 
               return (
-                <div key={section.id} className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-50 overflow-hidden">
-                  <div className="p-10 border-b border-slate-50 bg-slate-50/30">
+                <div key={section.id} className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-50 overflow-hidden">
+                  <div className="p-5 md:p-10 border-b border-slate-50 bg-slate-50/30">
                     <div className="flex items-center gap-4">
                       <div className="p-3 bg-[#003366] text-white rounded-2xl">
                         {section.icon}
@@ -116,9 +116,9 @@ export default function AdminSettingsPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="p-10 divide-y divide-slate-100">
+                  <div className="p-5 md:p-10 divide-y divide-slate-100">
                     {sectionSettings.map(setting => (
-                      <div key={setting.id} className="py-8 first:pt-0 last:pb-0 grid md:grid-cols-3 gap-8 items-center">
+                      <div key={setting.id} className="py-5 md:py-8 first:pt-0 last:pb-0 grid md:grid-cols-3 gap-4 md:gap-8 items-center">
                         <div className="md:col-span-1">
                           <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">
                             {setting.key.replace(/_/g, " ")}

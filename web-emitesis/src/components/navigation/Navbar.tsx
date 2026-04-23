@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { BRAND_LOGO_SRC } from "@/lib/brand";
 import { usePathname } from "next/navigation";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
 export function Navbar() {
     const pathname = usePathname();
@@ -63,9 +64,9 @@ export function Navbar() {
                                 className="h-6 w-auto brightness-0 invert"
                             />
                         </motion.div>
-                        <div className="border-l border-slate-200 pl-3">
-                            <span className="block text-[9px] font-black uppercase tracking-widest text-brand-blue/50 leading-none mb-1">Tecnológico Traversari - ISTPET</span>
-                            <span className="block text-sm font-black text-brand-blue leading-none">Emitesis</span>
+                        <div className="border-l border-border pl-3">
+                            <span className="block text-[9px] font-black uppercase tracking-widest text-brand-blue/50 dark:text-sky-400/70 leading-none mb-1">Tecnológico Traversari - ISTPET</span>
+                            <span className="block text-sm font-black text-brand-blue dark:text-sky-300 leading-none">Emitesis</span>
                         </div>
                     </Link>
 
@@ -78,7 +79,7 @@ export function Navbar() {
                                     key={item.name}
                                     href={item.path}
                                     className={`text-[10px] font-black uppercase tracking-widest transition-all relative group ${
-                                        isActive ? "text-brand-blue" : "text-slate-500 hover:text-brand-blue"
+                                        isActive ? "text-brand-blue dark:text-sky-400" : "text-slate-500 dark:text-slate-400 hover:text-brand-blue dark:hover:text-sky-300"
                                     }`}
                                 >
                                     {item.name}
@@ -95,6 +96,7 @@ export function Navbar() {
 
                     {/* Right side */}
                     <div className="flex items-center gap-3">
+                        <ThemeToggle />
                         <Link
                             href="/login"
                             className="bg-brand-blue text-white px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest shadow-xl shadow-blue-900/20 hover:bg-brand-gold hover:scale-105 transition-all focus:outline-none"
@@ -104,7 +106,7 @@ export function Navbar() {
                         {/* Mobile hamburger */}
                         <button
                             onClick={() => setMobileOpen(v => !v)}
-                            className="md:hidden p-2 rounded-xl text-brand-blue hover:bg-brand-blue/5 transition-all"
+                            className="md:hidden p-2 rounded-xl text-brand-blue dark:text-sky-400 hover:bg-brand-blue/5 dark:hover:bg-sky-400/10 transition-all"
                             aria-label="Menú"
                         >
                             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
@@ -133,7 +135,7 @@ export function Navbar() {
                             transition={{ duration: 0.2 }}
                             className="fixed top-24 left-1/2 -translate-x-1/2 w-[90%] max-w-sm z-50 md:hidden"
                         >
-                            <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
+                            <div className="bg-card rounded-3xl shadow-2xl border border-border overflow-hidden">
                                 <nav className="p-4 flex flex-col gap-1">
                                     {navLinks.map((item) => {
                                         const isActive = pathname === item.path;
@@ -144,8 +146,8 @@ export function Navbar() {
                                                 onClick={() => setMobileOpen(false)}
                                                 className={`flex items-center justify-between px-5 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${
                                                     isActive
-                                                        ? "bg-brand-blue text-white"
-                                                        : "text-slate-500 hover:bg-slate-50 hover:text-brand-blue"
+                                                        ? "bg-brand-blue text-white dark:bg-sky-500 dark:text-white"
+                                                        : "text-slate-500 dark:text-slate-400 hover:bg-muted hover:text-brand-blue dark:hover:text-sky-300"
                                                 }`}
                                             >
                                                 {item.name}
@@ -154,7 +156,11 @@ export function Navbar() {
                                         );
                                     })}
                                 </nav>
-                                <div className="px-4 pb-4">
+                                <div className="px-4 pb-4 flex flex-col gap-2">
+                                    <div className="flex items-center justify-between px-1 pb-1">
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Tema</span>
+                                        <ThemeToggle />
+                                    </div>
                                     <Link
                                         href="/login"
                                         onClick={() => setMobileOpen(false)}

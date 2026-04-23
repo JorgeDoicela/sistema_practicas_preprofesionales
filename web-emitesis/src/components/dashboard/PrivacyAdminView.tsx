@@ -127,7 +127,7 @@ export function PrivacyAdminView() {
           <span className="text-[10px] font-black text-brand-gold uppercase tracking-[0.4em] mb-2 block">
             Gobernanza y Privacidad
           </span>
-          <h2 className="text-4xl font-black text-brand-blue tracking-tight">
+          <h2 className="text-2xl md:text-4xl font-black text-brand-blue tracking-tight">
             Gestión de Derechos <span className="text-slate-400">ARCO</span>
           </h2>
           <p className="text-slate-500 font-medium mt-2">

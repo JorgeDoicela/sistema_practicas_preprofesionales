@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
 
                     {/* heading */}
                     <div className="text-center mb-8">
-                        <h1 className="text-3xl font-black text-brand-blue tracking-tight mb-2">
+                        <h1 className="text-2xl sm:text-3xl font-black text-brand-blue tracking-tight mb-2">
                             ¿Olvidaste tu contraseña?
                         </h1>
                         <p className="text-slate-500 text-sm leading-relaxed">

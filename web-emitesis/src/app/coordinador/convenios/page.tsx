@@ -161,14 +161,14 @@ export default function RegistrarConvenioPage() {
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
                         <FileText size={12} /> Gestión de Convenios
                     </div>
-                    <h1 className="text-3xl font-black text-[#003366] tracking-tight">Registrar Nuevo Convenio</h1>
+                    <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Registrar Nuevo Convenio</h1>
                     <p className="text-slate-500 mt-2">Diligencia la información oficial de la empresa y carga el acuerdo legal.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
                     {/* Sección 1: Datos de la Empresa */}
-                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-                        <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
+                    <div className="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-slate-100">
+                        <div className="flex items-center gap-3 mb-6 md:mb-8 pb-4 border-b border-slate-50">
                             <Building2 className="text-[#C5A059]" size={20} />
                             <h3 className="font-bold text-[#003366] uppercase tracking-widest text-sm">Información de la Entidad Receptora</h3>
                         </div>
@@ -309,8 +309,8 @@ export default function RegistrarConvenioPage() {
                     </div>
 
                     {/* Sección 2: Documento y Validación */}
-                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-                        <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
+                    <div className="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-slate-100">
+                        <div className="flex items-center gap-3 mb-6 md:mb-8 pb-4 border-b border-slate-50">
                             <ShieldCheck className="text-[#C5A059]" size={20} />
                             <h3 className="font-bold text-[#003366] uppercase tracking-widest text-sm">Formalización del Acuerdo</h3>
                         </div>

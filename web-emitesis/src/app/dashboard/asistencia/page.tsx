@@ -457,14 +457,14 @@ export default function AsistenciaPage() {
       <div className="max-w-5xl mx-auto space-y-10 pb-20">
 
         {/* ── Header: Reloj + GPS ─────────────────────────────────────── */}
-        <section className="flex flex-col md:flex-row items-center justify-between gap-8 bg-white p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100">
+        <section className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 bg-white p-6 md:p-10 rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100">
           <div className="flex items-center gap-6">
             <div className="w-20 h-20 bg-[#003366] rounded-3xl flex items-center justify-center shadow-lg shadow-blue-900/20">
               <Clock className="w-10 h-10 text-[#C5A059] animate-pulse" />
             </div>
             <div>
               <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-1 block">Registro de Asistencia</span>
-              <h2 className="text-4xl font-black text-[#003366] tracking-tighter">
+              <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tighter">
                 {currentTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 <span className="text-slate-300 text-2xl ml-2 font-bold">
                   {currentTime.toLocaleTimeString([], { second: "2-digit" })}
@@ -529,7 +529,7 @@ export default function AsistenciaPage() {
                      }
                   />
                 </div>
-                <div className="p-8 flex flex-col justify-center gap-6 bg-slate-50/50">
+                <div className="p-4 sm:p-6 md:p-8 flex flex-col justify-center gap-4 md:gap-6 bg-slate-50/50">
                   <div>
                     <span className="text-[9px] font-black text-[#C5A059] uppercase tracking-widest block mb-1">Estado de Geocerca</span>
                     <h3 className="text-2xl font-black text-[#003366] tracking-tight">Zona de Asistencia</h3>
@@ -616,7 +616,7 @@ export default function AsistenciaPage() {
                 onClick={() => openAttendanceModal("IN")}
                 disabled={!!status}
                 className={cn(
-                  "group relative flex items-center justify-between p-8 rounded-[2rem] border-2 transition-all overflow-hidden",
+                  "group relative flex items-center justify-between p-5 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border-2 transition-all overflow-hidden",
                   status
                     ? "bg-slate-50 border-slate-100 cursor-not-allowed"
                     : "bg-white border-emerald-100 hover:border-emerald-500 hover:shadow-xl hover:shadow-emerald-900/10 active:scale-[0.98]"
@@ -664,7 +664,7 @@ export default function AsistenciaPage() {
                 onClick={() => openAttendanceModal("OUT")}
                 disabled={!status || !!(status as Record<string, unknown>)?.checkOut}
                 className={cn(
-                  "group relative flex items-center justify-between p-8 rounded-[2rem] border-2 transition-all overflow-hidden",
+                  "group relative flex items-center justify-between p-5 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border-2 transition-all overflow-hidden",
                   (!status || !!(status as Record<string, unknown>)?.checkOut)
                     ? "bg-slate-50 border-slate-100 cursor-not-allowed"
                     : "bg-white border-rose-100 hover:border-rose-500 hover:shadow-xl hover:shadow-rose-900/10 active:scale-[0.98]"
@@ -717,9 +717,9 @@ export default function AsistenciaPage() {
 
             {/* ── RF-17: Fotos de Actividades ──────────────────────────── */}
             {status && (
-              <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
-                <div className="p-8 border-b border-slate-100 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
+              <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
+                <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                     <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
                       <ImageIcon className="w-5 h-5" aria-hidden />
                     </div>
@@ -730,14 +730,14 @@ export default function AsistenciaPage() {
                   </div>
                   <button
                     onClick={openActivityModal}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-[#003366] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#004488] transition-colors"
+                    className="flex w-full sm:w-auto shrink-0 items-center justify-center gap-2 px-5 py-2.5 bg-[#003366] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#004488] transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                     Agregar Foto
                   </button>
                 </div>
 
-                <div className="p-8">
+                <div className="p-4 sm:p-6 md:p-8">
                   {activityPhotos.length === 0 ? (
                     <div className="text-center py-10 space-y-3">
                       <ImageIcon className="w-12 h-12 text-slate-200 mx-auto" aria-hidden />
@@ -769,9 +769,9 @@ export default function AsistenciaPage() {
             )}
 
             {/* ── Historial ────────────────────────────────────────────── */}
-            <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
-              <div className="p-8 border-b border-slate-100 space-y-6">
-                <div className="flex items-center gap-4">
+            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
+              <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 space-y-4 md:space-y-6">
+                <div className="flex items-center gap-3 sm:gap-4">
                   <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-[#003366]">
                     <History className="w-5 h-5" />
                   </div>
@@ -1409,12 +1409,16 @@ function HistoryRow({ record, expanded, onToggle }: {
                   <p className="text-[9px] font-bold">Sin fotos en este registro</p>
                 </div>
               )}
-              {record.activityDescription && (
+              {(() => {
+                const desc = record.activityDescription;
+                if (desc == null || typeof desc !== "string" || !desc.trim()) return null;
+                return (
                 <div className="flex-1 min-w-0">
                   <p className="text-[8px] font-black text-[#003366] uppercase tracking-widest mb-1">Actividades del Día</p>
-                  <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 rounded-xl p-3">{record.activityDescription}</p>
+                  <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 rounded-xl p-3">{desc}</p>
                 </div>
-              )}
+                );
+              })()}
             </div>
           </motion.div>
         )}

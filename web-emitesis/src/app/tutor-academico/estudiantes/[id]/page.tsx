@@ -189,7 +189,7 @@ export default function StudentDetailPage() {
                   {internship?.status}
                 </span>
               </div>
-              <h1 className="text-4xl font-black text-[#003366] tracking-tighter">
+              <h1 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tighter">
                 {internship?.student?.fullName}
               </h1>
             </div>
@@ -206,16 +206,16 @@ export default function StudentDetailPage() {
           </div>
         </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
           
           {/* Left Column: Stats & Progress */}
           <div className="space-y-8">
             <motion.div 
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
-               className="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm relative overflow-hidden"
+               className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8 border border-slate-200 shadow-sm relative overflow-hidden"
             >
-              <div className="absolute top-0 right-0 p-8 opacity-5">
+              <div className="absolute top-0 right-0 p-4 md:p-8 opacity-5">
                 <TrendingUp className="w-24 h-24 text-[#003366]" />
               </div>
               
@@ -227,7 +227,7 @@ export default function StudentDetailPage() {
                 <div className="relative pt-1">
                   <div className="flex mb-2 items-center justify-between">
                     <div>
-                      <span className="text-3xl font-black text-[#003366]">{summary?.progressPercentage}%</span>
+                      <span className="text-2xl md:text-3xl font-black text-[#003366]">{summary?.progressPercentage}%</span>
                     </div>
                     <div className="text-right">
                       <span className="text-xs font-bold text-slate-400">{summary?.totalHours}h / {summary?.requiredHours}h</span>
@@ -259,7 +259,7 @@ export default function StudentDetailPage() {
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: 0.1 }}
-               className="bg-[#003366] rounded-[2.5rem] p-8 text-white shadow-xl shadow-blue-900/10"
+               className="bg-[#003366] rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8 text-white shadow-xl shadow-blue-900/10"
             >
               <h3 className="text-[11px] font-black text-[#C5A059] uppercase tracking-widest mb-6">Documentación</h3>
               <div className="space-y-4">
@@ -290,7 +290,7 @@ export default function StudentDetailPage() {
           <div className="lg:col-span-2 space-y-8">
             
             <section className="bg-white rounded-[3rem] border border-slate-200 shadow-sm overflow-hidden">
-              <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-slate-50/50">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-200 flex items-center justify-center">
                     <Users className="w-6 h-6 text-[#003366]" />
@@ -308,7 +308,7 @@ export default function StudentDetailPage() {
                 </button>
               </div>
 
-              <div className="p-8">
+              <div className="p-4 sm:p-6 md:p-8">
                 {visits.length === 0 ? (
                   <div className="py-20 text-center space-y-4">
                     <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
@@ -376,7 +376,7 @@ export default function StudentDetailPage() {
 
             {/* Academic Evaluation Section */}
             <section className="bg-gradient-to-br from-white to-slate-50 rounded-[3rem] border border-slate-200 shadow-sm overflow-hidden">
-               <div className="p-8 border-b border-slate-100 flex items-center justify-between">
+               <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center border border-emerald-100">
                       <ClipboardCheck className="w-6 h-6 text-emerald-600" />
@@ -388,8 +388,8 @@ export default function StudentDetailPage() {
                   </div>
                </div>
 
-               <div className="p-10 space-y-10">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+               <div className="p-5 md:p-10 space-y-6 md:space-y-10">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
                     <EvaluationMetric 
                       label="Aplicación de Saberes" 
                       description="Capacidad para aplicar conocimientos teóricos en tareas reales."
@@ -479,11 +479,11 @@ export default function StudentDetailPage() {
                exit={{ scale: 0.9, opacity: 0 }}
                className="relative bg-white rounded-[3rem] w-full max-w-lg shadow-2xl overflow-hidden"
             >
-              <div className="p-10 border-b border-slate-100 bg-slate-50/50">
-                <h3 className="text-2xl font-black text-[#003366] tracking-tight">Nueva Bitácora de Visita</h3>
+              <div className="p-5 md:p-10 border-b border-slate-100 bg-slate-50/50">
+                <h3 className="text-xl md:text-2xl font-black text-[#003366] tracking-tight">Nueva Bitácora de Visita</h3>
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Registrar seguimiento en campo</p>
               </div>
-              <div className="p-10 space-y-6">
+              <div className="p-5 md:p-10 space-y-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Tipo de Visita</label>
                   <div className="grid grid-cols-2 gap-4">

@@ -62,20 +62,20 @@ export default function ConveniosListPage() {
     <DashboardLayout>
       <div className="max-w-6xl mx-auto py-8 px-4 space-y-8">
         {/* Header */}
-        <div className="flex items-end justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
               <FileText size={12} /> Gestión de Convenios
             </div>
-            <h1 className="text-3xl font-black text-[#003366] tracking-tight">Convenios Empresariales</h1>
+            <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Convenios Empresariales</h1>
             <p className="text-slate-500 mt-1">Acuerdos vigentes, históricos y vencidos con entidades receptoras.</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-end gap-3 flex-wrap">
             <button onClick={load} className="p-3 rounded-2xl border border-slate-200 text-slate-400 hover:bg-slate-50 transition-all">
               <RefreshCw size={16} />
             </button>
             <Link href="/coordinador/convenios"
-              className="flex items-center gap-2 bg-[#003366] text-white px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:translate-y-[-2px] transition-all">
+              className="flex flex-1 sm:flex-initial min-w-0 items-center justify-center gap-2 bg-[#003366] text-white px-5 sm:px-6 py-3.5 sm:py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:translate-y-[-2px] transition-all">
               <Plus size={16} /> Nuevo Convenio
             </Link>
           </div>

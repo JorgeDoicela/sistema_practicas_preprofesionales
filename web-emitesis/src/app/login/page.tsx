@@ -116,9 +116,9 @@ export default function LoginPage() {
                     {brandTopOnBlue}
                 </div>
 
-                <div className="relative z-10 flex flex-1 flex-col justify-between p-8 pb-10 pt-12 xl:p-12 xl:pb-12 xl:pt-16">
+                <div className="relative z-10 flex flex-1 flex-col justify-between p-5 sm:p-8 pb-8 sm:pb-10 pt-10 sm:pt-12 xl:p-12 xl:pb-12 xl:pt-16">
                     <div className="max-w-md">
-                        <h2 className="mb-4 text-4xl font-black leading-tight tracking-tight text-white">
+                        <h2 className="mb-4 text-2xl md:text-3xl xl:text-4xl font-black leading-tight tracking-tight text-white">
                             Bienvenido al<br />
                             <span className="italic text-brand-gold">ecosistema EmiTesis</span>
                         </h2>
@@ -179,7 +179,7 @@ export default function LoginPage() {
                         {!isMfaRequired ? (
                             <>
                                 <div className="mb-8">
-                                    <h1 className="text-3xl font-black text-brand-blue tracking-tight mb-2">Iniciar sesión</h1>
+                                    <h1 className="text-2xl sm:text-3xl font-black text-brand-blue tracking-tight mb-2">Iniciar sesión</h1>
                                     <p className="text-slate-500 text-sm">Ingresa tus credenciales institucionales ISTPET.</p>
                                 </div>
 

@@ -93,20 +93,20 @@ export default function PrivacyCenterPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 md:py-12">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
-        <div className="flex items-center gap-6">
-          <div className="w-16 h-16 bg-[#003366] rounded-[2rem] flex items-center justify-center shadow-2xl shadow-blue-900/20">
-            <ShieldCheck className="text-[#C5A059] w-8 h-8" />
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-8 mb-8 md:mb-12">
+        <div className="flex items-center gap-4 md:gap-6 min-w-0">
+          <div className="w-14 h-14 md:w-16 md:h-16 bg-[#003366] rounded-2xl md:rounded-[2rem] flex items-center justify-center shadow-2xl shadow-blue-900/20 shrink-0">
+            <ShieldCheck className="text-[#C5A059] w-7 h-7 md:w-8 md:h-8" />
           </div>
-          <div>
-            <h1 className="text-3xl font-black text-[#003366] tracking-tight">Centro de Privacidad</h1>
+          <div className="min-w-0">
+            <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Centro de Privacidad</h1>
             <p className="text-slate-500 font-medium">Gestione sus derechos LOPDP conforme a la ley ecuatoriana</p>
           </div>
         </div>
 
-        <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex gap-2">
+        <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap gap-2 w-full md:w-auto">
            <button 
              onClick={() => setActiveTab('info')}
              className={cn(
@@ -144,7 +144,7 @@ export default function PrivacyCenterPage() {
                    </span>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-10">
                   <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Última Aceptación</p>
                     <p className="font-bold text-[#003366]">{new Date(myData?.personalInfo?.privacyConsent?.acceptedAt).toLocaleString()}</p>
@@ -155,7 +155,7 @@ export default function PrivacyCenterPage() {
                   </div>
                 </div>
 
-                <div className="p-8 bg-blue-50/50 rounded-3xl border border-blue-100 flex items-start gap-4">
+                <div className="p-5 md:p-8 bg-blue-50/50 rounded-3xl border border-blue-100 flex items-start gap-4">
                   <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
                     <AlertCircle className="w-5 h-5 text-[#003366]" />
                   </div>
@@ -208,7 +208,7 @@ export default function PrivacyCenterPage() {
                          type="button"
                          onClick={() => setArcoType('RECTIFICACION')}
                          className={cn(
-                           "p-8 rounded-3xl border-2 transition-all text-left flex flex-col gap-4",
+                           "p-5 md:p-8 rounded-3xl border-2 transition-all text-left flex flex-col gap-4",
                            arcoType === 'RECTIFICACION' ? "bg-[#003366] border-[#003366] text-white shadow-xl shadow-blue-900/10" : "bg-slate-50 border-slate-100 text-slate-400 hover:border-[#003366]/20"
                          )}
                        >
@@ -222,7 +222,7 @@ export default function PrivacyCenterPage() {
                          type="button"
                          onClick={() => setArcoType('CANCELACION')}
                          className={cn(
-                           "p-8 rounded-3xl border-2 transition-all text-left flex flex-col gap-4",
+                           "p-5 md:p-8 rounded-3xl border-2 transition-all text-left flex flex-col gap-4",
                            arcoType === 'CANCELACION' ? "bg-rose-600 border-rose-600 text-white shadow-xl shadow-rose-900/10" : "bg-slate-50 border-slate-100 text-slate-400 hover:border-[#003366]/20"
                          )}
                        >
@@ -277,7 +277,7 @@ export default function PrivacyCenterPage() {
                         initial={{ opacity: 0, y: 10 }} 
                         animate={{ opacity: 1, y: 0 }} 
                         transition={{ delay: idx * 0.1 }}
-                        className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm flex items-center justify-between"
+                        className="bg-white p-4 sm:p-6 md:p-8 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
                        >
                           <div className="flex items-center gap-6">
                              <div className={cn(
@@ -307,7 +307,7 @@ export default function PrivacyCenterPage() {
 
         {/* Info Sidebar */}
         <div className="space-y-8">
-           <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm transition-all hover:bg-[#FDFDFD]">
+           <div className="bg-white rounded-3xl p-5 md:p-8 border border-slate-200 shadow-sm transition-all hover:bg-[#FDFDFD]">
               <Lock className="w-10 h-10 text-[#C5A059] mb-6" />
               <h3 className="text-lg font-black text-[#003366] mb-4">Transferencia Internacional</h3>
               <p className="text-xs text-slate-500 font-medium leading-relaxed mb-6">
@@ -319,7 +319,7 @@ export default function PrivacyCenterPage() {
               </div>
            </div>
 
-           <div className="bg-[#C5A059]/10 rounded-3xl p-8 border border-[#C5A059]/10">
+           <div className="bg-[#C5A059]/10 rounded-3xl p-5 md:p-8 border border-[#C5A059]/10">
               <h3 className="text-[11px] font-black text-[#003366] uppercase tracking-widest mb-4">¿Tiene dudas?</h3>
               <p className="text-xs text-slate-600 font-medium leading-relaxed mb-8">
                 Si desea contactar directamente con nuestro Oficial de Protección de Datos (DPO), escriba a:

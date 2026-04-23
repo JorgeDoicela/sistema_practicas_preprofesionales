@@ -47,7 +47,7 @@ export default function VerificarCertificadoPage() {
         </div>
 
         {loading && (
-          <div className="bg-white rounded-3xl p-10 text-center shadow-sm border border-slate-100">
+          <div className="bg-white rounded-3xl p-6 sm:p-10 text-center shadow-sm border border-slate-100">
             <Loader2 className="w-10 h-10 text-[#003366] animate-spin mx-auto mb-3" />
             <p className="text-slate-500 font-bold text-sm">Verificando autenticidad...</p>
           </div>
@@ -55,7 +55,7 @@ export default function VerificarCertificadoPage() {
 
         {!loading && error && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-3xl p-8 shadow-sm border border-red-100 text-center">
+            className="bg-white rounded-3xl p-5 sm:p-8 shadow-sm border border-red-100 text-center">
             <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
               <XCircle size={36} className="text-red-500" />
             </div>
@@ -76,7 +76,7 @@ export default function VerificarCertificadoPage() {
             </div>
 
             {/* Datos */}
-            <div className="p-8 space-y-5">
+            <div className="p-5 sm:p-8 space-y-5">
               <div className="flex items-start gap-3">
                 <div className="w-9 h-9 rounded-xl bg-[#003366]/5 flex items-center justify-center flex-shrink-0">
                   <User size={16} className="text-[#003366]" />

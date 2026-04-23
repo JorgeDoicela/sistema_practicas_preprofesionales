@@ -97,17 +97,17 @@ export default function AusenciasPage() {
     <DashboardLayout>
       <div className="max-w-3xl mx-auto py-8 px-4 space-y-8">
         {/* Header */}
-        <div className="flex items-end justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
               <CalendarOff size={12} /> Mis Ausencias
             </div>
-            <h1 className="text-3xl font-black text-[#003366] tracking-tight">Ausencias Justificadas</h1>
+            <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Ausencias Justificadas</h1>
             <p className="text-slate-500 mt-1">Registra tus ausencias y adjunta documentos justificativos.</p>
           </div>
           {internshipId && (
             <button onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-2 bg-[#003366] text-white px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:translate-y-[-2px] transition-all">
+              className="flex w-full sm:w-auto items-center justify-center gap-2 bg-[#003366] text-white px-6 py-3.5 sm:py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:translate-y-[-2px] transition-all shrink-0">
               <Plus size={16} /> Registrar Ausencia
             </button>
           )}
@@ -202,7 +202,7 @@ export default function AusenciasPage() {
               className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
               className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
+              <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-5 sm:p-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-black text-[#003366]">Registrar Ausencia</h2>
                   <button onClick={() => setIsModalOpen(false)} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400">

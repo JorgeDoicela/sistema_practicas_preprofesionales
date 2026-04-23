@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { User as UserType } from "@/types/user";
-import { Search, User, ShieldCheck, ChevronDown, LogOut } from "lucide-react";
+import { Search, User, ShieldCheck, ChevronDown, LogOut, Menu } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 
-export function Navbar() {
+export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
   const [user, setUser] = useState<UserType | null>(null);
   const [scrolled, setScrolled] = useState(false);
 
@@ -33,29 +33,40 @@ export function Navbar() {
 
   return (
     <header data-tour="navbar" className={`sticky top-0 z-30 transition-all duration-300 ${
-      scrolled ? "bg-white/80 backdrop-blur-xl shadow-lg py-3" : "bg-transparent py-6"
-    } px-10`}>
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        
-        {/* Search Bar */}
-        <div className="relative group hidden md:block">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Search className="w-4 h-4 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
+      scrolled ? "bg-white/80 backdrop-blur-xl shadow-lg py-3" : "bg-transparent py-4 lg:py-6"
+    } px-4 md:px-6 lg:px-10`}>
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+
+        {/* Left side: hamburger (móvil) + buscador (escritorio) */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onMenuToggle}
+            className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-all"
+            aria-label="Abrir menú"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          {/* Search Bar */}
+          <div className="relative group hidden md:block">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="w-4 h-4 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
+            </div>
+            <input
+              type="text"
+              placeholder="Buscar en el portal..."
+              className="bg-slate-100 hover:bg-slate-200/50 border-none rounded-2xl py-2.5 pl-12 pr-6 text-xs font-semibold focus:ring-2 focus:ring-[#003366]/10 w-56 lg:w-80 transition-all outline-none"
+            />
           </div>
-          <input 
-            type="text" 
-            placeholder="Buscar en el portal..."
-            className="bg-slate-100 hover:bg-slate-200/50 border-none rounded-2xl py-2.5 pl-12 pr-6 text-xs font-semibold focus:ring-2 focus:ring-[#003366]/10 w-80 transition-all outline-none"
-          />
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-3 md:gap-6">
           
           <NotificationBell />
 
           {/* User Profile */}
-          <div className="flex items-center gap-4 pl-8 border-l border-slate-100 relative">
+          <div className="flex items-center gap-2 md:gap-4 pl-3 md:pl-6 border-l border-slate-100 relative">
             <div className="text-right hidden sm:block">
               <p className="text-[11px] font-black text-[#003366] uppercase tracking-wider mb-0.5">
                 {user?.fullName || "Usuario ISTPET"}

@@ -99,7 +99,7 @@ export default function AdminHealthPage() {
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
               Monitor de Infraestructura
             </span>
-            <h2 className="text-4xl font-black text-[#003366] tracking-tight">
+            <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
               Salud del <span className="text-slate-400">Sistema</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
@@ -129,9 +129,9 @@ export default function AdminHealthPage() {
           </motion.div>
         )}
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            <div className="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-slate-200/50 border border-slate-50">
+        <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
+          <div className="lg:col-span-2 space-y-6 md:space-y-8">
+            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-10 shadow-xl shadow-slate-200/50 border border-slate-50">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
                    <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
@@ -191,7 +191,7 @@ export default function AdminHealthPage() {
           </div>
 
           <div className="space-y-8">
-            <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-50">
+            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8 shadow-xl border border-slate-50">
                <h3 className="text-sm font-black text-[#003366] uppercase tracking-widest mb-6">Mantenimiento</h3>
                <div className="space-y-4">
                   <button 
@@ -242,7 +242,7 @@ export default function AdminHealthPage() {
                </div>
             </div>
 
-            <div className="bg-gradient-to-br from-slate-800 to-slate-950 rounded-[2.5rem] p-8 text-white">
+            <div className="bg-gradient-to-br from-slate-800 to-slate-950 rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8 text-white">
                <div className="flex items-center gap-3 mb-6">
                   <BarChart3 className="w-5 h-5 text-[#C5A059]" />
                   <h3 className="text-xs font-black uppercase tracking-widest">Distribución de Roles</h3>
