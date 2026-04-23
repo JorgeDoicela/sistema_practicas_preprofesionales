@@ -324,6 +324,7 @@ export const es = {
     },
     privacy: "Al acceder aceptas nuestra",
     privacyLink: "Política de privacidad LOPDP",
+    backToLogin: "Volver al inicio de sesión",
   },
 
   // ── Páginas públicas ─────────────────────────────────────────────

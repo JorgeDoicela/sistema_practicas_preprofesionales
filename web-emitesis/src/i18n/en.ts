@@ -324,6 +324,7 @@ export const en = {
     },
     privacy: "By signing in you accept our",
     privacyLink: "LOPDP Privacy Policy",
+    backToLogin: "Back to sign in",
   },
 
   // ── Public pages ─────────────────────────────────────────────────
