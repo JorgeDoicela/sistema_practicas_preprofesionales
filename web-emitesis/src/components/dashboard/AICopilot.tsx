@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { aiService } from "@/services/ai.service";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface Message {
   id: string;
@@ -29,13 +30,14 @@ interface AICopilotProps {
 }
 
 export function AICopilot({ user, internship }: AICopilotProps) {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
       role: "assistant",
-      text: `¡Hola ${user?.fullName?.split(" ")[0]}! Soy Nexo, tu asistente experto. ¿En qué puedo ayudarte con tus prácticas hoy?`,
+      text: t.nexo.greeting.replace("{name}", user?.fullName?.split(" ")[0] || "User"),
       timestamp: new Date(),
     },
   ]);
@@ -70,11 +72,11 @@ export function AICopilot({ user, internship }: AICopilotProps) {
     try {
       // Construir contexto para la IA
       const context = `
-        Estudiante: ${user?.fullName}
-        Práctica: ${internship?.company?.name || "No asignada"}
-        Estado: ${internship?.status || "N/A"}
-        Documentos habilitados: ${internship?.documents?.length || 0}
-        Horas totales: ${internship?.totalHours || 0}
+        ${t.nexo.context.student}: ${user?.fullName}
+        ${t.nexo.context.internship}: ${internship?.company?.name || t.nexo.context.none}
+        ${t.nexo.context.status}: ${internship?.status || "N/A"}
+        ${t.nexo.context.docs}: ${internship?.documents?.length || 0}
+        ${t.nexo.context.hours}: ${internship?.totalHours || 0}
       `;
 
       const answer = await aiService.askQuestion(userMsg.text, context);
@@ -91,7 +93,7 @@ export function AICopilot({ user, internship }: AICopilotProps) {
       const assistantMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        text: "Parece que tengo problemas para conectar. ¿Podrías intentar de nuevo en un momento?",
+        text: t.nexo.error,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, assistantMsg]);
@@ -100,12 +102,7 @@ export function AICopilot({ user, internship }: AICopilotProps) {
     }
   };
 
-  const suggestions = [
-    "¿Cómo subo mis documentos?",
-    "¿Qué pasa si rechazan un anexo?",
-    "¿Cómo funciona el marcado?",
-    "¿Quién es mi tutor?"
-  ];
+  const suggestions = t.nexo.suggestions;
 
   return (
     <>
@@ -146,7 +143,7 @@ export function AICopilot({ user, internship }: AICopilotProps) {
                       aiAvailable ? "bg-emerald-400 animate-pulse" : "bg-red-400"
                     )} />
                     <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-widest">
-                      {aiAvailable === null ? "Conectando..." : aiAvailable ? "En línea" : "Sin conexión IA"}
+                      {aiAvailable === null ? t.nexo.connecting : aiAvailable ? t.nexo.online : t.nexo.offline}
                     </span>
                   </div>
                 </div>
@@ -206,7 +203,7 @@ export function AICopilot({ user, internship }: AICopilotProps) {
             {messages.length === 1 && (
               <div className="px-6 pb-2 pt-4 bg-slate-50/50 space-y-2">
                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                   <HelpCircle className="w-3 h-3" /> Preguntas frecuentes
+                   <HelpCircle className="w-3 h-3" /> {t.nexo.faq}
                  </p>
                  <div className="flex flex-wrap gap-2">
                    {suggestions.map((s) => (
@@ -229,7 +226,7 @@ export function AICopilot({ user, internship }: AICopilotProps) {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && !isTyping && aiAvailable && handleSend()}
-                    placeholder={aiAvailable === false ? "IA no disponible en este momento" : "Escribe tu duda aquí..."}
+                    placeholder={aiAvailable === false ? t.nexo.unavailable : t.nexo.placeholder}
                     disabled={!aiAvailable || isTyping}
                     className="flex-1 bg-transparent border-none outline-none px-3 text-sm font-medium text-slate-700 disabled:text-slate-400"
                   />

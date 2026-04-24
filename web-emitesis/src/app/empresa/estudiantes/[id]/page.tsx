@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
 import { evaluationsService, EvaluationPayload } from "@/services/evaluations.service";
 import { CertificatePreview } from "@/components/dashboard/CertificatePreview";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 const CRITERIA = [
   {
@@ -58,6 +59,7 @@ const CRITERIA = [
 type ScoreMap = Record<string, number>;
 
 export default function EvaluarEstudiantePage() {
+  const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
 
@@ -102,7 +104,7 @@ export default function EvaluarEstudiantePage() {
         setObservations(evalData.observations || "");
       }
     } catch (error) {
-      console.error("Error cargando datos:", error);
+      console.error(t.common.error.generic, error);
     } finally {
       setLoading(false);
     }
@@ -119,7 +121,7 @@ export default function EvaluarEstudiantePage() {
   const handleSubmit = async () => {
     const incomplete = CRITERIA.some((c) => (scores[c.key] ?? 0) === 0);
     if (incomplete) {
-      alert("Por favor califica todos los criterios antes de guardar.");
+      alert(t.empresa.evaluation.errorCriteria);
       return;
     }
 
@@ -138,7 +140,7 @@ export default function EvaluarEstudiantePage() {
       setSaved(true);
       await loadData();
     } catch (error: any) {
-      alert(error.message || "Error al guardar la evaluación");
+      alert(error.message || t.common.error.generic);
     } finally {
       setSaving(false);
     }
@@ -150,7 +152,7 @@ export default function EvaluarEstudiantePage() {
         <div className="flex flex-col items-center justify-center py-40 gap-4">
           <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
           <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-            Cargando expediente...
+            {t.common.loading}
           </p>
         </div>
       </DashboardLayout>
@@ -163,7 +165,7 @@ export default function EvaluarEstudiantePage() {
         <div className="flex flex-col items-center justify-center py-40 gap-4">
           <AlertCircle className="w-12 h-12 text-rose-400" />
           <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-            Pasante no encontrado
+            {t.empresa.dashboard.list.noResults}
           </p>
         </div>
       </DashboardLayout>
@@ -190,10 +192,10 @@ export default function EvaluarEstudiantePage() {
           </button>
           <div className="min-w-0">
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em]">
-              RF-07 · Test de Aptitud y Actitud
+              {t.empresa.evaluation.subtitle}
             </span>
             <h2 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">
-              Evaluar Pasante
+              {t.empresa.evaluation.title}
             </h2>
           </div>
           </div>
@@ -204,7 +206,7 @@ export default function EvaluarEstudiantePage() {
               onClick={() => setIsCertOpen(true)}
               className="w-full sm:w-auto sm:ml-auto px-5 sm:px-6 py-3 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
             >
-              <FileCheck className="w-4 h-4" /> Generar Certificado
+              <FileCheck className="w-4 h-4" /> {t.empresa.evaluation.generateCert}
             </motion.button>
           )}
         </div>
@@ -216,12 +218,12 @@ export default function EvaluarEstudiantePage() {
               {internship.student.fullName.charAt(0)}
             </div>
             <div className="flex-1 grid md:grid-cols-3 gap-6">
-              <InfoBlock icon={<GraduationCap className="w-4 h-4" />} label="Pasante" value={internship.student.fullName} />
-              <InfoBlock icon={<Building2 className="w-4 h-4" />} label="Empresa" value={internship.company.name} />
-              <InfoBlock icon={<User className="w-4 h-4" />} label="Tutor académico" value={internship.tutor.fullName} />
-              <InfoBlock icon={<Calendar className="w-4 h-4" />} label="Inicio" value={new Date(internship.startDate).toLocaleDateString()} />
-              <InfoBlock icon={<Clock className="w-4 h-4" />} label="Horas trabajadas" value={`${hoursWorked.toFixed(0)}h de ${internship.totalHours}h`} />
-              <InfoBlock icon={<ClipboardList className="w-4 h-4" />} label="Estado práctica" value={internship.status} highlight />
+              <InfoBlock icon={<GraduationCap className="w-4 h-4" />} label={t.tutor.studentList.studentLabel} value={internship.student.fullName} />
+              <InfoBlock icon={<Building2 className="w-4 h-4" />} label={t.common.company} value={internship.company.name} />
+              <InfoBlock icon={<User className="w-4 h-4" />} label={t.coordinator.students.card.tutor} value={internship.tutor.fullName} />
+              <InfoBlock icon={<Calendar className="w-4 h-4" />} label={t.empresa.card.start} value={new Date(internship.startDate).toLocaleDateString()} />
+              <InfoBlock icon={<Clock className="w-4 h-4" />} label={t.empresa.dashboard.kpi.hours} value={`${hoursWorked.toFixed(0)}h / ${internship.totalHours}h`} />
+              <InfoBlock icon={<ClipboardList className="w-4 h-4" />} label={t.common.status} value={(t.tutor.internshipStatus as any)[internship.status] || internship.status} highlight />
             </div>
           </div>
         </div>
@@ -231,13 +233,13 @@ export default function EvaluarEstudiantePage() {
           <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
                <Camera className="w-5 h-5 text-[#C5A059]" />
-               <h3 className="text-lg font-black text-[#003366]">Explorador de Evidencias</h3>
+               <h3 className="text-lg font-black text-[#003366]">{t.empresa.evaluation.explorerTitle}</h3>
             </div>
           </div>
           <div className="p-4 sm:p-6 md:p-8">
             {internship.attendances?.filter((a:any) => a.activityPhotoKey).length === 0 ? (
                <div className="py-12 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200 text-center">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sin evidencias fotográficas aún</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.empresa.evaluation.noEvidence}</p>
                </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -266,16 +268,16 @@ export default function EvaluarEstudiantePage() {
         <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-10 py-8 border-b border-slate-100 flex items-center justify-between">
             <div>
-              <h3 className="text-xl font-black text-[#003366]">Test de Aptitud y Actitud</h3>
+              <h3 className="text-xl font-black text-[#003366]">{t.empresa.evaluation.criteriaTitle}</h3>
               <p className="text-sm text-slate-500 font-medium mt-1">
-                Califica del 1 al 5 cada criterio. Este formulario es opcional y puede actualizarse.
+                {t.empresa.evaluation.criteriaDesc}
               </p>
             </div>
             {existingEval && (
               <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">
-                  Evaluación guardada
+                  {t.empresa.evaluation.saved}
                 </span>
               </div>
             )}
@@ -291,8 +293,12 @@ export default function EvaluarEstudiantePage() {
                 className="flex flex-col md:flex-row md:items-center gap-4"
               >
                 <div className="flex-1">
-                  <h4 className="font-black text-[#003366] text-sm">{criterion.label}</h4>
-                  <p className="text-slate-400 text-[11px] font-medium mt-0.5">{criterion.description}</p>
+                  <h4 className="font-black text-[#003366] text-sm">
+                    {(t.empresa.evaluation.criteria as any)[criterion.key]?.label || criterion.label}
+                  </h4>
+                  <p className="text-slate-400 text-[11px] font-medium mt-0.5">
+                    {(t.empresa.evaluation.criteria as any)[criterion.key]?.desc || criterion.description}
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -319,12 +325,12 @@ export default function EvaluarEstudiantePage() {
             {/* Observaciones */}
             <div className="space-y-3 pt-4 border-t border-slate-100">
               <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                Observaciones generales (opcional)
+                {t.empresa.evaluation.observationsLabel}
               </label>
               <textarea
                 value={observations}
                 onChange={(e) => setObservations(e.target.value)}
-                placeholder="Comentarios adicionales sobre el desempeño del pasante..."
+                placeholder={t.empresa.evaluation.observationsPlaceholder}
                 rows={4}
                 className="w-full p-6 bg-slate-50 border border-slate-200 rounded-[2rem] resize-none outline-none focus:ring-2 focus:ring-[#003366]/10 focus:border-[#003366] transition-all font-medium text-slate-700 text-sm hover:bg-white"
               />
@@ -334,7 +340,7 @@ export default function EvaluarEstudiantePage() {
             <div className="bg-slate-50 rounded-[2rem] p-4 sm:p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6 border border-slate-100">
               <div className="flex-1">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
-                  Puntaje total
+                  {t.empresa.evaluation.totalScore}
                 </p>
                 <div className="flex items-end gap-2">
                   <span className="text-5xl font-black text-[#003366]">{totalScore}</span>
@@ -343,7 +349,7 @@ export default function EvaluarEstudiantePage() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rendimiento</span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.empresa.evaluation.performance}</span>
                   <span className={cn(
                     "text-[10px] font-black uppercase tracking-widest",
                     percentage >= 80 ? "text-emerald-600" : percentage >= 60 ? "text-amber-600" : "text-rose-600"
@@ -366,7 +372,10 @@ export default function EvaluarEstudiantePage() {
                   "text-[10px] font-black uppercase tracking-widest mt-2",
                   percentage >= 80 ? "text-emerald-600" : percentage >= 60 ? "text-amber-600" : "text-rose-600"
                 )}>
-                  {percentage >= 80 ? "Desempeño sobresaliente" : percentage >= 60 ? "Desempeño aceptable" : percentage > 0 ? "Desempeño en mejora" : "Sin calificar"}
+                  {percentage >= 80 ? t.empresa.evaluation.levels.excellent : 
+                   percentage >= 60 ? t.empresa.evaluation.levels.acceptable : 
+                   percentage > 0 ? t.empresa.evaluation.levels.improving : 
+                   t.empresa.evaluation.levels.none}
                 </p>
               </div>
             </div>
@@ -380,11 +389,12 @@ export default function EvaluarEstudiantePage() {
               {saving ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : saved ? (
+                {saved ? (
                 <CheckCircle2 className="w-5 h-5 text-[#C5A059]" />
               ) : (
                 <SaveAll className="w-5 h-5 text-[#C5A059]" />
               )}
-              {saved ? "Evaluación actualizada" : existingEval ? "Actualizar evaluación" : "Guardar evaluación"}
+              {saved ? t.empresa.evaluation.updatedBtn : existingEval ? t.empresa.evaluation.updateBtn : t.empresa.evaluation.saveBtn}
             </button>
           </div>
         </div>

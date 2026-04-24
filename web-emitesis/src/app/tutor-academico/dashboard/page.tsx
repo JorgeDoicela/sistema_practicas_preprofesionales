@@ -21,6 +21,7 @@ import {
   MapPin,
   User,
 } from "lucide-react";
+import { useLanguage } from "@/providers/LanguageProvider";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
@@ -48,17 +49,8 @@ const DOC_STATUS_COLOR: Record<string, string> = {
   INCUMPLIDO: "bg-red-100 text-red-700",
 };
 
-const DOC_STATUS_LABEL: Record<string, string> = {
-  PENDIENTE: "Pendiente",
-  EN_REVISION_TUTOR: "En Revisión",
-  APROBADO_TUTOR: "Aprobado por Tutor",
-  RECHAZADO_TUTOR: "Rechazado",
-  APROBADO_DEFINITIVO: "Aprobado Definitivo",
-  RECHAZADO_COORDINADOR: "Rechazado Coordinador",
-  INCUMPLIDO: "Incumplido",
-};
-
 export default function TutorAcademicoDashboardPage() {
+  const { t } = useLanguage();
   const [internships, setInternships] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -114,7 +106,7 @@ export default function TutorAcademicoDashboardPage() {
   // Datos para gráfico de distribución de documentos
   const docDistribution = internships.reduce((acc: any, i) => {
     (i.documents || []).forEach((d: any) => {
-      const label = DOC_STATUS_LABEL[d.status] || d.status;
+      const label = (t.tutor.docStatus as any)[d.status] || d.status;
       acc[label] = (acc[label] || 0) + 1;
     });
     return acc;
@@ -135,14 +127,14 @@ export default function TutorAcademicoDashboardPage() {
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
-              Portal de Tutor Académico
+              {t.tutor.dashboard.portal}
             </span>
             <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
-              Bienvenido,{" "}
-              <span className="text-slate-400">{tutorName.split(" ")[0] || "Tutor"}</span>
+              {t.tutor.dashboard.welcome}{" "}
+              <span className="text-slate-400">{tutorName.split(" ")[0] || t.dashboard.defaultUser}</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
-              RF-08 · RF-09 · RF-11 — Gestión de fechas, revisión documental y alertas de incumplimiento.
+              {t.tutor.dashboard.description}
             </p>
           </div>
         </section>
@@ -151,14 +143,14 @@ export default function TutorAcademicoDashboardPage() {
         <section className="grid lg:grid-cols-3 gap-6 md:gap-8">
           <div className="lg:col-span-2 grid sm:grid-cols-2 gap-6">
             <KpiCard
-              title="Pasantes Activos"
+              title={t.tutor.dashboard.kpi.activeInterns}
               value={activeCount}
               icon={<Users className="w-6 h-6" />}
               color="text-blue-600"
               bg="bg-blue-50"
             />
             <KpiCard
-              title="Pendientes de Revisión"
+              title={t.tutor.dashboard.kpi.pendingReviews}
               value={pendingReviews}
               icon={<FileCheck className="w-6 h-6" />}
               color="text-amber-600"
@@ -166,14 +158,14 @@ export default function TutorAcademicoDashboardPage() {
               alert={pendingReviews > 0}
             />
             <KpiCard
-              title="Aprobados por Tutor"
+              title={t.tutor.dashboard.kpi.approvedTutor}
               value={approvedCount}
               icon={<CheckCircle2 className="w-6 h-6" />}
               color="text-emerald-600"
               bg="bg-emerald-50"
             />
             <KpiCard
-              title="Visitas Realizadas"
+              title={t.tutor.dashboard.kpi.visitsPerformed}
               value={internships.reduce((acc, i) => acc + (i.monitoringVisits?.length || 0), 0)}
               icon={<MapPin className="w-6 h-6" />}
               color="text-violet-600"
@@ -184,7 +176,7 @@ export default function TutorAcademicoDashboardPage() {
           <div className="bg-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl flex flex-col min-w-0">
             <h3 className="text-lg font-black text-[#003366] mb-6 flex items-center gap-2">
               <FileText className="w-5 h-5 text-[#C5A059]" />
-              Estado Documental Global
+              {t.tutor.dashboard.charts.docsGlobal}
             </h3>
             <div className="flex-1 min-h-[250px] w-full">
               {loading ? (
@@ -213,7 +205,7 @@ export default function TutorAcademicoDashboardPage() {
                 </ResponsiveContainer>
               ) : chartData.length === 0 && !loading ? (
                 <div className="flex items-center justify-center h-full text-slate-400 text-xs font-medium uppercase tracking-widest">
-                  Sin datos suficientes
+                  {t.tutor.dashboard.charts.noData}
                 </div>
               ) : (
                 <div className="w-full h-full bg-slate-50 animate-pulse rounded-2xl" />
@@ -243,11 +235,11 @@ export default function TutorAcademicoDashboardPage() {
             <div>
               <p className={cn("font-black text-sm", incumplidosCount > 0 ? "text-red-800" : "text-amber-800")}>
                 {incumplidosCount > 0
-                  ? `${incumplidosCount} documento(s) marcados como INCUMPLIDO. Se notificó automáticamente al sistema.`
-                  : `${pendingReviews} documento(s) esperan tu revisión.`}
+                  ? t.tutor.dashboard.alerts.incumplido.replace("{count}", String(incumplidosCount))
+                  : t.tutor.dashboard.alerts.pending.replace("{count}", String(pendingReviews))}
               </p>
               <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-                Accede al expediente del estudiante para tomar acción.
+                {t.tutor.dashboard.alerts.action}
               </p>
             </div>
           </motion.div>
@@ -257,16 +249,16 @@ export default function TutorAcademicoDashboardPage() {
         <section className="space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h3 className="text-2xl font-black text-[#003366]">Mis Pasantes</h3>
+              <h3 className="text-2xl font-black text-[#003366]">{t.tutor.dashboard.list.title}</h3>
               <p className="text-slate-500 text-sm font-medium mt-1">
-                Gestiona fechas límite y revisión de documentos por estudiante.
+                {t.tutor.dashboard.list.subtitle}
               </p>
             </div>
             <div className="relative group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
               <input
                 type="text"
-                placeholder="Buscar pasante o empresa..."
+                placeholder={t.tutor.dashboard.list.search}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-12 pr-6 py-4 bg-white border border-slate-200 rounded-2xl w-full md:w-[320px] outline-none focus:ring-4 focus:ring-[#003366]/5 focus:border-[#003366] transition-all font-medium text-sm shadow-sm"
@@ -303,10 +295,10 @@ export default function TutorAcademicoDashboardPage() {
                 <GraduationCap className="w-10 h-10 text-slate-300" />
               </div>
               <h3 className="text-xl font-bold text-slate-800 mb-2">
-                {searchTerm ? "Sin resultados" : "No tienes pasantes asignados"}
+                {searchTerm ? t.tutor.dashboard.list.noResults : t.tutor.dashboard.list.noInterns}
               </h3>
               <p className="text-slate-400 text-sm">
-                {searchTerm ? "Ajusta el término de búsqueda." : "El coordinador aún no te ha asignado estudiantes."}
+                {searchTerm ? t.tutor.dashboard.list.adjustSearch : t.tutor.dashboard.list.noInternsDesc}
               </p>
             </div>
           ) : (
@@ -405,7 +397,7 @@ function InternshipCard({ internship }: { internship: any }) {
                 </span>
                 <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   <Calendar className="w-3 h-3" />
-                  Inicio: {new Date(internship.startDate).toLocaleDateString()}
+                  {t.tutor.dashboard.card.start}: {new Date(internship.startDate).toLocaleDateString()}
                 </span>
                 <span className={cn(
                   "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
@@ -420,22 +412,22 @@ function InternshipCard({ internship }: { internship: any }) {
           {/* Document badges */}
           <div className="flex flex-wrap items-center gap-3">
             {visitRequired && (
-              <Badge icon={<MapPin className="w-3.5 h-3.5" />} label="Visita Requerida" color="bg-violet-50 text-violet-700 border-violet-100" />
+              <Badge icon={<MapPin className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.visitRequired} color="bg-violet-50 text-violet-700 border-violet-100" />
             )}
             {withoutDates > 0 && (
-              <Badge icon={<Clock className="w-3.5 h-3.5" />} label={`${withoutDates} sin fecha`} color="bg-slate-100 text-slate-500" />
+              <Badge icon={<Clock className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.noDate.replace("{count}", String(withoutDates))} color="bg-slate-100 text-slate-500" />
             )}
             {soon > 0 && (
-              <Badge icon={<AlertTriangle className="w-3.5 h-3.5" />} label={`${soon} próx. a vencer`} color="bg-orange-50 text-orange-600 animate-pulse" />
+              <Badge icon={<AlertTriangle className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.soon.replace("{count}", String(soon))} color="bg-orange-50 text-orange-600 animate-pulse" />
             )}
             {pendingReview > 0 && (
-              <Badge icon={<FileCheck className="w-3.5 h-3.5" />} label={`${pendingReview} por revisar`} color="bg-amber-50 text-amber-700 animate-pulse" />
+              <Badge icon={<FileCheck className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.toReview.replace("{count}", String(pendingReview))} color="bg-amber-50 text-amber-700 animate-pulse" />
             )}
             {incumplidos > 0 && (
-              <Badge icon={<XCircle className="w-3.5 h-3.5" />} label={`${incumplidos} incumplido`} color="bg-red-50 text-red-700 animate-pulse" />
+              <Badge icon={<XCircle className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.incumplido.replace("{count}", String(incumplidos))} color="bg-red-50 text-red-700 animate-pulse" />
             )}
             {approved > 0 && (
-              <Badge icon={<CheckCircle2 className="w-3.5 h-3.5" />} label={`${approved}/7 aprobados`} color="bg-emerald-50 text-emerald-700" />
+              <Badge icon={<CheckCircle2 className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.approved.replace("{count}", String(approved)).replace("{total}", "7")} color="bg-emerald-50 text-emerald-700" />
             )}
 
             <Link
@@ -443,7 +435,7 @@ function InternshipCard({ internship }: { internship: any }) {
               className="flex items-center gap-2 px-5 py-3 bg-[#003366] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#004488] transition-all shadow-lg shadow-blue-900/10 active:scale-95"
             >
               <ClipboardCheck className="w-4 h-4" />
-              Gestionar
+              {t.tutor.dashboard.card.manage}
               <ChevronRight className="w-3 h-3" />
             </Link>
             <Link
@@ -451,7 +443,7 @@ function InternshipCard({ internship }: { internship: any }) {
               className="flex items-center gap-2 px-5 py-3 bg-[#C5A059] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#b08940] transition-all shadow-lg shadow-amber-900/10 active:scale-95"
             >
               <User className="w-4 h-4" />
-              Ficha
+              {t.tutor.dashboard.card.file}
             </Link>
           </div>
         </div>
@@ -509,7 +501,7 @@ function InternshipCard({ internship }: { internship: any }) {
                     "px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest",
                     DOC_STATUS_COLOR[doc.status] ?? "bg-slate-100 text-slate-500"
                   )}>
-                    {DOC_STATUS_LABEL[doc.status] ?? doc.status}
+                    {(t.tutor.docStatus as any)[doc.status] ?? doc.status}
                   </span>
                 </div>
               ))}

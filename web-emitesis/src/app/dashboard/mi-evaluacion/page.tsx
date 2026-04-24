@@ -17,13 +17,14 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
 import { evaluationsService } from "@/services/evaluations.service";
+import { useLanguage } from "@/providers/LanguageProvider";
 
-const CRITERIA = [
-  { key: "punctuality",    label: "Puntualidad",       desc: "Asistencia y cumplimiento de horarios." },
-  { key: "teamwork",       label: "Trabajo en equipo", desc: "Colaboración y relaciones interpersonales." },
-  { key: "technicalSkills",label: "Aptitud técnica",   desc: "Dominio de conocimientos y habilidades." },
-  { key: "proactivity",    label: "Proactividad",      desc: "Iniciativa y resolución de problemas." },
-  { key: "attitude",       label: "Actitud",           desc: "Disposición, compromiso y ética profesional." },
+const getCriteria = (t: any) => [
+  { key: "punctuality",    label: t.evaluation.criteria.punctuality.label,    desc: t.evaluation.criteria.punctuality.desc },
+  { key: "teamwork",       label: t.evaluation.criteria.teamwork.label,       desc: t.evaluation.criteria.teamwork.desc },
+  { key: "technicalSkills",label: t.evaluation.criteria.technicalSkills.label, desc: t.evaluation.criteria.technicalSkills.desc },
+  { key: "proactivity",    label: t.evaluation.criteria.proactivity.label,    desc: t.evaluation.criteria.proactivity.desc },
+  { key: "attitude",       label: t.evaluation.criteria.attitude.label,       desc: t.evaluation.criteria.attitude.desc },
 ];
 
 function StarDisplay({ score, max = 5 }: { score: number; max?: number }) {
@@ -44,6 +45,7 @@ function StarDisplay({ score, max = 5 }: { score: number; max?: number }) {
 }
 
 export default function MiEvaluacionPage() {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [internship, setInternship] = useState<any>(null);
   const [evaluations, setEvaluations] = useState<any[]>([]);
@@ -88,18 +90,18 @@ export default function MiEvaluacionPage() {
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
-              Mi Desempeño Profesional
+              {t.evaluation.title}
             </span>
             <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
-              HUB de <span className="text-slate-400">Evaluación Dual</span>
+              {t.evaluation.hubTitle.split(" ")[0]} <span className="text-slate-400">{t.evaluation.hubTitle.split(" ").slice(1).join(" ")}</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
-              Resultados técnicos y actitudinales emitidos por tus tutores de seguimiento.
+              {t.evaluation.description}
             </p>
           </div>
           <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-2xl border border-slate-100 shadow-sm">
              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Actualizado en tiempo real</span>
+             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.evaluation.updated}</span>
           </div>
         </section>
 
@@ -107,15 +109,15 @@ export default function MiEvaluacionPage() {
           <div className="flex flex-col items-center justify-center py-40 gap-4">
             <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-              Sincronizando evaluaciones...
+              {t.evaluation.syncing}
             </p>
           </div>
         ) : !internship ? (
           <div className="bg-amber-50 rounded-[2.5rem] border border-amber-100 p-16 text-center">
             <AlertCircle className="w-16 h-16 text-amber-400 mx-auto mb-5" />
-            <h3 className="text-xl font-black text-amber-900 uppercase tracking-tight">Sin trayectoria registrada</h3>
+            <h3 className="text-xl font-black text-amber-900 uppercase tracking-tight">{t.evaluation.noInternship}</h3>
             <p className="text-amber-700 font-medium mt-2">
-              Aún no tienes una práctica preprofesional asignada en el ecosistema.
+              {t.evaluation.noInternshipDesc}
             </p>
           </div>
         ) : (
@@ -137,11 +139,11 @@ export default function MiEvaluacionPage() {
                         <Trophy className="w-5 h-5 text-white" />
                       </div>
                       <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#C5A059]">
-                        Calificación Final
+                        {t.evaluation.finalGrade.title}
                       </span>
                     </div>
-                    <h3 className="text-lg font-black text-white/70 mb-1">Nota Ponderada (50% Académica + 50% Empresarial)</h3>
-                    <p className="text-sm text-white/40 font-medium">Evaluación dual según reglamento de prácticas IST</p>
+                    <h3 className="text-lg font-black text-white/70 mb-1">{t.evaluation.finalGrade.subtitle}</h3>
+                    <p className="text-sm text-white/40 font-medium">{t.evaluation.finalGrade.regulation}</p>
                   </div>
                   <div className="text-center md:text-right">
                     <div className="flex items-end gap-2 justify-center md:justify-end">
@@ -157,7 +159,7 @@ export default function MiEvaluacionPage() {
                       "text-[10px] font-black uppercase tracking-widest mt-1",
                       finalGrade >= 7 ? "text-emerald-400" : finalGrade >= 5 ? "text-[#C5A059]" : "text-rose-400"
                     )}>
-                      {finalGrade >= 7 ? "Aprobado — Excelente" : finalGrade >= 5 ? "Aprobado" : "En proceso de evaluación"}
+                      {finalGrade >= 7 ? t.evaluation.finalGrade.status.excellent : finalGrade >= 5 ? t.evaluation.finalGrade.status.approved : t.evaluation.finalGrade.status.inProcess}
                     </p>
                   </div>
                 </div>
@@ -180,8 +182,8 @@ export default function MiEvaluacionPage() {
               {/* Tarjeta Académica */}
               <EvalCard 
                 type="ACADEMICA"
-                title="Evaluación Académica"
-                subtitle="Tutor del Instituto (ISTPET)"
+                title={t.evaluation.cards.academic.title}
+                subtitle={t.evaluation.cards.academic.subtitle}
                 evaluation={evalAcademica}
                 icon={<GraduationCap className="w-6 h-6" />}
                 color="blue"
@@ -190,8 +192,8 @@ export default function MiEvaluacionPage() {
               {/* Tarjeta Empresarial */}
               <EvalCard 
                 type="EMPRESARIAL"
-                title="Evaluación Empresarial"
-                subtitle="Tutor de la Empresa/Institución"
+                title={t.evaluation.cards.business.title}
+                subtitle={t.evaluation.cards.business.subtitle}
                 evaluation={evalEmpresarial}
                 icon={<Building2 className="w-6 h-6" />}
                 color="gold"
@@ -247,12 +249,12 @@ function EvalCard({ type, title, subtitle, evaluation, icon, color }: any) {
         {!evaluation ? (
           <div className="py-20 text-center space-y-4">
             <Clock className="w-12 h-12 text-slate-200 mx-auto" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Pendiente de calificación</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.evaluation.cards.pending}</p>
           </div>
         ) : (
           <>
             <div className="space-y-6">
-              {CRITERIA.map((c) => (
+              {getCriteria(t).map((c) => (
                 <div key={c.key} className="flex items-center justify-between group">
                   <div>
                     <p className="text-[10px] font-black text-[#003366] uppercase tracking-widest">{c.label}</p>
@@ -265,7 +267,7 @@ function EvalCard({ type, title, subtitle, evaluation, icon, color }: any) {
 
             <div className="pt-6 border-t border-slate-50">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rendimiento Técnico</span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.evaluation.cards.performance}</span>
                 <span className="text-lg font-black text-[#003366]">{percentage}%</span>
               </div>
               <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -283,7 +285,7 @@ function EvalCard({ type, title, subtitle, evaluation, icon, color }: any) {
             {evaluation.observations && (
               <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                  <TrendingUp className="w-3 h-3 text-[#C5A059]" /> Feedback cualitativo
+                  <TrendingUp className="w-3 h-3 text-[#C5A059]" /> {t.evaluation.cards.feedback}
                 </p>
                 <p className="text-xs font-medium text-slate-600 italic">"{evaluation.observations}"</p>
               </div>

@@ -31,16 +31,18 @@ import { api } from "@/services/auth.service";
 import { Trash2, Sparkles, Wand2 } from "lucide-react";
 import { aiService } from "@/services/ai.service";
 import * as pdfjs from "pdfjs-dist";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 // Configurar el worker de PDF.js
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 export default function DocumentosPage() {
+  const { t } = useLanguage();
   const [internships, setInternships] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [filterStatus, setFilterStatus] = useState("Todos");
+  const [filterStatus, setFilterStatus] = useState(t.documents.filters.all);
   const [userRole, setUserRole] = useState<string>("");
   const [userDocuments, setUserDocuments] = useState<any[]>([]);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
@@ -109,7 +111,7 @@ export default function DocumentosPage() {
 
     // Regla de Negocio: Solo PDF
     if (file.type !== "application/pdf") {
-      alert("Solo se permiten archivos en formato PDF");
+      alert(t.common.errors.invalidFormat || "Solo se permiten archivos en formato PDF");
       return;
     }
 
@@ -156,7 +158,7 @@ export default function DocumentosPage() {
       }
 
       await documentsService.uploadDocument(docId, file);
-      alert("Documento subido con éxito");
+      alert(t.common.success.generic || "Documento subido con éxito");
       loadInternships();
     } catch (error: any) {
       alert(error.message);
@@ -243,7 +245,7 @@ export default function DocumentosPage() {
           return;
       }
       await documentsService.deleteDocumentFile(deletingId);
-      alert("Archivo eliminado con éxito");
+      alert(t.common.success.generic || "Archivo eliminado con éxito");
       loadInternships();
     } catch (error: any) {
       alert(error.message);
@@ -271,7 +273,7 @@ export default function DocumentosPage() {
       item.student.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.company.name.toLowerCase().includes(searchTerm.toLowerCase());
     
-    if (filterStatus === "Todos") return matchesSearch;
+    if (filterStatus === t.documents.filters.all) return matchesSearch;
     return matchesSearch && item.status === filterStatus;
   });
 
@@ -289,9 +291,7 @@ export default function DocumentosPage() {
   };
 
   const getStatusLabel = (status: string) => {
-    if (status === 'EN_REVISION_TUTOR') return 'En revisión por tutor';
-    if (status === 'APROBADO_TUTOR') return 'Aprobado por tutor';
-    return status.replace(/_/g, ' ');
+    return (t.tutor.docStatus as any)[status] || status.replace(/_/g, ' ');
   };
 
   return (
@@ -304,8 +304,8 @@ export default function DocumentosPage() {
               <FileStack className="text-[#C5A059] w-5 h-5 md:w-7 md:h-7" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-lg md:text-2xl font-black text-[#003366] tracking-tight truncate">Gestión de Documentos</h1>
-              <p className="text-xs md:text-sm text-slate-500 font-medium hidden sm:block">Configuración de plazos y seguimiento de expedientes</p>
+              <h1 className="text-lg md:text-2xl font-black text-[#003366] tracking-tight truncate">{t.documents.title}</h1>
+              <p className="text-xs md:text-sm text-slate-500 font-medium hidden sm:block">{t.documents.subtitle}</p>
             </div>
           </div>
 
@@ -342,7 +342,7 @@ export default function DocumentosPage() {
               <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
               <input 
                 type="text" 
-                placeholder="Buscar por estudiante o empresa..." 
+                placeholder={t.documents.searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-14 pr-6 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-[#003366]/10 focus:border-[#003366] transition-all outline-none font-medium text-slate-700"
@@ -357,10 +357,10 @@ export default function DocumentosPage() {
                   onChange={(e) => setFilterStatus(e.target.value)}
                   className="pl-12 pr-10 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-[#003366]/10 outline-none appearance-none font-semibold text-slate-600 cursor-pointer"
                 >
-                  <option>Todos</option>
-                  <option>En Proceso</option>
-                  <option>Activo</option>
-                  <option>Finalizado</option>
+                  <option value={t.documents.filters.all}>{t.documents.filters.all}</option>
+                  <option value={t.documents.filters.inProgress}>{t.documents.filters.inProgress}</option>
+                  <option value={t.documents.filters.active}>{t.documents.filters.active}</option>
+                  <option value={t.documents.filters.finished}>{t.documents.filters.finished}</option>
                 </select>
               </div>
             </div>
@@ -370,7 +370,7 @@ export default function DocumentosPage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center h-96 gap-4">
             <div className="w-12 h-12 border-4 border-slate-200 border-t-[#003366] rounded-full animate-spin" />
-            <p className="text-slate-500 font-bold animate-pulse">Cargando expedientes...</p>
+            <p className="text-slate-500 font-bold animate-pulse">{t.documents.loading}</p>
           </div>
         ) : userRole === 'ESTUDIANTE' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -415,31 +415,31 @@ export default function DocumentosPage() {
                   <div className="flex flex-wrap gap-2 mb-3">
                     {isCertSlot && (
                       <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-violet-100 text-violet-800 border border-violet-200">
-                        Certificado (sistema)
+                        {t.documents.student.system}
                       </span>
                     )}
                     {isOptional && !isCertSlot && (
                       <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                        Opcional
+                        {t.documents.student.optional}
                       </span>
                     )}
                   </div>
                   <div className="space-y-2 mb-8">
                     <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                       <Calendar className="w-3.5 h-3.5" />
-                      Desde: <span className="text-slate-600 font-black">{doc.startDate ? new Date(doc.startDate).toLocaleDateString() : 'Por definir'}</span>
+                      {t.documents.student.since}: <span className="text-slate-600 font-black">{doc.startDate ? new Date(doc.startDate).toLocaleDateString() : t.documents.student.byDefine}</span>
                     </div>
                     <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                       <Clock className="w-3.5 h-3.5" />
-                      Límite: <span className={cn("font-black", isExpired ? "text-red-500" : "text-slate-600")}>
-                        {doc.dueDate ? new Date(doc.dueDate).toLocaleDateString() : 'Por definir'}
+                      {t.documents.student.limit}: <span className={cn("font-black", isExpired ? "text-red-500" : "text-slate-600")}>
+                        {doc.dueDate ? new Date(doc.dueDate).toLocaleDateString() : t.documents.student.byDefine}
                       </span>
                     </div>
                   </div>
 
                   {isCertSlot ? (
                     <p className="text-[11px] text-slate-500 font-semibold leading-relaxed mb-2">
-                      Este documento se completa automáticamente cuando culminas la práctica y se emite el certificado.
+                      {t.documents.student.certificateNote}
                     </p>
                   ) : (
                     <div className="grid grid-cols-2 gap-3">
@@ -459,7 +459,7 @@ export default function DocumentosPage() {
                           ) : (
                             <Download className="w-3.5 h-3.5" />
                           )}
-                          Formato
+                          {t.documents.student.format}
                         </button>
                       )}
 
@@ -486,7 +486,7 @@ export default function DocumentosPage() {
                             ) : (
                               <FileCheck className="w-3.5 h-3.5" />
                             )}
-                            Subir PDF
+                            {t.documents.student.upload}
                           </button>
                         </div>
                       )}
@@ -498,7 +498,7 @@ export default function DocumentosPage() {
                           className="col-span-2 py-4 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all active:scale-[0.98] border border-rose-100"
                         >
                            <Trash2 className="w-3.5 h-3.5" />
-                           Eliminar Archivo
+                           {t.documents.student.delete}
                         </button>
                       )}
                     </div>
@@ -507,7 +507,7 @@ export default function DocumentosPage() {
                   {isAiScanning && uploadingId === null && (
                     <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center gap-3">
                       <Sparkles className="w-8 h-8 text-[#C5A059] animate-pulse" />
-                      <p className="text-[10px] font-black text-[#003366] uppercase tracking-widest">IA Escaneando Documento...</p>
+                      <p className="text-[10px] font-black text-[#003366] uppercase tracking-widest">{t.documents.student.scanning}</p>
                     </div>
                   )}
 
@@ -515,7 +515,7 @@ export default function DocumentosPage() {
                     <div className="mt-4 p-4 bg-orange-50 rounded-xl flex gap-3">
                       <AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
                       <p className="text-[10px] text-orange-700 font-bold leading-relaxed uppercase">
-                        El formato estará habilitado el {new Date(doc.startDate).toLocaleDateString()}
+                        {t.documents.student.availableOn.replace("{date}", new Date(doc.startDate).toLocaleDateString())}
                       </p>
                     </div>
                   )}
@@ -567,7 +567,7 @@ export default function DocumentosPage() {
                                 </div>
                               ))}
                             </div>
-                            <span className="text-[11px] font-bold text-slate-400">8 Documentos</span>
+                            <span className="text-[11px] font-bold text-slate-400">8 {t.documents.table.title || "Documentos"}</span>
                           </div>
                           
                           <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-[#003366] group-hover:text-white transition-all transform group-hover:translate-x-1">
@@ -585,11 +585,11 @@ export default function DocumentosPage() {
                <table className="w-full text-left">
                   <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
-                      <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">Estudiante</th>
-                      <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">Empresa</th>
-                      <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">Estado</th>
-                      <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">Inicio</th>
-                      <th className="px-8 py-5 text-right text-[11px] font-black uppercase tracking-widest text-slate-400">Acción</th>
+                      <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">{t.documents.table.student}</th>
+                      <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">{t.documents.table.company}</th>
+                      <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">{t.documents.table.status}</th>
+                      <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">{t.documents.table.start}</th>
+                      <th className="px-8 py-5 text-right text-[11px] font-black uppercase tracking-widest text-slate-400">{t.documents.table.action}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -628,7 +628,7 @@ export default function DocumentosPage() {
                             href={`/dashboard/documentos/${item.id}`}
                             className="inline-flex items-center gap-2 px-4 py-2 bg-[#003366] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#003366]/90 transition-all active:scale-95"
                            >
-                             Gestionar
+                             {t.documents.table.manage}
                              <ChevronRight className="w-3 h-3" />
                            </Link>
                         </td>
@@ -643,8 +643,8 @@ export default function DocumentosPage() {
             <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
               <Search className="w-10 h-10 text-slate-300" />
             </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-2">No se encontraron expedientes</h3>
-            <p className="text-slate-500 max-w-sm mx-auto">Prueba ajustando tus filtros o términos de búsqueda para encontrar lo que necesitas.</p>
+            <h3 className="text-xl font-bold text-slate-800 mb-2">{t.documents.empty.title}</h3>
+            <p className="text-slate-500 max-w-sm mx-auto">{t.documents.empty.desc}</p>
           </div>
         )}
       </div>
@@ -656,10 +656,10 @@ export default function DocumentosPage() {
             setPendingAction(null);
         }}
         onConfirm={pendingUpload ? confirmUploadWith2fa : handle2faConfirmAction}
-        title={pendingUpload ? "Confirmar Carga de Documento" : "Verificación de Seguridad"}
+        title={pendingUpload ? t.documents.modal2fa.titleUpload : t.documents.modal2fa.titleDefault}
         description={pendingUpload 
-          ? "Esta es una operación crítica. Ingresa tu código 2FA para autorizar la subida del archivo." 
-          : "Ingrese su código 2FA para autorizar esta operación crítica."
+          ? t.documents.modal2fa.descUpload
+          : t.documents.modal2fa.descDefault
         }
       />
       <DoubleConfirmationModal 
@@ -669,8 +669,8 @@ export default function DocumentosPage() {
             setDeletingId(null);
         }}
         onConfirm={confirmDeleteFile}
-        title="¿Está seguro del procedimiento?"
-        description="Esta acción eliminará el archivo subido actualmente. Deberá subir un nuevo archivo antes de la fecha límite para evitar sanciones."
+        title={t.documents.modalDelete.title}
+        description={t.documents.modalDelete.desc}
       />
 
       {/* AI Feedback Warning Modal */}
@@ -685,24 +685,24 @@ export default function DocumentosPage() {
               <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-6">
                 <Wand2 className="w-8 h-8 text-rose-500" />
               </div>
-              <h3 className="text-xl font-black text-[#003366] mb-4 uppercase tracking-tight">Advertencia de IA</h3>
+              <h3 className="text-xl font-black text-[#003366] mb-4 uppercase tracking-tight">{t.documents.ai.warning}</h3>
               <p className="text-slate-600 text-sm font-medium leading-relaxed mb-6">
-                 Nuestro sistema de inteligencia artificial ha detectado posibles problemas con este documento:
+                 {t.documents.ai.detected}
                  <br /><br />
                  <span className="text-rose-600 font-bold">"{aiFeedback.feedback}"</span>
               </p>
               <div className="grid grid-cols-2 gap-4">
                 <button
                   onClick={() => { setAiFeedback(null); setPendingUpload(null); }}
-                  className="py-4 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all font-black uppercase"
+                  className="py-4 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
                 >
-                  Corregir Archivo
+                  {t.documents.ai.correct}
                 </button>
                 <button
                   onClick={confirmUploadAfterAi}
                   className="py-4 bg-[#003366] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#003366]/90 transition-all shadow-lg shadow-blue-900/10"
                 >
-                  Subir de todas formas
+                  {t.documents.ai.forceUpload}
                 </button>
               </div>
             </motion.div>

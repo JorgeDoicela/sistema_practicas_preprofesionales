@@ -43,11 +43,11 @@ export default function LoginPage() {
                     currentToken = await executeRecaptcha("login");
                 } catch (recaptchaErr) {
                     console.error("Error al ejecutar reCAPTCHA v3:", recaptchaErr);
-                    if (process.env.NODE_ENV === "production") throw new Error("No se pudo validar la seguridad de la sesión.");
+                    if (process.env.NODE_ENV === "production") throw new Error(t.common.error);
                 }
             }
             if (siteKey && !currentToken && process.env.NODE_ENV === "production") {
-                setError("Por favor, inténtalo de nuevo (Error de validación).");
+                setError(t.common.error);
                 setIsLoading(false);
                 return;
             }
@@ -67,7 +67,7 @@ export default function LoginPage() {
             const role = user.role as Role;
             router.push(ROLE_REDIRECTS[role] || "/dashboard");
         } catch (err: unknown) {
-            setError((err as Error).message || "Credenciales inválidas.");
+            setError((err as Error).message || t.login.errors.generic);
         } finally {
             setIsLoading(false);
         }
@@ -86,7 +86,7 @@ export default function LoginPage() {
             const role = user.role as Role;
             router.push(ROLE_REDIRECTS[role] || "/dashboard");
         } catch (err: unknown) {
-            setError((err as Error).message || "Código inválido.");
+            setError((err as Error).message || t.login.mfa.verifying);
         } finally {
             setIsLoading(false);
         }
@@ -97,7 +97,7 @@ export default function LoginPage() {
             <div className="rounded-lg bg-white/10 p-1.5 ring-1 ring-white/20">
                 <Image src={BRAND_LOGO_SRC} alt="Logo" width={100} height={40} className="h-7 w-auto object-contain brightness-0 invert" />
             </div>
-            <span className="text-xs font-bold text-white/80">Portal Académico ISTPET</span>
+            <span className="text-xs font-bold text-white/80">{t.nav.brandSub}</span>
         </Link>
     );
 
@@ -106,7 +106,7 @@ export default function LoginPage() {
             <div className="rounded-lg bg-brand-blue p-1.5">
                 <Image src={BRAND_LOGO_SRC} alt="Logo" width={100} height={40} className="h-7 w-auto object-contain" />
             </div>
-            <span className="hidden text-xs font-bold text-slate-400 sm:block">Portal Académico ISTPET</span>
+            <span className="hidden text-xs font-bold text-slate-400 sm:block">{t.nav.brandSub}</span>
         </Link>
     );
 
@@ -277,24 +277,22 @@ export default function LoginPage() {
                                     <div className="w-14 h-14 rounded-2xl bg-brand-blue flex items-center justify-center mx-auto mb-5">
                                         <Lock className="w-7 h-7 text-white" />
                                     </div>
-                                    <h1 className="text-2xl font-black text-brand-blue tracking-tight mb-2">Verificación en dos pasos</h1>
-                                    <p className="text-slate-500 text-sm">Ingresa el código de 6 dígitos de tu aplicación de autenticación.</p>
+                                    <h1 className="text-2xl font-black text-brand-blue tracking-tight mb-2">{t.login.mfa.title}</h1>
+                                    <p className="text-slate-500 text-sm">{t.login.mfa.subtitle}</p>
                                 </div>
-
                                 <form onSubmit={handleMfaSubmit} className="space-y-5">
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-slate-600 block">Código de seguridad</label>
+                                        <label className="text-xs font-bold text-slate-600 block">{t.login.mfa.label}</label>
                                         <div className="relative">
                                             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                             <input
                                                 type="text" required autoFocus maxLength={6}
                                                 value={mfaCode} onChange={e => setMfaCode(e.target.value)}
-                                                placeholder="000000"
+                                                placeholder={t.login.mfa.placeholder}
                                                 className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-11 text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue outline-none transition-all tracking-[0.5em] font-bold text-center placeholder:tracking-normal placeholder:font-normal"
                                             />
                                         </div>
                                     </div>
-
                                     {error && (
                                         <div className="flex items-start gap-3 p-3.5 bg-red-50 border border-red-200 rounded-xl">
                                             <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
@@ -307,7 +305,7 @@ export default function LoginPage() {
                                         disabled={isLoading}
                                         className="w-full bg-brand-gold text-white rounded-xl py-3.5 text-sm font-bold hover:bg-brand-blue transition-all shadow-lg disabled:opacity-60"
                                     >
-                                        {isLoading ? "Verificando…" : "Confirmar Acceso"}
+                                        {isLoading ? t.login.mfa.verifying : t.login.mfa.confirm}
                                     </button>
 
                                     <button

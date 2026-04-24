@@ -35,6 +35,7 @@ import { reportsService } from "@/services/reports.service";
 import type { PdfReviewAnnotationsPayload } from "@/lib/pdf-review-annotations";
 import { parseReviewAnnotations } from "@/lib/pdf-review-annotations";
 import { aiService } from "@/services/ai.service";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 const DocumentPdfReviewEditor = dynamic(
   () =>
@@ -52,6 +53,7 @@ const DocumentPdfReviewEditor = dynamic(
 );
 
 export default function GestionEstudiantesPage() {
+  const { t } = useLanguage();
   const [internships, setInternships] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -148,7 +150,7 @@ export default function GestionEstudiantesPage() {
 
   const handleReviewSubmit = async (status: 'APROBADO_DEFINITIVO' | 'RECHAZADO_COORDINADOR') => {
     if (status === 'RECHAZADO_COORDINADOR' && !observations.trim()) {
-      alert("Las observaciones son obligatorias para rechazar el documento.");
+      alert(t.coordinator.students.drawerReview.errorObs);
       return;
     }
 
@@ -159,7 +161,7 @@ export default function GestionEstudiantesPage() {
         observations,
         annotations: reviewAnnotationsRef.current,
       });
-      alert(status === 'APROBADO_DEFINITIVO' ? "Aprobación definitiva exitosa" : "Documento rechazado por coordinación");
+      alert(status === 'APROBADO_DEFINITIVO' ? t.common.success.generic : t.common.success.generic); // Or specific ones if added
       
       // Recargar datos para actualizar elegibilidad
       await loadData();
@@ -177,14 +179,14 @@ export default function GestionEstudiantesPage() {
   };
 
   const handleGenerateCertificate = async (internshipId: string) => {
-    if (!confirm("¿Está seguro de generar el certificado oficial? Esta acción finalizará la pasantía del estudiante.")) {
+    if (!confirm(t.coordinator.students.cert.confirm)) {
       return;
     }
 
     setGeneratingCertId(internshipId);
     try {
       const result = await certificationService.generateCertificate(internshipId);
-      alert("Certificado generado con éxito.");
+      alert(t.common.success.generic);
       window.open(result.url, '_blank');
       await loadData();
     } catch (error: any) {
@@ -246,11 +248,11 @@ export default function GestionEstudiantesPage() {
         {/* Header Section */}
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block animate-in fade-in slide-in-from-left-4 duration-700">Coordinación de Prácticas</span>
+            <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block animate-in fade-in slide-in-from-left-4 duration-700">{t.coordinator.students.subtitle}</span>
             <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
-              Gestión de <span className="text-slate-400">Estudiantes</span>
+              {t.coordinator.students.title.split(" ")[0]} <span className="text-slate-400">{t.coordinator.students.title.split(" ").slice(1).join(" ")}</span>
             </h2>
-            <p className="text-slate-500 font-medium mt-2">Supervisión global y validación final de expedientes.</p>
+            <p className="text-slate-500 font-medium mt-2">{t.coordinator.students.description}</p>
           </div>
           
           <div className="flex items-center gap-4">
@@ -258,7 +260,7 @@ export default function GestionEstudiantesPage() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
                 <input 
                   type="text"
-                  placeholder="Buscar estudiante o empresa..."
+                  placeholder={t.coordinator.students.search}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-12 pr-6 py-3 md:py-4 bg-white border border-slate-200 rounded-2xl w-full md:w-[350px] outline-none focus:ring-4 focus:ring-[#003366]/5 focus:border-[#003366] transition-all font-medium text-sm shadow-sm"
@@ -270,7 +272,7 @@ export default function GestionEstudiantesPage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-40 gap-4">
             <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Sincronizando expedientes...</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.students.loading}</p>
           </div>
         ) : (
           <div className="grid gap-6">
@@ -323,8 +325,8 @@ export default function GestionEstudiantesPage() {
                       <FileCheck className="text-[#C5A059] w-6 h-6" />
                    </div>
                    <div>
-                      <h2 className="text-xl font-black text-[#003366] tracking-tight">Validación Final</h2>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Nivel Coordinación</p>
+                      <h2 className="text-xl font-black text-[#003366] tracking-tight">{t.coordinator.students.drawerReview.title}</h2>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{t.coordinator.students.drawerReview.subtitle}</p>
                    </div>
                 </div>
                 <button 
@@ -338,7 +340,7 @@ export default function GestionEstudiantesPage() {
               <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden p-6 lg:flex-row lg:p-8">
                 <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/40 p-4">
                   <div className="mb-3 shrink-0">
-                    <h4 className="text-[11px] font-black uppercase tracking-widest text-[#C5A059]">Documento</h4>
+                    <h4 className="text-[11px] font-black uppercase tracking-widest text-[#C5A059]">{t.coordinator.students.drawerReview.doc}</h4>
                     <p className="font-bold text-[#003366]">{selectedDoc?.name}</p>
                   </div>
                   <div className="min-h-0 flex-1 overflow-auto">
@@ -359,27 +361,26 @@ export default function GestionEstudiantesPage() {
                       className="mt-3 flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-2.5 text-[10px] font-black uppercase tracking-widest text-[#003366] shadow-sm hover:bg-slate-50"
                     >
                       <FileText className="h-4 w-4" />
-                      Abrir PDF en pestaña nueva
+                      {t.coordinator.students.drawerReview.openPdf}
                     </a>
                   )}
                 </div>
 
                 <div className="flex w-full shrink-0 flex-col gap-4 lg:w-[360px] lg:border-l lg:border-slate-100 lg:pl-6">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                    Observaciones finales
+                    {t.coordinator.students.drawerReview.observations}
                   </label>
                   <textarea
                     value={observations}
                     onChange={(e) => setObservations(e.target.value)}
-                    placeholder="Feedback para el estudiante y el tutor…"
+                    placeholder={t.coordinator.students.drawerReview.placeholderObs}
                     className="min-h-[140px] w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 outline-none transition-all hover:bg-white focus:border-[#003366] focus:ring-2 focus:ring-[#003366]/5"
                   />
                   <div className="rounded-2xl border border-amber-100/50 bg-amber-50 p-4">
                     <div className="flex gap-3">
                       <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
                       <p className="text-[10px] font-bold leading-relaxed text-amber-800">
-                        La aprobación definitiva bloquea el documento para el estudiante. Las anotaciones en el PDF se
-                        guardan con esta revisión.
+                        {t.coordinator.students.drawerReview.warning}
                       </p>
                     </div>
                   </div>
@@ -388,19 +389,19 @@ export default function GestionEstudiantesPage() {
                   <div className="mt-4 flex flex-col gap-3">
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-[#003366] flex items-center gap-2">
                        <History className="w-3.5 h-3.5 text-[#C5A059]" />
-                       Historial de Versiones
+                       {t.coordinator.students.drawerReview.history}
                     </h4>
                     
                     <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
                        {loadingVersions ? (
                          <div className="py-4 flex justify-center"><Loader2 className="w-4 h-4 animate-spin text-slate-300" /></div>
                        ) : docVersions.length === 0 ? (
-                         <p className="text-[10px] text-slate-400 italic">No hay versiones previas registradas.</p>
+                         <p className="text-[10px] text-slate-400 italic">{t.coordinator.students.drawerReview.noHistory}</p>
                        ) : (
                          docVersions.map((v: any, idx: number) => (
                            <div key={v.id} className="p-3 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between group">
                               <div className="flex-1 min-w-0">
-                                 <p className="text-[9px] font-black text-[#003366] uppercase">Versión {docVersions.length - idx}</p>
+                                 <p className="text-[9px] font-black text-[#003366] uppercase">{t.coordinator.students.drawerReview.version} {docVersions.length - idx}</p>
                                  <p className="text-[10px] text-slate-400 font-medium truncate">{new Date(v.createdAt).toLocaleString()}</p>
                               </div>
                               <a 
@@ -426,7 +427,7 @@ export default function GestionEstudiantesPage() {
                   className="h-14 bg-white border-2 border-rose-100 text-rose-600 rounded-2xl font-black uppercase tracking-widest hover:bg-rose-50 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <XCircle className="w-5 h-5" />}
-                  Rechazar
+                  {t.coordinator.students.drawerReview.reject}
                 </button>
                 <button 
                   onClick={() => handleReviewSubmit('APROBADO_DEFINITIVO')}
@@ -434,7 +435,7 @@ export default function GestionEstudiantesPage() {
                   className="h-14 bg-[#003366] text-white rounded-2xl font-black uppercase tracking-widest hover:bg-[#003366]/90 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl shadow-blue-900/20"
                 >
                   {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
-                  Aprobar
+                  {t.coordinator.students.drawerReview.approve}
                 </button>
               </div>
             </motion.div>
@@ -468,23 +469,23 @@ export default function GestionEstudiantesPage() {
                  <LogOut className="w-6 h-6" />}
               </div>
               <h3 className="text-xl font-black text-[#003366] mb-1">
-                {statusModal.action === 'Suspendida' ? 'Suspender Práctica' :
-                 statusModal.action === 'En Proceso' ? 'Reactivar Práctica' : 'Retirar Estudiante'}
+                {statusModal.action === 'Suspendida' ? t.coordinator.students.modalStatus.suspend.title :
+                 statusModal.action === 'En Proceso' ? t.coordinator.students.modalStatus.reactivate.title : t.coordinator.students.modalStatus.withdraw.title}
               </h3>
               <p className="text-sm text-slate-500 font-medium mb-6">
                 {statusModal.action === 'Suspendida'
-                  ? 'La práctica quedará en pausa temporal. Se puede reactivar posteriormente.'
+                  ? t.coordinator.students.modalStatus.suspend.desc
                   : statusModal.action === 'En Proceso'
-                  ? 'La práctica volverá al estado activo. Indique el motivo de la reactivación.'
-                  : 'El estudiante será marcado como retirado. Esta acción impide la generación del certificado.'}
+                  ? t.coordinator.students.modalStatus.reactivate.desc
+                  : t.coordinator.students.modalStatus.withdraw.desc}
               </p>
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">
-                Motivo <span className="text-rose-500">*</span>
+                {t.coordinator.students.modalStatus.reason} <span className="text-rose-500">*</span>
               </label>
               <textarea
                 value={statusReason}
                 onChange={(e) => setStatusReason(e.target.value)}
-                placeholder="Indique el motivo del cambio de estado..."
+                placeholder={t.coordinator.students.modalStatus.placeholder}
                 className="w-full min-h-[100px] p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-[#003366] transition-all text-sm font-medium mb-6"
               />
               <div className="grid grid-cols-2 gap-3">
@@ -492,7 +493,7 @@ export default function GestionEstudiantesPage() {
                   onClick={() => setStatusModal(null)}
                   className="h-12 bg-slate-100 text-[#003366] rounded-2xl font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
                 >
-                  Cancelar
+                  {t.coordinator.students.modalStatus.cancel}
                 </button>
                 <button
                   onClick={handleChangeStatus}
@@ -505,7 +506,7 @@ export default function GestionEstudiantesPage() {
                   )}
                 >
                   {changingStatus ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
-                  Confirmar
+                  {t.coordinator.students.modalStatus.confirm}
                 </button>
               </div>
             </motion.div>
@@ -563,40 +564,40 @@ function StudentInternshipCard({
                  </div>
                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#C5A059]">
                     <Users className="w-3.5 h-3.5" />
-                    Tutor: <span className="text-[#003366]">{internship.tutor.fullName}</span>
+                    {t.coordinator.students.card.tutor}: <span className="text-[#003366]">{internship.tutor.fullName}</span>
                  </div>
                  {internship.career && (
                     <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#003366] bg-slate-100 px-3 py-1 rounded-full">
                        <Building2 className="w-3.5 h-3.5 text-[#C5A059]" />
-                       Carrera: {internship.career.name}
+                       {t.coordinator.students.card.career}: {internship.career.name}
                     </div>
                   )}
                   {internship.finalGrade > 0 && (
                      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white bg-[#003366] px-3 py-1 rounded-full shadow-sm">
                         <FileBadge className="w-3.5 h-3.5 text-[#C5A059]" />
-                        Nota Final: {internship.finalGrade.toFixed(2)}
+                        {t.coordinator.students.card.finalGrade}: {internship.finalGrade.toFixed(2)}
                      </div>
                   )}
                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
                     <Clock className="w-3.5 h-3.5" />
-                    Progreso: {attendance?.summary?.progressPercentage || 0}%
+                    {t.coordinator.students.card.progress}: {attendance?.summary?.progressPercentage || 0}%
                  </div>
                  {internship.status === 'Finalizado' && (
                     <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        Completado
+                        {t.coordinator.students.card.completed}
                     </div>
                  )}
                  {internship.status === 'Suspendida' && (
                     <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
                         <PauseCircle className="w-3.5 h-3.5" />
-                        Suspendida
+                        {t.coordinator.students.card.suspended}
                     </div>
                  )}
                  {internship.status === 'Retirada' && (
                     <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-rose-700 bg-rose-50 px-3 py-1 rounded-full border border-rose-200">
                         <LogOut className="w-3.5 h-3.5" />
-                        Retirada
+                        {t.coordinator.students.card.withdrawn}
                     </div>
                  )}
               </div>
@@ -607,7 +608,9 @@ function StudentInternshipCard({
            {pendingDocs > 0 && internship.status !== 'Finalizado' && (
              <div className="px-4 py-2 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-3 animate-pulse">
                 <div className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-900/20" />
-                <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest">{pendingDocs} Revisión Pendiente</span>
+                <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest">
+                  {t.coordinator.students.card.pendingReview.replace("{count}", pendingDocs.toString())}
+                </span>
              </div>
            )}
            <div className={cn(
@@ -673,7 +676,7 @@ function StudentInternshipCard({
                            <div className="p-2 bg-[#C5A059] rounded-xl text-white shrink-0">
                               <Zap className="w-4 h-4" />
                            </div>
-                           <h4 className="text-sm font-black uppercase tracking-widest text-[#C5A059]">Emitesis AI Predictor</h4>
+                           <h4 className="text-sm font-black uppercase tracking-widest text-[#C5A059]">{t.coordinator.students.ai.title}</h4>
                         </div>
                         <button 
                            onClick={(e) => { e.stopPropagation(); onAIAnalyze(); }}
@@ -683,7 +686,7 @@ function StudentInternshipCard({
                            {analyzing ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
                            ) : (
-                              "Ejecutar Análisis de Riesgo"
+                              t.coordinator.students.ai.button
                            )}
                         </button>
                      </div>
@@ -700,7 +703,7 @@ function StudentInternshipCard({
                            </motion.div>
                         ) : (
                            <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest pl-1">
-                              Presiona el botón para analizar el progreso y detectar riesgos tempranamente.
+                              {t.coordinator.students.ai.description}
                            </p>
                         )}
                      </AnimatePresence>
@@ -711,30 +714,30 @@ function StudentInternshipCard({
                {eligibility && (
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white p-4 md:p-8 rounded-[2rem] border border-slate-200 shadow-sm">
                     <div className="space-y-4 md:border-r border-slate-100 md:pr-4">
-                       <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Documentación</h4>
+                       <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.coordinator.students.kpi.docs}</h4>
                        <div className="flex items-end gap-3">
                           <span className="text-2xl md:text-3xl font-black text-[#003366]">{eligibility.details.approvedDocsCount < 7 ? (
                              <span className="text-rose-500">{eligibility.details.approvedDocsCount}</span>
                           ) : (
                              <span className="text-emerald-500">7</span>
                           )}/7</span>
-                          <span className="text-[10px] font-bold text-slate-400 mb-2 uppercase">Aprobados</span>
+                          <span className="text-[10px] font-bold text-slate-400 mb-2 uppercase">{t.coordinator.students.kpi.approved}</span>
                        </div>
                        <p className="text-[11px] font-medium text-slate-500 leading-tight">
                           {eligibility.details.missingDocs.length > 0 
-                            ? `Pendiente: ${eligibility.details.missingDocs.join(', ')}`
-                            : 'Todos los documentos obligatorios han sido aprobadas.'}
+                            ? t.coordinator.students.kpi.pending.replace("{missing}", eligibility.details.missingDocs.join(', '))
+                            : t.coordinator.students.kpi.allApproved}
                        </p>
                     </div>
 
                     <div className="space-y-4 md:border-r border-slate-100 md:pr-4 md:pl-4">
-                       <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Asistencia Total</h4>
+                       <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.coordinator.students.kpi.attendance}</h4>
                        <div className="flex items-end gap-3">
                           <span className={cn(
                              "text-2xl md:text-3xl font-black",
                              eligibility.details.hoursMet ? "text-emerald-500" : "text-rose-500"
                           )}>{eligibility.details.totalHours}h</span>
-                          <span className="text-[10px] font-bold text-slate-400 mb-2 uppercase">de {eligibility.details.requiredHours}h</span>
+                          <span className="text-[10px] font-bold text-slate-400 mb-2 uppercase">{t.coordinator.students.kpi.of} {eligibility.details.requiredHours}h</span>
                        </div>
                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
                           <div 
@@ -751,12 +754,12 @@ function StudentInternshipCard({
                        {internship.status === 'Finalizado' ? (
                           <div className="text-center p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
                              <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-                             <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Pasantía Culminada</p>
+                             <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">{t.coordinator.students.cert.finished}</p>
                              <button 
                                 onClick={(e) => { e.stopPropagation(); const doc = documents.find((d:any) => d.name === 'Certificado de culminación'); if(doc?.filePath) window.open(doc.filePath, '_blank') }}
                                 className="mt-2 text-[10px] font-bold text-[#003366] hover:underline"
                              >
-                                Descargar Certificado
+                                {t.coordinator.students.cert.download}
                              </button>
                           </div>
                        ) : (
@@ -775,12 +778,12 @@ function StudentInternshipCard({
                              ) : (
                                 <FileBadge className="w-6 h-6 text-[#C5A059]" />
                              )}
-                             <span className="text-[11px] font-black uppercase tracking-[0.2em]">Generar Certificado</span>
+                             <span className="text-[11px] font-black uppercase tracking-[0.2em]">{t.coordinator.students.cert.generate}</span>
                           </button>
                        )}
                        {!eligibility.eligible && internship.status !== 'Finalizado' && (
                           <p className="text-[9px] text-center mt-3 text-rose-500 font-bold uppercase tracking-widest animate-pulse">
-                             Requisitos incompletos
+                             {t.coordinator.students.cert.incomplete}
                           </p>
                        )}
                     </div>
@@ -792,7 +795,7 @@ function StudentInternshipCard({
                   <div className="space-y-4">
                      <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6 pl-2 flex items-center gap-3">
                        <FileText className="w-4 h-4" />
-                       Expediente Digital
+                       {t.coordinator.students.expediente.title}
                      </h4>
                      <div className="grid gap-3">
                         {documents.map((doc: any) => (
@@ -810,7 +813,9 @@ function StudentInternshipCard({
                                 </div>
                                 <div>
                                    <p className="text-[11px] font-bold text-[#003366] line-clamp-1">{doc.name}</p>
-                                   <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">{doc.status.replace(/_/g, ' ')}</span>
+                                   <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">
+                                      {(t.tutor.docStatus as any)[doc.status] || doc.status.replace(/_/g, ' ')}
+                                   </span>
                                 </div>
                              </div>
                              <div className="flex items-center gap-2">
@@ -828,12 +833,12 @@ function StudentInternshipCard({
                   <div className="space-y-4">
                      <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6 pl-2 flex items-center gap-3">
                        <Clock className="w-4 h-4" />
-                       Vista de Asistencia
+                       {t.coordinator.students.expediente.attendance}
                      </h4>
 
                      <div className="flex items-end gap-3 bg-white p-4 rounded-2xl border border-slate-100 mb-4 shadow-sm">
                         <div className="space-y-1 flex-1">
-                           <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Desde</label>
+                           <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.coordinator.students.expediente.since}</label>
                            <input 
                               type="date" 
                               value={attendanceFilters.startDate}
@@ -842,7 +847,7 @@ function StudentInternshipCard({
                            />
                         </div>
                         <div className="space-y-1 flex-1">
-                           <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Hasta</label>
+                           <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.coordinator.students.expediente.until}</label>
                            <input 
                               type="date" 
                               value={attendanceFilters.endDate}
@@ -861,7 +866,7 @@ function StudentInternshipCard({
                      {/* Historial de estados */}
                      {internship.statusHistory && internship.statusHistory.length > 0 && (
                        <div className="mb-5">
-                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Historial de Estados</p>
+                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">{t.coordinator.students.expediente.statusHistory}</p>
                          <div className="space-y-2">
                            {internship.statusHistory.slice(0, 5).map((s: any) => (
                              <div key={s.id} className="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl">
@@ -875,10 +880,10 @@ function StudentInternshipCard({
                                  <div className="flex items-center gap-2 flex-wrap">
                                    <span className="text-[10px] font-black text-[#003366]">{s.newStatus}</span>
                                    {s.oldStatus && <span className="text-[10px] text-slate-400">← {s.oldStatus}</span>}
-                                   <span className="text-[10px] text-slate-300">{new Date(s.createdAt).toLocaleDateString("es-EC")}</span>
+                                   <span className="text-[10px] text-slate-300">{new Date(s.createdAt).toLocaleDateString()}</span>
                                  </div>
-                                 {s.reason && <p className="text-xs text-slate-500 mt-0.5 truncate">{s.reason}</p>}
-                                 {s.changedBy && <p className="text-[10px] text-slate-400">Por: {s.changedBy.fullName}</p>}
+                                 {s.reason && <p className="text-xs text-slate-500 mt-0.5 truncate">{t.coordinator.students.expediente.reason}: {s.reason}</p>}
+                                 {s.changedBy && <p className="text-[10px] text-slate-400">{t.coordinator.students.expediente.by}: {s.changedBy.fullName}</p>}
                                </div>
                              </div>
                            ))}
@@ -893,10 +898,10 @@ function StudentInternshipCard({
                           <table className="w-full text-[10px]">
                              <thead className="bg-slate-50 border-b">
                                 <tr>
-                                   <th className="px-4 py-3 text-left font-black uppercase text-slate-400">Fecha</th>
-                                   <th className="px-4 py-3 text-left font-black uppercase text-slate-400">Entrada</th>
-                                   <th className="px-4 py-3 text-left font-black uppercase text-slate-400">Salida</th>
-                                   <th className="px-4 py-3 text-left font-black uppercase text-slate-400">Actividades</th>
+                                   <th className="px-4 py-3 text-left font-black uppercase text-slate-400">{t.coordinator.students.expediente.table.date}</th>
+                                   <th className="px-4 py-3 text-left font-black uppercase text-slate-400">{t.coordinator.students.expediente.table.checkIn}</th>
+                                   <th className="px-4 py-3 text-left font-black uppercase text-slate-400">{t.coordinator.students.expediente.table.checkOut}</th>
+                                   <th className="px-4 py-3 text-left font-black uppercase text-slate-400">{t.coordinator.students.expediente.table.activities}</th>
                                 </tr>
                              </thead>
                              <tbody className="divide-y text-slate-400">

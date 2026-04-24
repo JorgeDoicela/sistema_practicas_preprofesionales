@@ -27,10 +27,14 @@ import { aiService } from "@/services/ai.service";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 const LeafletMap = dynamic(() => import("@/components/dashboard/MapComponent"), {
   ssr: false,
-  loading: () => <div className="h-[300px] w-full bg-slate-100 animate-pulse rounded-2xl flex items-center justify-center text-[10px] font-black uppercase text-slate-400">Iniciando Geo-Radar...</div>
+  loading: () => {
+    const { t } = useLanguage();
+    return <div className="h-[300px] w-full bg-slate-100 animate-pulse rounded-2xl flex items-center justify-center text-[10px] font-black uppercase text-slate-400">{t.asistencia.accessingRadar}</div>
+  }
 });
 
 // ── Tipos ─────────────────────────────────────────────────────────────────
@@ -53,6 +57,7 @@ interface ActivityPhotoItem {
 
 // ── Componente Principal ───────────────────────────────────────────────────
 export default function AsistenciaPage() {
+  const { t } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<Record<string, unknown> | null>(null);
@@ -128,9 +133,7 @@ export default function AsistenciaPage() {
         setHistory([]);
         setSummary(null);
         setActivityPhotos([]);
-        setViewerHint(
-          "El check-in con foto, huella y GPS lo realiza el estudiante desde su cuenta. Como coordinador o tutor académico, revise el seguimiento desde Documentos o el panel de tutor.",
-        );
+        setViewerHint(t.asistencia.viewerHint);
         return;
       }
 
@@ -167,7 +170,7 @@ export default function AsistenciaPage() {
       }
     } catch (err) {
       console.error(err);
-      setPageError("No se pudo cargar la información de asistencia");
+      setPageError(t.common.error);
     } finally {
       setLoading(false);
     }
@@ -274,9 +277,7 @@ export default function AsistenciaPage() {
       setBiometricPlatformOk(supported);
       setHasSavedCredential(registered);
       if (!supported) {
-        setModalError(
-          "Tu dispositivo o navegador no admite verificación biométrica segura. Usa Chrome/Edge actualizado con huella o Face ID habilitado.",
-        );
+        setModalError(t.asistencia.modal.biometricUnsupported);
         return;
       }
       setModalError(null);
@@ -297,7 +298,7 @@ export default function AsistenciaPage() {
       setModalStep("biometric");
       webAuthn.reset();
     } else {
-      setModalError("No se pudo capturar la foto. Intenta de nuevo.");
+      setModalError(t.asistencia.modal.captureError);
     }
   };
 
@@ -308,7 +309,7 @@ export default function AsistenciaPage() {
       ? await webAuthn.authenticate()
       : await webAuthn.registerBiometric();
     if (!ok) {
-      setModalError(webAuthn.error || "Verificación biométrica fallida");
+      setModalError(webAuthn.error || t.asistencia.modal.stepError);
       return;
     }
     await handleSubmitAttendance();
@@ -326,10 +327,10 @@ export default function AsistenciaPage() {
   const handleSubmitAttendance = async () => {
     setModalStep("submitting");
     setModalError(null);
-    setGpsStatusText("Obteniendo ubicación…");
+    setGpsStatusText(t.asistencia.modal.gpsFetching);
 
     if (!navigator.geolocation) {
-      setModalError("Tu navegador no soporta geolocalización");
+      setModalError(t.asistencia.modal.gpsUnsupported);
       setModalStep("error");
       return;
     }
@@ -341,11 +342,11 @@ export default function AsistenciaPage() {
       if (pos.accuracyM != null) {
         setGpsStatusText(
           pos.accuracyM > 80
-            ? `Precisión aproximada ±${Math.round(pos.accuracyM)} m. Si falla el rango, espera mejor señal y reintenta.`
-            : `Ubicación lista (±${Math.round(pos.accuracyM)} m).`,
+            ? t.asistencia.modal.gpsAccuracy.replace("{accuracy}", Math.round(pos.accuracyM).toString())
+            : t.asistencia.modal.gpsReady.replace("{accuracy}", Math.round(pos.accuracyM).toString())
         );
       } else {
-        setGpsStatusText("Ubicación obtenida.");
+        setGpsStatusText(t.asistencia.modal.gpsObtained);
       }
 
       let photoUrl: string | undefined;
@@ -421,7 +422,7 @@ export default function AsistenciaPage() {
       setActivityCaption(suggestion);
     } catch (err) {
       console.error("Error al sugerir descripción:", err);
-      toast.error("No se pudo obtener la sugerencia de IA. Intenta de nuevo.");
+      toast.error(t.common.error.generic);
     } finally {
       setSuggestingCaption(false);
     }
@@ -463,7 +464,7 @@ export default function AsistenciaPage() {
               <Clock className="w-10 h-10 text-[#C5A059] animate-pulse" />
             </div>
             <div>
-              <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-1 block">Registro de Asistencia</span>
+              <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-1 block">{t.asistencia.clockLabel}</span>
               <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tighter">
                 {currentTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 <span className="text-slate-300 text-2xl ml-2 font-bold">
@@ -471,7 +472,7 @@ export default function AsistenciaPage() {
                 </span>
               </h2>
               <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">
-                {currentTime.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}
+                {currentTime.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}
               </p>
             </div>
           </div>
@@ -488,7 +489,7 @@ export default function AsistenciaPage() {
               if (locs.length === 0) return (
                 <div className="flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-600 rounded-xl">
                   <AlertCircle className="w-4 h-4" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Sin sedes configuradas</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest">{t.asistencia.requirements.noLocations}</span>
                 </div>
               );
               return (
@@ -504,11 +505,11 @@ export default function AsistenciaPage() {
             })()}
             <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-xl">
               <Fingerprint className="w-4 h-4" />
-              <span className="text-[10px] font-black uppercase tracking-widest">Biometría</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">{t.asistencia.requirements.biometrics}</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-700 rounded-xl">
               <Camera className="w-4 h-4" />
-              <span className="text-[10px] font-black uppercase tracking-widest">Foto obligatoria</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">{t.asistencia.requirements.photoRequired}</span>
             </div>
           </div>
         </section>
@@ -521,7 +522,7 @@ export default function AsistenciaPage() {
                   <LeafletMap 
                      center={currentCoords || { lat: -0.1807, lng: -78.4678 }}
                      zoom={16}
-                     points={currentCoords ? [{ ...currentCoords, label: "Tu ubicación actual" }] : []}
+                     points={currentCoords ? [{ ...currentCoords, label: t.asistencia.requirements.currentLocation }] : []}
                      radiusM={
                        Array.isArray((internship as any).allowedLocations) && (internship as any).allowedLocations.length > 0
                         ? (internship as any).allowedLocations[0].radiusM || 200
@@ -531,8 +532,8 @@ export default function AsistenciaPage() {
                 </div>
                 <div className="p-4 sm:p-6 md:p-8 flex flex-col justify-center gap-4 md:gap-6 bg-slate-50/50">
                   <div>
-                    <span className="text-[9px] font-black text-[#C5A059] uppercase tracking-widest block mb-1">Estado de Geocerca</span>
-                    <h3 className="text-2xl font-black text-[#003366] tracking-tight">Zona de Asistencia</h3>
+                    <span className="text-[9px] font-black text-[#C5A059] uppercase tracking-widest block mb-1">{t.asistencia.requirements.geofence}</span>
+                    <h3 className="text-2xl font-black text-[#003366] tracking-tight">{t.asistencia.requirements.attendanceZone}</h3>
                   </div>
                   
                   <div className={cn(
@@ -546,19 +547,19 @@ export default function AsistenciaPage() {
                     
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-widest mb-1">
-                        {isInRange === null ? "Calculando..." : isInRange ? "Estás en el área" : "Fuera de alcance"}
+                        {isInRange === null ? t.asistencia.requirements.calculating : isInRange ? t.asistencia.requirements.inRange : t.asistencia.requirements.outRange}
                       </p>
                       <p className="text-xs font-bold opacity-80 leading-relaxed px-4">
-                        {isInRange === null ? "Sincronizando con satélites GPS..." : 
-                         isInRange ? "Puedes registrar tu entrada o salida sin problemas de ubicación." : 
-                         "Tu ubicación actual está fuera de los perímetros autorizados por tu tutor."}
+                        {isInRange === null ? t.asistencia.accessingRadar : 
+                         isInRange ? t.asistencia.requirements.inRangeDesc : 
+                         t.asistencia.requirements.outRangeDesc}
                       </p>
                     </div>
                   </div>
 
                   {!isInRange && isInRange !== null && (
                     <p className="text-[9px] font-bold text-rose-400 text-center flex items-center justify-center gap-2">
-                      <AlertCircle size={12} /> Desactive el ahorro de batería o WiFi si el error persiste.
+                      <AlertCircle size={12} /> {t.asistencia.requirements.gpsTip}
                     </p>
                   )}
                 </div>
@@ -570,10 +571,10 @@ export default function AsistenciaPage() {
         {summary && (
           <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { icon: Clock, label: "Horas", value: `${summary.totalHours}h / ${summary.requiredHours}h`, color: "blue" },
-              { icon: CheckCircle2, label: "Progreso", value: `${summary.progressPercentage}%`, color: "emerald" },
-              { icon: Calendar, label: "Registros", value: String(summary.totalRecords), color: "amber" },
-              { icon: AlertCircle, label: "Pendientes", value: `${summary.remainingHours}h`, color: "rose" },
+              { icon: Clock, label: t.asistencia.stats.hours, value: `${summary.totalHours}h / ${summary.requiredHours}h`, color: "blue" },
+              { icon: CheckCircle2, label: t.asistencia.stats.progress, value: `${summary.progressPercentage}%`, color: "emerald" },
+              { icon: Calendar, label: t.asistencia.stats.records, value: String(summary.totalRecords), color: "amber" },
+              { icon: AlertCircle, label: t.asistencia.stats.pending, value: `${summary.remainingHours}h`, color: "rose" },
             ].map(({ icon: Icon, label, value, color }) => (
               <div key={label} className="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-lg flex items-center gap-4">
                 <div className={`w-11 h-11 bg-${color}-50 rounded-2xl flex items-center justify-center text-${color}-600`}>
@@ -591,7 +592,7 @@ export default function AsistenciaPage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Verificando estado...</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.common.loading}</p>
           </div>
         ) : !internship ? (
           viewerHint ? (
@@ -631,18 +632,18 @@ export default function AsistenciaPage() {
                   </div>
                   <div className="text-left">
                     <p className={cn("text-[10px] font-black uppercase tracking-widest", status ? "text-emerald-600" : "text-slate-400")}>
-                      REGISTRAR ENTRADA
+                      {t.asistencia.actions.checkIn}
                     </p>
                     <p className="text-xl font-black text-[#003366]">
                       {status
                         ? new Date((status as Record<string, unknown>).checkIn as string).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                        : "Marcar Ingreso"}
+                        : t.asistencia.actions.markIn}
                     </p>
                     {!status && (
                       <div className="flex items-center gap-2 mt-2">
-                        <StepBadge icon={Camera} label="Foto" />
-                        <StepBadge icon={Fingerprint} label="Huella" />
-                        <StepBadge icon={MapPin} label="GPS" />
+                        <StepBadge icon={Camera} label={t.asistencia.actions.photo} />
+                        <StepBadge icon={Fingerprint} label={t.asistencia.actions.fingerprint} />
+                        <StepBadge icon={MapPin} label={t.asistencia.actions.gps} />
                       </div>
                     )}
                   </div>
@@ -665,7 +666,7 @@ export default function AsistenciaPage() {
                 disabled={!status || !!(status as Record<string, unknown>)?.checkOut}
                 className={cn(
                   "group relative flex items-center justify-between p-5 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border-2 transition-all overflow-hidden",
-                  (!status || !!(status as Record<string, unknown>)?.checkOut)
+                  (status as Record<string, unknown> | null)?.checkOut
                     ? "bg-slate-50 border-slate-100 cursor-not-allowed"
                     : "bg-white border-rose-100 hover:border-rose-500 hover:shadow-xl hover:shadow-rose-900/10 active:scale-[0.98]"
                 )}
@@ -675,22 +676,22 @@ export default function AsistenciaPage() {
                     "w-14 h-14 rounded-2xl flex items-center justify-center transition-colors",
                     (status as Record<string, unknown> | null)?.checkOut ? "bg-rose-100 text-rose-600" : "bg-rose-50 text-rose-600 group-hover:bg-rose-500 group-hover:text-white"
                   )}>
-                    {(status as Record<string, unknown> | null)?.checkOut ? <CheckCircle2 className="w-7 h-7" /> : <ArrowLeftCircle className="w-7 h-7" />}
+                    {(status as Record<string, unknown> | null)?.checkOut ? <CheckCircle2 className="w-7 h-7" /> : <ArrowRightCircle className="w-7 h-7" />}
                   </div>
                   <div className="text-left">
                     <p className={cn("text-[10px] font-black uppercase tracking-widest", (status as Record<string, unknown> | null)?.checkOut ? "text-rose-600" : "text-slate-400")}>
-                      REGISTRAR SALIDA
+                      {t.asistencia.actions.checkOut}
                     </p>
                     <p className="text-xl font-black text-[#003366]">
                       {(status as Record<string, unknown> | null)?.checkOut
                         ? new Date((status as Record<string, unknown>).checkOut as string).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                        : "Marcar Egreso"}
+                        : t.asistencia.actions.markOut}
                     </p>
                     {status && !(status as Record<string, unknown>)?.checkOut && (
                       <div className="flex items-center gap-2 mt-2">
-                        <StepBadge icon={Camera} label="Foto" />
-                        <StepBadge icon={Fingerprint} label="Huella" />
-                        <StepBadge icon={MapPin} label="GPS" />
+                        <StepBadge icon={Camera} label={t.asistencia.actions.photo} />
+                        <StepBadge icon={Fingerprint} label={t.asistencia.actions.fingerprint} />
+                        <StepBadge icon={MapPin} label={t.asistencia.actions.gps} />
                       </div>
                     )}
                   </div>
@@ -724,8 +725,8 @@ export default function AsistenciaPage() {
                       <ImageIcon className="w-5 h-5" aria-hidden />
                     </div>
                     <div>
-                      <h3 className="text-sm font-black text-[#003366] uppercase tracking-[0.2em]">Fotos de Actividades</h3>
-                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">RF-17 · {activityPhotos.length} foto(s) hoy</p>
+                      <h3 className="text-sm font-black text-[#003366] uppercase tracking-[0.2em]">{t.asistencia.activityPhotos.title}</h3>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">RF-17 · {activityPhotos.length} {t.asistencia.history.records} {t.common.today}</p>
                     </div>
                   </div>
                   <button
@@ -733,7 +734,7 @@ export default function AsistenciaPage() {
                     className="flex w-full sm:w-auto shrink-0 items-center justify-center gap-2 px-5 py-2.5 bg-[#003366] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#004488] transition-colors"
                   >
                     <Plus className="w-4 h-4" />
-                    Agregar Foto
+                    {t.asistencia.activityPhotos.add}
                   </button>
                 </div>
 
@@ -741,7 +742,7 @@ export default function AsistenciaPage() {
                   {activityPhotos.length === 0 ? (
                     <div className="text-center py-10 space-y-3">
                       <ImageIcon className="w-12 h-12 text-slate-200 mx-auto" aria-hidden />
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Sin fotos de actividades hoy</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.asistencia.activityPhotos.noPhotos}</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -775,7 +776,7 @@ export default function AsistenciaPage() {
                   <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-[#003366]">
                     <History className="w-5 h-5" />
                   </div>
-                  <h3 className="text-sm font-black text-[#003366] uppercase tracking-[0.2em]">Historial de Asistencia</h3>
+                  <h3 className="text-sm font-black text-[#003366] uppercase tracking-[0.2em]">{t.asistencia.history.title}</h3>
                 </div>
 
                 <form
@@ -783,8 +784,8 @@ export default function AsistenciaPage() {
                   className="flex flex-wrap items-end gap-4 bg-slate-50 p-6 rounded-3xl border border-slate-100"
                 >
                   {[
-                    { key: "startDate", label: "Desde" },
-                    { key: "endDate", label: "Hasta" },
+                    { key: "startDate", label: t.asistencia.history.from },
+                    { key: "endDate", label: t.asistencia.history.to },
                   ].map(({ key, label }) => (
                     <div key={key} className="space-y-2">
                       <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{label}</label>
@@ -797,7 +798,7 @@ export default function AsistenciaPage() {
                     </div>
                   ))}
                   <button type="submit" className="px-5 py-2 bg-[#003366] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#004488] transition-colors h-[38px]">
-                    Filtrar
+                    {t.asistencia.history.filter}
                   </button>
                   {(filters.startDate || filters.endDate) && (
                     <button
@@ -1007,23 +1008,23 @@ export default function AsistenciaPage() {
 
                       <div className="text-center px-4 space-y-1">
                         <p className="text-sm font-black text-blue-900">
-                          {(biometricPlatformOk === null || hasSavedCredential === null || webAuthn.state === "checking") && "Comprobando dispositivo…"}
-                          {biometricPlatformOk === true && webAuthn.state === "idle"          && "Preparando verificación…"}
-                          {webAuthn.state === "registering"                                   && "Registrando credencial…"}
-                          {webAuthn.state === "authenticating"                                && "Verifica con tu huella o Face ID"}
-                          {webAuthn.state === "verified"                                      && "¡Identidad verificada!"}
-                          {webAuthn.state === "error"                                         && "Verificación fallida"}
+                          {(biometricPlatformOk === null || hasSavedCredential === null || webAuthn.state === "checking") && t.asistencia.modal.verifying}
+                          {biometricPlatformOk === true && webAuthn.state === "idle"          && t.asistencia.modal.verifying}
+                          {webAuthn.state === "registering"                                   && t.asistencia.modal.verifying}
+                          {webAuthn.state === "authenticating"                                && t.asistencia.modal.verifying}
+                          {webAuthn.state === "verified"                                      && t.asistencia.modal.stepDone}
+                          {webAuthn.state === "error"                                         && t.asistencia.modal.stepError}
                         </p>
                         {biometricPlatformOk === true && hasSavedCredential !== null && webAuthn.state === "idle" && (
                           <p className="text-[9px] text-blue-500 font-bold">
                             {hasSavedCredential
-                              ? "Se usará tu credencial guardada en este dispositivo"
-                              : "Primera vez: se creará una credencial segura en este dispositivo"}
+                              ? t.asistencia.modal.biometricSaved
+                              : t.asistencia.modal.biometricNew}
                           </p>
                         )}
                         {(webAuthn.state === "authenticating" || webAuthn.state === "registering") && (
                           <p className="text-[9px] text-blue-400 font-bold">
-                            Usa la huella, Face ID o PIN del sistema cuando aparezca
+                            {t.asistencia.modal.biometricHint}
                           </p>
                         )}
                       </div>
@@ -1044,7 +1045,7 @@ export default function AsistenciaPage() {
                         className="w-full py-4 bg-[#003366] text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-[#004488] disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-3"
                       >
                         <RefreshCw className="w-4 h-4" />
-                        Reintentar verificación
+                        {t.asistencia.modal.retry}
                       </button>
                     )}
 
@@ -1060,7 +1061,7 @@ export default function AsistenciaPage() {
                       }}
                       className="w-full py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#003366] transition-colors"
                     >
-                      ← Volver a tomar foto
+                      ← {t.asistencia.modal.backToPhoto}
                     </button>
                   </div>
                 )}
@@ -1075,14 +1076,14 @@ export default function AsistenciaPage() {
                       <Loader2 className="w-6 h-6 text-[#003366] animate-spin absolute -bottom-1 -right-1" />
                     </div>
                     <div className="text-center space-y-2 px-4 w-full">
-                      <p className="font-black text-[#003366]">Registrando asistencia…</p>
+                      <p className="font-black text-[#003366]">{t.asistencia.modal.stepSubmitting}</p>
                       {gpsStatusText ? (
                         <p className="text-[10px] text-slate-500 font-medium leading-relaxed max-w-xs mx-auto bg-slate-50 rounded-xl p-3 border border-slate-100">
                           {gpsStatusText}
                         </p>
                       ) : (
                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                          Obteniendo GPS y enviando al servidor
+                          {t.asistencia.modal.gpsFetchingServer}
                         </p>
                       )}
                     </div>
@@ -1103,7 +1104,7 @@ export default function AsistenciaPage() {
 
                     <div className="text-center space-y-1">
                       <p className="font-black text-[#003366] text-lg">
-                        {modalAction === "IN" ? "Entrada registrada" : "Salida registrada"}
+                        {modalAction === "IN" ? t.asistencia.modal.successIn : t.asistencia.modal.successOut}
                       </p>
                       <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
                         {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -1141,7 +1142,7 @@ export default function AsistenciaPage() {
                       onClick={closeModal}
                       className="px-8 py-3 bg-[#003366] text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-[#004488] transition-colors"
                     >
-                      Cerrar
+                      {t.common.close}
                     </button>
                   </div>
                 )}
@@ -1153,7 +1154,7 @@ export default function AsistenciaPage() {
                       <ShieldX className="w-10 h-10 text-rose-600" />
                     </div>
                     <div className="text-center space-y-2">
-                      <p className="font-black text-rose-700">No se pudo registrar asistencia</p>
+                      <p className="font-black text-rose-700">{t.asistencia.modal.stepError}</p>
                       <p className="text-xs text-slate-500 max-w-xs mx-auto">{modalError}</p>
                     </div>
                     <div className="flex gap-3 w-full">
@@ -1161,10 +1162,10 @@ export default function AsistenciaPage() {
                         onClick={() => { setModalStep("photo"); camera.reset(); webAuthn.reset(); }}
                         className="flex-1 py-3 bg-[#003366] text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-[#004488] transition-colors"
                       >
-                        Reintentar
+                        {t.asistencia.modal.retry}
                       </button>
                       <button onClick={closeModal} className="flex-1 py-3 border border-slate-200 rounded-2xl font-black uppercase tracking-widest text-[10px] text-slate-500 hover:bg-slate-50 transition-colors">
-                        Cancelar
+                        {t.common.cancel}
                       </button>
                     </div>
                   </div>
@@ -1193,7 +1194,7 @@ export default function AsistenciaPage() {
               <div className="bg-[#003366] p-6 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.3em]">RF-17</p>
-                  <p className="text-white font-black text-lg mt-1">Foto de Actividad</p>
+                  <p className="text-white font-black text-lg mt-1">{t.asistencia.activityPhotos.add}</p>
                 </div>
                 <button
                   onClick={() => { setActivityModalOpen(false); activityCamera.stopCamera(); setActivityBlobTemp(null); }}
@@ -1207,7 +1208,7 @@ export default function AsistenciaPage() {
                 {!activityBlobTemp ? (
                   <>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">
-                      Documenta tus actividades del día
+                      {t.asistencia.activityPhotos.desc || "Document activities"}
                     </p>
                     <div className="relative aspect-video bg-black rounded-2xl overflow-hidden">
                       {activityCamera.state === "error" ? (
@@ -1230,7 +1231,7 @@ export default function AsistenciaPage() {
                       className="w-full py-4 bg-[#003366] text-white rounded-2xl font-black uppercase tracking-widest text-sm disabled:opacity-50 hover:bg-[#004488] transition-colors flex items-center justify-center gap-3"
                     >
                       <Camera className="w-5 h-5" />
-                      Capturar
+                      {t.asistencia.modal.capture}
                     </button>
                   </>
                 ) : (
@@ -1251,7 +1252,7 @@ export default function AsistenciaPage() {
                           type="text"
                           value={activityCaption}
                           onChange={(e) => setActivityCaption(e.target.value)}
-                          placeholder="Descripción de la actividad (opcional)"
+                          placeholder={t.common.description + "..."}
                           className="w-full px-4 py-3 pr-36 border border-slate-200 rounded-2xl text-sm text-[#003366] font-medium focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                         {aiAvailable && (
@@ -1266,7 +1267,7 @@ export default function AsistenciaPage() {
                               ? <Loader2 className="w-3 h-3 animate-spin" />
                               : <Sparkles className="w-3 h-3" />
                             }
-                            {suggestingCaption ? "Analizando..." : "Sugerir IA"}
+                            {suggestingCaption ? t.common.loading : t.asistencia.activityPhotos.aiAnalyze}
                           </button>
                         )}
                       </div>
@@ -1284,13 +1285,13 @@ export default function AsistenciaPage() {
                         className="flex-1 py-3 bg-[#003366] text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-[#004488] disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                       >
                         {uploadingActivity ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                        Guardar
+                        {t.common.save}
                       </button>
                       <button
                         onClick={() => { setActivityBlobTemp(null); setActivityPreviewTemp(null); activityCamera.reset(); if (activityVideoRef.current) activityCamera.openCamera(activityVideoRef.current); }}
                         className="flex-1 py-3 border border-slate-200 rounded-2xl font-black uppercase tracking-widest text-[10px] text-slate-500 hover:bg-slate-50 transition-colors"
                       >
-                        Re-tomar
+                        {t.asistencia.modal.retry}
                       </button>
                     </div>
                   </>
@@ -1328,12 +1329,12 @@ function HistoryRow({ record, expanded, onToggle }: {
               {new Date(record.checkIn as string).getDate()}
             </span>
             <span className="text-[8px] font-black text-slate-400 uppercase tracking-tight">
-              {new Date(record.checkIn as string).toLocaleString("es-ES", { month: "short" })}
+              {new Date(record.checkIn as string).toLocaleString(undefined, { month: "short" })}
             </span>
           </div>
           <div>
             <p className="text-[10px] font-black text-[#C5A059] uppercase tracking-widest mb-1">
-              {new Date(record.checkIn as string).toLocaleDateString("es-ES", { weekday: "long" })}
+              {new Date(record.checkIn as string).toLocaleDateString(undefined, { weekday: "long" })}
             </p>
             <div className="flex items-center gap-5">
               <div className="flex items-center gap-1.5">
@@ -1350,7 +1351,7 @@ function HistoryRow({ record, expanded, onToggle }: {
                   </span>
                 </div>
               ) : (
-                <span className="px-2 py-0.5 bg-amber-50 rounded text-[9px] font-black text-amber-600 uppercase">Pendiente salida</span>
+                <span className="px-2 py-0.5 bg-amber-50 rounded text-[9px] font-black text-amber-600 uppercase">{t.common.pending}</span>
               )}
             </div>
           </div>
@@ -1362,7 +1363,8 @@ function HistoryRow({ record, expanded, onToggle }: {
           </div>
           {/* Indicadores de foto */}
           {!!record.checkInPhoto && <div className="w-2 h-2 rounded-full bg-emerald-400" title="Foto de entrada" />}
-          {!!record.checkOutPhoto && <div className="w-2 h-2 rounded-full bg-rose-400" title="Foto de salida" />}
+          {!!record.checkInPhoto && <div className="w-2 h-2 rounded-full bg-emerald-400" title={t.asistencia.modal.checkInPhoto} />}
+          {!!record.checkOutPhoto && <div className="w-2 h-2 rounded-full bg-rose-400" title={t.asistencia.modal.checkOutPhoto} />}
           {expanded ? <ChevronUp className="w-4 h-4 text-slate-300" /> : <ChevronDown className="w-4 h-4 text-slate-300" />}
         </div>
       </button>
@@ -1379,26 +1381,26 @@ function HistoryRow({ record, expanded, onToggle }: {
             <div className="px-6 pb-6 flex gap-4">
               {!!record.checkInPhoto && (
                 <div className="space-y-1">
-                  <p className="text-[8px] font-black text-emerald-600 uppercase tracking-widest">Foto Entrada</p>
+                  <p className="text-[8px] font-black text-emerald-600 uppercase tracking-widest">{t.asistencia.modal.checkInPhoto}</p>
                   <NextImage
                     src={record.checkInPhoto as string}
                     width={96}
                     height={96}
                     unoptimized
-                    alt="Foto de entrada del día"
+                    alt={t.asistencia.modal.checkInPhoto}
                     className="w-24 h-24 rounded-xl object-cover border border-emerald-100"
                   />
                 </div>
               )}
               {!!record.checkOutPhoto && (
                 <div className="space-y-1">
-                  <p className="text-[8px] font-black text-rose-600 uppercase tracking-widest">Foto Salida</p>
+                  <p className="text-[8px] font-black text-rose-600 uppercase tracking-widest">{t.asistencia.modal.checkOutPhoto}</p>
                   <NextImage
                     src={record.checkOutPhoto as string}
                     width={96}
                     height={96}
                     unoptimized
-                    alt="Foto de salida del día"
+                    alt={t.asistencia.modal.checkOutPhoto}
                     className="w-24 h-24 rounded-xl object-cover border border-rose-100"
                   />
                 </div>

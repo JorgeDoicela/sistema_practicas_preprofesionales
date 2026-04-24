@@ -23,6 +23,8 @@ import { usersService } from "@/services/users.service";
 import type { UserProfile } from "@/types/user";
 import { ROLE_LABELS, ROLES, normalizeApiRoleToAppRole, type Role } from "@/constants/roles";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/providers/LanguageProvider";
+
 
 function formatDate(iso: string) {
   try {
@@ -33,7 +35,8 @@ function formatDate(iso: string) {
 }
 
 export function ProfileView() {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const { t } = useLanguage();
+  const [profile, setProfile] = useState<UserProfile | null>(profile);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,7 +59,7 @@ export function ProfileView() {
         const data = await usersService.getProfile();
         if (!cancelled) setProfile(data);
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Error al cargar el perfil");
+        if (!cancelled) setError(e instanceof Error ? e.message : t.profile.errorLoading);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -77,15 +80,15 @@ export function ProfileView() {
 
   const handleSave = async () => {
     if (!editName.trim()) {
-      setSaveError("El nombre no puede estar vacío.");
+      setSaveError(t.profile.nameRequired);
       return;
     }
     if (editPassword && editPassword !== editConfirm) {
-      setSaveError("Las contraseñas no coinciden.");
+      setSaveError(t.profile.passMismatch);
       return;
     }
     if (editPassword && editPassword.length < 6) {
-      setSaveError("La contraseña debe tener al menos 6 caracteres.");
+      setSaveError(t.profile.passTooShort);
       return;
     }
 
@@ -114,7 +117,7 @@ export function ProfileView() {
       setSaveSuccess(true);
       setTimeout(() => { setSaveSuccess(false); setEditing(false); }, 1800);
     } catch (e: any) {
-      setSaveError(e.message || "Error al guardar los cambios.");
+      setSaveError(e.message || t.profile.saveError || "Error saving changes");
     } finally {
       setSaving(false);
     }
@@ -124,7 +127,7 @@ export function ProfileView() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4 text-slate-500">
         <Loader2 className="w-10 h-10 animate-spin text-[#003366]" />
-        <p className="text-sm font-semibold">Cargando tu perfil…</p>
+        <p className="text-sm font-semibold">{t.profile.loadingProfile}</p>
       </div>
     );
   }
@@ -134,9 +137,9 @@ export function ProfileView() {
       <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 max-w-lg">
         <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
         <div>
-          <p className="font-bold">{error || "No se pudo cargar el perfil"}</p>
+          <p className="font-bold">{error || t.profile.errorLoading}</p>
           <Link href="/dashboard" className="text-xs font-semibold text-red-900 underline mt-2 inline-block">
-            Volver al tablero
+            {t.profile.backToDashboard}
           </Link>
         </div>
       </div>
@@ -177,7 +180,7 @@ export function ProfileView() {
           className="flex items-center gap-2 px-5 py-2.5 bg-[#003366] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#004488] transition-all shadow-lg shadow-blue-900/10 self-start sm:self-center"
         >
           <Pencil className="w-4 h-4" />
-          Editar perfil
+          {t.profile.editProfile}
         </button>
       </motion.div>
 
@@ -191,19 +194,19 @@ export function ProfileView() {
         >
           <h2 className="text-xs font-black text-[#003366] uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
             <User className="w-4 h-4" />
-            Datos de la cuenta
+            {t.profile.accountData}
           </h2>
           <dl className="space-y-4 text-sm">
             <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-slate-100 pb-4">
-              <dt className="text-slate-500 font-semibold">Nombre completo</dt>
+              <dt className="text-slate-500 font-semibold">{t.profile.fullName}</dt>
               <dd className="font-bold text-slate-800 text-right sm:text-right">{profile.fullName}</dd>
             </div>
             <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-slate-100 pb-4">
-              <dt className="text-slate-500 font-semibold">Correo institucional</dt>
+              <dt className="text-slate-500 font-semibold">{t.profile.institutionalEmail}</dt>
               <dd className="font-bold text-slate-800 break-all">{profile.email}</dd>
             </div>
             <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-slate-100 pb-4">
-              <dt className="text-slate-500 font-semibold">Estado de la cuenta</dt>
+              <dt className="text-slate-500 font-semibold">{t.profile.accountStatus}</dt>
               <dd>
                 <span className={cn(
                   "text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg",
@@ -211,14 +214,14 @@ export function ProfileView() {
                     ? "bg-emerald-50 text-emerald-800 border border-emerald-100"
                     : "bg-red-50 text-red-800 border border-red-100",
                 )}>
-                  {profile.isActive ? "Activa" : "Inactiva"}
+                  {profile.isActive ? t.common.active : t.common.inactive}
                 </span>
               </dd>
             </div>
             <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
               <dt className="text-slate-500 font-semibold flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
-                Miembro desde
+                {t.profile.memberSince}
               </dt>
               <dd className="font-bold text-slate-800">{formatDate(profile.createdAt)}</dd>
             </div>
@@ -233,13 +236,13 @@ export function ProfileView() {
         >
           <h2 className="text-xs font-black text-[#003366] uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
             <Shield className="w-4 h-4" />
-            Seguridad
+            {t.profile.security}
           </h2>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="text-sm font-bold text-slate-800">Verificación en dos pasos (2FA)</p>
+              <p className="text-sm font-bold text-slate-800">{t.profile.twoFactor}</p>
               <p className="text-xs text-slate-500 mt-1">
-                Refuerza el acceso a tu cuenta con un código de aplicación autenticadora.
+                {t.profile.twoFactorDesc}
               </p>
             </div>
             <span className={cn(
@@ -248,7 +251,7 @@ export function ProfileView() {
                 ? "bg-emerald-50 text-emerald-800 border-emerald-100"
                 : "bg-slate-50 text-slate-600 border-slate-200",
             )}>
-              {profile.isTwoFactorEnabled ? "Activada" : "Desactivada"}
+              {profile.isTwoFactorEnabled ? t.common.active : t.common.inactive}
             </span>
           </div>
           {canOpenAccountSettings && (
@@ -256,7 +259,7 @@ export function ProfileView() {
               href="/dashboard/configuracion"
               className="inline-block mt-6 text-xs font-black uppercase tracking-widest text-[#C5A059] hover:text-[#003366] underline-offset-4 hover:underline"
             >
-              Gestionar en configuración
+              {t.profile.manageSettings}
             </Link>
           )}
         </motion.section>
@@ -270,27 +273,27 @@ export function ProfileView() {
           >
             <h2 className="text-xs font-black text-[#003366] uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
               <Building2 className="w-4 h-4" />
-              Entidad receptora vinculada
+              {t.profile.linkedCompany}
             </h2>
             <dl className="space-y-4 text-sm">
               <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-slate-100 pb-4">
-                <dt className="text-slate-500 font-semibold">Razón social</dt>
+                <dt className="text-slate-500 font-semibold">{t.profile.companyName}</dt>
                 <dd className="font-bold text-slate-800 text-right">{profile.company.name}</dd>
               </div>
               <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-slate-100 pb-4">
-                <dt className="text-slate-500 font-semibold">RUC</dt>
+                <dt className="text-slate-500 font-semibold">{t.profile.ruc}</dt>
                 <dd className="font-mono font-bold text-slate-800">{profile.company.ruc}</dd>
               </div>
               <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-slate-100 pb-4">
-                <dt className="text-slate-500 font-semibold">Representante</dt>
+                <dt className="text-slate-500 font-semibold">{t.profile.representative}</dt>
                 <dd className="font-bold text-slate-800 text-right">{profile.company.representative}</dd>
               </div>
               <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-slate-100 pb-4">
-                <dt className="text-slate-500 font-semibold">Correo de la empresa</dt>
+                <dt className="text-slate-500 font-semibold">{t.profile.companyEmail}</dt>
                 <dd className="font-bold text-slate-800 break-all">{profile.company.email}</dd>
               </div>
               <div className="flex flex-col gap-1">
-                <dt className="text-slate-500 font-semibold">Dirección</dt>
+                <dt className="text-slate-500 font-semibold">{t.profile.address}</dt>
                 <dd className="font-medium text-slate-800 leading-relaxed">{profile.company.address}</dd>
               </div>
             </dl>
@@ -322,8 +325,8 @@ export function ProfileView() {
                     <Pencil className="w-5 h-5 text-[#C5A059]" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-black text-[#003366]">Editar perfil</h3>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Datos personales</p>
+                    <h3 className="text-lg font-black text-[#003366]">{t.profile.editProfile}</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.profile.personalData}</p>
                   </div>
                 </div>
                 <button
@@ -338,7 +341,7 @@ export function ProfileView() {
                 {/* Nombre */}
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                    <User className="w-3 h-3" /> Nombre completo
+                    <User className="w-3 h-3" /> {t.profile.fullName}
                   </label>
                   <input
                     type="text"
@@ -352,7 +355,7 @@ export function ProfileView() {
                 {/* Nueva contraseña */}
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                    <Lock className="w-3 h-3" /> Nueva contraseña <span className="text-slate-300">(opcional)</span>
+                    <Lock className="w-3 h-3" /> {t.profile.newPassword} <span className="text-slate-300">{t.profile.optional}</span>
                   </label>
                   <div className="relative">
                     <input
@@ -360,7 +363,7 @@ export function ProfileView() {
                       value={editPassword}
                       onChange={(e) => setEditPassword(e.target.value)}
                       className="w-full p-4 pr-12 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-[#003366] transition-all text-sm font-medium"
-                      placeholder="Mínimo 6 caracteres"
+                      placeholder={t.profile.minChars}
                     />
                     <button
                       type="button"
@@ -376,7 +379,7 @@ export function ProfileView() {
                 {editPassword && (
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                      Confirmar contraseña
+                      {t.profile.confirmPassword}
                     </label>
                     <input
                       type={showPass ? "text" : "password"}
@@ -388,7 +391,7 @@ export function ProfileView() {
                           ? "bg-rose-50 border-rose-200 focus:ring-rose-300"
                           : "bg-slate-50 border-slate-200 focus:ring-[#003366]"
                       )}
-                      placeholder="Repetir contraseña"
+                      placeholder={t.profile.repeatPassword}
                     />
                   </div>
                 )}
@@ -401,7 +404,7 @@ export function ProfileView() {
                 )}
                 {saveSuccess && (
                   <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-xs font-bold text-emerald-700">
-                    <CheckCircle2 className="w-4 h-4 shrink-0" /> ¡Cambios guardados correctamente!
+                    <CheckCircle2 className="w-4 h-4 shrink-0" /> {t.profile.saveSuccess}
                   </div>
                 )}
 
@@ -411,7 +414,7 @@ export function ProfileView() {
                     onClick={closeEdit}
                     className="h-12 bg-slate-100 text-[#003366] rounded-2xl font-black uppercase tracking-widest hover:bg-slate-200 transition-all text-sm"
                   >
-                    Cancelar
+                    {t.common.cancel}
                   </button>
                   <button
                     onClick={handleSave}
@@ -425,7 +428,7 @@ export function ProfileView() {
                     ) : (
                       <Save className="w-4 h-4 text-[#C5A059]" />
                     )}
-                    {saveSuccess ? "Guardado" : "Guardar"}
+                    {saveSuccess ? t.stats.upToDate : t.common.save}
                   </button>
                 </div>
               </div>

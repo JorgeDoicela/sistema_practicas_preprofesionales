@@ -18,8 +18,10 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { privacyService } from "@/services/privacy.service";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 export default function PrivacyCenterPage() {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -60,7 +62,7 @@ export default function PrivacyCenterPage() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
-      alert("Error al exportar datos.");
+      alert(t.common.error);
     } finally {
       setExporting(false);
     }
@@ -73,11 +75,11 @@ export default function PrivacyCenterPage() {
     setSubmitting(true);
     try {
       await privacyService.requestArcoRights(arcoType, arcoDetails);
-      alert("Solicitud enviada con éxito. Nuestro DPO revisará su petición.");
+      alert(t.common.language === "es" ? "Solicitud enviada con éxito. Nuestro DPO revisará su petición." : "Request sent successfully. Our DPO will review your petition.");
       setArcoDetails("");
       loadData();
     } catch (error) {
-      alert("Error al enviar la solicitud.");
+      alert(t.common.error);
     } finally {
       setSubmitting(false);
     }
@@ -87,7 +89,7 @@ export default function PrivacyCenterPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-[#003366]" />
-        <p className="text-slate-500 font-bold">Cargando Centro de Privacidad...</p>
+        <p className="text-slate-500 font-bold">{t.privacyDashboard.title}...</p>
       </div>
     );
   }
@@ -101,8 +103,8 @@ export default function PrivacyCenterPage() {
             <ShieldCheck className="text-[#C5A059] w-7 h-7 md:w-8 md:h-8" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Centro de Privacidad</h1>
-            <p className="text-slate-500 font-medium">Gestione sus derechos LOPDP conforme a la ley ecuatoriana</p>
+            <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">{t.privacyDashboard.title}</h1>
+            <p className="text-slate-500 font-medium">{t.privacyDashboard.subtitle}</p>
           </div>
         </div>
 
@@ -114,7 +116,7 @@ export default function PrivacyCenterPage() {
                activeTab === 'info' ? "bg-[#003366] text-white shadow-lg" : "text-slate-400 hover:text-slate-600"
              )}
            >
-             Mi Información
+             {t.privacyDashboard.tabs.info}
            </button>
            <button 
              onClick={() => setActiveTab('requests')}
@@ -123,7 +125,7 @@ export default function PrivacyCenterPage() {
                activeTab === 'requests' ? "bg-[#003366] text-white shadow-lg" : "text-slate-400 hover:text-slate-600"
              )}
            >
-             Mis Solicitudes ARCO
+             {t.privacyDashboard.tabs.requests}
            </button>
         </div>
       </div>
@@ -137,20 +139,20 @@ export default function PrivacyCenterPage() {
                 <div className="flex items-center justify-between mb-8">
                    <h3 className="text-lg font-black text-[#003366] flex items-center gap-3">
                      <CheckCircle2 className="w-6 h-6 text-emerald-500" />
-                     Consentimiento Activo
+                     {t.privacyDashboard.consent.title}
                    </h3>
                    <span className="px-4 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-black uppercase tracking-widest">
-                     Cumplimiento Verificado
+                     {t.privacyDashboard.consent.verified}
                    </span>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-10">
                   <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Última Aceptación</p>
-                    <p className="font-bold text-[#003366]">{new Date(myData?.personalInfo?.privacyConsent?.acceptedAt).toLocaleString()}</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.privacyDashboard.consent.lastAccepted}</p>
+                    <p className="font-bold text-[#003366]">{new Date(myData?.personalInfo?.privacyConsent?.acceptedAt).toLocaleString(t.common.language === "es" ? "es-ES" : "en-US")}</p>
                   </div>
                   <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Versión de Política</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.privacyDashboard.consent.policyVersion}</p>
                     <p className="font-bold text-[#003366]">v{myData?.personalInfo?.privacyConsent?.version}</p>
                   </div>
                 </div>
@@ -160,11 +162,9 @@ export default function PrivacyCenterPage() {
                     <AlertCircle className="w-5 h-5 text-[#003366]" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="text-sm font-black text-[#003366] mb-2 uppercase tracking-tight">Finalidades de Tratamiento</h4>
+                    <h4 className="text-sm font-black text-[#003366] mb-2 uppercase tracking-tight">{t.privacyDashboard.consent.purposes}</h4>
                     <ul className="text-xs text-[#003366]/60 font-medium space-y-2 list-disc pl-4">
-                       <li>Gestión operativa de prácticas preprofesionales.</li>
-                       <li>Verificación de asistencia vía geolocalización y biometría.</li>
-                       <li>Cumplimiento de obligaciones académicas ante el CES/SENESCYT.</li>
+                       {t.privacyDashboard.consent.purposesList.map((p: string, i: number) => <li key={i}>{p}</li>)}
                     </ul>
                   </div>
                 </div>
@@ -176,10 +176,9 @@ export default function PrivacyCenterPage() {
                  
                  <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
                     <div className="flex-1">
-                       <h3 className="text-2xl font-black tracking-tight mb-4">Derecho a la Portabilidad</h3>
+                       <h3 className="text-2xl font-black tracking-tight mb-4">{t.privacyDashboard.portability.title}</h3>
                        <p className="text-white/60 font-medium mb-8 leading-relaxed max-w-lg">
-                         Usted tiene derecho a obtener una copia de sus datos personales en un formato estructurado, de uso común y lectura mecánica. 
-                         Este archivo incluye sus registros de asistencia, documentos y evaluaciones.
+                         {t.privacyDashboard.portability.desc}
                        </p>
                        <button 
                          onClick={handleExportData}
@@ -187,7 +186,7 @@ export default function PrivacyCenterPage() {
                          className="px-10 h-16 bg-[#C5A059] text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-[#D4B376] transition-all flex items-center gap-3 active:scale-[0.98] disabled:opacity-50"
                        >
                          {exporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <FileJson className="w-5 h-5" />}
-                         Descargar mi Expediente
+                         {t.privacyDashboard.portability.download}
                        </button>
                     </div>
                     <div className="w-48 h-48 bg-white/10 rounded-[3rem] flex items-center justify-center backdrop-blur-md rotate-12 group-hover:rotate-0 transition-transform duration-700 border border-white/10 shadow-2xl">
@@ -200,7 +199,7 @@ export default function PrivacyCenterPage() {
             <div className="space-y-8">
               {/* Form to request ARCO */}
               <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-sm">
-                 <h3 className="text-xl font-black text-[#003366] mb-8">Formulario de Ejercicio de Derechos ARCO</h3>
+                 <h3 className="text-xl font-black text-[#003366] mb-8">{t.privacyDashboard.arcoForm.title}</h3>
                  
                  <form onSubmit={handleSubmitArco} className="space-y-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -214,8 +213,8 @@ export default function PrivacyCenterPage() {
                        >
                           <Edit className={cn("w-6 h-6", arcoType === 'RECTIFICACION' ? "text-[#C5A059]" : "text-slate-300")} />
                           <div>
-                            <span className="text-[10px] font-black uppercase tracking-widest block mb-1">Rectificación</span>
-                            <p className={cn("text-xs font-medium", arcoType === 'RECTIFICACION' ? "text-white/60" : "text-slate-400")}>Corregir datos inexactos o incompletos.</p>
+                            <span className="text-[10px] font-black uppercase tracking-widest block mb-1">{t.privacyDashboard.arcoForm.rectification}</span>
+                            <p className={cn("text-xs font-medium", arcoType === 'RECTIFICACION' ? "text-white/60" : "text-slate-400")}>{t.privacyDashboard.arcoForm.rectificationDesc}</p>
                           </div>
                        </button>
                        <button 
@@ -228,8 +227,8 @@ export default function PrivacyCenterPage() {
                        >
                           <Trash2 className={cn("w-6 h-6", arcoType === 'CANCELACION' ? "text-white" : "text-slate-300")} />
                           <div>
-                            <span className="text-[10px] font-black uppercase tracking-widest block mb-1">Cancelación / Supresión</span>
-                            <p className={cn("text-xs font-medium", arcoType === 'CANCELACION' ? "text-white/60" : "text-slate-400")}>Eliminar datos personales (sujeto a LoES).</p>
+                            <span className="text-[10px] font-black uppercase tracking-widest block mb-1">{t.privacyDashboard.arcoForm.cancellation}</span>
+                            <p className={cn("text-xs font-medium", arcoType === 'CANCELACION' ? "text-white/60" : "text-slate-400")}>{t.privacyDashboard.arcoForm.cancellationDesc}</p>
                           </div>
                        </button>
                     </div>
@@ -237,19 +236,19 @@ export default function PrivacyCenterPage() {
                     <div className="space-y-4">
                        <label className="text-[11px] font-black text-[#003366] uppercase tracking-widest flex items-center gap-2">
                          <HelpCircle className="w-4 h-4 text-[#C5A059]" />
-                         ¿Qué desea solicitar específicamente?
+                         {t.privacyDashboard.arcoForm.question}
                        </label>
                        <textarea 
                         required
                         value={arcoDetails}
                         onChange={(e) => setArcoDetails(e.target.value)}
-                        placeholder="Ej: Deseo rectificar mi correo personal o solicitar el borrado de mi foto de perfil..."
+                        placeholder={t.privacyDashboard.arcoForm.placeholder}
                         className="w-full min-h-[150px] bg-slate-50 border border-slate-200 rounded-2xl p-6 text-sm text-[#003366] font-medium outline-none focus:ring-2 focus:ring-[#003366]/5 focus:border-[#003366] transition-all resize-none"
                        />
                     </div>
 
                     <p className="text-[11px] text-slate-500 font-medium leading-relaxed bg-slate-50 p-6 rounded-2xl">
-                       <span className="text-[#003366] font-black">AVISO:</span> El ejercicio de sus derechos ARCO no es absoluto. El ISTPET puede denegar solicitudes si contradicen la Ley Orgánica de Educación Superior o si existe una obligación legal de retención de registros académicos por hasta 10 años.
+                       {t.privacyDashboard.arcoForm.notice}
                     </p>
 
                     <button 
@@ -258,17 +257,17 @@ export default function PrivacyCenterPage() {
                       className="w-full h-16 bg-[#003366] text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl hover:translate-y-[-2px] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                     >
                        {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowRight className="w-5 h-5" />}
-                       Enviar Solicitud Formal
+                       {t.privacyDashboard.arcoForm.submit}
                     </button>
                  </form>
               </motion.div>
 
               {/* History of requests */}
               <div className="space-y-6">
-                 <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-4">Historial de Solicitudes</h3>
+                 <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-4">{t.privacyDashboard.history.title}</h3>
                  {requests.length === 0 ? (
                     <div className="bg-white p-12 rounded-[2.5rem] border border-dashed border-slate-200 text-center">
-                       <p className="text-slate-400 font-medium italic">No has realizado ninguna solicitud ARCO todavía.</p>
+                       <p className="text-slate-400 font-medium italic">{t.privacyDashboard.history.empty}</p>
                     </div>
                  ) : (
                     requests.map((req, idx) => (
@@ -295,7 +294,7 @@ export default function PrivacyCenterPage() {
                             "px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest",
                             req.status === 'PENDIENTE' ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"
                           )}>
-                             {req.status}
+                             {req.status === 'COMPLETADA' ? t.privacyDashboard.history.completed : t.privacyDashboard.history.pending}
                           </div>
                        </motion.div>
                     ))
@@ -309,20 +308,20 @@ export default function PrivacyCenterPage() {
         <div className="space-y-8">
            <div className="bg-white rounded-3xl p-5 md:p-8 border border-slate-200 shadow-sm transition-all hover:bg-[#FDFDFD]">
               <Lock className="w-10 h-10 text-[#C5A059] mb-6" />
-              <h3 className="text-lg font-black text-[#003366] mb-4">Transferencia Internacional</h3>
+              <h3 className="text-lg font-black text-[#003366] mb-4">{t.privacyDashboard.sidebar.transferTitle}</h3>
               <p className="text-xs text-slate-500 font-medium leading-relaxed mb-6">
-                Sus datos pueden ser almacenados en centros de datos ubicados fuera de Ecuador (AWS/Vercel). Estos proveedores cumplen con estándares de seguridad internacionales homologados por la DINARP.
+                {t.privacyDashboard.sidebar.transferDesc}
               </p>
               <div className="p-4 bg-slate-50 rounded-xl flex items-center gap-3">
                  <ShieldCheck className="w-5 h-5 text-emerald-500" />
-                 <span className="text-[10px] font-black text-[#003366] uppercase">Infraestructura Protegida</span>
+                 <span className="text-[10px] font-black text-[#003366] uppercase">{t.privacyDashboard.sidebar.protectedInfra}</span>
               </div>
            </div>
 
            <div className="bg-[#C5A059]/10 rounded-3xl p-5 md:p-8 border border-[#C5A059]/10">
-              <h3 className="text-[11px] font-black text-[#003366] uppercase tracking-widest mb-4">¿Tiene dudas?</h3>
+              <h3 className="text-[11px] font-black text-[#003366] uppercase tracking-widest mb-4">{t.privacyDashboard.sidebar.doubts}</h3>
               <p className="text-xs text-slate-600 font-medium leading-relaxed mb-8">
-                Si desea contactar directamente con nuestro Oficial de Protección de Datos (DPO), escriba a:
+                {t.privacyDashboard.sidebar.dpoDesc}
               </p>
               <a href="mailto:dpo@istpet.edu.ec" className="block w-full py-4 bg-white rounded-2xl text-center text-[11px] font-black text-[#003366] uppercase tracking-widest shadow-sm hover:shadow-md transition-shadow">
                 dpo@istpet.edu.ec

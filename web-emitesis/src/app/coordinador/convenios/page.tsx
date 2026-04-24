@@ -26,8 +26,11 @@ import { useRouter } from "next/navigation";
 import { sanitizeFormText } from "@/utils/security";
 import { validateRUC } from "@/utils/ecuador-validators";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/providers/LanguageProvider";
+
 
 export default function RegistrarConvenioPage() {
+    const { t } = useLanguage();
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -62,13 +65,13 @@ export default function RegistrarConvenioPage() {
             
             // Regla de Negocio: Solo PDFs
             if (selectedFile.type !== "application/pdf") {
-                setError("Solo se aceptan archivos en formato PDF.");
+                setError(t.coordinator.agreements.errorFormat);
                 return;
             }
 
             // Regla de Negocio: Max 10MB
             if (selectedFile.size > 10 * 1024 * 1024) {
-                setError("El archivo no debe superar los 10MB.");
+                setError(t.coordinator.agreements.errorSize);
                 return;
             }
 
@@ -82,7 +85,7 @@ export default function RegistrarConvenioPage() {
         
         // A1: Datos incompletos
         if (!file) {
-            setError("El documento del convenio firmado es obligatorio.");
+            setError(t.coordinator.agreements.errorRequiredFile);
             return;
         }
 
@@ -110,7 +113,7 @@ export default function RegistrarConvenioPage() {
         }, {});
 
         if (!validateRUC(cleanForm.ruc ?? "")) {
-            setError("El RUC ingresado no es válido según los estándares del SRI.");
+            setError(t.coordinator.agreements.errorRucStandard);
             return;
         }
 
@@ -130,7 +133,7 @@ export default function RegistrarConvenioPage() {
                 router.push("/coordinador/dashboard");
             }, 2000);
         } catch (err: any) {
-            setError(err.message || "Error al registrar el convenio");
+            setError(err.message || t.coordinator.agreements.errorGeneral || "Error registering agreement");
         } finally {
             setIsLoading(false);
         }
@@ -139,16 +142,28 @@ export default function RegistrarConvenioPage() {
     if (success) {
         return (
             <DashboardLayout>
-                <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+                <div className="min-h-[70vh] flex items-center justify-center p-4">
                     <motion.div 
-                        initial={{ scale: 0 }} 
-                        animate={{ scale: 1 }} 
-                        className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-white rounded-[3rem] p-8 md:p-12 shadow-2xl border border-slate-100 max-w-lg w-full text-center"
                     >
-                        <CheckCircle2 size={40} />
+                        <div className="w-24 h-24 bg-emerald-50 rounded-[2rem] flex items-center justify-center mx-auto mb-8 animate-bounce">
+                            <CheckCircle2 className="text-emerald-500" size={48} />
+                        </div>
+                        <h2 className="text-3xl font-black text-[#003366] mb-4 tracking-tight">
+                            {t.coordinator.agreements.successTitle}
+                        </h2>
+                        <p className="text-slate-500 font-medium leading-relaxed mb-10">
+                            {t.coordinator.agreements.successDesc}
+                        </p>
+                        <button 
+                            onClick={() => router.push('/dashboard')}
+                            className="w-full bg-[#003366] text-white rounded-2xl py-4 text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-900/20 hover:translate-y-[-2px] transition-all"
+                        >
+                            {t.common.backToDashboard}
+                        </button>
                     </motion.div>
-                    <h2 className="text-2xl font-black text-[#003366] mb-2">¡Registro Exitoso!</h2>
-                    <p className="text-slate-500">El convenio ha sido guardado y la empresa ya está activa en el sistema.</p>
                 </div>
             </DashboardLayout>
         );
@@ -159,10 +174,10 @@ export default function RegistrarConvenioPage() {
             <div className="max-w-4xl mx-auto py-8 px-4">
                 <div className="mb-10">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
-                        <FileText size={12} /> Gestión de Convenios
+                        <FileText size={12} /> {t.coordinator.agreements.mgmt}
                     </div>
-                    <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Registrar Nuevo Convenio</h1>
-                    <p className="text-slate-500 mt-2">Diligencia la información oficial de la empresa y carga el acuerdo legal.</p>
+                    <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">{t.coordinator.agreements.title}</h1>
+                    <p className="text-slate-500 mt-2">{t.coordinator.agreements.subtitle}</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
@@ -170,12 +185,12 @@ export default function RegistrarConvenioPage() {
                     <div className="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-slate-100">
                         <div className="flex items-center gap-3 mb-6 md:mb-8 pb-4 border-b border-slate-50">
                             <Building2 className="text-[#C5A059]" size={20} />
-                            <h3 className="font-bold text-[#003366] uppercase tracking-widest text-sm">Información de la Entidad Receptora</h3>
+                            <h3 className="font-bold text-[#003366] uppercase tracking-widest text-sm">{t.coordinator.agreements.entityInfo}</h3>
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">RUC de la Empresa</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.agreements.rucLabel}</label>
                                 <div className="relative">
                                     <Hash className={cn(
                                         "absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors",
@@ -185,7 +200,7 @@ export default function RegistrarConvenioPage() {
                                         name="ruc"
                                         value={form.ruc}
                                         onChange={handleInputChange}
-                                        placeholder="Ej: 1790000000001"
+                                        placeholder={t.coordinator.agreements.rucPlaceholder}
                                         className={cn(
                                             "w-full bg-slate-50 border rounded-xl py-3 pl-11 text-sm outline-none transition-all",
                                             form.ruc && !validateRUC(form.ruc) 
@@ -198,13 +213,13 @@ export default function RegistrarConvenioPage() {
                                 </div>
                                 {form.ruc && !validateRUC(form.ruc) && (
                                     <p className="text-[10px] text-red-500 font-bold mt-1 ml-1 animate-pulse">
-                                        RUC Inválido: Debe tener 13 dígitos y terminar en 001.
+                                        {t.coordinator.agreements.rucInvalid}
                                     </p>
                                 )}
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nombre / Razón Social</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.agreements.companyName}</label>
                                 <div className="relative">
                                     <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
                                     <input 
@@ -219,7 +234,7 @@ export default function RegistrarConvenioPage() {
                             </div>
 
                             <div className="space-y-2 md:col-span-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Dirección Principal</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.agreements.address}</label>
                                 <div className="relative">
                                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
                                     <input 
@@ -234,7 +249,7 @@ export default function RegistrarConvenioPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ciudad / Cantón</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.agreements.city}</label>
                                 <div className="relative">
                                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
                                     <input 
@@ -248,7 +263,7 @@ export default function RegistrarConvenioPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Teléfono de Contacto</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.agreements.phone}</label>
                                 <div className="relative">
                                     <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
                                     <input 
@@ -262,7 +277,7 @@ export default function RegistrarConvenioPage() {
                             </div>
 
                             <div className="space-y-2 md:col-span-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Sector Económico / Actividad Principal</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.agreements.sector}</label>
                                 <div className="relative">
                                     <Layers className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
                                     <input 
@@ -276,7 +291,7 @@ export default function RegistrarConvenioPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Representante Legal</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.agreements.representative}</label>
                                 <div className="relative">
                                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
                                     <input 
@@ -291,7 +306,7 @@ export default function RegistrarConvenioPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Correo Electrónico de Contacto</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.agreements.email}</label>
                                 <div className="relative">
                                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
                                     <input 
@@ -312,7 +327,7 @@ export default function RegistrarConvenioPage() {
                     <div className="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-slate-100">
                         <div className="flex items-center gap-3 mb-6 md:mb-8 pb-4 border-b border-slate-50">
                             <ShieldCheck className="text-[#C5A059]" size={20} />
-                            <h3 className="font-bold text-[#003366] uppercase tracking-widest text-sm">Formalización del Acuerdo</h3>
+                            <h3 className="font-bold text-[#003366] uppercase tracking-widest text-sm">{t.coordinator.agreements.formalization}</h3>
                         </div>
 
                         <div className="space-y-6 mb-8">
@@ -326,28 +341,28 @@ export default function RegistrarConvenioPage() {
                                     onChange={(e) => setForm(prev => ({ ...prev, accessVerified: e.target.checked }))}
                                 />
                                 <label htmlFor="accessVerified" className="text-xs text-slate-600 leading-relaxed cursor-pointer">
-                                    <span className="font-bold text-[#003366]">Declaración de Cumplimiento:</span> Confirmo que esta empresa cumple con todos los estándares y requisitos legales exigidos por el <span className="font-bold">ACESS (Ecuador)</span> para la recepción de estudiantes en prácticas preprofesionales.
+                                    <span className="font-bold text-[#003366]">{t.coordinator.agreements.complianceDecl}</span> {t.coordinator.agreements.complianceText}
                                 </label>
                             </div>
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-8">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tipo de Convenio</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.agreements.agreementType}</label>
                                 <select
                                     name="type"
                                     value={form.type}
                                     onChange={(e) => setForm(prev => ({ ...prev, type: e.target.value }))}
                                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
                                 >
-                                    <option value="GENERAL">General</option>
-                                    <option value="ESPECIFICO">Específico</option>
-                                    <option value="MARCO">Marco</option>
+                                    <option value="GENERAL">{t.coordinator.agreements.types.general}</option>
+                                    <option value="ESPECIFICO">{t.coordinator.agreements.types.specific}</option>
+                                    <option value="MARCO">{t.coordinator.agreements.types.framework}</option>
                                 </select>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cupos Máximos de Pasantes</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.agreements.maxInterns}</label>
                                 <div className="relative">
                                     <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
                                     <input 
@@ -362,7 +377,7 @@ export default function RegistrarConvenioPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fecha de Firma</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.agreements.signDate}</label>
                                 <div className="relative">
                                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
                                     <input 
@@ -377,7 +392,7 @@ export default function RegistrarConvenioPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fecha de Vencimiento</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.agreements.expiryDate}</label>
                                 <div className="relative">
                                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
                                     <input 
@@ -388,11 +403,11 @@ export default function RegistrarConvenioPage() {
                                         className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
                                     />
                                 </div>
-                                <p className="text-[10px] text-slate-400 ml-1">Dejar en blanco si es indefinido</p>
+                                <p className="text-[10px] text-slate-400 ml-1">{t.coordinator.agreements.expiryHint}</p>
                             </div>
 
                             <div className="space-y-2 md:col-span-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Archivo del Convenio (PDF)</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.agreements.fileLabel}</label>
                                 <div className={`relative border-2 border-dashed rounded-xl p-4 transition-colors ${file ? 'border-green-200 bg-green-50' : 'border-slate-200 bg-slate-50 hover:border-[#003366]/20'}`}>
                                     <input 
                                         type="file"
@@ -406,9 +421,9 @@ export default function RegistrarConvenioPage() {
                                         </div>
                                         <div className="flex-1 overflow-hidden">
                                             <p className="text-xs font-bold text-[#003366] truncate">
-                                                {file ? file.name : "Seleccionar PDF firmado"}
+                                                {file ? file.name : t.coordinator.agreements.fileSelect}
                                             </p>
-                                            <p className="text-[10px] text-slate-400 uppercase tracking-tighter">Máximo 10MB</p>
+                                            <p className="text-[10px] text-slate-400 uppercase tracking-tighter">{t.coordinator.agreements.fileMaxSize}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -431,12 +446,12 @@ export default function RegistrarConvenioPage() {
                                 {isLoading ? (
                                     <>
                                         <Loader2 className="animate-spin" size={16} />
-                                        Registrando...
+                                        {t.coordinator.agreements.savingBtn}
                                     </>
                                 ) : (
                                     <>
                                         <Upload size={16} />
-                                        Guardar Convenio Oficial
+                                        {t.coordinator.agreements.saveBtn}
                                     </>
                                 )}
                             </button>
@@ -445,7 +460,7 @@ export default function RegistrarConvenioPage() {
                                 onClick={() => router.back()}
                                 className="px-8 border-2 border-slate-200 text-slate-400 rounded-2xl py-4 text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-50 transition-all font-display"
                             >
-                                Cancelar
+                                {t.common.cancel}
                             </button>
                         </div>
                     </div>

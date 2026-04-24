@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
 import { attendancesService } from "@/services/attendances.service";
+import { useLanguage } from "@/providers/LanguageProvider";
 import MapPicker from "@/components/shared/MapPicker";
 import Link from "next/link";
 
@@ -43,6 +44,7 @@ interface StudentAttendance {
 
 // ── Componente principal ───────────────────────────────────────────────────
 export default function TutorAsistenciaPage() {
+  const { t } = useLanguage();
   const [rows, setRows] = useState<StudentAttendance[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -146,7 +148,7 @@ export default function TutorAsistenciaPage() {
   const closeLocationModal = () => setLocationModalId(null);
 
   const handleGetGps = () => {
-    if (!navigator.geolocation) { setAddLocError("Tu navegador no soporta GPS"); return; }
+    if (!navigator.geolocation) { setAddLocError(t.asistencia.errors.gpsUnsupported || "Tu navegador no soporta GPS"); return; }
     setGettingGps(true);
     setAddLocError(null);
     navigator.geolocation.getCurrentPosition(
@@ -155,7 +157,7 @@ export default function TutorAsistenciaPage() {
         setNewLocLng(pos.coords.longitude.toFixed(6));
         setGettingGps(false);
       },
-      () => { setAddLocError("No se pudo obtener la ubicación"); setGettingGps(false); },
+      () => { setAddLocError(t.asistencia.errors.gpsFailed || "No se pudo obtener la ubicación"); setGettingGps(false); },
       { enableHighAccuracy: true, timeout: 10000 },
     );
   };
@@ -165,10 +167,11 @@ export default function TutorAsistenciaPage() {
     const lat = parseFloat(newLocLat);
     const lng = parseFloat(newLocLng);
     const radius = parseInt(newLocRadius, 10);
-    if (!newLocLabel.trim()) { setAddLocError("El nombre de la sede es obligatorio"); return; }
-    if (isNaN(lat) || lat < -90 || lat > 90) { setAddLocError("Latitud inválida"); return; }
-    if (isNaN(lng) || lng < -180 || lng > 180) { setAddLocError("Longitud inválida"); return; }
-    if (isNaN(radius) || radius < 50 || radius > 5000) { setAddLocError("Radio debe estar entre 50 y 5000m"); return; }
+    const radius = parseInt(newLocRadius, 10);
+    if (!newLocLabel.trim()) { setAddLocError(t.common.error || "El nombre de la sede es obligatorio"); return; }
+    if (isNaN(lat) || lat < -90 || lat > 90) { setAddLocError(t.common.error || "Latitud inválida"); return; }
+    if (isNaN(lng) || lng < -180 || lng > 180) { setAddLocError(t.common.error || "Longitud inválida"); return; }
+    if (isNaN(radius) || radius < 50 || radius > 5000) { setAddLocError(t.common.error || "Radio debe estar entre 50 y 5000m"); return; }
     setEditingLocations((prev) => [...prev, { label: newLocLabel.trim(), lat, lng, radiusM: radius }]);
     setNewLocLabel(""); setNewLocLat(""); setNewLocLng(""); setNewLocRadius("200");
   };
@@ -224,20 +227,20 @@ export default function TutorAsistenciaPage() {
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
-              Portal de Tutor Académico
+              {t.asistencia.tutor.portal}
             </span>
             <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
-              Asistencia <span className="text-slate-400">de Pasantes</span>
+              {t.asistencia.title} <span className="text-slate-400">{t.asistencia.company.interns}</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
-              Monitorea el historial de horas y configura las sedes de asistencia.
+              {t.asistencia.tutor.desc}
             </p>
           </div>
           <div className="relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
             <input
               type="text"
-              placeholder="Buscar pasante o empresa..."
+              placeholder={t.common.search + "..."}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-12 pr-6 py-4 bg-white border border-slate-200 rounded-2xl w-full md:w-[300px] outline-none focus:ring-4 focus:ring-[#003366]/5 focus:border-[#003366] transition-all font-medium text-sm shadow-sm"
@@ -248,22 +251,22 @@ export default function TutorAsistenciaPage() {
         {/* KPIs */}
         {!loading && rows.length > 0 && (
           <section className="grid sm:grid-cols-3 gap-6">
-            <KpiCard icon={<Clock className="w-6 h-6" />} title="Pasantes activos" value={rows.filter((r) => r.status !== "Finalizado").length} color="bg-blue-500" />
-            <KpiCard icon={<CheckCircle2 className="w-6 h-6" />} title="Horas registradas" value={`${totalHoursAll}h`} color="bg-emerald-500" />
-            <KpiCard icon={<CalendarCheck className="w-6 h-6" />} title="Progreso promedio" value={avgProgress !== null ? `${avgProgress}%` : "—"} color="bg-amber-500" />
+            <KpiCard icon={<Clock className="w-6 h-6" />} title={t.asistencia.company.activeInterns} value={rows.filter((r) => r.status !== "Finalizado").length} color="bg-blue-500" />
+            <KpiCard icon={<CheckCircle2 className="w-6 h-6" />} title={t.asistencia.company.accumulatedHours} value={`${totalHoursAll}h`} color="bg-emerald-500" />
+            <KpiCard icon={<CalendarCheck className="w-6 h-6" />} title={t.asistencia.tutor.avgProgress} value={avgProgress !== null ? `${avgProgress}%` : "—"} color="bg-amber-500" />
           </section>
         )}
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-40 gap-4">
             <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cargando pasantes...</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.asistencia.company.loadingInterns}</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="bg-white rounded-[2.5rem] border border-dashed border-slate-200 p-20 text-center">
             <AlertCircle className="w-16 h-16 text-slate-200 mx-auto mb-4" />
             <p className="font-black text-slate-400 uppercase tracking-widest text-sm">
-              {searchTerm ? "Sin resultados" : "No tienes pasantes asignados"}
+              {searchTerm ? t.asistencia.company.noResults : t.asistencia.company.noInterns}
             </p>
           </div>
         ) : (
@@ -306,8 +309,8 @@ export default function TutorAsistenciaPage() {
                         )}>
                           <MapPin className="w-2.5 h-2.5" />
                           {row.allowedLocations.length > 0
-                            ? `${row.allowedLocations.length} sede(s)`
-                            : "Sin sedes"}
+                            ? `${row.allowedLocations.length} ${t.asistencia.requirements.noLocations.replace("Sin ", "")}`
+                            : t.asistencia.requirements.noLocations}
                         </span>
                       </div>
                     </div>
@@ -322,7 +325,7 @@ export default function TutorAsistenciaPage() {
                           <div className="w-32 h-2 bg-slate-100 rounded-full mt-1 overflow-hidden">
                             <div className="h-full bg-[#003366] rounded-full transition-all" style={{ width: `${row.summary.progressPercentage}%` }} />
                           </div>
-                          <p className="text-[9px] font-black text-[#C5A059] mt-0.5">{row.summary.progressPercentage}% completado</p>
+                          <p className="text-[9px] font-black text-[#C5A059] mt-0.5">{row.summary.progressPercentage}% {t.asistencia.company.completed}</p>
                         </div>
                       ) : row.loadingDetail ? (
                         <Loader2 className="w-5 h-5 text-[#003366] animate-spin" />
@@ -338,7 +341,7 @@ export default function TutorAsistenciaPage() {
                       className="flex items-center gap-2 px-4 py-2.5 bg-[#C5A059] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#b08940] transition-all shadow-lg shadow-amber-900/10"
                     >
                       <User className="w-3.5 h-3.5" />
-                      Ver Ficha
+                      {t.asistencia.tutor.viewFile}
                     </Link>
                     
                     <button
@@ -346,7 +349,7 @@ export default function TutorAsistenciaPage() {
                       className="flex items-center gap-2 px-4 py-2.5 border-2 border-[#003366]/20 rounded-2xl text-[10px] font-black text-[#003366] uppercase tracking-widest hover:bg-[#003366] hover:text-white hover:border-[#003366] transition-all"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
-                      Gestionar Sedes
+                      {t.asistencia.tutor.manageLocations}
                     </button>
                   </div>
                 </div>
@@ -371,10 +374,10 @@ export default function TutorAsistenciaPage() {
                             {row.summary && (
                               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                                 {[
-                                  { label: "Horas registradas", value: `${row.summary.totalHours}h` },
-                                  { label: "Horas requeridas", value: `${row.summary.requiredHours}h` },
-                                  { label: "Registros", value: String(row.summary.totalRecords) },
-                                  { label: "Horas pendientes", value: `${row.summary.remainingHours}h` },
+                                  { label: t.asistencia.stats.hours, value: `${row.summary.totalHours}h` },
+                                  { label: t.asistencia.stats.progress, value: `${row.summary.requiredHours}h` },
+                                  { label: t.asistencia.stats.records, value: String(row.summary.totalRecords) },
+                                  { label: t.asistencia.stats.pending, value: `${row.summary.remainingHours}h` },
                                 ].map((kpi) => (
                                   <div key={kpi.label} className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                                     <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">{kpi.label}</p>
@@ -388,7 +391,7 @@ export default function TutorAsistenciaPage() {
                             {row.allowedLocations.length > 0 && (
                               <div className="mb-6 p-5 bg-blue-50 rounded-2xl border border-blue-100">
                                 <p className="text-[9px] font-black uppercase tracking-widest text-blue-700 mb-3 flex items-center gap-2">
-                                  <MapPin className="w-3 h-3" /> Sedes de Asistencia Configuradas
+                                  <MapPin className="w-3 h-3" /> {t.asistencia.tutor.configLocations}
                                 </p>
                                 <div className="flex flex-wrap gap-2">
                                   {row.allowedLocations.map((loc, i) => (
@@ -405,18 +408,18 @@ export default function TutorAsistenciaPage() {
                             {/* Historial tabla */}
                             {row.history.length === 0 ? (
                               <p className="text-center text-[10px] font-black uppercase tracking-widest text-slate-300 py-8">
-                                Sin registros de asistencia
+                                {t.asistencia.history.noRecords}
                               </p>
                             ) : (
                               <div className="rounded-2xl border border-slate-100 overflow-hidden">
                                 <table className="w-full text-xs">
                                   <thead className="bg-slate-50 border-b border-slate-100">
                                     <tr>
-                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">Fecha</th>
-                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">Entrada</th>
-                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">Salida</th>
-                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">Foto</th>
-                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">Distancia</th>
+                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">{t.common.date}</th>
+                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">{t.asistencia.actions.markIn}</th>
+                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">{t.asistencia.actions.markOut}</th>
+                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">{t.asistencia.actions.photo}</th>
+                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">{t.asistencia.actions.gps}</th>
                                     </tr>
                                   </thead>
                                   <tbody className="divide-y divide-slate-50">
@@ -438,7 +441,7 @@ export default function TutorAsistenciaPage() {
                                               {new Date(h.checkOut).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                             </div>
                                           ) : (
-                                            <span className="text-amber-500 font-black text-[9px] uppercase">Pendiente</span>
+                                            <span className="text-amber-500 font-black text-[9px] uppercase">{t.common.pending}</span>
                                           )}
                                         </td>
                                         <td className="px-5 py-3">
@@ -510,7 +513,7 @@ export default function TutorAsistenciaPage() {
               <div className="bg-[#003366] p-6 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.3em]">
-                    Gestión de Sedes · RF-ATT-LOC
+                    {t.asistencia.tutor.locationsTitle}
                   </p>
                   <p className="text-white font-black text-lg mt-0.5">
                     {activeRow?.studentName}
@@ -529,24 +532,24 @@ export default function TutorAsistenciaPage() {
                 <div className="flex gap-3 p-4 bg-blue-50 rounded-2xl border border-blue-100">
                   <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
                   <p className="text-[10px] font-bold text-blue-700 leading-relaxed">
-                    El estudiante solo podrá marcar asistencia si se encuentra dentro del radio configurado para al menos una de las sedes. Puedes añadir múltiples sedes o sucursales.
+                    {t.asistencia.tutor.locationInfo}
                   </p>
                 </div>
 
                 {/* Sedes existentes */}
                 <div className="space-y-2">
                   <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                    Sedes configuradas ({editingLocations.length})
+                    {t.asistencia.tutor.configLocations} ({editingLocations.length})
                   </p>
 
                   {editingLocations.length === 0 ? (
                     <div className="p-6 border-2 border-dashed border-slate-200 rounded-2xl text-center">
                       <MapPin className="w-10 h-10 text-slate-200 mx-auto mb-2" />
                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-300">
-                        Sin sedes configuradas
+                        {t.asistencia.tutor.noConfigLocations}
                       </p>
                       <p className="text-[9px] text-slate-400 mt-1">
-                        El estudiante no podrá marcar asistencia hasta que configures al menos una sede.
+                        {t.asistencia.tutor.noConfigLocationsDesc}
                       </p>
                     </div>
                   ) : (
@@ -577,7 +580,7 @@ export default function TutorAsistenciaPage() {
                 {/* Agregar nueva sede */}
                 <div className="border-t border-slate-100 pt-5 space-y-3">
                   <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                    <Plus className="w-3 h-3" /> Agregar nueva sede
+                    <Plus className="w-3 h-3" /> {t.asistencia.tutor.addLocation}
                   </p>
 
                   <div className="flex gap-2">
@@ -591,7 +594,7 @@ export default function TutorAsistenciaPage() {
                       )}
                     >
                       <MapPin className="w-4 h-4" />
-                      {showMapSelector ? "Cerrar Mapa" : "Seleccionar en Mapa"}
+                      {showMapSelector ? t.asistencia.tutor.closeMap : t.asistencia.tutor.selectOnMap}
                     </button>
                   </div>
 
@@ -617,14 +620,14 @@ export default function TutorAsistenciaPage() {
                     type="text"
                     value={newLocLabel}
                     onChange={(e) => setNewLocLabel(e.target.value)}
-                    placeholder="Nombre de la sede (ej. Sede Central, Sucursal Norte)"
+                    placeholder={t.asistencia.tutor.locationName}
                     className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm font-medium text-[#003366] focus:ring-2 focus:ring-blue-500 outline-none"
                   />
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 mb-1 block">
-                        Latitud
+                        {t.asistencia.tutor.lat}
                       </label>
                       <input
                         type="number"
@@ -637,7 +640,7 @@ export default function TutorAsistenciaPage() {
                     </div>
                     <div>
                       <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 mb-1 block">
-                        Longitud
+                        {t.asistencia.tutor.lng}
                       </label>
                       <input
                         type="number"
@@ -653,7 +656,7 @@ export default function TutorAsistenciaPage() {
                   <div className="flex items-end gap-3">
                     <div className="flex-1">
                       <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 mb-1 block">
-                        Radio permitido (metros)
+                        {t.asistencia.tutor.radius}
                       </label>
                       <input
                         type="number"
@@ -671,7 +674,7 @@ export default function TutorAsistenciaPage() {
                       className="flex items-center gap-2 px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-100 disabled:opacity-60 transition-colors whitespace-nowrap"
                     >
                       {gettingGps ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
-                      Mi GPS
+                      {t.asistencia.tutor.myGps}
                     </button>
                   </div>
 
@@ -687,7 +690,7 @@ export default function TutorAsistenciaPage() {
                     className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-[#003366] rounded-2xl text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
-                    Agregar sede a la lista
+                    {t.asistencia.tutor.addToList}
                   </button>
                 </div>
 
@@ -710,7 +713,7 @@ export default function TutorAsistenciaPage() {
                     ) : (
                       <Save className="w-5 h-5" />
                     )}
-                    {locationSaved ? "¡Guardado!" : savingLocations ? "Guardando..." : "Guardar Configuración"}
+                    {locationSaved ? t.common.success : savingLocations ? t.common.loading : t.asistencia.tutor.saveConfig}
                   </button>
                 </div>
               </div>

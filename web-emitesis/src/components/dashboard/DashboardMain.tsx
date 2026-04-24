@@ -50,17 +50,11 @@ type InternshipRow = {
   attendances?: Array<{ id: string; checkIn: string; checkOut?: string | null }>;
 };
 
-function isActiveInternship(status: string | undefined) {
-  const s = (status ?? "").trim();
-  if (!s) return true;
-  return s !== "Completado" && s !== "Finalizado";
-}
-
 function countDocsByStatus(docs: Array<{ status?: string }> | undefined, st: string) {
   return (docs ?? []).filter((d) => d.status === st).length;
 }
 
-function flattenRecentAttendances(internships: InternshipRow[], limit: number) {
+function flattenRecentAttendances(internships: InternshipRow[], limit: number, t: any) {
   const rows: {
     key: string;
     studentName: string;
@@ -71,20 +65,20 @@ function flattenRecentAttendances(internships: InternshipRow[], limit: number) {
   }[] = [];
 
   for (const i of internships) {
-    const stu = i.student?.fullName ?? "Estudiante";
+    const stu = i.student?.fullName ?? t.dashboard.student;
     const comp = i.company?.name ?? "—";
     for (const a of i.attendances ?? []) {
-      const t = a.checkOut ? new Date(a.checkOut) : new Date(a.checkIn);
+      const time = a.checkOut ? new Date(a.checkOut) : new Date(a.checkIn);
       rows.push({
         key: a.id,
         studentName: stu,
         companyName: comp,
-        status: a.checkOut ? "Entrada y salida" : "Registro de entrada",
-        time: t.toLocaleString("es-EC", {
+        status: a.checkOut ? t.common.checkIn : t.common.checkInOnly,
+        time: time.toLocaleString(t.common.language === 'es' ? "es-EC" : "en-US", {
           dateStyle: "short",
           timeStyle: "short",
         }),
-        sort: t.getTime(),
+        sort: time.getTime(),
       });
     }
   }
@@ -189,7 +183,7 @@ export function DashboardMain() {
       setInternships([]);
       setAgreementsCount(null);
     } catch (e: unknown) {
-      setError((e as Error).message || "No se pudieron cargar los datos del tablero.");
+      setError((e as Error).message || t.common.error);
       setInternships([]);
       setAgreementsCount(null);
     } finally {
@@ -360,11 +354,11 @@ export function DashboardMain() {
       const incomplete = atts.filter(a => !a.checkOut).length;
 
       const attLabel = lastAtt
-        ? new Date(lastAtt.checkOut ?? lastAtt.checkIn).toLocaleString("es-EC", {
+          ? new Date(lastAtt.checkOut ?? lastAtt.checkIn).toLocaleString(t.common.language === 'es' ? "es-EC" : "en-US", {
             dateStyle: "short",
             timeStyle: "short",
           })
-        : "Sin registros";
+        : t.stats.noAttendance;
 
       return {
         cards: [
@@ -473,9 +467,9 @@ export function DashboardMain() {
             icon: <FileCheck className="w-6 h-6" />,
             color: "bg-indigo-500",
           },
-          {
+           {
             title: t.stats.plannedHours,
-            value: hours.toLocaleString(locale === 'es' ? 'es-EC' : 'en-US'),
+            value: hours.toLocaleString(t.common.language === 'es' ? 'es-EC' : 'en-US'),
             hint: t.stats.pending,
             icon: <Clock className="w-6 h-6" />,
             color: "bg-emerald-500",
@@ -487,10 +481,9 @@ export function DashboardMain() {
     return { cards: [] };
   }, [appRole, internships, agreementsCount]);
 
-  const activities = useMemo(
-    () => flattenRecentAttendances(internships, 8),
-    [internships],
-  );
+  const recentAttendances = useMemo(() => {
+    return flattenRecentAttendances(internships, 6, t);
+  }, [internships, t]);
 
   const activityTitle =
     appRole === ROLES.ESTUDIANTE
@@ -838,23 +831,23 @@ export function DashboardMain() {
                       {activityTitle}
                     </h3>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">
-                      Ordenados por fecha más reciente
+                      {t.dashboard.activitySubtitle || "Ordenados por fecha más reciente"}
                     </p>
                   </div>
                   <Link
                     href={verTodoHref}
                     className="text-xs font-black text-[#C5A059] uppercase tracking-widest hover:text-[#003366] transition-colors"
                   >
-                    Ir al detalle
+                    {t.dashboard.viewAll}
                   </Link>
                 </div>
                 <div className="p-4 space-y-2">
-                  {activities.length === 0 ? (
+                  {recentAttendances.length === 0 ? (
                     <p className="px-4 py-8 text-center text-sm text-slate-500 font-medium">
                       {activityEmpty}
                     </p>
                   ) : (
-                    activities.map((a) => (
+                    recentAttendances.map((a) => (
                       <ActivityRow
                         key={a.key}
                         name={a.studentName}

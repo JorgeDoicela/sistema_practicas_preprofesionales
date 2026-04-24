@@ -14,12 +14,14 @@ import {
   Pie
 } from "recharts";
 import { GlobalStats } from "@/services/reports.service";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface AnalyticsProps {
   stats: GlobalStats;
 }
 
 export function AnalyticsOverview({ stats }: AnalyticsProps) {
+  const { t } = useLanguage();
   const [isMounted, setIsMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -27,13 +29,13 @@ export function AnalyticsOverview({ stats }: AnalyticsProps) {
   }, []);
 
   const docData = [
-    { name: "Aprobados", value: stats.approvedDocs, color: "#10b981" },
-    { name: "Pendientes", value: stats.pendingDocs, color: "#f59e0b" },
+    { name: t.common.approved, value: stats.approvedDocs, color: "#10b981" },
+    { name: t.common.pending, value: stats.pendingDocs, color: "#f59e0b" },
   ];
 
   const internshipData = [
-    { name: "Activas", value: stats.activeInternships, color: "#003366" },
-    { name: "Completadas", value: stats.completedInternships, color: "#C5A059" },
+    { name: t.common.active, value: stats.activeInternships, color: "#003366" },
+    { name: t.common.completed, value: stats.completedInternships, color: "#C5A059" },
   ];
 
   if (!isMounted) return <div className="h-96 w-full animate-pulse bg-slate-50 rounded-[2.5rem] mt-12" />;
@@ -42,7 +44,7 @@ export function AnalyticsOverview({ stats }: AnalyticsProps) {
     <div className="grid md:grid-cols-2 gap-8 mt-12">
       {/* Gráfico de Documentación */}
       <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl">
-        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Eficiencia Documental</h4>
+        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">{t.dashboard.analytics.docsProgress}</h4>
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height={256}>
             <BarChart data={docData}>
@@ -66,12 +68,12 @@ export function AnalyticsOverview({ stats }: AnalyticsProps) {
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <p className="text-[9px] text-slate-400 font-medium mt-4 text-center">Distribución de revisiones en toda la plataforma.</p>
+        <p className="text-[9px] text-slate-400 font-medium mt-4 text-center">{t.dashboard.analytics.docsHint}</p>
       </div>
 
       {/* Gráfico de Pasantías */}
       <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl">
-        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Estado del Programa</h4>
+        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">{t.dashboard.analytics.hoursProgress}</h4>
         <div className="h-64 w-full flex items-center justify-center">
           <ResponsiveContainer width="100%" height={256}>
             <PieChart>

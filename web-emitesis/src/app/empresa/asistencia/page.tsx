@@ -21,6 +21,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
 import { attendancesService } from "@/services/attendances.service";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface RowState {
   internshipId: string;
@@ -33,6 +34,7 @@ interface RowState {
 }
 
 export default function EmpresaAsistenciaPage() {
+  const { t } = useLanguage();
   const [rows, setRows] = useState<RowState[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -118,20 +120,20 @@ export default function EmpresaAsistenciaPage() {
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
-              Portal de Empresa
+              {t.asistencia.company.portal}
             </span>
             <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
-              Asistencia <span className="text-slate-400">de Pasantes</span>
+              {t.asistencia.title} <span className="text-slate-400">{t.asistencia.company.interns}</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
-              Seguimiento de horas e historial de check-in/out de cada pasante en tu empresa.
+              {t.asistencia.company.desc}
             </p>
           </div>
           <div className="relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
             <input
               type="text"
-              placeholder="Buscar pasante..."
+              placeholder={t.common.search + "..."}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-12 pr-6 py-4 bg-white border border-slate-200 rounded-2xl w-full md:w-[280px] outline-none focus:ring-4 focus:ring-[#003366]/5 focus:border-[#003366] transition-all font-medium text-sm shadow-sm"
@@ -143,9 +145,9 @@ export default function EmpresaAsistenciaPage() {
         {!loading && rows.length > 0 && (
           <section className="grid sm:grid-cols-3 gap-6">
             {[
-              { icon: <TrendingUp className="w-6 h-6" />, title: "Pasantes activos", value: activeCount, color: "bg-blue-500" },
-              { icon: <Clock className="w-6 h-6" />, title: "Horas acumuladas", value: `${totalAccum.toFixed(0)}h`, color: "bg-emerald-500" },
-              { icon: <CheckCircle2 className="w-6 h-6" />, title: "Total pasantes", value: rows.length, color: "bg-amber-500" },
+              { icon: <TrendingUp className="w-6 h-6" />, title: t.asistencia.company.activeInterns, value: activeCount, color: "bg-blue-500" },
+              { icon: <Clock className="w-6 h-6" />, title: t.asistencia.company.accumulatedHours, value: `${totalAccum.toFixed(0)}h`, color: "bg-emerald-500" },
+              { icon: <CheckCircle2 className="w-6 h-6" />, title: t.asistencia.company.totalInterns, value: rows.length, color: "bg-amber-500" },
             ].map((kpi) => (
               <motion.div key={kpi.title} whileHover={{ y: -4 }} className="bg-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl">
                 <div className={cn("p-4 rounded-2xl inline-flex mb-6", kpi.color.replace("bg-", "bg-") + "/10")}>
@@ -162,14 +164,14 @@ export default function EmpresaAsistenciaPage() {
           <div className="flex flex-col items-center justify-center py-40 gap-4">
             <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-              Cargando pasantes...
+              {t.asistencia.company.loadingInterns}
             </p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="bg-white rounded-[2.5rem] border border-dashed border-slate-200 p-20 text-center">
             <AlertCircle className="w-16 h-16 text-slate-200 mx-auto mb-4" />
             <p className="font-black text-slate-400 uppercase tracking-widest text-sm">
-              {searchTerm ? "Sin resultados" : "Sin pasantes asignados"}
+              {searchTerm ? t.asistencia.company.noResults : t.asistencia.company.noInterns}
             </p>
           </div>
         ) : (
@@ -199,7 +201,7 @@ export default function EmpresaAsistenciaPage() {
                         {row.status}
                       </span>
                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        {row.totalHours}h planificadas
+                        {row.totalHours}h {t.asistencia.company.planned}
                       </span>
                     </div>
                   </div>
@@ -216,7 +218,7 @@ export default function EmpresaAsistenciaPage() {
                           />
                         </div>
                         <p className="text-[9px] font-black text-[#C5A059] mt-0.5">
-                          {row.summary.progressPercentage}%
+                          {row.summary.progressPercentage}% {t.asistencia.company.completed}
                         </p>
                       </div>
                     ) : row.loadingDetail ? (
@@ -246,10 +248,10 @@ export default function EmpresaAsistenciaPage() {
                             {row.summary && (
                               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                                 {[
-                                  { label: "Horas registradas", value: `${row.summary.totalHours}h` },
-                                  { label: "Horas requeridas", value: `${row.summary.requiredHours}h` },
-                                  { label: "Registros totales", value: String(row.summary.totalRecords) },
-                                  { label: "Horas pendientes", value: `${row.summary.remainingHours}h` },
+                                  { label: t.asistencia.stats.hours, value: `${row.summary.totalHours}h` },
+                                  { label: t.asistencia.stats.progress, value: `${row.summary.requiredHours}h` },
+                                  { label: t.asistencia.stats.records, value: String(row.summary.totalRecords) },
+                                  { label: t.asistencia.stats.pending, value: `${row.summary.remainingHours}h` },
                                 ].map((kpi) => (
                                   <div key={kpi.label} className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                                     <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">{kpi.label}</p>
@@ -261,18 +263,18 @@ export default function EmpresaAsistenciaPage() {
 
                             {row.history.length === 0 ? (
                               <p className="text-center text-[10px] font-black uppercase tracking-widest text-slate-300 py-8">
-                                Sin registros de asistencia
+                                {t.asistencia.history.noRecords}
                               </p>
                             ) : (
                               <div className="rounded-2xl border border-slate-100 overflow-hidden">
                                 <table className="w-full text-xs">
                                   <thead className="bg-slate-50 border-b border-slate-100">
                                     <tr>
-                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">Fecha</th>
-                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">Entrada</th>
-                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">Salida</th>
-                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">Distancia</th>
-                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">Fotos</th>
+                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">{t.common.date}</th>
+                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">{t.asistencia.actions.markIn}</th>
+                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">{t.asistencia.actions.markOut}</th>
+                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">{t.asistencia.actions.gps}</th>
+                                      <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">{t.asistencia.actions.photo}</th>
                                     </tr>
                                   </thead>
                                   <tbody className="divide-y divide-slate-50">
@@ -294,7 +296,7 @@ export default function EmpresaAsistenciaPage() {
                                               {new Date(h.checkOut).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                             </div>
                                           ) : (
-                                            <span className="text-amber-500 font-black text-[9px] uppercase">Pendiente</span>
+                                            <span className="text-amber-500 font-black text-[9px] uppercase">{t.common.pending}</span>
                                           )}
                                         </td>
                                         <td className="px-5 py-3">
@@ -308,13 +310,13 @@ export default function EmpresaAsistenciaPage() {
                                             {h.checkInPhoto && (
                                               <a href={h.checkInPhoto} target="_blank" className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-lg text-[9px] font-black hover:bg-emerald-100 transition-colors">
                                                 <Camera className="w-3 h-3" />
-                                                Entrada
+                                                {t.asistencia.actions.markIn}
                                               </a>
                                             )}
                                             {h.checkOutPhoto && (
                                               <a href={h.checkOutPhoto} target="_blank" className="flex items-center gap-1 px-2 py-0.5 bg-rose-50 text-rose-700 rounded-lg text-[9px] font-black hover:bg-rose-100 transition-colors">
                                                 <Camera className="w-3 h-3" />
-                                                Salida
+                                                {t.asistencia.actions.markOut}
                                               </a>
                                             )}
                                             {!h.checkInPhoto && !h.checkOutPhoto && (

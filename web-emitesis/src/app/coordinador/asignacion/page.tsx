@@ -30,10 +30,11 @@ import { User } from '@/types/user';
 import { Agreement } from '@/types/agreement';
 import dynamic from 'next/dynamic';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/providers/LanguageProvider';
 
 const LeafletMap = dynamic(() => import('@/components/shared/LeafletMap'), { 
   ssr: false,
-  loading: () => <div className="h-[300px] w-full bg-slate-100 animate-pulse rounded-2xl flex items-center justify-center text-[10px] font-black uppercase text-slate-400">Cargando Mapa Institucional...</div>
+  loading: () => <div className="h-[300px] w-full bg-slate-100 animate-pulse rounded-2xl flex items-center justify-center text-[10px] font-black uppercase text-slate-400">Loading Map...</div>
 });
 
 interface AllowedLocation {
@@ -44,6 +45,7 @@ interface AllowedLocation {
 }
 
 export default function AsignacionPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [btnLoading, setBtnLoading] = useState(false);
@@ -98,7 +100,7 @@ export default function AsignacionPage() {
         setAgreements(allAgreements.filter((a: Agreement) => a.status === 'Activo'));
       } catch (err: unknown) {
         console.error('Fetch error:', err);
-        setError('Error al cargar datos necesarios para la asignación.');
+        setError(t.coordinator.assignment.errorFetch);
       } finally {
         setLoading(false);
       }
@@ -108,7 +110,7 @@ export default function AsignacionPage() {
 
   const addLocation = () => {
     const newLoc: AllowedLocation = { 
-      label: `Sede ${allowedLocations.length + 1}`, 
+      label: `${t.asistencia.requirements.locationRadar} ${allowedLocations.length + 1}`, 
       lat: -0.180653, 
       lng: -78.467838, 
       radiusM: 250 
@@ -159,7 +161,7 @@ export default function AsignacionPage() {
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <Loader2 className="w-10 h-10 text-[#003366] animate-spin mb-4" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Preparando módulo de asignación...</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.assignment.loading}</p>
         </div>
       </DashboardLayout>
     );
@@ -172,8 +174,8 @@ export default function AsignacionPage() {
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
             <CheckCircle2 size={40} />
           </motion.div>
-          <h2 className="text-2xl font-black text-[#003366] mb-2">¡Asignación Exitosa!</h2>
-          <p className="text-slate-500">Se ha enviado un correo de notificación al estudiante.</p>
+          <h2 className="text-2xl font-black text-[#003366] mb-2">{t.coordinator.assignment.successTitle}</h2>
+          <p className="text-slate-500">{t.coordinator.assignment.successDesc}</p>
         </div>
       </DashboardLayout>
     );
@@ -186,10 +188,10 @@ export default function AsignacionPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-0 space-y-6 md:space-y-8 pb-20">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
-            <UserPlus size={12} /> Gestión de Prácticas
+            <UserPlus size={12} /> {t.coordinator.assignment.subtitle}
           </div>
-          <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Vincular Estudiante</h1>
-          <p className="text-slate-500 mt-2">Asigna un pasante a una empresa y define su tutor académico responsable.</p>
+          <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">{t.coordinator.assignment.title}</h1>
+          <p className="text-slate-500 mt-2">{t.coordinator.assignment.description}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
@@ -198,45 +200,45 @@ export default function AsignacionPage() {
             <div className="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-slate-100 space-y-6">
               <div className="flex items-center gap-3 mb-2">
                 <GraduationCap className="text-[#C5A059]" size={20} />
-                <h3 className="font-bold text-[#003366] uppercase tracking-widest text-sm">Selección de Actores</h3>
+                <h3 className="font-bold text-[#003366] uppercase tracking-widest text-sm">{t.coordinator.assignment.actorsTitle}</h3>
               </div>
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Estudiante</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.assignment.studentLabel}</label>
                   <select 
                     required
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none appearance-none"
                     value={form.studentId}
                     onChange={(e) => setForm({...form, studentId: e.target.value})}
                   >
-                    <option value="">Seleccionar Estudiante</option>
+                    <option value="">{t.coordinator.assignment.studentPlaceholder}</option>
                     {students.map(s => <option key={s.id} value={s.id}>{s.fullName}</option>)}
                   </select>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tutor Académico</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.assignment.tutorLabel}</label>
                   <select 
                     required
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none appearance-none"
                     value={form.tutorId}
                     onChange={(e) => setForm({...form, tutorId: e.target.value})}
                   >
-                    <option value="">Seleccionar Tutor</option>
+                    <option value="">{t.coordinator.assignment.tutorPlaceholder}</option>
                     {tutors.map(t => <option key={t.id} value={t.id}>{t.fullName}</option>)}
                   </select>
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Empresa receptora (con convenio activo)</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.assignment.companyLabel}</label>
                   <select 
                     required
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none appearance-none"
                     value={form.companyId}
                     onChange={(e) => setForm({...form, companyId: e.target.value})}
                   >
-                    <option value="">Seleccionar Empresa</option>
+                    <option value="">{t.coordinator.assignment.companyPlaceholder}</option>
                     {agreements.map(a => <option key={a.companyId} value={a.companyId}>{a.company.name} (RUC: {a.company.ruc})</option>)}
                   </select>
                 </div>
@@ -246,12 +248,12 @@ export default function AsignacionPage() {
             <div className="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-slate-100 space-y-6">
               <div className="flex items-center gap-3 mb-2">
                 <Briefcase className="text-[#C5A059]" size={20} />
-                <h3 className="font-bold text-[#003366] uppercase tracking-widest text-sm">Detalles de la Práctica</h3>
+                <h3 className="font-bold text-[#003366] uppercase tracking-widest text-sm">{t.coordinator.assignment.detailsTitle}</h3>
               </div>
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fecha de Inicio</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.assignment.startDate}</label>
                   <div className="relative">
                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                     <input 
@@ -265,14 +267,14 @@ export default function AsignacionPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Horas</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.assignment.totalHours}</label>
                   <div className="relative">
                     <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                     <input 
                       type="number"
                       required
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-12 pr-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
-                      placeholder="Ej: 240"
+                      placeholder={t.coordinator.assignment.totalHoursPlaceholder}
                       value={form.totalHours}
                       onChange={(e) => setForm({...form, totalHours: parseInt(e.target.value)})}
                     />
@@ -280,7 +282,7 @@ export default function AsignacionPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fecha Fin Estimada</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.assignment.endDate}</label>
                   <div className="relative">
                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                     <input 
@@ -290,11 +292,11 @@ export default function AsignacionPage() {
                       onChange={(e) => setForm({...form, endDate: e.target.value})}
                     />
                   </div>
-                  <p className="text-[10px] text-slate-400 ml-1">Opcional — se calculará al completar horas</p>
+                  <p className="text-[10px] text-slate-400 ml-1">{t.coordinator.assignment.endDateHint}</p>
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Modalidad de Práctica</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.assignment.modality}</label>
                   <div className="relative">
                     <Layers className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                     <select
@@ -302,69 +304,67 @@ export default function AsignacionPage() {
                       value={form.modalidad}
                       onChange={(e) => setForm({...form, modalidad: e.target.value})}
                     >
-                      <option value="PRESENCIAL">Presencial</option>
-                      <option value="SEMIPRESENCIAL">Semipresencial</option>
-                      <option value="EN_LINEA">En Línea</option>
-                      <option value="HIBRIDA">Híbrida</option>
+                      <option value="PRESENCIAL">{t.coordinator.assignment.modalities.presencial}</option>
+                      <option value="SEMIPRESENCIAL">{t.coordinator.assignment.modalities.semipresencial}</option>
+                      <option value="EN_LINEA">{t.coordinator.assignment.modalities.online}</option>
+                      <option value="HIBRIDA">{t.coordinator.assignment.modalities.hibrida}</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Dirección Institucional / Lugar de Prácticas</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.assignment.locationLabel}</label>
                   <div className="relative">
                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                     <input 
                       type="text"
                       required
-                      placeholder="Dirección o departamento específico"
+                      placeholder={t.coordinator.assignment.locationPlaceholder}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-12 pr-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
                       value={form.location}
                       onChange={(e) => setForm({...form, location: e.target.value})}
                     />
                   </div>
                   
-                  {/* RF-ATT-LOC: Multi-Geocerca */}
                   <div className="mt-8 space-y-6">
                     <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                       <div>
-                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#003366]">Configuración Multi-Sedes</h4>
-                        <p className="text-[10px] text-slate-400 font-medium">Define los puntos geográficos donde el estudiante puede marcar asistencia.</p>
+                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#003366]">{t.coordinator.assignment.geofenceTitle}</h4>
+                        <p className="text-[10px] text-slate-400 font-medium">{t.coordinator.assignment.geofenceDesc}</p>
                       </div>
                       <button 
                         type="button"
                         onClick={addLocation}
                         className="px-4 py-2 bg-[#003366]/5 text-[#003366] rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-[#003366] hover:text-white transition-all flex items-center gap-2 border border-[#003366]/10"
                       >
-                        <PlusCircle size={14} /> Añadir Sede
+                        <PlusCircle size={14} /> {t.coordinator.assignment.addLocation}
                       </button>
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-6">
-                       {/* Lista de Sedes */}
                        <div className="space-y-2 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
                           {allowedLocations.map((loc, idx) => (
                              <div 
-                               key={idx}
-                               onClick={() => setActiveIndex(idx)}
-                               className={cn(
-                                 "p-4 rounded-2xl border transition-all cursor-pointer group flex items-center justify-between",
-                                 activeIndex === idx 
-                                    ? "bg-[#003366] border-[#003366] shadow-lg shadow-blue-900/10" 
-                                    : "bg-white border-slate-100 hover:border-slate-300"
-                               )}
+                                key={idx}
+                                onClick={() => setActiveIndex(idx)}
+                                className={cn(
+                                  "p-4 rounded-2xl border transition-all cursor-pointer group flex items-center justify-between",
+                                  activeIndex === idx 
+                                     ? "bg-[#003366] border-[#003366] shadow-lg shadow-blue-900/10" 
+                                     : "bg-white border-slate-100 hover:border-slate-300"
+                                )}
                              >
                                 <div className="min-w-0">
                                    <p className={cn(
                                      "text-[10px] font-black uppercase tracking-widest truncate",
                                      activeIndex === idx ? "text-[#C5A059]" : "text-slate-400 group-hover:text-[#003366]"
                                    )}>
-                                     {loc.label || `Sede ${idx + 1}`}
+                                     {loc.label}
                                    </p>
                                    <p className={cn(
                                      "text-[9px] font-bold",
                                      activeIndex === idx ? "text-white/60" : "text-slate-300"
-                                   )}>Radio: {loc.radiusM}m</p>
+                                   )}>{t.coordinator.assignment.radius}: {loc.radiusM}m</p>
                                 </div>
                                 {allowedLocations.length > 1 && (
                                    <button 
@@ -382,11 +382,10 @@ export default function AsignacionPage() {
                           ))}
                        </div>
 
-                       {/* Editor de Sede Activa */}
                        <div className="md:col-span-2 space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
                           <div className="grid grid-cols-2 gap-4">
                              <div className="space-y-1">
-                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Etiqueta de Sede</label>
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">{t.coordinator.assignment.locationName}</label>
                                 <input 
                                   type="text"
                                   className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-xs font-bold outline-none focus:border-[#003366]"
@@ -395,7 +394,7 @@ export default function AsignacionPage() {
                                 />
                              </div>
                              <div className="space-y-1">
-                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Radio: {currentLoc.radiusM}m</label>
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">{t.coordinator.assignment.radius}: {currentLoc.radiusM}m</label>
                                 <input 
                                   type="range"
                                   min="100" max="1000" step="50"
@@ -419,12 +418,12 @@ export default function AsignacionPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tutor Empresarial (Nombre)</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.assignment.businessTutor.name}</label>
                   <div className="relative">
                     <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                     <input 
                       type="text"
-                      placeholder="Nombre del supervisor en empresa"
+                      placeholder={t.coordinator.assignment.businessTutor.namePlaceholder}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-11 pr-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
                       value={form.businessTutorName}
                       onChange={(e) => setForm({...form, businessTutorName: e.target.value})}
@@ -433,12 +432,12 @@ export default function AsignacionPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tutor Empresarial (Cargo)</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.assignment.businessTutor.position}</label>
                   <div className="relative">
                     <Award className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                     <input 
                       type="text"
-                      placeholder="Ej: Jefe de RRHH, Supervisor TI"
+                      placeholder={t.coordinator.assignment.businessTutor.positionPlaceholder}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-11 pr-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
                       value={form.businessTutorPosition}
                       onChange={(e) => setForm({...form, businessTutorPosition: e.target.value})}
@@ -447,10 +446,10 @@ export default function AsignacionPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tutor Empresarial (Email)</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.assignment.businessTutor.email}</label>
                   <input 
                     type="email"
-                    placeholder="email@empresa.com"
+                    placeholder={t.coordinator.assignment.businessTutor.emailPlaceholder}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
                     value={form.businessTutorEmail}
                     onChange={(e) => setForm({...form, businessTutorEmail: e.target.value})}
@@ -458,12 +457,12 @@ export default function AsignacionPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tutor Empresarial (Teléfono)</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.assignment.businessTutor.phone}</label>
                   <div className="relative">
                     <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                     <input 
                       type="tel"
-                      placeholder="Ej: 0987654321"
+                      placeholder={t.coordinator.assignment.businessTutor.phonePlaceholder}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-11 pr-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
                       value={form.businessTutorPhone}
                       onChange={(e) => setForm({...form, businessTutorPhone: e.target.value})}
@@ -472,11 +471,11 @@ export default function AsignacionPage() {
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Descripción de Actividades a Realizar</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.assignment.activities}</label>
                   <div className="relative">
                     <FileText className="absolute left-4 top-4 text-slate-300" size={16} />
                     <textarea 
-                      placeholder="Describa las actividades y responsabilidades que tendrá el pasante en la empresa..."
+                      placeholder={t.coordinator.assignment.activitiesPlaceholder}
                       rows={3}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-11 pr-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none resize-none"
                       value={form.activityDescription}
@@ -488,13 +487,12 @@ export default function AsignacionPage() {
             </div>
           </div>
 
-          {/* Sidebar / Info */}
           <div className="space-y-6">
             <div className="bg-[#003366] text-white rounded-3xl p-5 md:p-8 shadow-xl">
               <ShieldCheck className="text-[#C5A059] mb-4" size={32} />
-              <h4 className="font-bold text-lg mb-2 italic">Aviso de Notificación</h4>
+              <h4 className="font-bold text-lg mb-2 italic">{t.coordinator.assignment.warningTitle}</h4>
               <p className="text-white/70 text-sm leading-relaxed mb-6">
-                Al guardar esta asignación, el sistema enviará automáticamente un correo electrónico al estudiante con todos los detalles registrados aquí.
+                {t.coordinator.assignment.warningDesc}
               </p>
               
               {error && (
@@ -510,21 +508,21 @@ export default function AsignacionPage() {
                 className="w-full bg-white text-[#003366] rounded-2xl py-4 text-[11px] font-black uppercase tracking-[0.2em] hover:bg-[#C5A059] hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50"
               >
                 {btnLoading ? <Loader2 className="animate-spin" size={16} /> : <UserPlus size={16} />}
-                Confirmar Vínculo
+                {t.coordinator.assignment.confirmBtn}
               </button>
             </div>
 
             <div className="bg-white rounded-3xl p-5 md:p-8 border border-slate-100 shadow-sm">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">Resumen de Geocercas</h4>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">{t.coordinator.assignment.geofenceSummary}</h4>
               <div className="space-y-4">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-slate-500 italic">Sedes Configuradas</span>
+                  <span className="text-slate-500 italic">{t.coordinator.assignment.configuredLocations}</span>
                   <span className="font-bold text-[#003366]">{allowedLocations.length}</span>
                 </div>
                 {allowedLocations.map((l, i) => (
                   <div key={i} className="flex justify-between items-center text-[10px] border-l-2 border-[#C5A059] pl-3 py-1">
                     <span className="text-slate-400 truncate max-w-[120px]">{l.label}</span>
-                    <span className="font-bold text-[#003366]">{l.radiusM}m</span>
+                    <span className="font-bold text-[#003366]">{t.coordinator.assignment.radius}: {l.radiusM}m</span>
                   </div>
                 ))}
               </div>

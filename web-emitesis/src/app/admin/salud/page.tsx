@@ -31,8 +31,11 @@ import {
   Cell
 } from "recharts";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/providers/LanguageProvider";
+
 
 export default function AdminHealthPage() {
+  const { t } = useLanguage();
   const [isMounted, setIsMounted] = useState(false);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [series, setSeries] = useState<HealthSeries[]>([]);
@@ -68,11 +71,11 @@ export default function AdminHealthPage() {
       const res = await maintenanceService.cleanupOrphanedFiles();
       setResult({ 
         type: "success", 
-        text: `Limpieza completada. Se eliminaron ${res.deletedCount} archivos (${res.reclaimedMb} MB recuperados).` 
+        text: t.admin.health.cleanupSuccess.replace('{count}', String(res.deletedCount)).replace('{size}', String(res.reclaimedMb))
       });
       setTimeout(() => setResult(null), 5000);
     } catch (err) {
-      setResult({ type: "error", text: "Error al ejecutar la limpieza." });
+      setResult({ type: "error", text: t.admin.health.cleanupError });
     } finally {
       setCleaning(false);
     }
@@ -85,7 +88,7 @@ export default function AdminHealthPage() {
       setResult({ type: "success", text: res.message });
       setTimeout(() => setResult(null), 5000);
     } catch (err) {
-      setResult({ type: "error", text: "Error al solicitar backup." });
+      setResult({ type: "error", text: t.admin.health.backupError });
     } finally {
       setBackingUp(false);
     }
@@ -97,13 +100,13 @@ export default function AdminHealthPage() {
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
-              Monitor de Infraestructura
+              {t.admin.health.monitor}
             </span>
             <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
-              Salud del <span className="text-slate-400">Sistema</span>
+              {t.admin.health.title.split(' ')[0]} <span className="text-slate-400">{t.admin.health.title.split(' ').slice(1).join(' ')}</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
-              Métricas en tiempo real de latencia, tráfico y estado de la base de datos.
+              {t.admin.health.subtitle}
             </p>
           </div>
           <button 
@@ -111,7 +114,7 @@ export default function AdminHealthPage() {
             className="flex items-center gap-2 px-5 py-2.5 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-sm font-bold text-slate-600"
           >
             <RefreshCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            Refrescar Datos
+            {t.admin.health.refresh}
           </button>
         </section>
 
@@ -137,10 +140,10 @@ export default function AdminHealthPage() {
                    <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
                       <Zap className="w-5 h-5" />
                    </div>
-                   <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">Latencia de API (Últimas 24h)</h3>
+                   <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">{t.admin.health.latencyTitle}</h3>
                 </div>
                 <div className="text-right">
-                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Promedio Actual</p>
+                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t.admin.health.avgLabel}</p>
                    <p className="text-xl font-black text-indigo-600">{stats?.avgResponseTime || 0} ms</p>
                 </div>
               </div>
@@ -172,7 +175,7 @@ export default function AdminHealthPage() {
                   <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
                       <Terminal className="w-5 h-5" />
                   </div>
-                  <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">Tráfico y Errores</h3>
+                  <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">{t.admin.health.trafficTitle}</h3>
                </div>
                <div className="h-[250px] w-full">
                 {isMounted && (
@@ -181,8 +184,8 @@ export default function AdminHealthPage() {
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                     <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 700}} />
                     <Tooltip contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-                    <Bar dataKey="total" name="Peticiones" fill="#003366" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="errors" name="Errores" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="total" name={t.admin.health.requests} fill="#003366" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="errors" name={t.admin.health.errors} fill="#ef4444" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
                 )}
@@ -192,7 +195,7 @@ export default function AdminHealthPage() {
 
           <div className="space-y-8">
             <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8 shadow-xl border border-slate-50">
-               <h3 className="text-sm font-black text-[#003366] uppercase tracking-widest mb-6">Mantenimiento</h3>
+               <h3 className="text-sm font-black text-[#003366] uppercase tracking-widest mb-6">{t.admin.health.maintenance}</h3>
                <div className="space-y-4">
                   <button 
                     disabled={cleaning}
@@ -204,8 +207,8 @@ export default function AdminHealthPage() {
                           {cleaning ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
                        </div>
                        <div>
-                          <p className="text-xs font-black text-[#003366] uppercase tracking-tight">Limpiar Huérfanos</p>
-                          <p className="text-[10px] font-bold text-slate-400 mt-0.5">Purga archivos sin referencia en BD</p>
+                          <p className="text-xs font-black text-[#003366] uppercase tracking-tight">{t.admin.health.cleanupTitle}</p>
+                          <p className="text-[10px] font-bold text-slate-400 mt-0.5">{t.admin.health.cleanupDesc}</p>
                        </div>
                     </div>
                   </button>
@@ -220,22 +223,22 @@ export default function AdminHealthPage() {
                           {backingUp ? <Loader2 className="w-5 h-5 animate-spin" /> : <Database className="w-5 h-5" />}
                        </div>
                        <div>
-                          <p className="text-xs font-black text-[#003366] uppercase tracking-tight">Respaldar BD</p>
-                          <p className="text-[10px] font-bold text-slate-400 mt-0.5">Generar snapshot de PostgreSQL</p>
+                          <p className="text-xs font-black text-[#003366] uppercase tracking-tight">{t.admin.health.backupTitle}</p>
+                          <p className="text-[10px] font-bold text-slate-400 mt-0.5">{t.admin.health.backupDesc}</p>
                        </div>
                     </div>
                   </button>
 
                   <div className="p-5 bg-[#003366] text-white rounded-3xl">
-                     <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-3">Resumen de Actividad Hoy</p>
+                     <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-3">{t.admin.health.summaryToday}</p>
                      <div className="grid grid-cols-2 gap-4">
                         <div>
                            <p className="text-2xl font-black">{stats?.counters.logsToday || 0}</p>
-                           <p className="text-[9px] font-bold uppercase tracking-widest opacity-80">Logs totales</p>
+                           <p className="text-[9px] font-bold uppercase tracking-widest opacity-80">{t.admin.health.totalLogs}</p>
                         </div>
                         <div>
                            <p className="text-2xl font-black text-rose-400">{stats?.counters.errorsToday || 0}</p>
-                           <p className="text-[9px] font-bold uppercase tracking-widest opacity-80">Eventos Error</p>
+                           <p className="text-[9px] font-bold uppercase tracking-widest opacity-80">{t.admin.health.errorEvents}</p>
                         </div>
                      </div>
                   </div>
@@ -245,13 +248,13 @@ export default function AdminHealthPage() {
             <div className="bg-gradient-to-br from-slate-800 to-slate-950 rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8 text-white">
                <div className="flex items-center gap-3 mb-6">
                   <BarChart3 className="w-5 h-5 text-[#C5A059]" />
-                  <h3 className="text-xs font-black uppercase tracking-widest">Distribución de Roles</h3>
+                  <h3 className="text-xs font-black uppercase tracking-widest">{t.admin.health.rolesTitle}</h3>
                </div>
                <div className="space-y-4">
                   {stats?.rolesDistribution.map(item => (
                     <div key={item.role}>
                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-1.5 grayscale opacity-80">
-                          <span>{item.role}</span>
+                          <span>{t.sidebar.roles[item.role as keyof typeof t.sidebar.roles] || item.role}</span>
                           <span>{item._count}</span>
                        </div>
                        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">

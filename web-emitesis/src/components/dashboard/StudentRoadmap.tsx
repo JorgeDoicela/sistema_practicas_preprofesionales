@@ -12,6 +12,7 @@ import {
   LucideIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface Step {
   id: string;
@@ -26,6 +27,7 @@ interface StudentRoadmapProps {
 }
 
 export function StudentRoadmap({ internship }: StudentRoadmapProps) {
+  const { t } = useLanguage();
   if (!internship) return null;
 
   const docs = internship.documents || [];
@@ -41,36 +43,36 @@ export function StudentRoadmap({ internship }: StudentRoadmapProps) {
   const steps: Step[] = [
     {
       id: "asignacion",
-      label: "Asignación",
-      description: "Práctica registrada y validada",
+      label: t.roadmap.steps.asignacion.label,
+      description: t.roadmap.steps.asignacion.desc,
       icon: UserPlus,
       status: "completed",
     },
     {
       id: "documentacion",
-      label: "Documentación",
-      description: `${approvedDocs} aprobados`,
+      label: t.roadmap.steps.documentacion.label,
+      description: t.roadmap.steps.documentacion.desc.replace("{count}", String(approvedDocs)),
       icon: FileStack,
       status: approvedDocs > 0 ? (approvedDocs >= docs.length && docs.length > 0 ? "completed" : "current") : "pending",
     },
     {
       id: "asistencia",
-      label: "Asistencia",
-      description: `${Math.round((workedHours / (totalHours || 1)) * 100)}% de horas`,
+      label: t.roadmap.steps.asistencia.label,
+      description: t.roadmap.steps.asistencia.desc.replace("{pct}", String(Math.round((workedHours / (totalHours || 1)) * 100))),
       icon: Clock,
       status: workedHours > 0 ? (workedHours >= totalHours ? "completed" : "current") : "pending",
     },
     {
       id: "evaluacion",
-      label: "Evaluación",
-      description: hasEvaluations ? "Dual completada" : "Pendiente de tutores",
+      label: t.roadmap.steps.evaluacion.label,
+      description: hasEvaluations ? t.roadmap.steps.evaluacion.completed : t.roadmap.steps.evaluacion.pending,
       icon: Star,
       status: hasEvaluations ? "completed" : (workedHours >= totalHours ? "current" : "pending"),
     },
     {
       id: "cierre",
-      label: "Aprobación Final",
-      description: internship.status === "Finalizado" ? "Acreditado" : "En espera",
+      label: t.roadmap.steps.cierre.label,
+      description: internship.status === "Finalizado" ? t.roadmap.steps.cierre.completed : t.roadmap.steps.cierre.pending,
       icon: CheckCircle2,
       status: internship.status === "Finalizado" ? "completed" : "pending",
     },
@@ -85,11 +87,11 @@ export function StudentRoadmap({ internship }: StudentRoadmapProps) {
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-10">
           <div>
-            <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">Mi Trayectoria</span>
-            <h3 className="text-2xl font-black text-[#003366] tracking-tight text-balance">Ruta Crítica hacia la Acreditación</h3>
+            <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">{t.roadmap.title}</span>
+            <h3 className="text-2xl font-black text-[#003366] tracking-tight text-balance">{t.roadmap.subtitle}</h3>
           </div>
           <div className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl">
-             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Estado: {internship.status}</span>
+             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t.roadmap.status}: {internship.status}</span>
           </div>
         </div>
 

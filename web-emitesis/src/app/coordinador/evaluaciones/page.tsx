@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
 import { evaluationsService } from "@/services/evaluations.service";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface EvalResult {
   internshipId: string;
@@ -41,13 +42,7 @@ interface EvalResult {
   } | null;
 }
 
-const CRITERIA_LABELS: Record<string, string> = {
-  punctuality: "Puntualidad",
-  teamwork: "Trabajo en equipo",
-  technicalSkills: "Aptitud técnica",
-  proactivity: "Proactividad",
-  attitude: "Actitud",
-};
+// Local criteria labels mapping is now handled inside the component via the t object.
 
 function StarRow({ score }: { score: number }) {
   return (
@@ -79,6 +74,7 @@ function PercentageBadge({ pct }: { pct: number }) {
 }
 
 export default function EvaluacionesPage() {
+  const { t } = useLanguage();
   const [results, setResults] = useState<EvalResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -164,20 +160,20 @@ export default function EvaluacionesPage() {
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
-              Coordinación de Prácticas
+              {t.coordinator.evaluations.subtitle}
             </span>
             <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
-              Evaluaciones <span className="text-slate-400">de Empresa</span>
+              {t.coordinator.evaluations.title}
             </h2>
             <p className="text-slate-500 font-medium mt-2">
-              Test de aptitud y actitud enviado por los representantes empresariales.
+              {t.coordinator.evaluations.description}
             </p>
           </div>
           <div className="relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
             <input
               type="text"
-              placeholder="Buscar estudiante o empresa..."
+              placeholder={t.coordinator.evaluations.searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-12 pr-6 py-4 bg-white border border-slate-200 rounded-2xl w-full md:w-[340px] outline-none focus:ring-4 focus:ring-[#003366]/5 focus:border-[#003366] transition-all font-medium text-sm shadow-sm"
@@ -188,21 +184,21 @@ export default function EvaluacionesPage() {
         {/* KPIs */}
         {!loading && (
           <section className="grid sm:grid-cols-3 gap-6">
-            <KpiCard
+             <KpiCard
               icon={<Users className="w-6 h-6" />}
-              title="Total pasantías"
+              title={t.coordinator.evaluations.kpis.total}
               value={results.length}
               color="bg-blue-500"
             />
             <KpiCard
               icon={<Award className="w-6 h-6" />}
-              title="Con evaluación"
+              title={t.coordinator.evaluations.kpis.evaluated}
               value={withEval}
               color="bg-emerald-500"
             />
             <KpiCard
               icon={<TrendingUp className="w-6 h-6" />}
-              title="Rendimiento promedio"
+              title={t.coordinator.evaluations.kpis.average}
               value={`${avgPct}%`}
               color="bg-amber-500"
             />
@@ -212,8 +208,8 @@ export default function EvaluacionesPage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-40 gap-4">
             <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-              Cargando evaluaciones...
+             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              {t.common.loading}
             </p>
           </div>
         ) : (
@@ -221,8 +217,8 @@ export default function EvaluacionesPage() {
             {filtered.length === 0 ? (
               <div className="bg-white rounded-[2.5rem] border border-dashed border-slate-200 p-20 text-center">
                 <AlertCircle className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-                <p className="font-black text-slate-400 uppercase tracking-widest text-sm">
-                  Sin resultados
+                 <p className="font-black text-slate-400 uppercase tracking-widest text-sm">
+                  {t.coordinator.evaluations.detail.noResults}
                 </p>
               </div>
             ) : (
@@ -268,7 +264,7 @@ export default function EvaluacionesPage() {
                               : "bg-amber-50 text-amber-700",
                           )}
                         >
-                          {r.status}
+                          {(t.tutor.internshipStatus as any)[r.status] || r.status}
                         </span>
                       </div>
                     </div>
@@ -280,13 +276,13 @@ export default function EvaluacionesPage() {
                           <PercentageBadge pct={r.evaluation.percentage} />
                           <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100">
                             <CheckCircle2 className="w-3.5 h-3.5" />
-                            Evaluado
+                            {t.coordinator.evaluations.status.evaluated}
                           </div>
                         </>
                       ) : (
                         <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
                           <Clock className="w-3.5 h-3.5" />
-                          Sin evaluar
+                          {t.coordinator.evaluations.status.notEvaluated}
                         </div>
                       )}
                       {r.evaluation &&
@@ -309,13 +305,13 @@ export default function EvaluacionesPage() {
                       >
                         <div className="p-7 pt-5 grid md:grid-cols-2 gap-8">
                           {/* Criterios */}
-                          <div className="space-y-4">
+                           <div className="space-y-4">
                             <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                              Criterios de evaluación
+                              {t.coordinator.evaluations.detail.criteriaTitle}
                             </p>
-                            {Object.entries(CRITERIA_LABELS).map(([key, label]) => (
+                            {Object.entries(t.coordinator.evaluations.criteria).map(([key, label]) => (
                               <div key={key} className="flex items-center justify-between">
-                                <span className="text-[11px] font-bold text-slate-600">{label}</span>
+                                <span className="text-[11px] font-bold text-slate-600">{label as string}</span>
                                 <StarRow
                                   score={
                                     (r.evaluation as unknown as Record<string, number>)[key]
@@ -326,10 +322,10 @@ export default function EvaluacionesPage() {
                           </div>
 
                           {/* Resumen + observaciones */}
-                          <div className="space-y-4">
+                           <div className="space-y-4">
                             <div className="bg-slate-50 rounded-[1.5rem] p-6 border border-slate-100">
                               <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-3">
-                                Puntaje global
+                                {t.coordinator.evaluations.detail.globalScore}
                               </p>
                               <div className="flex items-end gap-2 mb-3">
                                 <span className="text-2xl md:text-4xl font-black text-[#003366]">
@@ -360,18 +356,18 @@ export default function EvaluacionesPage() {
                                       ? "text-amber-600"
                                       : "text-rose-600",
                                 )}
-                              >
+                               >
                                 {r.evaluation.percentage >= 80
-                                  ? "Desempeño sobresaliente"
+                                  ? t.coordinator.evaluations.performance.outstanding
                                   : r.evaluation.percentage >= 60
-                                    ? "Desempeño aceptable"
-                                    : "Desempeño en mejora"}
+                                    ? t.coordinator.evaluations.performance.acceptable
+                                    : t.coordinator.evaluations.performance.improving}
                               </p>
                             </div>
-                            {r.evaluation.observations && (
+                             {r.evaluation.observations && (
                               <div className="bg-amber-50/50 rounded-[1.5rem] p-5 border border-amber-100">
                                 <p className="text-[9px] font-black uppercase tracking-widest text-amber-700 mb-2">
-                                  Observaciones de la empresa
+                                  {t.coordinator.evaluations.detail.observationsLabel}
                                 </p>
                                 <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
                                   {r.evaluation.observations}

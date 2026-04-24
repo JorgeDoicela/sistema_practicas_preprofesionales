@@ -20,7 +20,7 @@ function ResetPasswordForm() {
 
   useEffect(() => {
     if (!token) {
-      setMessage({ type: 'error', text: 'Enlace de recuperación inválido.' });
+      setMessage({ type: 'error', text: t.resetPassword.invalidToken });
     }
   }, [token]);
 
@@ -54,7 +54,7 @@ function ResetPasswordForm() {
   if (!token) {
     return (
       <div className="text-center space-y-4">
-        <p className="text-red-500 font-medium">Enlace inválido o expirado.</p>
+        <p className="text-red-500 font-medium">{t.resetPassword.invalidToken}</p>
         <Link href="/olvido-password" className="text-[#003366] hover:underline">
           {t.forgotPassword.submit}
         </Link>
@@ -76,7 +76,7 @@ function ResetPasswordForm() {
             type="password"
             required
             className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#003366] transition-all"
-            placeholder="Mínimo 6 caracteres"
+            placeholder={t.resetPassword.minChars}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -87,7 +87,7 @@ function ResetPasswordForm() {
             type="password"
             required
             className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#003366] transition-all"
-            placeholder="Mínimo 6 caracteres"
+            placeholder={t.resetPassword.minChars}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />

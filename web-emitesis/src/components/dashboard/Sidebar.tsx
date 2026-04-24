@@ -218,7 +218,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                             </div>
                             <div className="overflow-hidden">
                                 <p className="text-[11px] font-black text-white truncate">{user.fullName}</p>
-                                <p className="text-[9px] font-bold uppercase tracking-widest text-[#C5A059]">{user.role}</p>
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-[#C5A059]">{t.sidebar.roles[user.role as keyof typeof t.sidebar.roles] || user.role}</p>
                             </div>
                         </div>
                     </div>

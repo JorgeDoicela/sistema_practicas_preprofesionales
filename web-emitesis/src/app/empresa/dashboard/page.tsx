@@ -23,8 +23,10 @@ import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
 import Link from "next/link";
 import { LivePresenceWidget } from "@/components/dashboard/LivePresenceWidget";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 export default function EmpresaDashboardPage() {
+  const { t } = useLanguage();
   const [internships, setInternships] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -67,7 +69,7 @@ export default function EmpresaDashboardPage() {
         prev.map((i) => (i.id === internshipId ? { ...i, testEnabled: updated.testEnabled } : i))
       );
     } catch (error: any) {
-      alert(error.message || "Error al cambiar estado del test");
+      alert(error.message || t.common.error.generic);
     } finally {
       setTogglingId(null);
     }
@@ -99,16 +101,16 @@ export default function EmpresaDashboardPage() {
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
-              {userRole === "TUTOR_EMPRESARIAL" ? "Portal de Tutor" : "Portal de Empresa"}
+              {userRole === "TUTOR_EMPRESARIAL" ? t.empresa.dashboard.portalTutor : t.empresa.dashboard.portalCompany}
             </span>
             <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
-              Bienvenido,{" "}
-              <span className="text-slate-400">{companyName.split(" ")[0] || "Usuario"}</span>
+              {t.empresa.dashboard.welcome}{" "}
+              <span className="text-slate-400">{companyName.split(" ")[0] || "User"}</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
               {userRole === "TUTOR_EMPRESARIAL" 
-                ? "Gestión de pasantes a tu cargo y evaluaciones de aptitud."
-                : "Gestión global de pasantes asignados y activación de test de aptitud."}
+                ? t.empresa.dashboard.descTutor
+                : t.empresa.dashboard.descCompany}
             </p>
           </div>
           <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
@@ -122,10 +124,10 @@ export default function EmpresaDashboardPage() {
 
         {/* KPI Cards */}
         <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <KpiCard title="Pasantes Activos" value={activeCount} icon={<Users className="w-6 h-6" />} color="bg-blue-500" />
-          <KpiCard title="Horas Acumuladas" value={`${totalHours.toFixed(0)}h`} icon={<Clock className="w-6 h-6" />} color="bg-amber-500" />
-          <KpiCard title="Tests Activados" value={testEnabledCount} icon={<FlaskConical className="w-6 h-6" />} color="bg-violet-500" />
-          <KpiCard title="Evaluados" value={evaluatedCount} icon={<Award className="w-6 h-6" />} color="bg-emerald-500" />
+          <KpiCard title={t.empresa.dashboard.kpi.active} value={activeCount} icon={<Users className="w-6 h-6" />} color="bg-blue-500" />
+          <KpiCard title={t.empresa.dashboard.kpi.hours} value={`${totalHours.toFixed(0)}h`} icon={<Clock className="w-6 h-6" />} color="bg-amber-500" />
+          <KpiCard title={t.empresa.dashboard.kpi.tests} value={testEnabledCount} icon={<FlaskConical className="w-6 h-6" />} color="bg-violet-500" />
+          <KpiCard title={t.empresa.dashboard.kpi.evaluated} value={evaluatedCount} icon={<Award className="w-6 h-6" />} color="bg-emerald-500" />
         </section>
 
         {/* Monitor Seccional */}
@@ -133,16 +135,16 @@ export default function EmpresaDashboardPage() {
           <div className="lg:col-span-2 space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h3 className="text-2xl font-black text-[#003366]">Pasantes Asignados</h3>
+                <h3 className="text-2xl font-black text-[#003366]">{t.empresa.dashboard.list.title}</h3>
                 <p className="text-slate-500 text-sm font-medium mt-1">
-                  Activa el test de aptitud para que el pasante pueda ser evaluado.
+                  {t.empresa.dashboard.list.desc}
                 </p>
               </div>
               <div className="relative group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
                 <input
                   type="text"
-                  placeholder="Buscar pasante..."
+                  placeholder={t.empresa.dashboard.list.search}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-12 pr-6 py-4 bg-white border border-slate-200 rounded-2xl w-full md:w-[250px] outline-none focus:ring-4 focus:ring-[#003366]/5 focus:border-[#003366] transition-all font-medium text-sm shadow-sm"
@@ -154,7 +156,7 @@ export default function EmpresaDashboardPage() {
               <div className="flex flex-col items-center justify-center py-40 gap-4">
                 <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                  Cargando pasantes...
+                  {t.empresa.dashboard.list.loading}
                 </p>
               </div>
             ) : filtered.length === 0 ? (
@@ -163,10 +165,10 @@ export default function EmpresaDashboardPage() {
                   <GraduationCap className="w-10 h-10 text-slate-300" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-800 mb-2">
-                  {searchTerm ? "Sin resultados" : "No hay pasantes asignados aún"}
+                  {searchTerm ? t.empresa.dashboard.list.noResults : t.empresa.dashboard.list.noInterns}
                 </h3>
                 <p className="text-slate-400 text-sm">
-                  {searchTerm ? "Ajusta el término de búsqueda." : "Cuando el coordinador asigne pasantes a tu empresa aparecerán aquí."}
+                  {searchTerm ? t.empresa.dashboard.list.adjustSearch : t.empresa.dashboard.list.assignHint}
                 </p>
               </div>
             ) : (
@@ -249,7 +251,7 @@ function PasanteCard({
             <div className="flex flex-wrap gap-4 mt-1">
               <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                 <Calendar className="w-3 h-3" />
-                Inicio: {new Date(internship.startDate).toLocaleDateString()}
+                {t.empresa.card.start}: {new Date(internship.startDate).toLocaleDateString()}
               </span>
               <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                 <Clock className="w-3 h-3" />
@@ -259,7 +261,7 @@ function PasanteCard({
                 "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
                 internship.status === "Finalizado" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
               )}>
-                {internship.status}
+                {(t.tutor.internshipStatus as any)[internship.status] || internship.status}
               </span>
             </div>
             {/* Barra de progreso */}
@@ -278,21 +280,21 @@ function PasanteCard({
             <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">
-                Test completado
+                {t.empresa.card.test.completed}
               </span>
             </div>
           ) : internship.testEnabled ? (
             <div className="flex items-center gap-2 px-4 py-2 bg-violet-50 border border-violet-100 rounded-xl animate-pulse">
               <ClipboardList className="w-4 h-4 text-violet-600" />
               <span className="text-[10px] font-black text-violet-700 uppercase tracking-widest">
-                Test activo
+                {t.empresa.card.test.active}
               </span>
             </div>
           ) : (
             <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl">
               <ClipboardList className="w-4 h-4 text-slate-400" />
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                Test inactivo
+                {t.empresa.card.test.inactive}
               </span>
             </div>
           )}
@@ -302,7 +304,7 @@ function PasanteCard({
             <button
               onClick={onToggleTest}
               disabled={toggling}
-              title={internship.testEnabled ? "Desactivar test" : "Activar test de aptitud"}
+              title={internship.testEnabled ? t.empresa.card.test.deactivate : t.empresa.card.test.activate}
               className={cn(
                 "flex items-center gap-2 px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50",
                 internship.testEnabled
@@ -317,7 +319,7 @@ function PasanteCard({
               ) : (
                 <ToggleLeft className="w-4 h-4" />
               )}
-              {internship.testEnabled ? "Desactivar" : "Activar test"}
+              {internship.testEnabled ? t.empresa.card.test.deactivate : t.empresa.card.test.activate}
             </button>
           )}
 
@@ -328,7 +330,7 @@ function PasanteCard({
               className="flex items-center gap-2 px-5 py-3 bg-[#C5A059] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#b08940] transition-all shadow-lg shadow-amber-900/10"
             >
               <Award className="w-4 h-4" />
-              Evaluar
+              {t.empresa.card.test.evaluate}
               <ChevronRight className="w-3 h-3" />
             </Link>
           )}
@@ -339,7 +341,7 @@ function PasanteCard({
               className="flex items-center gap-2 px-5 py-3 bg-slate-100 text-[#003366] rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
             >
               <Building2 className="w-4 h-4" />
-              Ver detalle
+              {t.empresa.card.test.details}
             </Link>
           )}
         </div>

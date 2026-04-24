@@ -16,8 +16,10 @@ import { attendancesService } from "@/services/attendances.service";
 import { documentsService } from "@/services/documents.service";
 import { monitoringService, MonitoringVisitPayload } from "@/services/monitoring.service";
 import { evaluationsService, EvaluationPayload } from "@/services/evaluations.service";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 export default function StudentDetailPage() {
+  const { t } = useLanguage();
   const { id } = useParams();
   const router = useRouter();
   
@@ -112,19 +114,19 @@ export default function StudentDetailPage() {
       setIsVisitModalOpen(false);
       setNewVisit({ type: 'PRESENCIAL', date: new Date().toISOString().split('T')[0], location: '', observations: '', recommendations: '' });
     } catch (error: any) {
-      alert(error.message);
+      alert(error.message || t.common.error.generic);
     } finally {
       setSaving(false);
     }
   };
 
   const handleDeleteVisit = async (visitId: string) => {
-    if (!confirm("¿Eliminar este registro de visita?")) return;
+    if (!confirm(t.tutor.studentDetail.visits.confirmDelete)) return;
     try {
       await monitoringService.deleteVisit(visitId);
       await loadData();
     } catch (error: any) {
-      alert(error.message);
+      alert(error.message || t.common.error.generic);
     }
   };
 
@@ -132,7 +134,7 @@ export default function StudentDetailPage() {
     // Validar que todos los campos tengan al menos 1 punto
     const scores = [evalScores.punctuality, evalScores.teamwork, evalScores.technicalSkills, evalScores.proactivity, evalScores.attitude];
     if (scores.some(s => s < 1)) {
-      alert("Por favor, califique todos los criterios antes de guardar.");
+      alert(t.tutor.studentDetail.evaluation.errorEmpty);
       return;
     }
 
@@ -144,11 +146,11 @@ export default function StudentDetailPage() {
         ...evalScores
       });
       await loadData();
-      alert("Evaluación académica guardada con éxito");
+      alert(t.tutor.studentDetail.evaluation.successMsg);
     } catch (error: any) {
       // Manejar errores de validación que pueden venir como array
       const msg = Array.isArray(error.message) ? error.message.join(', ') : error.message;
-      alert("Error: " + msg);
+      alert("Error: " + (msg || t.common.error.generic));
     } finally {
       setSaving(false);
     }
@@ -158,7 +160,7 @@ export default function StudentDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cargando expediente...</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.common.loading}</p>
       </div>
     );
   }
@@ -180,13 +182,13 @@ export default function StudentDetailPage() {
             </button>
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em]">Expediente Académico</span>
+                <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em]">{t.tutor.studentDetail.title}</span>
                 <div className="h-1 w-1 rounded-full bg-slate-300" />
                 <span className={cn(
-                  "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full",
-                  internship?.status === 'Finalizado' ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
+                   "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full",
+                   internship?.status === 'Finalizado' ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
                 )}>
-                  {internship?.status}
+                  {(t.tutor.internshipStatus as any)[internship?.status] || internship?.status}
                 </span>
               </div>
               <h1 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tighter">
@@ -197,7 +199,7 @@ export default function StudentDetailPage() {
           
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Empresa Asignada</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.tutor.studentDetail.assignedCompany}</p>
               <p className="font-bold text-[#003366]">{internship?.company?.name}</p>
             </div>
             <div className="w-14 h-14 rounded-2xl bg-[#003366] flex items-center justify-center shadow-xl shadow-blue-900/20">
@@ -220,7 +222,7 @@ export default function StudentDetailPage() {
               </div>
               
               <h3 className="text-[11px] font-black text-[#C5A059] uppercase tracking-widest mb-8 flex items-center gap-2">
-                <Clock className="w-4 h-4" /> Progreso de Asistencia
+                <Clock className="w-4 h-4" /> {t.tutor.studentDetail.attendanceProgress}
               </h3>
               
               <div className="space-y-8">
@@ -244,11 +246,11 @@ export default function StudentDetailPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Días Registrados</p>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.tutor.studentDetail.registeredDays}</p>
                     <p className="text-xl font-black text-[#003366]">{summary?.totalRecords}</p>
                   </div>
                   <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Horas Faltantes</p>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.tutor.studentDetail.missingHours}</p>
                     <p className="text-xl font-black text-[#C5A059]">{summary?.remainingHours}h</p>
                   </div>
                 </div>
@@ -261,7 +263,7 @@ export default function StudentDetailPage() {
                transition={{ delay: 0.1 }}
                className="bg-[#003366] rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8 text-white shadow-xl shadow-blue-900/10"
             >
-              <h3 className="text-[11px] font-black text-[#C5A059] uppercase tracking-widest mb-6">Documentación</h3>
+              <h3 className="text-[11px] font-black text-[#C5A059] uppercase tracking-widest mb-6">{t.tutor.studentDetail.documentation}</h3>
               <div className="space-y-4">
                 {documents.map((doc) => (
                   <div key={doc.id} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
@@ -274,7 +276,7 @@ export default function StudentDetailPage() {
                       </div>
                       <div className="min-w-0">
                         <p className="text-xs font-bold truncate max-w-[150px]">{doc.name}</p>
-                        <p className="text-[9px] opacity-40 font-black uppercase">{doc.status.replace(/_/g, ' ')}</p>
+                        <p className="text-[9px] opacity-40 font-black uppercase">{(t.tutor.documentStatus as any)[doc.status] || doc.status.replace(/_/g, ' ')}</p>
                       </div>
                     </div>
                     {doc.status === 'EN_REVISION_TUTOR' && (
@@ -296,15 +298,15 @@ export default function StudentDetailPage() {
                     <Users className="w-6 h-6 text-[#003366]" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black text-[#003366]">Visitas de Seguimiento</h2>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">RF-11-VIS · Trazabilidad en campo</p>
+                    <h2 className="text-xl font-black text-[#003366]">{t.tutor.studentDetail.visits.title}</h2>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.tutor.studentDetail.visits.subtitle}</p>
                   </div>
                 </div>
                 <button 
                   onClick={() => setIsVisitModalOpen(true)}
                   className="px-6 py-3 bg-[#003366] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#004488] shadow-lg shadow-blue-900/10 transition-all active:scale-95 flex items-center gap-2"
                 >
-                  <Plus className="w-4 h-4" /> Nueva Visita
+                  <Plus className="w-4 h-4" /> {t.tutor.studentDetail.visits.newVisit}
                 </button>
               </div>
 
@@ -314,7 +316,7 @@ export default function StudentDetailPage() {
                     <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
                       <CalendarDays className="w-10 h-10 text-slate-200" />
                     </div>
-                    <p className="text-slate-400 font-bold text-sm">No hay visitas registradas para este periodo.</p>
+                    <p className="text-slate-400 font-bold text-sm">{t.tutor.studentDetail.visits.noVisits}</p>
                   </div>
                 ) : (
                   <div className="space-y-6 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-100">
@@ -335,7 +337,7 @@ export default function StudentDetailPage() {
                         <div className="bg-slate-50/50 rounded-2xl p-6 border border-slate-100 group-hover:bg-white group-hover:shadow-md transition-all">
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-widest">
-                              {new Date(visit.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                              {new Date(visit.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}
                             </span>
                             <button 
                               onClick={() => handleDeleteVisit(visit.id)}
@@ -363,7 +365,7 @@ export default function StudentDetailPage() {
                               "text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter",
                               visit.type === 'PRESENCIAL' ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700"
                             )}>
-                              {visit.type}
+                              {visit.type === 'PRESENCIAL' ? t.tutor.studentDetail.visits.presencial : t.tutor.studentDetail.visits.virtual}
                             </span>
                           </div>
                         </div>
@@ -382,8 +384,8 @@ export default function StudentDetailPage() {
                       <ClipboardCheck className="w-6 h-6 text-emerald-600" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-black text-[#003366]">Evaluación de Tutor Académico</h2>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Calificación final del periodo</p>
+                      <h2 className="text-xl font-black text-[#003366]">{t.tutor.studentDetail.evaluation.title}</h2>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.tutor.studentDetail.evaluation.subtitle}</p>
                     </div>
                   </div>
                </div>
@@ -391,32 +393,32 @@ export default function StudentDetailPage() {
                <div className="p-5 md:p-10 space-y-6 md:space-y-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
                     <EvaluationMetric 
-                      label="Aplicación de Saberes" 
-                      description="Capacidad para aplicar conocimientos teóricos en tareas reales."
+                      label={t.tutor.studentDetail.evaluation.metrics.technical.label}
+                      description={t.tutor.studentDetail.evaluation.metrics.technical.desc}
                       value={evalScores.technicalSkills} 
                       onChange={(v) => setEvalScores(prev => ({ ...prev, technicalSkills: v }))} 
                     />
                     <EvaluationMetric 
-                      label="Responsabilidad y Ética" 
-                      description="Cumplimiento de normas institucionales y compromiso."
+                      label={t.tutor.studentDetail.evaluation.metrics.attitude.label}
+                      description={t.tutor.studentDetail.evaluation.metrics.attitude.desc}
                       value={evalScores.attitude} 
                       onChange={(v) => setEvalScores(prev => ({ ...prev, attitude: v }))} 
                     />
                     <EvaluationMetric 
-                      label="Proactividad Investigativa" 
-                      description="Iniciativa para resolver problemas y buscar soluciones."
+                      label={t.tutor.studentDetail.evaluation.metrics.proactivity.label}
+                      description={t.tutor.studentDetail.evaluation.metrics.proactivity.desc}
                       value={evalScores.proactivity} 
                       onChange={(v) => setEvalScores(prev => ({ ...prev, proactivity: v }))} 
                     />
                     <EvaluationMetric 
-                      label="Asistencia y Puntualidad" 
-                      description="Constancia en sus reportes y cumplimiento de cronograma."
+                      label={t.tutor.studentDetail.evaluation.metrics.punctuality.label}
+                      description={t.tutor.studentDetail.evaluation.metrics.punctuality.desc}
                       value={evalScores.punctuality} 
                       onChange={(v) => setEvalScores(prev => ({ ...prev, punctuality: v }))} 
                     />
                     <EvaluationMetric 
-                      label="Trabajo en Equipo" 
-                      description="Colaboración, comunicación y relaciones interpersonales en la empresa receptora."
+                      label={t.tutor.studentDetail.evaluation.metrics.teamwork.label}
+                      description={t.tutor.studentDetail.evaluation.metrics.teamwork.desc}
                       value={evalScores.teamwork} 
                       onChange={(v) => setEvalScores(prev => ({ ...prev, teamwork: v }))} 
                     />
@@ -424,12 +426,12 @@ export default function StudentDetailPage() {
 
                   <div className="space-y-4">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                       <MessageSquare className="w-3 h-3" /> Resumen y Recomendaciones Académicas
+                       <MessageSquare className="w-3 h-3" /> {t.tutor.studentDetail.evaluation.observationsLabel}
                     </label>
                     <textarea 
                       value={evalScores.observations}
                       onChange={(e) => setEvalScores(prev => ({ ...prev, observations: e.target.value }))}
-                      placeholder="Escriba aquí los comentarios finales sobre el desempeño del estudiante..."
+                      placeholder={t.tutor.studentDetail.evaluation.observationsPlaceholder}
                       className="w-full min-h-[150px] p-6 rounded-[2rem] bg-white border border-slate-200 outline-none focus:ring-4 focus:ring-[#003366]/5 focus:border-[#003366] transition-all text-sm font-medium italic shadow-inner"
                     />
                   </div>
@@ -440,8 +442,8 @@ export default function StudentDetailPage() {
                         <Building2 className="w-5 h-5 text-[#C5A059]" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Referencia Industrial</p>
-                        <p className="text-sm font-bold text-[#003366] mt-0.5">La empresa calificó a este estudiante con un desempeño sobresaliente.</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.tutor.studentDetail.evaluation.referenceIndustrial}</p>
+                        <p className="text-sm font-bold text-[#003366] mt-0.5">{t.tutor.studentDetail.evaluation.referenceIndustrialText}</p>
                       </div>
                     </div>
                   )}
@@ -453,7 +455,7 @@ export default function StudentDetailPage() {
                       className="px-10 py-5 bg-[#003366] text-white rounded-[2rem] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-[#004488] shadow-2xl shadow-blue-900/20 active:scale-95 transition-all disabled:opacity-50"
                     >
                       {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-                      Finalizar Evaluación Académica
+                      {t.tutor.studentDetail.evaluation.finishBtn}
                     </button>
                   </div>
                </div>
@@ -480,12 +482,12 @@ export default function StudentDetailPage() {
                className="relative bg-white rounded-[3rem] w-full max-w-lg shadow-2xl overflow-hidden"
             >
               <div className="p-5 md:p-10 border-b border-slate-100 bg-slate-50/50">
-                <h3 className="text-xl md:text-2xl font-black text-[#003366] tracking-tight">Nueva Bitácora de Visita</h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Registrar seguimiento en campo</p>
+                <h3 className="text-xl md:text-2xl font-black text-[#003366] tracking-tight">{t.tutor.studentDetail.visits.modalTitle}</h3>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{t.tutor.studentDetail.visits.modalSubtitle}</p>
               </div>
               <div className="p-5 md:p-10 space-y-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Tipo de Visita</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">{t.tutor.studentDetail.visits.type}</label>
                   <div className="grid grid-cols-2 gap-4">
                     <button 
                       onClick={() => setNewVisit(prev => ({ ...prev, type: 'PRESENCIAL' }))}
@@ -495,7 +497,7 @@ export default function StudentDetailPage() {
                       )}
                     >
                       <MapPin className="w-6 h-6" />
-                      <span className="text-[10px] font-black uppercase">Presencial</span>
+                      <span className="text-[10px] font-black uppercase">{t.tutor.studentDetail.visits.presencial}</span>
                     </button>
                     <button 
                       onClick={() => setNewVisit(prev => ({ ...prev, type: 'VIRTUAL' }))}
@@ -505,13 +507,13 @@ export default function StudentDetailPage() {
                       )}
                     >
                       <Video className="w-6 h-6" />
-                      <span className="text-[10px] font-black uppercase">Virtual</span>
+                      <span className="text-[10px] font-black uppercase">{t.tutor.studentDetail.visits.virtual}</span>
                     </button>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Fecha</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">{t.tutor.studentDetail.visits.date}</label>
                   <input 
                     type="date"
                     value={newVisit.date}
@@ -521,32 +523,32 @@ export default function StudentDetailPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Lugar / Dirección</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">{t.tutor.studentDetail.visits.location}</label>
                   <input
                     type="text"
                     value={newVisit.location ?? ''}
                     onChange={(e) => setNewVisit(prev => ({ ...prev, location: e.target.value }))}
-                    placeholder="Ej: Av. República E7-230, oficina 3..."
+                    placeholder={t.tutor.studentDetail.visits.locationPlaceholder}
                     className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-[#003366] transition-all text-sm font-medium"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Observaciones</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">{t.tutor.studentDetail.visits.observations}</label>
                   <textarea 
                     value={newVisit.observations}
                     onChange={(e) => setNewVisit(prev => ({ ...prev, observations: e.target.value }))}
-                    placeholder="Detalle los hallazgos de la visita..."
+                    placeholder={t.tutor.studentDetail.visits.observationsPlaceholder}
                     className="w-full min-h-[120px] p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-[#003366] transition-all text-sm font-medium italic"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Recomendaciones al estudiante</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">{t.tutor.studentDetail.visits.recommendations}</label>
                   <textarea
                     value={newVisit.recommendations ?? ''}
                     onChange={(e) => setNewVisit(prev => ({ ...prev, recommendations: e.target.value }))}
-                    placeholder="Sugerencias de mejora o acciones a tomar..."
+                    placeholder={t.tutor.studentDetail.visits.recommendationsPlaceholder}
                     className="w-full min-h-[80px] p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-[#003366] transition-all text-sm font-medium italic"
                   />
                 </div>
@@ -556,7 +558,7 @@ export default function StudentDetailPage() {
                     onClick={() => setIsVisitModalOpen(false)}
                     className="p-5 bg-slate-100 text-[#003366] rounded-2xl font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
                   >
-                    Cancelar
+                    {t.tutor.studentDetail.visits.cancel}
                   </button>
                   <button 
                     onClick={handleCreateVisit}
@@ -564,7 +566,7 @@ export default function StudentDetailPage() {
                     className="p-5 bg-[#003366] text-white rounded-2xl font-black uppercase tracking-widest hover:bg-[#004488] shadow-lg shadow-blue-900/10 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-4 h-4" />}
-                    Guardar
+                    {t.tutor.studentDetail.visits.save}
                   </button>
                 </div>
               </div>

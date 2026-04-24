@@ -25,7 +25,10 @@ import { TwoFactorModal } from '@/components/auth/TwoFactorModal';
 import { DoubleConfirmModal, useDoubleConfirm } from '@/components/ui/DoubleConfirmModal';
 import { TableSkeleton } from '@/components/ui/Skeleton';
 
+import { useLanguage } from '@/providers/LanguageProvider';
+
 const RoleBadge = ({ role }: { role: UserRole | string }) => {
+  const { t } = useLanguage();
   const styles: Record<string, string> = {
     ADMIN: 'bg-red-50 text-red-700 border-red-100',
     COORDINADOR: 'bg-blue-50 text-blue-700 border-blue-100',
@@ -36,14 +39,17 @@ const RoleBadge = ({ role }: { role: UserRole | string }) => {
     EMPRESA: 'bg-indigo-50 text-indigo-700 border-indigo-100',
   };
 
+  const roleLabel = t.sidebar.roles[role as keyof typeof t.sidebar.roles] || role;
+
   return (
     <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${styles[role] || 'bg-slate-50 text-slate-700 border-slate-100'}`}>
-      {role}
+      {roleLabel}
     </span>
   );
 };
 
 export default function UsuariosManagementPage() {
+  const { t } = useLanguage();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -83,7 +89,7 @@ export default function UsuariosManagementPage() {
     setIsBulkLoading(true);
     try {
       const result = await usersService.bulkImport(file);
-      alert(`Importación exitosa: ${result.summary.created} creados, ${result.summary.skipped} omitidos.`);
+      alert(t.admin.users.bulkSuccess.replace('{created}', String(result.summary.created)).replace('{skipped}', String(result.summary.skipped)));
       fetchData();
     } catch (err: unknown) {
       alert((err as Error).message);
@@ -217,10 +223,10 @@ export default function UsuariosManagementPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
-              <Shield size={12} /> Administración del Sistema
+              <Shield size={12} /> {t.admin.users.systemAdmin}
             </div>
-            <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Gestión de Usuarios</h1>
-            <p className="text-slate-500 mt-2">Control centralizado de accesos, roles y perfiles institucionales.</p>
+            <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">{t.admin.users.title}</h1>
+            <p className="text-slate-500 mt-2">{t.admin.users.subtitle}</p>
           </div>
           
           <div className="flex flex-wrap items-center gap-3 md:gap-4">
@@ -236,7 +242,7 @@ export default function UsuariosManagementPage() {
                 className="flex items-center gap-3 bg-slate-100 text-[#003366] px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all border border-slate-200"
               >
                 {isBulkLoading ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} />}
-                Carga Masiva
+                {t.admin.users.bulkUpload}
               </button>
             </div>
 
@@ -244,7 +250,7 @@ export default function UsuariosManagementPage() {
               onClick={() => handleOpenModal()}
               className="flex items-center gap-3 bg-[#003366] text-white px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-blue-900/20 hover:translate-y-[-2px] transition-all"
             >
-              <Plus size={18} /> Nuevo Usuario
+              <Plus size={18} /> {t.admin.users.newUser}
             </button>
           </div>
         </div>
@@ -255,7 +261,7 @@ export default function UsuariosManagementPage() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               type="text" 
-              placeholder="Buscar por nombre o correo..."
+              placeholder={t.admin.users.searchPlaceholder}
               className="w-full bg-slate-50 border-none rounded-2xl py-4 pl-12 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -269,11 +275,11 @@ export default function UsuariosManagementPage() {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-slate-50/50 border-b border-slate-100">
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Usuario</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Rol</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Estado</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Registro</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Acciones</th>
+                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.admin.users.table.user}</th>
+                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.admin.users.table.role}</th>
+                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.admin.users.table.status}</th>
+                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t.admin.users.table.registration}</th>
+                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">{t.admin.users.table.actions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -286,7 +292,7 @@ export default function UsuariosManagementPage() {
                 ) : filteredUsers.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-8 py-20 text-center text-slate-400">
-                      No se encontraron usuarios.
+                      {t.admin.users.noUsers}
                     </td>
                   </tr>
                 ) : (
@@ -314,7 +320,7 @@ export default function UsuariosManagementPage() {
                           user.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'
                         }`}>
                           <div className={`w-1.5 h-1.5 rounded-full ${user.isActive ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                          {user.isActive ? 'Activo' : 'Inactivo'}
+                          {user.isActive ? t.common.active : t.common.inactive}
                         </span>
                       </td>
                       <td className="px-8 py-5 text-[11px] text-slate-500 font-medium">
@@ -324,21 +330,21 @@ export default function UsuariosManagementPage() {
                         <div className="flex items-center justify-end gap-2">
                            <button 
                             onClick={() => handleToggleStatus(user)}
-                            title={user.isActive ? 'Desactivar' : 'Activar'}
+                            title={user.isActive ? t.common.inactive : t.common.active}
                             className={`p-2 rounded-xl transition-all ${user.isActive ? 'text-amber-500 hover:bg-amber-50' : 'text-emerald-500 hover:bg-emerald-50'}`}
                            >
                              {user.isActive ? <UserX size={18} /> : <UserCheck size={18} />}
                            </button>
                            <button 
                             onClick={() => handleOpenModal(user)}
-                            title="Editar"
+                            title={t.common.edit}
                             className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
                            >
                              <Edit size={18} />
                            </button>
                            <button 
                             onClick={() => handleDelete(user.id)}
-                            title="Eliminar"
+                            title={t.common.delete}
                             className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all"
                            >
                              <Trash2 size={18} />
@@ -374,8 +380,8 @@ export default function UsuariosManagementPage() {
             >
               <div className="flex items-center justify-between mb-10">
                 <div>
-                  <h2 className="text-2xl font-black text-[#003366] tracking-tight">{editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}</h2>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[#C5A059] mt-1">Configuración de Perfil</p>
+                  <h2 className="text-2xl font-black text-[#003366] tracking-tight">{editingUser ? t.admin.users.editUser : t.admin.users.newUser}</h2>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#C5A059] mt-1">{t.admin.users.profileConfig}</p>
                 </div>
                 <button onClick={() => setIsModalOpen(false)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all">
                   <X size={20} />
@@ -391,7 +397,7 @@ export default function UsuariosManagementPage() {
 
               <form onSubmit={handleSubmit} className="space-y-6 flex-1 overflow-y-auto">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nombre Completo</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.admin.users.table.user}</label>
                   <input 
                     type="text" 
                     required 
@@ -403,7 +409,7 @@ export default function UsuariosManagementPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Correo Electrónico</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.admin.users.email}</label>
                   <input 
                     type="email" 
                     required 
@@ -415,7 +421,7 @@ export default function UsuariosManagementPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400"> {editingUser ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400"> {editingUser ? t.admin.users.newPasswordOptional : t.admin.users.password}</label>
                   <input 
                     type="password" 
                     required={!editingUser} 
@@ -427,23 +433,24 @@ export default function UsuariosManagementPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Rol del Usuario</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.admin.users.roleLabel}</label>
                   <select 
                     value={form.role}
                     onChange={(e) => setForm({...form, role: e.target.value as UserRole})}
                     className="w-full bg-slate-50 border-none rounded-2xl py-4 px-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none appearance-none"
                   >
-                    <option value="ESTUDIANTE">Estudiante</option>
-                    <option value="TUTOR">Tutor Académico</option>
-                    <option value="COORDINADOR">Coordinador de Prácticas</option>
-                    <option value="ADMIN">Administrador</option>
-                    <option value="EMPRESA">Representante de Empresa</option>
+                  >
+                    <option value="ESTUDIANTE">{t.sidebar.roles.ESTUDIANTE}</option>
+                    <option value="TUTOR">{t.sidebar.roles.TUTOR_ACADEMICO}</option>
+                    <option value="COORDINADOR">{t.sidebar.roles.COORDINADOR}</option>
+                    <option value="ADMIN">{t.sidebar.roles.ADMIN}</option>
+                    <option value="EMPRESA">{t.sidebar.roles.EMPRESA}</option>
                   </select>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cédula de Identidad</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.admin.users.idCard}</label>
                     <input 
                       type="text"
                       maxLength={10}
@@ -454,7 +461,7 @@ export default function UsuariosManagementPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Teléfono</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.admin.users.phone}</label>
                     <input 
                       type="tel"
                       maxLength={15}
@@ -467,7 +474,7 @@ export default function UsuariosManagementPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ciclo / Nivel Académico <span className="text-slate-300">(para Estudiantes)</span></label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.admin.users.level} <span className="text-slate-300">{t.admin.users.levelHint}</span></label>
                   <input 
                     type="text"
                     maxLength={50}
@@ -486,7 +493,7 @@ export default function UsuariosManagementPage() {
                     onChange={(e) => setForm({...form, isActive: e.target.checked})}
                     className="w-5 h-5 rounded-lg border-slate-300 text-[#003366] focus:ring-[#003366]" 
                    />
-                   <label htmlFor="isActive" className="text-sm font-bold text-[#003366]">Usuario Activo</label>
+                   <label htmlFor="isActive" className="text-sm font-bold text-[#003366]">{t.admin.users.activeUser}</label>
                 </div>
 
                 <div className="pt-6">
@@ -494,7 +501,7 @@ export default function UsuariosManagementPage() {
                     type="submit" 
                     className="w-full bg-[#003366] text-white rounded-2xl py-5 text-[11px] font-black uppercase tracking-[0.2em] shadow-xl hover:translate-y-[-2px] transition-all flex items-center justify-center gap-3"
                   >
-                    {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
+                    {editingUser ? t.admin.users.saveChanges : t.admin.users.createUser}
                     <UserPlus size={18} />
                   </button>
                 </div>
@@ -510,17 +517,17 @@ export default function UsuariosManagementPage() {
             setPendingDeleteId(null);
         }}
         onConfirm={confirmDeleteWith2fa}
-        title="Confirmar Eliminación de Usuario"
-        description="Esta es una acción irreversible. Por seguridad, ingresa tu código 2FA para autorizar la eliminación del usuario."
+        title={t.admin.users.deleteTitle}
+        description={t.admin.users.deleteConfirm}
       />
 
       {/* RF-19: Doble confirmación para eliminar usuario */}
       <DoubleConfirmModal
         {...deleteConfirm.modalProps}
         onConfirm={executeDelete}
-        title="Eliminar Usuario"
-        description="¿Estás seguro de que deseas eliminar este usuario? Se eliminarán todos sus datos, asignaciones e historial del sistema."
-        confirmLabel="Sí, eliminar usuario"
+        title={t.admin.users.deleteTitle}
+        description={t.admin.users.deleteConfirm}
+        confirmLabel={t.admin.users.deleteBtn}
         loading={deletingUser}
       />
     </DashboardLayout>

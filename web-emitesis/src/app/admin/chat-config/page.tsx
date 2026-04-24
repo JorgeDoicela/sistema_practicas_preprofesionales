@@ -17,8 +17,8 @@ import {
   Clock,
   Save,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import { API_URL } from "@/lib/api-base";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -153,6 +153,7 @@ const PRESETS: {
 // ── Página ───────────────────────────────────────────────────────────────────
 
 export default function ChatConfigPage() {
+  const { t } = useLanguage();
   const [permissions, setPermissions] = useState<ChatPermission[]>([]);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
@@ -160,6 +161,108 @@ export default function ChatConfigPage() {
   const [retentionDays, setRetentionDays] = useState(730);
   const [retentionInput, setRetentionInput] = useState("730");
   const [savingRetention, setSavingRetention] = useState(false);
+
+  // ── Metadatos por rol (Traducidos) ──────────────────────────────────────────
+  const ROLE_META: Record<Role, { label: string; color: string; Icon: React.ElementType; desc: string }> = {
+    ADMIN: {
+      label: t.common.roles.ADMIN,
+      color: "bg-red-100 text-red-700 border-red-200",
+      Icon: ShieldCheck,
+      desc: t.common.language === "es" ? "Gestiona el sistema completo" : "Manages the entire system",
+    },
+    COORDINADOR: {
+      label: t.common.roles.COORDINADOR,
+      color: "bg-blue-100 text-blue-700 border-blue-200",
+      Icon: BookOpen,
+      desc: t.common.language === "es" ? "Supervisa prácticas y tutores académicos" : "Supervises internships and academic tutors",
+    },
+    TUTOR: {
+      label: t.common.roles.TUTOR,
+      color: "bg-green-100 text-green-700 border-green-200",
+      Icon: GraduationCap,
+      desc: t.common.language === "es" ? "Guía académica de los estudiantes asignados" : "Academic guide for assigned students",
+    },
+    TUTOR_EMPRESARIAL: {
+      label: t.common.roles.TUTOR_EMPRESARIAL,
+      color: "bg-orange-100 text-orange-700 border-orange-200",
+      Icon: Briefcase,
+      desc: t.common.language === "es" ? "Supervisa al practicante en la empresa" : "Supervises the intern at the company",
+    },
+    ESTUDIANTE: {
+      label: t.common.roles.ESTUDIANTE,
+      color: "bg-violet-100 text-violet-700 border-violet-200",
+      Icon: Users,
+      desc: t.common.language === "es" ? "Realiza las prácticas preprofesionales" : "Performs pre-professional internships",
+    },
+    EMPRESA: {
+      label: t.common.roles.EMPRESA,
+      color: "bg-amber-100 text-amber-700 border-amber-200",
+      Icon: Building2,
+      desc: t.common.language === "es" ? "Institución receptora de pasantes" : "Host institution for interns",
+    },
+  };
+
+  const PAIR_CONTEXT: Partial<Record<string, string>> = {
+    "TUTOR__COORDINADOR": t.common.language === "es" ? "Canal de coordinación académica: tutores y coordinadores discuten asignaciones y avances." : "Academic coordination channel: tutors and coordinators discuss assignments and progress.",
+    "COORDINADOR__TUTOR": t.common.language === "es" ? "Canal de coordinación académica: tutores y coordinadores discuten asignaciones y avances." : "Academic coordination channel: tutors and coordinators discuss assignments and progress.",
+    "ESTUDIANTE__TUTOR": t.common.language === "es" ? "Canal principal de tutoría: el estudiante puede consultar a su tutor asignado." : "Main tutoring channel: the student can consult their assigned tutor.",
+    "TUTOR__ESTUDIANTE": t.common.language === "es" ? "Canal principal de tutoría: el estudiante puede consultar a su tutor asignado." : "Main tutoring channel: the student can consult their assigned tutor.",
+    "ESTUDIANTE__COORDINADOR": t.common.language === "es" ? "Comunicación directa del estudiante con coordinación para trámites y aclaraciones." : "Direct communication between student and coordination for procedures and clarifications.",
+    "COORDINADOR__ESTUDIANTE": t.common.language === "es" ? "Comunicación directa del estudiante con coordinación para trámites y aclaraciones." : "Direct communication between student and coordination for procedures and clarifications.",
+    "TUTOR_EMPRESARIAL__COORDINADOR": t.common.language === "es" ? "Coordinación institucional: la empresa puede reportar novedades a coordinación." : "Institutional coordination: the company can report news to coordination.",
+    "COORDINADOR__TUTOR_EMPRESARIAL": t.common.language === "es" ? "Coordinación institucional: la empresa puede reportar novedades a coordinación." : "Institutional coordination: the company can report news to coordination.",
+    "TUTOR_EMPRESARIAL__TUTOR": t.common.language === "es" ? "Canal entre tutores: alineación académico-empresarial sobre el desempeño del practicante." : "Channel between tutors: academic-business alignment on intern performance.",
+    "TUTOR__TUTOR_EMPRESARIAL": t.common.language === "es" ? "Canal entre tutores: alineación académico-empresarial sobre el desempeño del practicante." : "Channel between tutors: academic-business alignment on intern performance.",
+    "ESTUDIANTE__TUTOR_EMPRESARIAL": t.common.language === "es" ? "Comunicación del estudiante con su supervisor empresarial." : "Communication between student and their business supervisor.",
+    "TUTOR_EMPRESARIAL__ESTUDIANTE": t.common.language === "es" ? "Comunicación del estudiante con su supervisor empresarial." : "Communication between student and their business supervisor.",
+    "EMPRESA__COORDINADOR": t.common.language === "es" ? "Canal institucional: empresa y coordinación gestionan convenios y condiciones." : "Institutional channel: company and coordination manage agreements and conditions.",
+    "COORDINADOR__EMPRESA": t.common.language === "es" ? "Canal institucional: empresa y coordinación gestionan convenios y condiciones." : "Institutional channel: company and coordination manage agreements and conditions.",
+    "ADMIN__COORDINADOR": t.common.language === "es" ? "Canal interno administrativo." : "Internal administrative channel.",
+    "COORDINADOR__ADMIN": t.common.language === "es" ? "Canal interno administrativo." : "Internal administrative channel.",
+  };
+
+  const PRESETS: {
+    label: string;
+    desc: string;
+    icon: React.ElementType;
+    pairs: [Role, Role][];
+  }[] = [
+    {
+      label: t.chatConfig.presets.academic,
+      desc: t.chatConfig.presets.academicDesc,
+      icon: GraduationCap,
+      pairs: [
+        ["TUTOR", "COORDINADOR"],
+        ["TUTOR", "ESTUDIANTE"],
+      ],
+    },
+    {
+      label: t.chatConfig.presets.full,
+      desc: t.chatConfig.presets.fullDesc,
+      icon: Briefcase,
+      pairs: [
+        ["TUTOR", "COORDINADOR"],
+        ["TUTOR", "ESTUDIANTE"],
+        ["TUTOR_EMPRESARIAL", "TUTOR"],
+        ["TUTOR_EMPRESARIAL", "ESTUDIANTE"],
+        ["COORDINADOR", "EMPRESA"],
+      ],
+    },
+    {
+      label: t.chatConfig.presets.enableAll,
+      desc: t.chatConfig.presets.enableAllDesc,
+      icon: MessageSquare,
+      pairs: ALL_ROLES.flatMap((a, i) =>
+        ALL_ROLES.slice(i + 1).map(b => [a, b] as [Role, Role]),
+      ),
+    },
+    {
+      label: t.chatConfig.presets.disableAll,
+      desc: t.chatConfig.presets.disableAllDesc,
+      icon: AlertCircle,
+      pairs: [],
+    },
+  ];
 
   const showToast = (type: "success" | "error", text: string) => {
     setToast({ type, text });
@@ -178,7 +281,7 @@ export default function ChatConfigPage() {
       const data: ChatPermission[] = await res.json();
       setPermissions(data);
     } catch {
-      showToast("error", "Error al cargar los permisos de chat.");
+      showToast("error", t.common.error);
     } finally {
       setLoading(false);
     }
@@ -220,7 +323,7 @@ export default function ChatConfigPage() {
       );
       showToast(
         "success",
-        `Canal ${!current ? "habilitado" : "deshabilitado"}: ${ROLE_META[fromRole].label} ↔ ${ROLE_META[toRole].label}`,
+        `${t.chatConfig.title}: ${ROLE_META[fromRole].label} ↔ ${ROLE_META[toRole].label}`,
       );
     } catch {
       showToast("error", "Error al actualizar el permiso.");
@@ -233,7 +336,7 @@ export default function ChatConfigPage() {
   const handleSaveRetention = async () => {
     const days = parseInt(retentionInput, 10);
     if (!days || days < 30 || days > 3650) {
-      showToast("error", "El período debe estar entre 30 y 3650 días.");
+      showToast("error", t.chatConfig.retention.minMax);
       return;
     }
     setSavingRetention(true);
@@ -245,9 +348,9 @@ export default function ChatConfigPage() {
       });
       if (!res.ok) throw new Error();
       setRetentionDays(days);
-      showToast("success", `Período de retención actualizado a ${days} días.`);
+      showToast("success", `${t.chatConfig.retention.current}: ${days} ${t.chatConfig.retention.days}.`);
     } catch {
-      showToast("error", "Error al guardar la configuración de retención.");
+      showToast("error", t.common.error);
     } finally {
       setSavingRetention(false);
     }
@@ -274,9 +377,9 @@ export default function ChatConfigPage() {
               <MessageSquare className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-[#003366]">Control de Chat Institucional</h1>
+              <h1 className="text-2xl font-bold text-[#003366]">{t.chatConfig.title}</h1>
               <p className="text-sm text-slate-500 mt-0.5">
-                Define qué roles pueden comunicarse en tiempo real dentro del sistema de prácticas preprofesionales.
+                {t.chatConfig.subtitle}
               </p>
             </div>
           </div>
@@ -287,14 +390,10 @@ export default function ChatConfigPage() {
           <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
           <div className="text-sm text-blue-700 space-y-1">
             <p>
-              Los canales son <strong>bidireccionales y simétricos</strong>: habilitar
-              Tutor Académico ↔ Estudiante permite que ambos puedan iniciar conversaciones.
-              Los cambios aplican <strong>de inmediato</strong>; si un canal se deshabilita,
-              los mensajes en curso quedan en el historial pero no se pueden enviar nuevos.
+              <strong>{t.chatConfig.infoBanner.title}</strong>: {t.chatConfig.infoBanner.desc}
             </p>
             <p className="text-blue-600">
-              Los contactos de cada usuario se filtran automáticamente según sus relaciones
-              de práctica (el estudiante solo verá a su tutor asignado, no a todos los tutores).
+              {t.chatConfig.infoBanner.relationships}
             </p>
           </div>
         </div>
@@ -302,9 +401,9 @@ export default function ChatConfigPage() {
         {/* Estadísticas */}
         <div className="mb-6 grid grid-cols-3 gap-4">
           {[
-            { label: "Canales posibles", value: pairs.length, color: "text-[#003366]", bg: "border-slate-200 bg-white" },
-            { label: "Habilitados", value: enabledCount, color: "text-green-600", bg: "border-green-200 bg-green-50" },
-            { label: "Deshabilitados", value: pairs.length - enabledCount, color: "text-slate-400", bg: "border-slate-200 bg-slate-50" },
+            { label: t.chatConfig.stats.possible, value: pairs.length, color: "text-[#003366]", bg: "border-slate-200 bg-white" },
+            { label: t.chatConfig.stats.enabled, value: enabledCount, color: "text-green-600", bg: "border-green-200 bg-green-50" },
+            { label: t.chatConfig.stats.disabled, value: pairs.length - enabledCount, color: "text-slate-400", bg: "border-slate-200 bg-slate-50" },
           ].map(s => (
             <div key={s.label} className={`rounded-xl border p-4 text-center shadow-sm ${s.bg}`}>
               <p className={`text-2xl font-bold ${s.color}`}>{loading ? "—" : s.value}</p>
@@ -321,9 +420,9 @@ export default function ChatConfigPage() {
           className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden mb-6"
         >
           <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-700">Canales por rol</h2>
+            <h2 className="text-sm font-semibold text-slate-700">{t.chatConfig.table.title}</h2>
             <span className="text-xs text-slate-400">
-              Cada fila = canal bidireccional A ↔ B
+              {t.chatConfig.table.helper}
             </span>
           </div>
 
@@ -380,7 +479,7 @@ export default function ChatConfigPage() {
                           </div>
                           <div className="flex items-center gap-3 shrink-0">
                             <span className={`text-xs font-medium ${pair.isEnabled ? "text-green-600" : "text-slate-400"}`}>
-                              {pair.isEnabled ? "Activo" : "Inactivo"}
+                              {pair.isEnabled ? t.chatConfig.table.active : t.chatConfig.table.inactive}
                             </span>
                             <button
                               onClick={() => handleToggle(pair.fromRole, pair.toRole, pair.isEnabled)}
@@ -419,9 +518,9 @@ export default function ChatConfigPage() {
           transition={{ delay: 0.16 }}
           className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
         >
-          <h2 className="text-sm font-semibold text-slate-700 mb-1">Configuraciones rápidas</h2>
+          <h2 className="text-sm font-semibold text-slate-700 mb-1">{t.chatConfig.presets.title}</h2>
           <p className="text-xs text-slate-400 mb-4">
-            Aplica conjuntos de canales predefinidos según el flujo académico del sistema.
+            {t.chatConfig.presets.subtitle}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {PRESETS.map(preset => (
@@ -451,28 +550,25 @@ export default function ChatConfigPage() {
               <ShieldCheck className="h-5 w-5 text-[#C5A059]" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-slate-800">Política de retención LOPDP</h2>
+              <h2 className="text-sm font-semibold text-slate-800">{t.chatConfig.retention.title}</h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Art. 16 Ley Orgánica de Protección de Datos Personales — Ecuador
+                {t.chatConfig.retention.law}
               </p>
             </div>
           </div>
 
           <div className="space-y-3 text-sm text-slate-600">
             <p>
-              Los mensajes de chat son <strong>datos personales</strong> y deben conservarse
-              únicamente durante el tiempo necesario para el fin declarado (seguimiento de prácticas
-              preprofesionales). Al superar el período configurado, los mensajes se eliminan
-              automáticamente cada noche a las 03:00 h.
+              {t.chatConfig.retention.desc}
             </p>
 
             <div className="rounded-xl border border-amber-200 bg-white p-4">
               <div className="flex items-center gap-3 mb-3">
                 <Clock className="h-4 w-4 text-amber-600 shrink-0" />
                 <p className="text-sm font-medium text-slate-700">
-                  Período de retención actual:{" "}
+                  {t.chatConfig.retention.current}:{" "}
                   <span className="text-[#003366] font-bold">
-                    {retentionDays} días ({(retentionDays / 365).toFixed(1)} años)
+                    {retentionDays} {t.chatConfig.retention.days} ({(retentionDays / 365).toFixed(1)} {t.chatConfig.retention.years})
                   </span>
                 </p>
               </div>
@@ -487,7 +583,7 @@ export default function ChatConfigPage() {
                   className="w-28 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-[#003366]/20"
                   placeholder="730"
                 />
-                <span className="text-sm text-slate-500">días</span>
+                <span className="text-sm text-slate-500">{t.chatConfig.retention.days}</span>
                 <button
                   onClick={handleSaveRetention}
                   disabled={savingRetention}
@@ -498,19 +594,19 @@ export default function ChatConfigPage() {
                   ) : (
                     <Save className="h-4 w-4" />
                   )}
-                  Guardar
+                  {t.common.save}
                 </button>
               </div>
               <p className="mt-2 text-xs text-slate-400">
-                Mínimo: 30 días · Máximo: 3650 días (10 años) · Recomendado: 730 días (2 años)
+                {t.chatConfig.retention.minMax}
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
               {[
-                { label: "Académico estándar", days: 730, desc: "2 años — recomendado para prácticas" },
-                { label: "Operativo corto", days: 365, desc: "1 año — ciclo académico único" },
-                { label: "Mínimo legal", days: 90, desc: "90 días — solo seguimiento activo" },
+                { label: t.chatConfig.retention.presets.standard, days: 730, desc: t.chatConfig.retention.presets.standardDesc },
+                { label: t.chatConfig.retention.presets.short, days: 365, desc: t.chatConfig.retention.presets.shortDesc },
+                { label: t.chatConfig.retention.presets.minimum, days: 90, desc: t.chatConfig.retention.presets.minimumDesc },
               ].map(preset => (
                 <button
                   key={preset.days}
@@ -526,9 +622,7 @@ export default function ChatConfigPage() {
             </div>
 
             <p className="text-[11px] text-slate-400 pt-1 border-t border-amber-200 mt-2">
-              <strong>Base legal:</strong> Art. 6 (principio de limitación del plazo de conservación)
-              y Art. 16 LOPDP Ecuador. Los usuarios pueden solicitar la eliminación anticipada
-              mediante una solicitud ARCO-Cancelación desde el módulo de Privacidad.
+              {t.chatConfig.retention.legalBase}
             </p>
           </div>
         </motion.div>

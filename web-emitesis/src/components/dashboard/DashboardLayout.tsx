@@ -9,8 +9,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { normalizeApiRoleToAppRole, type Role } from "@/constants/roles";
 import { canRoleAccessPath, getHomePathForRole } from "@/lib/route-access";
 import { DashboardTour } from "@/components/tour/DashboardTour";
+import { useLanguage } from "@/providers/LanguageProvider";
+
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const { t } = useLanguage();
   const router = useRouter();
   const pathname = usePathname();
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
@@ -61,7 +64,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <div className="h-screen w-full flex items-center justify-center bg-slate-50">
         <div className="text-center">
           <Loader2 className="w-10 h-10 text-[#003366] animate-spin mx-auto mb-4" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Accediendo al Ecosistema...</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.common.accessingEcosystem}</p>
         </div>
       </div>
     );

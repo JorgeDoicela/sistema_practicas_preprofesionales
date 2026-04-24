@@ -9,15 +9,20 @@ import {
 } from "lucide-react";
 import { careersService, Career } from "@/services/careers.service";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/providers/LanguageProvider";
 
-const MODALIDADES = [
-  { value: "PRESENCIAL", label: "Presencial" },
-  { value: "SEMIPRESENCIAL", label: "Semipresencial" },
-  { value: "EN_LINEA", label: "En Línea" },
-  { value: "HIBRIDA", label: "Híbrida" },
-];
 
 export default function CarrerasAdminPage() {
+  const { t } = useLanguage();
+  
+  const MODALIDADES = [
+    { value: "PRESENCIAL", label: t.common.modalities.PRESENCIAL },
+    { value: "SEMIPRESENCIAL", label: t.common.modalities.SEMIPRESENCIAL },
+    { value: "EN_LINEA", label: t.common.modalities.EN_LINEA },
+    { value: "HIBRIDA", label: t.common.modalities.HIBRIDA },
+  ];
+  // Wait, MODALIDADES was outside. I'll move it inside or use a function.
+  // Actually, I should probably add modalities to translation files too.
   const [careers, setCareers] = useState<Career[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -41,7 +46,7 @@ export default function CarrerasAdminPage() {
       const list = Array.isArray(res) ? res : (res?.data || []);
       setCareers(list);
     } catch {
-      setError("Error al cargar las carreras");
+      setError(t.admin.careers.loadError);
     } finally {
       setLoading(false);
     }
@@ -68,31 +73,31 @@ export default function CarrerasAdminPage() {
     try {
       if (editingCareer) {
         await careersService.update(editingCareer.id, form);
-        setSuccess("Carrera actualizada correctamente");
+        setSuccess(t.admin.careers.updateSuccess);
       } else {
         await careersService.create(form);
-        setSuccess("Carrera creada correctamente");
+        setSuccess(t.admin.careers.createSuccess);
       }
       setIsModalOpen(false);
       loadCareers();
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
-      setError(err.message || "Error al guardar");
+      setError(err.message || t.common.error);
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("¿Eliminar esta carrera? Solo es posible si no tiene prácticas asociadas.")) return;
+    if (!confirm(t.admin.careers.deleteConfirm)) return;
     setDeleting(id);
     try {
       await careersService.remove(id);
-      setSuccess("Carrera eliminada");
+      setSuccess(t.admin.careers.deleteSuccess);
       loadCareers();
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
-      setError(err.message || "No se puede eliminar");
+      setError(err.message || t.common.error);
     } finally {
       setDeleting(null);
     }
@@ -105,16 +110,16 @@ export default function CarrerasAdminPage() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
-              <GraduationCap size={12} /> Gestión Académica
+              <GraduationCap size={12} /> {t.admin.careers.academicMgmt}
             </div>
-            <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Carreras / Programas</h1>
-            <p className="text-slate-500 mt-1">Administra las carreras del instituto y sus configuraciones.</p>
+            <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">{t.admin.careers.title}</h1>
+            <p className="text-slate-500 mt-1">{t.admin.careers.subtitle}</p>
           </div>
           <button
             onClick={() => openModal()}
             className="flex w-full sm:w-auto items-center justify-center gap-2 bg-[#003366] text-white px-6 py-3.5 sm:py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:translate-y-[-2px] transition-all shrink-0"
           >
-            <Plus size={16} /> Nueva Carrera
+            <Plus size={16} /> {t.admin.careers.newCareer}
           </button>
         </div>
 
@@ -142,47 +147,53 @@ export default function CarrerasAdminPage() {
         ) : careers.length === 0 ? (
           <div className="text-center py-20 text-slate-400">
             <BookOpen size={48} className="mx-auto mb-4 opacity-30" />
-            <p className="font-bold">No hay carreras registradas</p>
-            <p className="text-sm mt-1">Crea la primera carrera para comenzar.</p>
+            <p className="font-bold">{t.admin.careers.noCareers}</p>
+            <p className="text-sm mt-1">{t.admin.careers.createFirst}</p>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {careers.map((career) => (
               <motion.div key={career.id} layout
                 className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-2xl bg-[#003366]/5 flex items-center justify-center">
-                    <GraduationCap size={22} className="text-[#003366]" />
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-[#003366] text-white rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
+                    <GraduationCap size={24} />
                   </div>
-                  <div className="flex gap-2">
+                  <div className="min-w-0">
+                    <h3 className="text-lg font-black text-[#003366] truncate">{career.name}</h3>
+                    <div className="flex items-center gap-2 text-slate-500 text-xs font-medium uppercase tracking-widest mt-1">
+                      <Layers size={12} className="text-[#C5A059]" />
+                      {career.faculty || t.admin.careers.noFaculty}
+                    </div>
+                  </div>
+                  <div className="ml-auto flex gap-2">
                     <button onClick={() => openModal(career)}
+                      title={t.common.edit}
                       className="p-2 rounded-xl text-blue-500 hover:bg-blue-50 transition-all">
                       <Edit size={16} />
                     </button>
                     <button onClick={() => handleDelete(career.id)} disabled={deleting === career.id}
+                      title={t.common.delete}
                       className="p-2 rounded-xl text-red-400 hover:bg-red-50 transition-all disabled:opacity-40">
                       {deleting === career.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                     </button>
                   </div>
                 </div>
 
-                <h3 className="font-black text-[#003366] text-base leading-tight mb-1">{career.name}</h3>
-                {career.faculty && <p className="text-xs text-slate-400 mb-3">{career.faculty}</p>}
-
                 <div className="space-y-2 mt-4 pt-4 border-t border-slate-50">
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
-                    <Clock size={13} className="text-[#C5A059]" />
-                    <span>{career.config?.requiredHours ?? 160} horas requeridas</span>
+                  <div className="flex items-center justify-between py-2 border-b border-slate-50">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.admin.careers.modality}</span>
+                    <span className="text-xs font-bold text-[#003366] uppercase">{t.common.modalities[career.modalidad as keyof typeof t.common.modalities] || career.modalidad}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
-                    <Layers size={13} className="text-[#C5A059]" />
-                    <span>{MODALIDADES.find(m => m.value === career.modalidad)?.label ?? career.modalidad}</span>
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.admin.careers.hours}</span>
+                    <span className="text-xs font-bold text-[#003366]">{career.config?.requiredHours || 0}h</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-slate-500">
                     <Users size={13} className="text-[#C5A059]" />
-                    <span>{career._count?.users ?? 0} usuarios</span>
+                    <span>{career._count?.users ?? 0} {t.admin.careers.users}</span>
                     <Briefcase size={13} className="text-[#C5A059] ml-2" />
-                    <span>{career._count?.internships ?? 0} prácticas</span>
+                    <span>{career._count?.internships ?? 0} {t.admin.careers.internships}</span>
                   </div>
                 </div>
               </motion.div>
@@ -203,7 +214,7 @@ export default function CarrerasAdminPage() {
               <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-5 sm:p-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-black text-[#003366]">
-                    {editingCareer ? "Editar Carrera" : "Nueva Carrera"}
+                    {editingCareer ? t.admin.careers.editCareer : t.admin.careers.newCareer}
                   </h2>
                   <button onClick={() => setIsModalOpen(false)} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400">
                     <X size={18} />
@@ -218,14 +229,14 @@ export default function CarrerasAdminPage() {
 
                 <form onSubmit={handleSave} className="space-y-5">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nombre de la Carrera *</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.admin.careers.name}</label>
                     <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
                       placeholder="Ej: Desarrollo de Software"
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:border-[#003366]" />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Facultad / Departamento</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.admin.careers.faculty}</label>
                     <input value={form.faculty} onChange={e => setForm({ ...form, faculty: e.target.value })}
                       placeholder="Ej: TIC, Administración"
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:border-[#003366]" />
@@ -233,14 +244,14 @@ export default function CarrerasAdminPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Modalidad</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.admin.careers.modality}</label>
                       <select value={form.modalidad} onChange={e => setForm({ ...form, modalidad: e.target.value })}
                         className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:border-[#003366] appearance-none">
-                        {MODALIDADES.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                        {MODALIDADES.map(m => <option key={m.value} value={m.value}>{t.common.modalities[m.value as keyof typeof t.common.modalities] || m.label}</option>)}
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Horas Requeridas</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.admin.careers.hours}</label>
                       <input type="number" min={1} max={2000} required
                         value={form.requiredHours}
                         onChange={e => setForm({ ...form, requiredHours: parseInt(e.target.value) || 160 })}
@@ -252,11 +263,11 @@ export default function CarrerasAdminPage() {
                     <button type="submit" disabled={saving}
                       className="flex-1 bg-[#003366] text-white rounded-2xl py-4 text-[11px] font-black uppercase tracking-widest hover:translate-y-[-1px] transition-all flex items-center justify-center gap-2 disabled:opacity-50">
                       {saving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
-                      {editingCareer ? "Guardar Cambios" : "Crear Carrera"}
+                      {editingCareer ? t.admin.users.saveChanges : t.admin.careers.newCareer}
                     </button>
                     <button type="button" onClick={() => setIsModalOpen(false)}
                       className="px-6 border-2 border-slate-200 text-slate-400 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all">
-                      Cancelar
+                      {t.common.cancel}
                     </button>
                   </div>
                 </form>

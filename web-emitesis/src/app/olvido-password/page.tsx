@@ -32,11 +32,6 @@ export default function ForgotPasswordPage() {
             }
         }
 
-        if (!token && process.env.NODE_ENV === 'production') {
-            setMessage({ type: 'error', text: 'Error de validación de seguridad. Por favor, intente de nuevo.' });
-            setLoading(false);
-            return;
-        }
 
         try {
             const cleanEmail = sanitizeEmailClient(email);

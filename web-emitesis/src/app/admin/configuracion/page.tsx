@@ -14,8 +14,10 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 export default function AdminSettingsPage() {
+  const { t } = useLanguage();
   const [settings, setSettings] = useState<SystemSetting[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
@@ -41,20 +43,20 @@ export default function AdminSettingsPage() {
     try {
       setSaving(key);
       await settingsService.update(key, value);
-      setMessage({ type: "success", text: `Configuración ${key} actualizada con éxito.` });
+      setMessage({ type: "success", text: t.admin.settings.updateSuccess.replace("{key}", key) });
       setTimeout(() => setMessage(null), 3000);
     } catch (err) {
-      setMessage({ type: "error", text: "Error al actualizar la configuración." });
+      setMessage({ type: "error", text: t.admin.settings.updateError });
     } finally {
       setSaving(null);
     }
   }
 
   const sections = [
-    { id: "GPS", title: "Asistencia y GPS", icon: <MapPin className="w-5 h-5" /> },
-    { id: "EMAIL", title: "Notificaciones por Correo", icon: <Mail className="w-5 h-5" /> },
-    { id: "AUTH", title: "Seguridad y Autenticación", icon: <ShieldCheck className="w-5 h-5" /> },
-    { id: "GENERAL", title: "General", icon: <Settings className="w-5 h-5" /> },
+    { id: "GPS", title: t.admin.settings.sections.gps, icon: <MapPin className="w-5 h-5" /> },
+    { id: "EMAIL", title: t.admin.settings.sections.email, icon: <Mail className="w-5 h-5" /> },
+    { id: "AUTH", title: t.admin.settings.sections.security, icon: <ShieldCheck className="w-5 h-5" /> },
+    { id: "GENERAL", title: t.admin.settings.sections.general, icon: <Settings className="w-5 h-5" /> },
   ];
 
   return (
@@ -63,13 +65,13 @@ export default function AdminSettingsPage() {
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
-              Configuración Avanzada
+              {t.admin.settings.subtitle}
             </span>
             <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
-              Parámetros del <span className="text-slate-400">Sistema</span>
+              {t.admin.settings.title}
             </h2>
             <p className="text-slate-500 font-medium mt-2">
-              Ajusta los límites técnicos y comportamientos globales del sistema Emitesis.
+              {t.admin.settings.description}
             </p>
           </div>
           <button 
@@ -77,7 +79,7 @@ export default function AdminSettingsPage() {
             className="flex items-center gap-2 px-5 py-2.5 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-sm font-bold text-slate-600"
           >
             <RefreshCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            Sincronizar
+            {t.admin.settings.syncBtn}
           </button>
         </section>
 
@@ -95,7 +97,7 @@ export default function AdminSettingsPage() {
         {loading && settings.length === 0 ? (
           <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-4">
              <Loader2 className="w-10 h-10 animate-spin text-[#003366]" />
-             <span className="text-[10px] font-black uppercase tracking-widest">Cargando parámetros…</span>
+             <span className="text-[10px] font-black uppercase tracking-widest">{t.admin.settings.loading}</span>
           </div>
         ) : (
           <div className="grid gap-6 md:gap-10">
@@ -112,7 +114,7 @@ export default function AdminSettingsPage() {
                       </div>
                       <div>
                         <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">{section.title}</h3>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Gestión de recursos {section.id.toLowerCase()}</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{t.admin.settings.sections.resourceManagement.replace("{id}", section.id.toLowerCase())}</p>
                       </div>
                     </div>
                   </div>
@@ -123,7 +125,7 @@ export default function AdminSettingsPage() {
                           <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">
                             {setting.key.replace(/_/g, " ")}
                           </label>
-                          <p className="text-sm font-bold text-[#003366]">{setting.description || "Sin descripción disponible"}</p>
+                          <p className="text-sm font-bold text-[#003366]">{setting.description || t.admin.settings.noDescription}</p>
                         </div>
                         <div className="md:col-span-2 flex items-center gap-4">
                           <input 
