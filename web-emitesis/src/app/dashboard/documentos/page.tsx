@@ -117,7 +117,7 @@ export default function DocumentosPage() {
 
     // Regla de Negocio: Máximo 10MB
     if (file.size > 10 * 1024 * 1024) {
-      alert("El archivo no debe exceder los 10MB");
+      alert(t.common.errors.maxSize);
       return;
     }
 
@@ -158,7 +158,7 @@ export default function DocumentosPage() {
       }
 
       await documentsService.uploadDocument(docId, file);
-      alert(t.common.success.generic || "Documento subido con éxito");
+      alert(t.common.success.generic);
       loadInternships();
     } catch (error: any) {
       alert(error.message);
@@ -173,7 +173,7 @@ export default function DocumentosPage() {
     setUploadingId(pendingUpload.id);
     try {
       await documentsService.uploadDocument(pendingUpload.id, pendingUpload.file, code);
-      alert("Documento subido con éxito tras verificación");
+      alert(t.common.success.generic);
       setIs2faModalOpen(false);
       setPendingUpload(null);
       loadInternships();
@@ -217,7 +217,7 @@ export default function DocumentosPage() {
           return;
         }
         await documentsService.uploadDocument(id, file);
-        alert("Documento subido exitosamente");
+        alert(t.common.success.generic);
         loadInternships();
       } catch (error: any) {
         alert(error.message);
@@ -245,7 +245,7 @@ export default function DocumentosPage() {
           return;
       }
       await documentsService.deleteDocumentFile(deletingId);
-      alert(t.common.success.generic || "Archivo eliminado con éxito");
+      alert(t.common.success.deleted);
       loadInternships();
     } catch (error: any) {
       alert(error.message);
@@ -257,7 +257,7 @@ export default function DocumentosPage() {
       try {
           const action = pendingAction();
           await action(code);
-          alert("Acción completada con éxito");
+          alert(t.common.success.generic);
           setIs2faModalOpen(false);
           setPendingAction(null);
           loadInternships();
@@ -567,7 +567,7 @@ export default function DocumentosPage() {
                                 </div>
                               ))}
                             </div>
-                            <span className="text-[11px] font-bold text-slate-400">8 {t.documents.table.title || "Documentos"}</span>
+                            <span className="text-[11px] font-bold text-slate-400">8 {t.documents.table.title}</span>
                           </div>
                           
                           <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-[#003366] group-hover:text-white transition-all transform group-hover:translate-x-1">

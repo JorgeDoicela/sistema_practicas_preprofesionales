@@ -43,7 +43,7 @@ const DocumentPdfReviewEditor = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex min-h-[200px] items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-sm text-slate-500">
-        Cargando visor PDF…
+        {t.documents.detail.pdfViewerLoading}
       </div>
     ),
   },
@@ -120,7 +120,7 @@ export default function DocumentDetailPage() {
 
   const handleEditClick = (doc: any) => {
     if (doc.status === 'APROBADO_DEFINITIVO') {
-      alert("No se pueden modificar las fechas de un documento aprobado definitivamente.");
+      alert(t.documents.detail.errors.modifiedApproved);
       return;
     }
     setSelectedDoc(doc);
@@ -132,7 +132,7 @@ export default function DocumentDetailPage() {
   const handleSaveDates = async () => {
     if (!startDate || !dueDate) return;
     if (new Date(startDate) > new Date(dueDate)) {
-      alert("La fecha de inicio debe ser anterior a la fecha de vencimiento.");
+      alert(t.documents.detail.errors.invalidDateRange);
       return;
     }
 
@@ -168,7 +168,7 @@ export default function DocumentDetailPage() {
       const data = await documentsService.getComments(doc.id);
       setComments(data);
     } catch (e) {
-      console.error("Error al cargar comentarios");
+      console.error(t.documents.detail.errors.loadComments);
     } finally {
       setLoadingComments(false);
     }
@@ -186,7 +186,7 @@ export default function DocumentDetailPage() {
   };
 
   const handleSignDocument = async () => {
-    if (!selectedDoc || !confirm("¿Confirma que desea aplicar la FIRMA ELECTRÓNICA institucional a este documento? Esta acción es definitiva.")) return;
+    if (!selectedDoc || !confirm(t.documents.detail.confirmSign)) return;
     
     setIsSigning(true);
     try {
@@ -198,7 +198,7 @@ export default function DocumentDetailPage() {
           return;
       }
       await documentsService.signDocument(selectedDoc.id, "Aprobación institucional");
-      alert("Documento firmado con éxito");
+      alert(t.common.success.signed);
       await loadData();
       setIsReviewDrawerOpen(false);
     } catch (e: any) {
@@ -215,12 +215,12 @@ export default function DocumentDetailPage() {
 
   const handleReviewSubmit = async (status: 'APROBADO_TUTOR' | 'RECHAZADO_TUTOR') => {
     if (status === 'RECHAZADO_TUTOR' && !observations.trim()) {
-      alert("Las observaciones son obligatorias para rechazar el documento.");
+      alert(t.documents.detail.errors.observationsRequired);
       return;
     }
 
     if (status === 'APROBADO_TUTOR' && !previewedIds.has(selectedDoc.id)) {
-      if (!confirm("Se recomienda visualizar el documento antes de aprobarlo. ¿Desea continuar con la aprobación?")) {
+      if (!confirm(t.documents.detail.errors.previewRecommendation)) {
         return;
       }
     }
@@ -244,7 +244,7 @@ export default function DocumentDetailPage() {
         observations,
         annotations: reviewAnnotationsRef.current,
       });
-      alert(status === 'APROBADO_TUTOR' ? "Documento aprobado con éxito" : "Documento rechazado");
+      alert(status === 'APROBADO_TUTOR' ? t.common.success.generic : t.common.success.generic);
       await loadData();
       setIsReviewDrawerOpen(false);
     } catch (error: any) {
@@ -259,7 +259,7 @@ export default function DocumentDetailPage() {
       try {
           const action = (pendingAction as any);
           await action(code);
-          alert("Operación completada con éxito");
+          alert(t.common.success.generic);
           setIs2faModalOpen(false);
           setPendingAction(null);
           setIsDrawerOpen(false);
@@ -274,7 +274,7 @@ export default function DocumentDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-[#F8FAFC]">
         <div className="w-12 h-12 border-4 border-slate-200 border-t-[#003366] rounded-full animate-spin" />
-        <p className="text-slate-500 font-bold">Cargando expediente...</p>
+        <p className="text-slate-500 font-bold">{t.documents.detail.loading}</p>
       </div>
     );
   }
@@ -315,7 +315,7 @@ export default function DocumentDetailPage() {
                   setIsSyncingSigafi(true);
                   try {
                     const res = await internshipsService.syncSigafi(id as string);
-                    alert(`Sincronización SIGAFI: ${res.externalData.isEnrolled ? 'Estudiante MATRICULADO' : 'No matriculado'} en ${res.externalData.lastSemester}`);
+                    alert(`${t.documents.detail.syncSigafi}: ${res.externalData.isEnrolled ? 'Estudiante MATRICULADO' : 'No matriculado'} en ${res.externalData.lastSemester}`);
                   } catch (e: any) {
                     alert(e.message);
                   } finally {
@@ -344,22 +344,22 @@ export default function DocumentDetailPage() {
                 <div className="w-12 h-12 bg-[#003366] rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-900/10">
                    <User className="text-[#C5A059] w-6 h-6" />
                 </div>
-                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#C5A059] mb-4">Información General</h3>
+                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#C5A059] mb-4">{t.documents.detail.generalInfo}</h3>
                 
                 <div className="space-y-5">
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Horas</p>
-                    <p className="font-black text-[#003366]">{internship?.totalHours} Horas</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t.documents.detail.totalHours}</p>
+                    <p className="font-black text-[#003366]">{internship?.totalHours} {t.coordinator.students.kpi.hoursDone ? t.common.date : 'Horas'}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Fecha Inicio</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t.documents.detail.startDate}</p>
                     <p className="font-black text-[#003366] flex items-center gap-2">
                        <CalendarDays className="w-4 h-4 text-slate-300" />
                        {new Date(internship?.startDate).toLocaleDateString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Ubicación</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t.documents.detail.location}</p>
                     <p className="font-black text-[#003366]">{internship?.location}</p>
                   </div>
                 </div>
@@ -371,7 +371,7 @@ export default function DocumentDetailPage() {
               <div className="bg-white rounded-[2rem] p-5 md:p-8 border border-slate-200 shadow-sm">
                 <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#C5A059] mb-6 flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  Progreso Asistencia
+                  {t.documents.detail.attendanceProgress}
                 </h3>
                 
                 <div className="space-y-6">
@@ -385,17 +385,17 @@ export default function DocumentDetailPage() {
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Completadas</p>
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.documents.detail.completed}</p>
                       <p className="text-xl font-black text-[#003366]">{attendanceSummary.totalHours}h</p>
                     </div>
                     <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Porcentaje</p>
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.documents.detail.percentage}</p>
                       <p className="text-xl font-black text-emerald-600">{attendanceSummary.progressPercentage}%</p>
                     </div>
                   </div>
 
                   <div className="pt-4 border-t border-slate-100">
-                    <p className="text-[10px] text-slate-400 font-bold mb-3 uppercase tracking-widest">Últimos Registros</p>
+                    <p className="text-[10px] text-slate-400 font-bold mb-3 uppercase tracking-widest">{t.documents.detail.latestRecords}</p>
                     <div className="space-y-3">
                       {attendanceHistory.slice(0, 3).map((h: any) => (
                         <div key={h.id} className="flex items-center justify-between text-[11px] font-bold text-[#003366]">
@@ -419,9 +419,9 @@ export default function DocumentDetailPage() {
                
                <div className="relative z-10">
                   <AlertCircle className="w-8 h-8 text-[#C5A059] mb-6" />
-                  <h4 className="text-lg font-black tracking-tight mb-2 leading-tight">Configuración de Plazos</h4>
+                  <h4 className="text-lg font-black tracking-tight mb-2 leading-tight">{t.documents.detail.deadlineConfig}</h4>
                   <p className="text-sm text-white/60 font-medium mb-8 leading-relaxed">
-                    Establezca las fechas de entrega para asegurar que el estudiante cumpla con el cronograma institucional.
+                    {t.documents.detail.deadlineConfigDesc}
                   </p>
                </div>
             </div>
@@ -435,11 +435,11 @@ export default function DocumentDetailPage() {
                       <div className="w-10 h-10 bg-white rounded-xl shadow-sm border border-slate-200 flex items-center justify-center">
                          <Clock className="w-5 h-5 text-[#003366]" />
                       </div>
-                      <h2 className="text-base sm:text-xl font-black text-[#003366] tracking-tight">Expediente de Documentos</h2>
+                      <h2 className="text-base sm:text-xl font-black text-[#003366] tracking-tight">{t.documents.detail.documentFile}</h2>
                    </div>
                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 shrink-0">
                       <div className="w-2 h-2 rounded-full bg-[#C5A059]" />
-                      {documents.length} ítem(s) en expediente
+                      {documents.length} {t.documents.detail.itemsInFile}
                    </div>
                 </div>
 
@@ -465,26 +465,25 @@ export default function DocumentDetailPage() {
                                <h4 className="font-black text-[#003366] mb-1 group-hover:text-[#C5A059] transition-colors flex flex-wrap items-center gap-2">
                                  {doc.name}
                                  {doc.isCertificateSlot && (
-                                   <span className="text-[8px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 font-black tracking-wider">Certificado</span>
+                                   <span className="text-[8px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 font-black tracking-wider">{t.documents.detail.certificate}</span>
                                  )}
                                  {doc.isRequired === false && !doc.isCertificateSlot && (
-                                   <span className="text-[8px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-black tracking-wider">Opcional</span>
+                                   <span className="text-[8px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-black tracking-wider">{t.documents.detail.optional}</span>
                                  )}
                                </h4>
                                <div className="flex flex-wrap gap-4 items-center">
                                   <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                                      <Calendar className="w-3 h-3" />
-                                     Inicio: <span className="text-slate-600 font-black">{doc.startDate ? new Date(doc.startDate).toLocaleDateString() : 'No definido'}</span>
+                                     {t.documents.detail.startLabel} <span className="text-slate-600 font-black">{doc.startDate ? new Date(doc.startDate).toLocaleDateString() : t.documents.detail.notDefined}</span>
                                   </div>
                                   <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                                      <XCircle className="w-3 h-3" />
-                                     Vence: <span className="text-slate-600 font-black">{doc.dueDate ? new Date(doc.dueDate).toLocaleDateString() : 'No definido'}</span>
+                                     {t.documents.detail.dueLabel} <span className="text-slate-600 font-black">{doc.dueDate ? new Date(doc.dueDate).toLocaleDateString() : t.documents.detail.notDefined}</span>
                                   </div>
-                                  {doc.status.replace(/_/g, ' ')}
                                   </div>
                                   {doc.isDigitallySigned && (
                                     <div className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.15em] bg-emerald-600 text-white shadow-lg flex items-center gap-1.5 animate-pulse">
-                                       <Stamp size={10} /> Sello Veracidad
+                                       <Stamp size={10} /> {t.documents.detail.veracitySeal}
                                     </div>
                                   )}
                                   {doc.filePath && (
@@ -493,7 +492,7 @@ export default function DocumentDetailPage() {
                                       className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#C5A059] hover:underline"
                                     >
                                       <FileText className="w-3 h-3" />
-                                      Ver Entrega
+                                      {t.documents.detail.viewDelivery}
                                     </button>
                                   )}
                             </div>
@@ -506,7 +505,7 @@ export default function DocumentDetailPage() {
                                className="flex flex-1 sm:flex-initial min-w-0 items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest bg-[#C5A059] text-white hover:bg-[#C5A059]/90 shadow-lg shadow-amber-900/10 active:scale-95 transition-all"
                              >
                                 <FileCheck className="w-4 h-4 shrink-0" />
-                                Revisar
+                                {t.documents.detail.review}
                              </button>
                            )}
                            
@@ -521,7 +520,7 @@ export default function DocumentDetailPage() {
                             )}
                            >
                               <Edit3 className="w-4 h-4 shrink-0" />
-                              Fechas
+                              {t.documents.detail.dates}
                            </button>
                          </div>
                       </motion.div>
@@ -556,8 +555,8 @@ export default function DocumentDetailPage() {
                       <Clock className="text-[#C5A059] w-6 h-6" />
                    </div>
                    <div>
-                      <h2 className="text-xl font-black text-[#003366] tracking-tight">Ventanilla de Entrega</h2>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Definir cronograma</p>
+                      <h2 className="text-xl font-black text-[#003366] tracking-tight">{t.documents.detail.deliveryWindow}</h2>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{t.documents.detail.defineSchedule}</p>
                    </div>
                 </div>
                 <button 
@@ -570,13 +569,13 @@ export default function DocumentDetailPage() {
 
               <div className="flex-1 p-4 sm:p-6 md:p-8 lg:p-10 space-y-6 md:space-y-8 overflow-y-auto">
                 <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200/60">
-                   <h4 className="text-[11px] font-black uppercase tracking-widest text-[#C5A059] mb-3">Documento</h4>
+                   <h4 className="text-[11px] font-black uppercase tracking-widest text-[#C5A059] mb-3">{t.documents.detail.document}</h4>
                    <p className="font-bold text-[#003366] text-lg leading-tight">{selectedDoc?.name}</p>
                 </div>
 
                 <div className="space-y-6">
                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Fecha de Apertura</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">{t.documents.detail.openingDate}</label>
                       <div className="relative group">
                          <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
                          <input 
@@ -586,11 +585,11 @@ export default function DocumentDetailPage() {
                             className="w-full pl-14 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#003366]/5 focus:border-[#003366] outline-none transition-all font-semibold text-slate-700 hover:bg-white"
                          />
                       </div>
-                      <p className="text-[10px] text-slate-400 font-medium px-2">El estudiante podrá cargar el documento desde este día.</p>
+                      <p className="text-[10px] text-slate-400 font-medium px-2">{t.documents.detail.openingDateDesc}</p>
                    </div>
 
                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Fecha de Vencimiento</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">{t.documents.detail.dueDate}</label>
                       <div className="relative group">
                          <XCircle className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
                          <input 
@@ -600,7 +599,7 @@ export default function DocumentDetailPage() {
                             className="w-full pl-14 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#003366]/5 focus:border-[#003366] outline-none transition-all font-semibold text-slate-700 hover:bg-white"
                          />
                       </div>
-                      <p className="text-[10px] text-slate-400 font-medium px-2 text-rose-400">Plazo final para la subida del archivo por el estudiante.</p>
+                      <p className="text-[10px] text-slate-400 font-medium px-2 text-rose-400">{t.documents.detail.dueDateDesc}</p>
                    </div>
                 </div>
 
@@ -608,7 +607,7 @@ export default function DocumentDetailPage() {
                    <div className="bg-[#003366]/5 rounded-2xl p-6 flex gap-4">
                       <AlertCircle className="w-5 h-5 text-[#003366] flex-shrink-0 mt-1" />
                       <p className="text-[11px] text-[#003366]/70 leading-relaxed font-semibold">
-                         Asegúrese de que las fechas concuerden con las fases del plan de rotación aprobado para esta empresa.
+                         {t.documents.detail.dateMatchWarning}
                       </p>
                    </div>
                 </div>
@@ -623,12 +622,12 @@ export default function DocumentDetailPage() {
                   {saving ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Procesando...
+                      {t.documents.detail.processing}
                     </>
                   ) : (
                     <>
                       <Save className="w-5 h-5" />
-                      Guardar Cambios
+                      {t.documents.detail.saveChanges}
                     </>
                   )}
                 </button>
@@ -662,8 +661,8 @@ export default function DocumentDetailPage() {
                       <FileCheck className="text-[#C5A059] w-6 h-6" />
                    </div>
                    <div>
-                      <h2 className="text-xl font-black text-[#003366] tracking-tight">Revisión Documental</h2>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Evaluar entrega</p>
+                      <h2 className="text-xl font-black text-[#003366] tracking-tight">{t.documents.detail.reviewTitle}</h2>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{t.documents.detail.evaluateDelivery}</p>
                    </div>
                 </div>
                 <button 
@@ -677,7 +676,7 @@ export default function DocumentDetailPage() {
               <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden p-6 lg:flex-row lg:p-8">
                 <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/40 p-4">
                   <div className="mb-3 shrink-0">
-                    <h4 className="text-[11px] font-black uppercase tracking-widest text-[#C5A059]">Documento a revisar</h4>
+                    <h4 className="text-[11px] font-black uppercase tracking-widest text-[#C5A059]">{t.documents.detail.docToReview}</h4>
                     <p className="font-bold text-[#003366]">{selectedDoc?.name}</p>
                   </div>
                   <div className="min-h-0 flex-1 overflow-auto">
@@ -698,7 +697,7 @@ export default function DocumentDetailPage() {
                     >
                       <span className="inline-flex items-center justify-center gap-2">
                         <FileText className="h-4 w-4" />
-                        Abrir PDF en pestaña nueva
+                        {t.documents.detail.openPdfNewTab}
                       </span>
                     </button>
                   )}
@@ -707,14 +706,14 @@ export default function DocumentDetailPage() {
                 {/* FEEDBACK THREADS v5.0 */}
                 <div className="lg:col-span-1 border-t lg:border-t-0 lg:border-l border-slate-100 flex flex-col min-h-0 pt-6 lg:pt-0 lg:pl-8">
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-[#C5A059] mb-4 flex items-center gap-2">
-                     <MessageSquare size={14} /> Hilo de Retroalimentación
+                     <MessageSquare size={14} /> {t.documents.detail.feedbackThread}
                   </h4>
                     
                     <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4 scrollbar-hide">
                       {loadingComments ? (
                         <div className="flex justify-center py-4"><Loader2 className="animate-spin text-slate-300" /></div>
                       ) : comments.length === 0 ? (
-                        <p className="text-[10px] text-slate-400 font-medium italic">No hay comentarios registrados fuera de las observaciones generales.</p>
+                        <p className="text-[10px] text-slate-400 font-medium italic">{t.documents.detail.noComments}</p>
                       ) : (
                         comments.map((c: any) => (
                           <div key={c.id} className={cn(
@@ -736,7 +735,7 @@ export default function DocumentDetailPage() {
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
-                        placeholder="Escribir al estudiante..."
+                        placeholder={t.documents.detail.writeStudent}
                         className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 pr-10 text-[11px] font-bold outline-none focus:ring-2 focus:ring-[#003366]/5"
                       />
                       <button 
@@ -756,7 +755,7 @@ export default function DocumentDetailPage() {
                   className="h-14 bg-white border-2 border-rose-100 text-rose-600 rounded-2xl font-black uppercase tracking-widest hover:bg-rose-50 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <XCircle className="w-5 h-5" />}
-                  Rechazar
+                  {t.documents.detail.reject}
                 </button>
 
                 {currentUser?.role === 'COORDINADOR' && (
@@ -766,7 +765,7 @@ export default function DocumentDetailPage() {
                     className="h-14 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl shadow-emerald-900/20"
                   >
                     {isSigning ? <Loader2 className="w-5 h-5 animate-spin" /> : <Stamp className="w-5 h-5" />}
-                    Firma Electrónica
+                    {t.documents.detail.electronicSignature}
                   </button>
                 )}
 
@@ -779,7 +778,7 @@ export default function DocumentDetailPage() {
                   )}
                 >
                   {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
-                  {currentUser?.role === 'COORDINADOR' ? 'Aprobar Sin Firmar' : 'Aprobar'}
+                  {currentUser?.role === 'COORDINADOR' ? t.documents.detail.approveWithoutSigning : t.documents.detail.approve}
                 </button>
               </div>
             </motion.div>

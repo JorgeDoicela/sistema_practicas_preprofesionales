@@ -75,7 +75,7 @@ export default function PrivacyCenterPage() {
     setSubmitting(true);
     try {
       await privacyService.requestArcoRights(arcoType, arcoDetails);
-      alert(t.common.language === "es" ? "Solicitud enviada con éxito. Nuestro DPO revisará su petición." : "Request sent successfully. Our DPO will review your petition.");
+      alert(t.privacyDashboard.arcoForm.successMsg);
       setArcoDetails("");
       loadData();
     } catch (error) {
@@ -89,7 +89,7 @@ export default function PrivacyCenterPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-[#003366]" />
-        <p className="text-slate-500 font-bold">{t.privacyDashboard.title}...</p>
+        <p className="text-slate-500 font-bold">{t.common.loading}</p>
       </div>
     );
   }

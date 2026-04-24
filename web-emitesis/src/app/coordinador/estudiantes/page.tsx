@@ -46,7 +46,7 @@ const DocumentPdfReviewEditor = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex min-h-[200px] items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-sm text-slate-500">
-        Cargando visor PDF…
+        {t.coordinator.students.pdfViewerLoading}
       </div>
     ),
   },
@@ -190,7 +190,7 @@ export default function GestionEstudiantesPage() {
       window.open(result.url, '_blank');
       await loadData();
     } catch (error: any) {
-      alert(error.response?.data?.message || "Error al generar certificado");
+      alert(error.response?.data?.message || t.coordinator.students.errors.cert);
     } finally {
       setGeneratingCertId(null);
     }
@@ -200,7 +200,7 @@ export default function GestionEstudiantesPage() {
     try {
       await reportsService.exportAttendanceExcel(internshipId);
     } catch (error) {
-      alert("Error al exportar asistencia");
+      alert(t.coordinator.students.errors.exportAttendance);
     }
   };
 
@@ -213,7 +213,7 @@ export default function GestionEstudiantesPage() {
       setStatusModal(null);
       setStatusReason("");
     } catch (error: any) {
-      alert(error.message || "Error al cambiar estado");
+      alert(error.message || t.coordinator.students.errors.changeStatus);
     } finally {
       setChangingStatus(false);
     }
@@ -236,7 +236,7 @@ export default function GestionEstudiantesPage() {
       setAiAnalysis(prev => ({ ...prev, [i.id]: res }));
     } catch (e) {
       console.error("AI Analysis error:", e);
-      alert("Error en el análisis de IA");
+      alert(t.coordinator.students.errors.aiAnalysis);
     } finally {
       setAnalyzingId(null);
     }
