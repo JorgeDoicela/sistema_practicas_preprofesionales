@@ -1320,6 +1320,7 @@ function HistoryRow({ record, expanded, onToggle }: {
   expanded: boolean;
   onToggle: () => void;
 }) {
+  const { t } = useLanguage();
   return (
     <div className="border-b border-slate-50 last:border-0">
       <button onClick={onToggle} className="w-full p-6 hover:bg-slate-50 transition-colors flex items-center justify-between group">

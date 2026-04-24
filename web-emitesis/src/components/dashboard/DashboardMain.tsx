@@ -54,6 +54,10 @@ function countDocsByStatus(docs: Array<{ status?: string }> | undefined, st: str
   return (docs ?? []).filter((d) => d.status === st).length;
 }
 
+function isActiveInternship(status: string | undefined) {
+  return status === 'EN_CURSO';
+}
+
 function flattenRecentAttendances(internships: InternshipRow[], limit: number, t: any) {
   const rows: {
     key: string;

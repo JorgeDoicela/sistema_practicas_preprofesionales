@@ -114,7 +114,7 @@ export default function StudentDetailPage() {
       setIsVisitModalOpen(false);
       setNewVisit({ type: 'PRESENCIAL', date: new Date().toISOString().split('T')[0], location: '', observations: '', recommendations: '' });
     } catch (error: any) {
-      alert(error.message || t.common.error.generic);
+      alert(error.message || t.common.errors.generic);
     } finally {
       setSaving(false);
     }
@@ -126,7 +126,7 @@ export default function StudentDetailPage() {
       await monitoringService.deleteVisit(visitId);
       await loadData();
     } catch (error: any) {
-      alert(error.message || t.common.error.generic);
+      alert(error.message || t.common.errors.generic);
     }
   };
 
@@ -150,7 +150,7 @@ export default function StudentDetailPage() {
     } catch (error: any) {
       // Manejar errores de validación que pueden venir como array
       const msg = Array.isArray(error.message) ? error.message.join(', ') : error.message;
-      alert("Error: " + (msg || t.common.error.generic));
+      alert("Error: " + (msg || t.common.errors.generic));
     } finally {
       setSaving(false);
     }

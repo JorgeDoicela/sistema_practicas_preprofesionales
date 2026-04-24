@@ -25,7 +25,6 @@ import { ROLE_LABELS, ROLES, normalizeApiRoleToAppRole, type Role } from "@/cons
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/providers/LanguageProvider";
 
-
 function formatDate(iso: string) {
   try {
     return new Date(iso).toLocaleDateString("es-EC", { dateStyle: "long" });
@@ -36,7 +35,7 @@ function formatDate(iso: string) {
 
 export function ProfileView() {
   const { t } = useLanguage();
-  const [profile, setProfile] = useState<UserProfile | null>(profile);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -141,6 +140,7 @@ export function ProfileView() {
           <Link href="/dashboard" className="text-xs font-semibold text-red-900 underline mt-2 inline-block">
             {t.profile.backToDashboard}
           </Link>
+          {/* saveError: "Error saving changes" */}
         </div>
       </div>
     );

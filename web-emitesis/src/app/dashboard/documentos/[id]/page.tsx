@@ -33,6 +33,16 @@ import { attendancesService } from "@/services/attendances.service";
 import { TwoFactorModal } from "@/components/auth/TwoFactorModal";
 import type { PdfReviewAnnotationsPayload } from "@/lib/pdf-review-annotations";
 import { parseReviewAnnotations } from "@/lib/pdf-review-annotations";
+import { useLanguage } from "@/providers/LanguageProvider";
+
+const PdfLoading = () => {
+  const { t } = useLanguage();
+  return (
+    <div className="flex min-h-[200px] items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-sm text-slate-500">
+      {t.documents.detail.pdfViewerLoading}
+    </div>
+  );
+};
 
 const DocumentPdfReviewEditor = dynamic(
   () =>
@@ -41,15 +51,12 @@ const DocumentPdfReviewEditor = dynamic(
     })),
   {
     ssr: false,
-    loading: () => (
-      <div className="flex min-h-[200px] items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-sm text-slate-500">
-        {t.documents.detail.pdfViewerLoading}
-      </div>
-    ),
+    loading: () => <PdfLoading />,
   },
 );
 
 export default function DocumentDetailPage() {
+  const { t } = useLanguage();
   const { id } = useParams();
   const router = useRouter();
   const [internship, setInternship] = useState<any>(null);
@@ -127,6 +134,10 @@ export default function DocumentDetailPage() {
     setStartDate(doc.startDate ? new Date(doc.startDate).toISOString().split('T')[0] : "");
     setDueDate(doc.dueDate ? new Date(doc.dueDate).toISOString().split('T')[0] : "");
     setIsDrawerOpen(true);
+  };
+
+  const getStatusLabel = (status: string) => {
+    return (t.tutor.documentStatus as any)[status] || status.replace(/_/g, ' ');
   };
 
   const handleSaveDates = async () => {

@@ -66,12 +66,13 @@ export default function TutorAcademicoDashboardPage() {
       const res: any = await internshipsService.findByTutor(user.id);
       const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
       setInternships(list);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error cargando datos del tutor:", error);
+      alert(error.message || t.common.errors.generic);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -106,7 +107,7 @@ export default function TutorAcademicoDashboardPage() {
   // Datos para gráfico de distribución de documentos
   const docDistribution = internships.reduce((acc: any, i) => {
     (i.documents || []).forEach((d: any) => {
-      const label = (t.tutor.docStatus as any)[d.status] || d.status;
+      const label = (t.tutor.documentStatus as any)[d.status] || d.status;
       acc[label] = (acc[label] || 0) + 1;
     });
     return acc;
@@ -351,6 +352,7 @@ function KpiCard({
 }
 
 function InternshipCard({ internship }: { internship: any }) {
+  const { t } = useLanguage();
   const docs: any[] = internship.documents ?? [];
 
   const pendingReview = docs.filter((d) => d.status === "EN_REVISION_TUTOR").length;
@@ -501,7 +503,7 @@ function InternshipCard({ internship }: { internship: any }) {
                     "px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest",
                     DOC_STATUS_COLOR[doc.status] ?? "bg-slate-100 text-slate-500"
                   )}>
-                    {(t.tutor.docStatus as any)[doc.status] ?? doc.status}
+                    {(t.tutor.documentStatus as any)[doc.status] ?? doc.status}
                   </span>
                 </div>
               ))}

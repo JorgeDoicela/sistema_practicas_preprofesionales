@@ -167,11 +167,10 @@ export default function TutorAsistenciaPage() {
     const lat = parseFloat(newLocLat);
     const lng = parseFloat(newLocLng);
     const radius = parseInt(newLocRadius, 10);
-    const radius = parseInt(newLocRadius, 10);
-    if (!newLocLabel.trim()) { setAddLocError(t.common.error || "El nombre de la sede es obligatorio"); return; }
-    if (isNaN(lat) || lat < -90 || lat > 90) { setAddLocError(t.common.error || "Latitud inválida"); return; }
-    if (isNaN(lng) || lng < -180 || lng > 180) { setAddLocError(t.common.error || "Longitud inválida"); return; }
-    if (isNaN(radius) || radius < 50 || radius > 5000) { setAddLocError(t.common.error || "Radio debe estar entre 50 y 5000m"); return; }
+    if (!newLocLabel.trim()) { setAddLocError(t.common.errors.generic); return; }
+    if (isNaN(lat) || lat < -90 || lat > 90) { setAddLocError(t.common.errors.generic); return; }
+    if (isNaN(lng) || lng < -180 || lng > 180) { setAddLocError(t.common.errors.generic); return; }
+    if (isNaN(radius) || radius < 50 || radius > 5000) { setAddLocError(t.common.errors.generic); return; }
     setEditingLocations((prev) => [...prev, { label: newLocLabel.trim(), lat, lng, radiusM: radius }]);
     setNewLocLabel(""); setNewLocLat(""); setNewLocLng(""); setNewLocRadius("200");
   };
@@ -227,13 +226,13 @@ export default function TutorAsistenciaPage() {
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
-              {t.asistencia.tutor.portal}
+              {t.tutor.portal}
             </span>
             <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
               {t.asistencia.title} <span className="text-slate-400">{t.asistencia.company.interns}</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
-              {t.asistencia.tutor.desc}
+              {t.tutor.desc}
             </p>
           </div>
           <div className="relative group">
@@ -253,7 +252,7 @@ export default function TutorAsistenciaPage() {
           <section className="grid sm:grid-cols-3 gap-6">
             <KpiCard icon={<Clock className="w-6 h-6" />} title={t.asistencia.company.activeInterns} value={rows.filter((r) => r.status !== "Finalizado").length} color="bg-blue-500" />
             <KpiCard icon={<CheckCircle2 className="w-6 h-6" />} title={t.asistencia.company.accumulatedHours} value={`${totalHoursAll}h`} color="bg-emerald-500" />
-            <KpiCard icon={<CalendarCheck className="w-6 h-6" />} title={t.asistencia.tutor.avgProgress} value={avgProgress !== null ? `${avgProgress}%` : "—"} color="bg-amber-500" />
+            <KpiCard icon={<CalendarCheck className="w-6 h-6" />} title={t.tutor.avgProgress} value={avgProgress !== null ? `${avgProgress}%` : "—"} color="bg-amber-500" />
           </section>
         )}
 
@@ -341,7 +340,7 @@ export default function TutorAsistenciaPage() {
                       className="flex items-center gap-2 px-4 py-2.5 bg-[#C5A059] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#b08940] transition-all shadow-lg shadow-amber-900/10"
                     >
                       <User className="w-3.5 h-3.5" />
-                      {t.asistencia.tutor.viewFile}
+                      {t.tutor.viewFile}
                     </Link>
                     
                     <button
@@ -349,7 +348,7 @@ export default function TutorAsistenciaPage() {
                       className="flex items-center gap-2 px-4 py-2.5 border-2 border-[#003366]/20 rounded-2xl text-[10px] font-black text-[#003366] uppercase tracking-widest hover:bg-[#003366] hover:text-white hover:border-[#003366] transition-all"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
-                      {t.asistencia.tutor.manageLocations}
+                      {t.tutor.manageLocations}
                     </button>
                   </div>
                 </div>
@@ -391,7 +390,7 @@ export default function TutorAsistenciaPage() {
                             {row.allowedLocations.length > 0 && (
                               <div className="mb-6 p-5 bg-blue-50 rounded-2xl border border-blue-100">
                                 <p className="text-[9px] font-black uppercase tracking-widest text-blue-700 mb-3 flex items-center gap-2">
-                                  <MapPin className="w-3 h-3" /> {t.asistencia.tutor.configLocations}
+                                  <MapPin className="w-3 h-3" /> {t.tutor.configLocations}
                                 </p>
                                 <div className="flex flex-wrap gap-2">
                                   {row.allowedLocations.map((loc, i) => (
@@ -513,7 +512,7 @@ export default function TutorAsistenciaPage() {
               <div className="bg-[#003366] p-6 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.3em]">
-                    {t.asistencia.tutor.locationsTitle}
+                    {t.tutor.locationsTitle}
                   </p>
                   <p className="text-white font-black text-lg mt-0.5">
                     {activeRow?.studentName}
@@ -532,24 +531,24 @@ export default function TutorAsistenciaPage() {
                 <div className="flex gap-3 p-4 bg-blue-50 rounded-2xl border border-blue-100">
                   <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
                   <p className="text-[10px] font-bold text-blue-700 leading-relaxed">
-                    {t.asistencia.tutor.locationInfo}
+                    {t.tutor.locationInfo}
                   </p>
                 </div>
 
                 {/* Sedes existentes */}
                 <div className="space-y-2">
                   <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                    {t.asistencia.tutor.configLocations} ({editingLocations.length})
+                    {t.tutor.configLocations} ({editingLocations.length})
                   </p>
 
                   {editingLocations.length === 0 ? (
                     <div className="p-6 border-2 border-dashed border-slate-200 rounded-2xl text-center">
                       <MapPin className="w-10 h-10 text-slate-200 mx-auto mb-2" />
                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-300">
-                        {t.asistencia.tutor.noConfigLocations}
+                        {t.tutor.noConfigLocations}
                       </p>
                       <p className="text-[9px] text-slate-400 mt-1">
-                        {t.asistencia.tutor.noConfigLocationsDesc}
+                        {t.tutor.noConfigLocationsDesc}
                       </p>
                     </div>
                   ) : (
@@ -580,7 +579,7 @@ export default function TutorAsistenciaPage() {
                 {/* Agregar nueva sede */}
                 <div className="border-t border-slate-100 pt-5 space-y-3">
                   <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                    <Plus className="w-3 h-3" /> {t.asistencia.tutor.addLocation}
+                    <Plus className="w-3 h-3" /> {t.tutor.addLocation}
                   </p>
 
                   <div className="flex gap-2">
@@ -594,7 +593,7 @@ export default function TutorAsistenciaPage() {
                       )}
                     >
                       <MapPin className="w-4 h-4" />
-                      {showMapSelector ? t.asistencia.tutor.closeMap : t.asistencia.tutor.selectOnMap}
+                      {showMapSelector ? t.tutor.closeMap : t.tutor.selectOnMap}
                     </button>
                   </div>
 
@@ -620,14 +619,14 @@ export default function TutorAsistenciaPage() {
                     type="text"
                     value={newLocLabel}
                     onChange={(e) => setNewLocLabel(e.target.value)}
-                    placeholder={t.asistencia.tutor.locationName}
+                    placeholder={t.tutor.locationName}
                     className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm font-medium text-[#003366] focus:ring-2 focus:ring-blue-500 outline-none"
                   />
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 mb-1 block">
-                        {t.asistencia.tutor.lat}
+                        {t.tutor.lat}
                       </label>
                       <input
                         type="number"
@@ -640,7 +639,7 @@ export default function TutorAsistenciaPage() {
                     </div>
                     <div>
                       <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 mb-1 block">
-                        {t.asistencia.tutor.lng}
+                        {t.tutor.lng}
                       </label>
                       <input
                         type="number"
@@ -656,7 +655,7 @@ export default function TutorAsistenciaPage() {
                   <div className="flex items-end gap-3">
                     <div className="flex-1">
                       <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 mb-1 block">
-                        {t.asistencia.tutor.radius}
+                        {t.tutor.radius}
                       </label>
                       <input
                         type="number"
@@ -674,7 +673,7 @@ export default function TutorAsistenciaPage() {
                       className="flex items-center gap-2 px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-100 disabled:opacity-60 transition-colors whitespace-nowrap"
                     >
                       {gettingGps ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
-                      {t.asistencia.tutor.myGps}
+                      {t.tutor.myGps}
                     </button>
                   </div>
 
@@ -690,7 +689,7 @@ export default function TutorAsistenciaPage() {
                     className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-[#003366] rounded-2xl text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
-                    {t.asistencia.tutor.addToList}
+                    {t.tutor.addToList}
                   </button>
                 </div>
 
@@ -713,7 +712,7 @@ export default function TutorAsistenciaPage() {
                     ) : (
                       <Save className="w-5 h-5" />
                     )}
-                    {locationSaved ? t.common.success : savingLocations ? t.common.loading : t.asistencia.tutor.saveConfig}
+                    {locationSaved ? t.common.success.generic : savingLocations ? t.common.loading : t.tutor.saveConfig}
                   </button>
                 </div>
               </div>

@@ -104,7 +104,7 @@ export default function EvaluarEstudiantePage() {
         setObservations(evalData.observations || "");
       }
     } catch (error) {
-      console.error(t.common.error.generic, error);
+      console.error(t.common.errors.generic, error);
     } finally {
       setLoading(false);
     }
@@ -140,7 +140,7 @@ export default function EvaluarEstudiantePage() {
       setSaved(true);
       await loadData();
     } catch (error: any) {
-      alert(error.message || t.common.error.generic);
+      alert(error.message || t.common.errors.generic);
     } finally {
       setSaving(false);
     }
@@ -388,13 +388,16 @@ export default function EvaluarEstudiantePage() {
             >
               {saving ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
-              ) : saved ? (
-                {saved ? (
-                <CheckCircle2 className="w-5 h-5 text-[#C5A059]" />
               ) : (
-                <SaveAll className="w-5 h-5 text-[#C5A059]" />
+                <>
+                  {saved ? (
+                    <CheckCircle2 className="w-5 h-5 text-[#C5A059]" />
+                  ) : (
+                    <SaveAll className="w-5 h-5 text-[#C5A059]" />
+                  )}
+                  {saved ? t.empresa.evaluation.updatedBtn : existingEval ? t.empresa.evaluation.updateBtn : t.empresa.evaluation.saveBtn}
+                </>
               )}
-              {saved ? t.empresa.evaluation.updatedBtn : existingEval ? t.empresa.evaluation.updateBtn : t.empresa.evaluation.saveBtn}
             </button>
           </div>
         </div>

@@ -291,7 +291,7 @@ export default function DocumentosPage() {
   };
 
   const getStatusLabel = (status: string) => {
-    return (t.tutor.docStatus as any)[status] || status.replace(/_/g, ' ');
+    return (t.tutor.documentStatus as any)[status] || status.replace(/_/g, ' ');
   };
 
   return (

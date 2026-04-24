@@ -207,6 +207,7 @@ export default function MiEvaluacionPage() {
 }
 
 function EvalCard({ type, title, subtitle, evaluation, icon, color }: any) {
+  const { t } = useLanguage();
   const total = evaluation
     ? evaluation.punctuality +
       evaluation.teamwork +

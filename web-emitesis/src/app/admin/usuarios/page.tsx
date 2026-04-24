@@ -439,7 +439,7 @@ export default function UsuariosManagementPage() {
                     onChange={(e) => setForm({...form, role: e.target.value as UserRole})}
                     className="w-full bg-slate-50 border-none rounded-2xl py-4 px-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none appearance-none"
                   >
-                  >
+
                     <option value="ESTUDIANTE">{t.sidebar.roles.ESTUDIANTE}</option>
                     <option value="TUTOR">{t.sidebar.roles.TUTOR_ACADEMICO}</option>
                     <option value="COORDINADOR">{t.sidebar.roles.COORDINADOR}</option>

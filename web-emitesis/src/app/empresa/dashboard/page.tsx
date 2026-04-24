@@ -69,7 +69,7 @@ export default function EmpresaDashboardPage() {
         prev.map((i) => (i.id === internshipId ? { ...i, testEnabled: updated.testEnabled } : i))
       );
     } catch (error: any) {
-      alert(error.message || t.common.error.generic);
+      alert(error.message || t.common.errors.generic);
     } finally {
       setTogglingId(null);
     }
@@ -230,6 +230,7 @@ function PasanteCard({
   toggling: boolean;
   onToggleTest: () => void;
 }) {
+  const { t } = useLanguage();
   const hoursWorked = internship.attendances?.reduce((s: number, a: any) => {
     if (!a.checkOut) return s;
     return s + (new Date(a.checkOut).getTime() - new Date(a.checkIn).getTime()) / 3600000;
