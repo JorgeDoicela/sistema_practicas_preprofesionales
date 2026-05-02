@@ -22,7 +22,7 @@ import { useLanguage } from "@/providers/LanguageProvider";
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
 
-type Role = "ADMIN" | "COORDINADOR" | "TUTOR" | "TUTOR_EMPRESARIAL" | "ESTUDIANTE" | "EMPRESA";
+type Role = "ADMIN" | "COORDINADOR" | "TUTOR" | "ESTUDIANTE" | "EMPRESA";
 
 interface ChatPermission {
   id: string;
@@ -52,12 +52,7 @@ const ROLE_META: Record<Role, { label: string; color: string; Icon: React.Elemen
     Icon: GraduationCap,
     desc: "Guía académica de los estudiantes asignados",
   },
-  TUTOR_EMPRESARIAL: {
-    label: "Tutor Empresarial",
-    color: "bg-orange-100 text-orange-700 border-orange-200",
-    Icon: Briefcase,
-    desc: "Supervisa al practicante en la empresa",
-  },
+
   ESTUDIANTE: {
     label: "Estudiante",
     color: "bg-violet-100 text-violet-700 border-violet-200",
@@ -83,12 +78,7 @@ const PAIR_CONTEXT: Partial<Record<string, string>> = {
   "TUTOR__ESTUDIANTE": "Canal principal de tutoría: el estudiante puede consultar a su tutor asignado.",
   "ESTUDIANTE__COORDINADOR": "Comunicación directa del estudiante con coordinación para trámites y aclaraciones.",
   "COORDINADOR__ESTUDIANTE": "Comunicación directa del estudiante con coordinación para trámites y aclaraciones.",
-  "TUTOR_EMPRESARIAL__COORDINADOR": "Coordinación institucional: la empresa puede reportar novedades a coordinación.",
-  "COORDINADOR__TUTOR_EMPRESARIAL": "Coordinación institucional: la empresa puede reportar novedades a coordinación.",
-  "TUTOR_EMPRESARIAL__TUTOR": "Canal entre tutores: alineación académico-empresarial sobre el desempeño del practicante.",
-  "TUTOR__TUTOR_EMPRESARIAL": "Canal entre tutores: alineación académico-empresarial sobre el desempeño del practicante.",
-  "ESTUDIANTE__TUTOR_EMPRESARIAL": "Comunicación del estudiante con su supervisor empresarial.",
-  "TUTOR_EMPRESARIAL__ESTUDIANTE": "Comunicación del estudiante con su supervisor empresarial.",
+
   "EMPRESA__COORDINADOR": "Canal institucional: empresa y coordinación gestionan convenios y condiciones.",
   "COORDINADOR__EMPRESA": "Canal institucional: empresa y coordinación gestionan convenios y condiciones.",
   "ADMIN__COORDINADOR": "Canal interno administrativo.",
@@ -103,7 +93,7 @@ function pairKey(a: Role, b: Role) {
   return [a, b].sort().join("__");
 }
 
-const ALL_ROLES: Role[] = ["ADMIN", "COORDINADOR", "TUTOR", "TUTOR_EMPRESARIAL", "ESTUDIANTE", "EMPRESA"];
+const ALL_ROLES: Role[] = ["ADMIN", "COORDINADOR", "TUTOR", "ESTUDIANTE", "EMPRESA"];
 
 // ── Presets del sistema ───────────────────────────────────────────────────────
 
@@ -129,8 +119,7 @@ const PRESETS: {
     pairs: [
       ["TUTOR", "COORDINADOR"],
       ["TUTOR", "ESTUDIANTE"],
-      ["TUTOR_EMPRESARIAL", "TUTOR"],
-      ["TUTOR_EMPRESARIAL", "ESTUDIANTE"],
+
       ["COORDINADOR", "EMPRESA"],
     ],
   },
@@ -182,12 +171,7 @@ export default function ChatConfigPage() {
       Icon: GraduationCap,
       desc: t.common.language === "es" ? "Guía académica de los estudiantes asignados" : "Academic guide for assigned students",
     },
-    TUTOR_EMPRESARIAL: {
-      label: t.common.roles.TUTOR_EMPRESARIAL,
-      color: "bg-orange-100 text-orange-700 border-orange-200",
-      Icon: Briefcase,
-      desc: t.common.language === "es" ? "Supervisa al practicante en la empresa" : "Supervises the intern at the company",
-    },
+
     ESTUDIANTE: {
       label: t.common.roles.ESTUDIANTE,
       color: "bg-violet-100 text-violet-700 border-violet-200",
@@ -209,12 +193,7 @@ export default function ChatConfigPage() {
     "TUTOR__ESTUDIANTE": t.common.language === "es" ? "Canal principal de tutoría: el estudiante puede consultar a su tutor asignado." : "Main tutoring channel: the student can consult their assigned tutor.",
     "ESTUDIANTE__COORDINADOR": t.common.language === "es" ? "Comunicación directa del estudiante con coordinación para trámites y aclaraciones." : "Direct communication between student and coordination for procedures and clarifications.",
     "COORDINADOR__ESTUDIANTE": t.common.language === "es" ? "Comunicación directa del estudiante con coordinación para trámites y aclaraciones." : "Direct communication between student and coordination for procedures and clarifications.",
-    "TUTOR_EMPRESARIAL__COORDINADOR": t.common.language === "es" ? "Coordinación institucional: la empresa puede reportar novedades a coordinación." : "Institutional coordination: the company can report news to coordination.",
-    "COORDINADOR__TUTOR_EMPRESARIAL": t.common.language === "es" ? "Coordinación institucional: la empresa puede reportar novedades a coordinación." : "Institutional coordination: the company can report news to coordination.",
-    "TUTOR_EMPRESARIAL__TUTOR": t.common.language === "es" ? "Canal entre tutores: alineación académico-empresarial sobre el desempeño del practicante." : "Channel between tutors: academic-business alignment on intern performance.",
-    "TUTOR__TUTOR_EMPRESARIAL": t.common.language === "es" ? "Canal entre tutores: alineación académico-empresarial sobre el desempeño del practicante." : "Channel between tutors: academic-business alignment on intern performance.",
-    "ESTUDIANTE__TUTOR_EMPRESARIAL": t.common.language === "es" ? "Comunicación del estudiante con su supervisor empresarial." : "Communication between student and their business supervisor.",
-    "TUTOR_EMPRESARIAL__ESTUDIANTE": t.common.language === "es" ? "Comunicación del estudiante con su supervisor empresarial." : "Communication between student and their business supervisor.",
+
     "EMPRESA__COORDINADOR": t.common.language === "es" ? "Canal institucional: empresa y coordinación gestionan convenios y condiciones." : "Institutional channel: company and coordination manage agreements and conditions.",
     "COORDINADOR__EMPRESA": t.common.language === "es" ? "Canal institucional: empresa y coordinación gestionan convenios y condiciones." : "Institutional channel: company and coordination manage agreements and conditions.",
     "ADMIN__COORDINADOR": t.common.language === "es" ? "Canal interno administrativo." : "Internal administrative channel.",
@@ -243,8 +222,7 @@ export default function ChatConfigPage() {
       pairs: [
         ["TUTOR", "COORDINADOR"],
         ["TUTOR", "ESTUDIANTE"],
-        ["TUTOR_EMPRESARIAL", "TUTOR"],
-        ["TUTOR_EMPRESARIAL", "ESTUDIANTE"],
+
         ["COORDINADOR", "EMPRESA"],
       ],
     },

@@ -85,10 +85,7 @@ const MENU_DEFS: Record<string, Array<{ icon: ElementType; labelKey: SidebarMenu
         { icon: CalendarCheck,   labelKey: "attendanceInterns",   href: "/tutor-academico/asistencia" },
         { icon: CalendarOff,     labelKey: "pendingAbsences",     href: "/tutor-academico/ausencias" },
     ],
-    TUTOR_EMPRESARIAL: [
-        { icon: LayoutDashboard, labelKey: "dashboard",         href: "/empresa/dashboard" },
-        { icon: CalendarCheck,   labelKey: "attendanceInterns", href: "/empresa/asistencia" },
-    ],
+
     ESTUDIANTE: [
         { icon: LayoutDashboard, labelKey: "dashboard",    href: "/dashboard" },
         { icon: FileStack,       labelKey: "myDocuments",  href: "/dashboard/documentos" },
@@ -125,7 +122,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     const profileHref = getProfilePathForRole(role);
     const menuDefs = MENU_DEFS[role] ?? MENU_DEFS["ESTUDIANTE"];
     const menuItems = menuDefs.map(item => ({ ...item, label: t.sidebar.menu[item.labelKey] }));
-    const isEmpresaRole = role === "EMPRESA" || role === "TUTOR_EMPRESARIAL";
+    const isEmpresaRole = role === "EMPRESA";
 
     return (
         <>

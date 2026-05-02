@@ -204,8 +204,6 @@ export class ChatService {
         return this.getContactsForStudent(userId, allowedRoles);
       case Role.TUTOR:
         return this.getContactsForTutor(userId, allowedRoles);
-      case Role.TUTOR_EMPRESARIAL:
-        return this.getContactsForBusinessTutor(userId, allowedRoles);
       case Role.EMPRESA:
         return this.getContactsForEmpresa(userId, allowedRoles);
       case Role.COORDINADOR:
@@ -304,14 +302,6 @@ export class ChatService {
     return contacts;
   }
 
-  /** TUTOR_EMPRESARIAL: estudiantes de su empresa + coordinadores */
-  private async getContactsForBusinessTutor(userId: string, allowedRoles: Set<Role>) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { companyId: true },
-    });
-    return this.getContactsForCompanyRole(userId, user?.companyId ?? null, allowedRoles);
-  }
 
   /** EMPRESA: estudiantes asignados a la empresa + coordinadores */
   private async getContactsForEmpresa(userId: string, allowedRoles: Set<Role>) {

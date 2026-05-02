@@ -2,7 +2,6 @@ export const ROLES = {
   ADMIN: 'ADMIN',
   COORDINADOR: 'COORDINADOR',
   TUTOR_ACADEMICO: 'TUTOR_ACADEMICO',
-  TUTOR_EMPRESARIAL: 'TUTOR_EMPRESARIAL',
   ESTUDIANTE: 'ESTUDIANTE',
   EMPRESA: 'EMPRESA',
 } as const;
@@ -13,7 +12,6 @@ export const ROLE_LABELS: Record<Role, string> = {
   [ROLES.ADMIN]: 'Administrador',
   [ROLES.COORDINADOR]: 'Coordinador de Prácticas',
   [ROLES.TUTOR_ACADEMICO]: 'Tutor Académico',
-  [ROLES.TUTOR_EMPRESARIAL]: 'Tutor Empresarial',
   [ROLES.ESTUDIANTE]: 'Estudiante',
   [ROLES.EMPRESA]: 'Empresa',
 };
@@ -22,7 +20,6 @@ export const ROLE_REDIRECTS: Record<Role, string> = {
   [ROLES.ADMIN]: '/dashboard',
   [ROLES.COORDINADOR]: '/dashboard',
   [ROLES.TUTOR_ACADEMICO]: '/tutor-academico/dashboard',
-  [ROLES.TUTOR_EMPRESARIAL]: '/empresa/dashboard',
   [ROLES.ESTUDIANTE]: '/dashboard',
   [ROLES.EMPRESA]: '/empresa/dashboard',
 };

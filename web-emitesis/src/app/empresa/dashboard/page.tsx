@@ -101,16 +101,14 @@ export default function EmpresaDashboardPage() {
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
-              {userRole === "TUTOR_EMPRESARIAL" ? t.empresa.dashboard.portalTutor : t.empresa.dashboard.portalCompany}
+              {t.empresa.dashboard.portalCompany}
             </span>
             <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
               {t.empresa.dashboard.welcome}{" "}
               <span className="text-slate-400">{companyName.split(" ")[0] || "User"}</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
-              {userRole === "TUTOR_EMPRESARIAL" 
-                ? t.empresa.dashboard.descTutor
-                : t.empresa.dashboard.descCompany}
+              {t.empresa.dashboard.descCompany}
             </p>
           </div>
           <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">

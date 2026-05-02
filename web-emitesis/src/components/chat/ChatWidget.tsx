@@ -58,7 +58,7 @@ export default function ChatWidget() {
     ADMIN: t.sidebar.roles.ADMIN,
     COORDINADOR: t.sidebar.roles.COORDINADOR,
     TUTOR: t.sidebar.roles.TUTOR_ACADEMICO,
-    TUTOR_EMPRESARIAL: t.sidebar.roles.TUTOR_EMPRESARIAL,
+
     ESTUDIANTE: t.sidebar.roles.ESTUDIANTE,
     EMPRESA: t.sidebar.roles.EMPRESA,
   };
@@ -67,7 +67,7 @@ export default function ChatWidget() {
     ADMIN: "bg-red-100 text-red-700",
     COORDINADOR: "bg-blue-100 text-blue-700",
     TUTOR: "bg-green-100 text-green-700",
-    TUTOR_EMPRESARIAL: "bg-orange-100 text-orange-700",
+
     ESTUDIANTE: "bg-violet-100 text-violet-700",
     EMPRESA: "bg-amber-100 text-amber-700",
   };

@@ -64,7 +64,6 @@ export class UsersController {
     Role.ADMIN,
     Role.COORDINADOR,
     Role.TUTOR,
-    Role.TUTOR_EMPRESARIAL,
     Role.ESTUDIANTE,
     Role.EMPRESA,
   )
@@ -77,7 +76,6 @@ export class UsersController {
     Role.ADMIN,
     Role.COORDINADOR,
     Role.TUTOR,
-    Role.TUTOR_EMPRESARIAL,
     Role.ESTUDIANTE,
     Role.EMPRESA,
   )

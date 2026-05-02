@@ -39,7 +39,6 @@ export function useAuth() {
     isAdmin: checkRole(ROLES.ADMIN),
     isCoordinador: checkRole(ROLES.COORDINADOR),
     isTutorAcademico: checkRole(ROLES.TUTOR_ACADEMICO),
-    isTutorEmpresarial: checkRole(ROLES.TUTOR_EMPRESARIAL),
     isEstudiante: checkRole(ROLES.ESTUDIANTE),
     isEmpresa: checkRole(ROLES.EMPRESA),
     roleLabel: getRoleLabel(),

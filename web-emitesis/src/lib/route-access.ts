@@ -10,8 +10,8 @@ const RULES: { match: RegExp; allow: Role[] }[] = [
   { match: /^\/coordinador(\/|$)/, allow: [ROLES.ADMIN, ROLES.COORDINADOR] },
   { match: /^\/tutor-academico\/perfil/, allow: [ROLES.ADMIN, ROLES.TUTOR_ACADEMICO] },
   { match: /^\/tutor-academico(\/|$)/, allow: [ROLES.ADMIN, ROLES.TUTOR_ACADEMICO] },
-  { match: /^\/empresa\/perfil/, allow: [ROLES.ADMIN, ROLES.EMPRESA, ROLES.TUTOR_EMPRESARIAL] },
-  { match: /^\/empresa(\/|$)/, allow: [ROLES.ADMIN, ROLES.EMPRESA, ROLES.TUTOR_EMPRESARIAL] },
+  { match: /^\/empresa\/perfil/, allow: [ROLES.ADMIN, ROLES.EMPRESA] },
+  { match: /^\/empresa(\/|$)/, allow: [ROLES.ADMIN, ROLES.EMPRESA] },
   // Rutas del estudiante (ruta canónica y aliases legacy)
   { match: /^\/estudiante(\/|$)/, allow: [ROLES.ADMIN, ROLES.ESTUDIANTE] },
   { match: /^\/dashboard\/perfil/, allow: [ROLES.ADMIN, ROLES.COORDINADOR, ROLES.TUTOR_ACADEMICO, ROLES.ESTUDIANTE] },
@@ -24,7 +24,7 @@ const RULES: { match: RegExp; allow: Role[] }[] = [
   // Rutas legacy de tutor (alias de /tutor-academico)
   { match: /^\/tutor(\/|$)/, allow: [ROLES.ADMIN, ROLES.TUTOR_ACADEMICO] },
   // Rutas legacy de tutor empresarial (alias de /empresa)
-  { match: /^\/tutor-empresarial(\/|$)/, allow: [ROLES.ADMIN, ROLES.TUTOR_EMPRESARIAL, ROLES.EMPRESA] },
+  { match: /^\/tutor-empresarial(\/|$)/, allow: [ROLES.ADMIN, ROLES.EMPRESA] },
 ];
 
 export function normalizePathname(pathname: string): string {

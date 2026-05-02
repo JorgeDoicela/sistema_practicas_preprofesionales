@@ -371,7 +371,7 @@ async function main() {
             email: `supervisor@${comp.email.split('@')[1]}`,
             password,
             fullName: getUniqueName(),
-            role: Role.TUTOR_EMPRESARIAL,
+            role: Role.EMPRESA,
             companyId: comp.id,
             ...lopdp,
         })),
@@ -1069,7 +1069,7 @@ async function main() {
 
     // ─── 12b. PERMISOS DE CHAT ────────────────────────────────────────────────
     console.log('💬 [12b] Inicializando permisos de chat por roles...');
-    const allRoles = [Role.ADMIN, Role.COORDINADOR, Role.TUTOR, Role.TUTOR_EMPRESARIAL, Role.ESTUDIANTE, Role.EMPRESA];
+    const allRoles = [Role.ADMIN, Role.COORDINADOR, Role.TUTOR, Role.ESTUDIANTE, Role.EMPRESA];
     const chatPermPairs: { fromRole: Role; toRole: Role }[] = [];
     for (const fromRole of allRoles) {
         for (const toRole of allRoles) {

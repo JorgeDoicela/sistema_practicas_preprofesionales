@@ -47,7 +47,7 @@ export class InternshipsController {
   }
 
   @Get('company/:id')
-  @Roles(Role.EMPRESA, Role.TUTOR_EMPRESARIAL, Role.ADMIN, Role.COORDINADOR)
+  @Roles(Role.EMPRESA, Role.ADMIN, Role.COORDINADOR)
   findByCompany(@Param('id') id: string) {
     return this.internshipsService.findByCompany(id);
   }
@@ -60,7 +60,7 @@ export class InternshipsController {
   }
 
   @Patch(':id/toggle-test')
-  @Roles(Role.EMPRESA, Role.TUTOR_EMPRESARIAL, Role.ADMIN, Role.COORDINADOR)
+  @Roles(Role.EMPRESA, Role.ADMIN, Role.COORDINADOR)
   toggleTest(@Param('id') id: string) {
     return this.internshipsService.toggleTest(id);
   }

@@ -268,7 +268,7 @@ export const en = {
       ADMIN: "Administrator",
       COORDINADOR: "Coordinator",
       TUTOR_ACADEMICO: "Academic Tutor",
-      TUTOR_EMPRESARIAL: "Business Tutor",
+
       ESTUDIANTE: "Student",
       EMPRESA: "Company",
     },
@@ -812,7 +812,7 @@ export const en = {
       ADMIN: "Administrator",
       COORDINADOR: "Coordinator",
       TUTOR: "Academic Tutor",
-      TUTOR_EMPRESARIAL: "Business Tutor",
+
       ESTUDIANTE: "Student",
       EMPRESA: "Company",
     },

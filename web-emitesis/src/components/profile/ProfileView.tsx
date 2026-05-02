@@ -148,7 +148,7 @@ export function ProfileView() {
 
   const roleKey = normalizeApiRoleToAppRole(String(profile.role)) as Role;
   const roleLabel = ROLE_LABELS[roleKey] ?? String(profile.role);
-  const canOpenAccountSettings = roleKey !== ROLES.EMPRESA && roleKey !== ROLES.TUTOR_EMPRESARIAL;
+  const canOpenAccountSettings = roleKey !== ROLES.EMPRESA;
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">

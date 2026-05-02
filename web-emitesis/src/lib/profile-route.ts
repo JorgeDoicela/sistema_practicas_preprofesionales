@@ -5,6 +5,6 @@ export function getProfilePathForRole(role: string | undefined): string {
   if (!role) return "/dashboard/perfil";
   const r = normalizeApiRoleToAppRole(role) as Role;
   if (r === ROLES.TUTOR_ACADEMICO) return "/tutor-academico/perfil";
-  if (r === ROLES.EMPRESA || r === ROLES.TUTOR_EMPRESARIAL) return "/empresa/perfil";
+  if (r === ROLES.EMPRESA) return "/empresa/perfil";
   return "/dashboard/perfil";
 }
