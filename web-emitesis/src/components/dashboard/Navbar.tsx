@@ -30,8 +30,7 @@ export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    localStorage.clear();
     router.push("/login");
   };
 

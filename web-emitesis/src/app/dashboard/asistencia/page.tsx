@@ -422,7 +422,7 @@ export default function AsistenciaPage() {
       setActivityCaption(suggestion);
     } catch (err) {
       console.error("Error al sugerir descripción:", err);
-      toast.error(t.common.error.generic);
+      toast.error(t.common.error);
     } finally {
       setSuggestingCaption(false);
     }
@@ -726,7 +726,7 @@ export default function AsistenciaPage() {
                     </div>
                     <div>
                       <h3 className="text-sm font-black text-[#003366] uppercase tracking-[0.2em]">{t.asistencia.activityPhotos.title}</h3>
-                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">RF-17 · {activityPhotos.length} {t.asistencia.history.records} {t.common.today}</p>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">RF-17 · {activityPhotos.length} items · {t.common.today}</p>
                     </div>
                   </div>
                   <button

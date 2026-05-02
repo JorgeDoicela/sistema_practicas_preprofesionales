@@ -110,7 +110,7 @@ export default function AsignacionPage() {
 
   const addLocation = () => {
     const newLoc: AllowedLocation = { 
-      label: `${t.asistencia.requirements.locationRadar} ${allowedLocations.length + 1}`, 
+      label: `${t.coordinator.assignment.locationName} ${allowedLocations.length + 1}`, 
       lat: -0.180653, 
       lng: -78.467838, 
       radiusM: 250 
@@ -150,7 +150,7 @@ export default function AsignacionPage() {
       setSuccess(true);
       setTimeout(() => router.push('/dashboard'), 2000);
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || t.common.error);
     } finally {
       setBtnLoading(false);
     }

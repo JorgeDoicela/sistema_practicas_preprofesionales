@@ -46,7 +46,7 @@ const DocumentPdfReviewEditor = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex min-h-[200px] items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-sm text-slate-500">
-        {t.coordinator.students.pdfViewerLoading}
+        Cargando visor...
       </div>
     ),
   },
@@ -260,7 +260,7 @@ export default function GestionEstudiantesPage() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
                 <input 
                   type="text"
-                  placeholder={t.coordinator.students.search}
+                  placeholder={t.coordinator.students.searchPlaceholder}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-12 pr-6 py-3 md:py-4 bg-white border border-slate-200 rounded-2xl w-full md:w-[350px] outline-none focus:ring-4 focus:ring-[#003366]/5 focus:border-[#003366] transition-all font-medium text-sm shadow-sm"
@@ -535,6 +535,7 @@ function StudentInternshipCard({
   analyzing,
   analysis
 }: any) {
+  const { t } = useLanguage();
   const documents = Array.isArray(internship.documents) ? internship.documents : [];
   const pendingDocs = documents.filter((d: any) => d.status === 'APROBADO_TUTOR').length;
 
@@ -813,9 +814,9 @@ function StudentInternshipCard({
                                 </div>
                                 <div>
                                    <p className="text-[11px] font-bold text-[#003366] line-clamp-1">{doc.name}</p>
-                                   <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">
-                                      {(t.tutor.docStatus as any)[doc.status] || doc.status.replace(/_/g, ' ')}
-                                   </span>
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">
+                                       {(t.tutor.documentStatus as any)[doc.status] || doc.status.replace(/_/g, ' ')}
+                                    </span>
                                 </div>
                              </div>
                              <div className="flex items-center gap-2">
@@ -833,7 +834,7 @@ function StudentInternshipCard({
                   <div className="space-y-4">
                      <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6 pl-2 flex items-center gap-3">
                        <Clock className="w-4 h-4" />
-                       {t.coordinator.students.expediente.attendance}
+                       {t.coordinator.students.expediente.history}
                      </h4>
 
                      <div className="flex items-end gap-3 bg-white p-4 rounded-2xl border border-slate-100 mb-4 shadow-sm">

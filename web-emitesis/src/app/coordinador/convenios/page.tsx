@@ -133,7 +133,7 @@ export default function RegistrarConvenioPage() {
                 router.push("/coordinador/dashboard");
             }, 2000);
         } catch (err: any) {
-            setError(err.message || t.coordinator.agreements.errorGeneral || "Error registering agreement");
+            setError(err.message || t.common.error);
         } finally {
             setIsLoading(false);
         }
@@ -161,7 +161,7 @@ export default function RegistrarConvenioPage() {
                             onClick={() => router.push('/dashboard')}
                             className="w-full bg-[#003366] text-white rounded-2xl py-4 text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-900/20 hover:translate-y-[-2px] transition-all"
                         >
-                            {t.common.backToDashboard}
+                            {t.common.back}
                         </button>
                     </motion.div>
                 </div>

@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateInternshipDto } from './dto/create-internship.dto';
 import { EmailService } from '../notifications/email.service';
@@ -46,13 +46,19 @@ export class InternshipsService {
       throw new BadRequestException('La empresa seleccionada no tiene un convenio vigente activo');
     }
 
-    // Regla de Negocio: Fecha de inicio no anterior a la actual
+    // Regla de Negocio: Fecha de inicio no anterior a la actual (con margen de 24h para evitar errores de zona horaria)
     const start = new Date(startDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1); // Margen de gracia
     
-    if (start < today) {
+    if (start < yesterday) {
       throw new BadRequestException('La fecha de inicio no puede ser anterior a la fecha actual');
+    }
+
+    if (endDate && new Date(endDate) <= start) {
+      throw new BadRequestException('La fecha de finalización debe ser posterior a la fecha de inicio');
     }
 
     try {
@@ -351,7 +357,25 @@ export class InternshipsService {
       throw new NotFoundException('Asignación no encontrada');
     }
 
-    // PIA: Auditoría de acceso a datos personales (LOPDP)
+    // OWASP A01:2021 - Broken Access Control
+    // Validar propiedad del recurso para roles no administrativos
+    if (actor && actor.role !== 'ADMIN' && actor.role !== 'COORDINADOR') {
+        const isStudentOwner = internship.studentId === actor.id;
+        const isTutorOwner = internship.tutorId === actor.id;
+        const isCompanyOwner = internship.companyId === (actor as any).companyId;
+
+        if (!isStudentOwner && !isTutorOwner && !isCompanyOwner) {
+            this.systemLogs.append({
+                level: 'WARN',
+                category: 'AUTH',
+                message: `Intento de acceso no autorizado: ${actor.email} (Rol: ${actor.role}) intentó acceder a la práctica ${id} sin ser propietario.`,
+                userId: actor.id,
+                path: `/api/internships/${id}`,
+                metadata: { severity: 'HIGH', attackType: 'ID_ENUMERATION' }
+            });
+            throw new ForbiddenException('No tienes permiso para acceder a esta asignación.');
+        }
+    }
     // Solo logueamos si el que accede no es el propio estudiante
     if (actor && actor.id !== internship.studentId && (actor.role === 'ADMIN' || actor.role === 'COORDINADOR' || actor.role === 'TUTOR')) {
         this.systemLogs.append({

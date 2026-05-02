@@ -5,6 +5,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import type { INestApplication } from '@nestjs/common';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { SanitizationPipe } from './common/security/sanitization.pipe';
 import helmet from 'helmet';
 
 /** En Vercel no se debe crear Nest en cada petición (agota tiempo/memoria y provoca FUNCTION_INVOCATION_FAILED). */
@@ -36,31 +37,50 @@ async function createConfiguredApp(): Promise<INestApplication> {
     },
   });
 
+  /** 
+   * Security Hardening: Capa de defensa profunda (Helmet)
+   * Configuración profesional para prevenir:
+   * - XSS (Cross-Site Scripting)
+   * - Clickjacking
+   * - Sniffing de tipos MIME
+   */
+  app.use(helmet({
+    contentSecurityPolicy: isProduction ? undefined : false, // Permite Swagger en dev
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  }));
+
   const corsOrigins = (process.env.CORS_ORIGINS ?? '')
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean);
+    
   if (corsOrigins.length > 0) {
     app.enableCors({
       origin: corsOrigins,
       credentials: true,
       methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
     });
   } else {
-    app.enableCors();
+    // Si no hay orígenes, solo permitimos local por seguridad en dev
+    app.enableCors({
+      origin: isProduction ? false : true,
+      credentials: true,
+    });
   }
+
   app.setGlobalPrefix('api');
+  
   app.useGlobalPipes(
+    new SanitizationPipe(),
     new ValidationPipe({
       whitelist: true,
       transform: true,
       transformOptions: { enableImplicitConversion: true },
-      forbidNonWhitelisted: false,
+      forbidNonWhitelisted: true, // Estricto: no permite campos extraños
     }),
   );
-  
-  /** Security Hardening: Ocultar info del servidor y cabeceras seguras */
-  app.use(helmet());
 
   /** Industrial Core: Estandarización de respuestas y errores */
   // app.useGlobalInterceptors(new TransformInterceptor());

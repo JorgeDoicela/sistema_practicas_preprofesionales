@@ -871,6 +871,7 @@ export const es = {
       editCareer: "Editar Carrera",
       name: "Nombre de la Carrera *",
       faculty: "Facultad / Departamento",
+      noFaculty: "Sin Facultad / General",
       modality: "Modalidad",
       hours: "Horas Requeridas",
       deleteConfirm: "¿Eliminar esta carrera? Solo es posible si no tiene prácticas asociadas.",
@@ -899,6 +900,7 @@ export const es = {
       errorEvents: "Eventos Error",
       rolesTitle: "Distribución de Roles",
       cleanupSuccess: "Limpieza completada. Se eliminaron {count} archivos ({size} MB recuperados).",
+      cleanupError: "Error al realizar la limpieza de archivos.",
       backupError: "Error al solicitar backup.",
     },
     settings: {

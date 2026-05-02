@@ -2,21 +2,28 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import {
-  MessageSquare,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-  Info,
-  GraduationCap,
-  Users,
-  Building2,
-  ShieldCheck,
-  BookOpen,
-  Briefcase,
-  Clock,
-  Save,
+import { 
+  Shield, 
+  MessageSquare, 
+  Save, 
+  Loader2, 
+  AlertCircle, 
+  CheckCircle2, 
+  Search, 
+  Info, 
+  Plus, 
+  X, 
+  Users, 
+  Key, 
+  GraduationCap, 
+  Building2, 
+  ShieldCheck, 
+  BookOpen, 
+  Briefcase, 
+  Clock 
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { chatConfigService } from "@/services/chat-config.service";
 import { API_URL } from "@/lib/api-base";
 import { useLanguage } from "@/providers/LanguageProvider";
 

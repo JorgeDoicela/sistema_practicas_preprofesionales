@@ -20,6 +20,22 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
+  // Inactivity Timeout Configuration (Enterprise Grade)
+  const INACTIVITY_LIMIT = 15 * 60 * 1000; // 15 minutos
+  let inactivityTimer: NodeJS.Timeout;
+
+  const resetInactivityTimer = () => {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+      handleLogout();
+    }, INACTIVITY_LIMIT);
+  };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    router.replace("/login");
+  };
+
   useEffect(() => {
     const handleInitialState = () => {
       if (window.innerWidth >= 1024) {
@@ -27,45 +43,80 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       }
     };
     handleInitialState();
+
+    // Eventos para detectar actividad
+    const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
+    activityEvents.forEach(event => {
+      window.addEventListener(event, resetInactivityTimer);
+    });
+
+    // Iniciar timer
+    resetInactivityTimer();
+
+    return () => {
+      clearTimeout(inactivityTimer);
+      activityEvents.forEach(event => {
+        window.removeEventListener(event, resetInactivityTimer);
+      });
+    };
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userStr = localStorage.getItem("user");
+    const validateSession = () => {
+      const token = localStorage.getItem("token");
+      const userStr = localStorage.getItem("user");
 
-    if (!token || !userStr) {
-      router.replace("/login");
-      setIsAuthorized(false);
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(userStr) as { role?: string } & Record<string, unknown>;
-      if (parsed.role == null || String(parsed.role).trim() === "") {
+      if (!token || !userStr) {
         router.replace("/login");
         setIsAuthorized(false);
         setIsLoading(false);
         return;
       }
-      const role = normalizeApiRoleToAppRole(String(parsed.role));
-      if (parsed.role !== role) {
-        localStorage.setItem("user", JSON.stringify({ ...parsed, role }));
-      }
 
-      if (!canRoleAccessPath(role as Role, pathname)) {
-        router.replace(getHomePathForRole(role as Role));
+      try {
+        const parsed = JSON.parse(userStr) as { role?: string; id?: string } & Record<string, unknown>;
+        if (parsed.role == null || String(parsed.role).trim() === "") {
+          router.replace("/login");
+          setIsAuthorized(false);
+          setIsLoading(false);
+          return;
+        }
+        const role = normalizeApiRoleToAppRole(String(parsed.role));
+        
+        // Verificación de acceso por ruta
+        if (!canRoleAccessPath(role as Role, pathname)) {
+          router.replace(getHomePathForRole(role as Role));
+          setIsAuthorized(false);
+          setIsLoading(false);
+          return;
+        }
+
+        setIsAuthorized(true);
+      } catch {
+        router.replace("/login");
         setIsAuthorized(false);
-        setIsLoading(false);
-        return;
       }
+      setIsLoading(false);
+    };
 
-      setIsAuthorized(true);
-    } catch {
-      router.replace("/login");
-      setIsAuthorized(false);
-    }
-    setIsLoading(false);
+    // Validar sesión inicialmente
+    validateSession();
+
+    /** 
+     * GUARDIÁN DE SINCRONIZACIÓN (Cross-tab Security)
+     * Escucha cambios en el localStorage desde otras pestañas.
+     * Si el usuario cambia de rol o cierra sesión en otra pestaña, 
+     * esta pestaña se redirige automáticamente para evitar inconsistencias.
+     */
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'token' || e.key === 'user') {
+        // Si el token cambió o desapareció, forzamos re-validación total
+        window.location.reload(); 
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, [router, pathname]);
 
   if (isLoading) {

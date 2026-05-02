@@ -20,7 +20,7 @@ import { TwoFactorAuthController } from './two-factor-auth.controller';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET') || 'secretKey',
-        signOptions: { expiresIn: '1d' },
+        signOptions: { expiresIn: '8h' },
       }),
       inject: [ConfigService],
     }),

@@ -260,6 +260,17 @@ export class UsersService {
       );
     }
 
+    // Verificar si tiene historial antes de intentar borrar (Evita error 500 P2003)
+    const hasHistory = await this.prisma.internship.findFirst({
+      where: { OR: [{ studentId: id }, { tutorId: id }] },
+    });
+
+    if (hasHistory) {
+      throw new BadRequestException(
+        'No se puede eliminar el usuario porque tiene registros históricos de prácticas. Considere desactivar la cuenta en su lugar.',
+      );
+    }
+
     await this.prisma.user.delete({ where: { id } });
 
     this.systemLogs.append({

@@ -50,6 +50,19 @@ export class ChatService {
   // ── Salas ─────────────────────────────────────────────────────────────────
 
   async getOrCreateDirectRoom(userIdA: string, userIdB: string): Promise<string> {
+    // 0. Seguridad Enterprise: Verificar permisos de rol antes de crear
+    const [userA, userB] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: userIdA }, select: { role: true } }),
+      this.prisma.user.findUnique({ where: { id: userIdB }, select: { role: true } }),
+    ]);
+
+    if (!userA || !userB) throw new BadRequestException('Uno de los usuarios no existe');
+
+    const canChat = await this.canRolesCommunicate(userA.role, userB.role);
+    if (!canChat) {
+      throw new ForbiddenException(`La comunicación entre ${userA.role} y ${userB.role} no está permitida por el administrador.`);
+    }
+
     // Sala 1:1 entre exactamente esos dos usuarios
     const rooms = await this.prisma.chatRoom.findMany({
       where: {

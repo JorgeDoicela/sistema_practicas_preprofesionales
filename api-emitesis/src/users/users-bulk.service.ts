@@ -23,8 +23,8 @@ export class UsersBulkService {
     await workbook.xlsx.load(buffer as any);
     const worksheet = workbook.getWorksheet(1);
     
-    if (!worksheet) {
-      throw new BadRequestException('El archivo Excel está vacío o no tiene hojas válidas.');
+    if (!worksheet || worksheet.rowCount > 500) {
+      throw new BadRequestException('El archivo Excel es inválido o supera el límite de 500 registros por carga.');
     }
 
     const usersToCreate: any[] = [];
@@ -35,13 +35,14 @@ export class UsersBulkService {
     const careers = await this.prisma.career.findMany();
     careers.forEach(c => careersMap.set(c.name.toLowerCase(), c.id));
 
-    const defaultPassword = await bcrypt.hash('Istpet.2026', 10);
+    const defaultPassword = await bcrypt.hash('Istpet.2026@Secure', 10);
 
     worksheet.eachRow((row, rowNumber) => {
       if (rowNumber === 1) return; // Saltar cabecera
 
-      const email = row.getCell(1).text?.trim();
-      const fullName = row.getCell(2).text?.trim();
+      // Sanitización de entradas (OWASP A03)
+      const email = row.getCell(1).text?.trim().toLowerCase().replace(/[<>\/\\"'`]/g, '');
+      const fullName = row.getCell(2).text?.trim().replace(/[<>\/\\"'`]/g, '');
       const roleStr = row.getCell(3).text?.trim().toUpperCase();
       const careerName = row.getCell(4).text?.trim();
 

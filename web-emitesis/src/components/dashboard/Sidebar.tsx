@@ -261,7 +261,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             {/* User Badge + Logout */}
             <div data-tour="sidebar-footer" className="p-6">
                 {user && (
-                    <div className="bg-white/5 rounded-3xl p-5 border border-white/10 mb-4">
+                    <div className="bg-white/5 rounded-3xl p-5 border border-white/10 mb-2">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-2xl bg-[#C5A059] flex items-center justify-center font-black text-[#003366] text-sm shrink-0">
                                 {user.fullName?.charAt(0).toUpperCase()}
@@ -273,6 +273,14 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                         </div>
                     </div>
                 )}
+
+                {/* Badge de Seguridad Enterprise */}
+                <div className="mb-4 px-2">
+                    <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-green-500/10 border border-green-500/20">
+                        <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                        <span className="text-[9px] font-black text-green-400 uppercase tracking-widest">Sesión Segura · AES-256</span>
+                    </div>
+                </div>
 
                 <button
                     onClick={() => {
