@@ -110,13 +110,46 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     const pathname = usePathname();
     const [user, setUser] = useState<UserType | null>(null);
     const { t } = useLanguage();
+    
+    const [width, setWidth] = useState(288);
+    const [isResizing, setIsResizing] = useState(false);
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
+        const storedWidth = localStorage.getItem("sidebarWidth");
         if (storedUser) {
             setTimeout(() => setUser(JSON.parse(storedUser)), 0);
         }
+        if (storedWidth) setWidth(parseInt(storedWidth));
     }, []);
+
+    const startResizing = (e: React.MouseEvent) => {
+        e.preventDefault();
+        setIsResizing(true);
+    };
+
+    const stopResizing = () => setIsResizing(false);
+
+    const resize = (e: MouseEvent) => {
+        if (isResizing) {
+            const newWidth = e.clientX;
+            if (newWidth >= 200 && newWidth <= 480) {
+                setWidth(newWidth);
+                localStorage.setItem("sidebarWidth", newWidth.toString());
+            }
+        }
+    };
+
+    useEffect(() => {
+        if (isResizing) {
+            window.addEventListener("mousemove", resize);
+            window.addEventListener("mouseup", stopResizing);
+        }
+        return () => {
+            window.removeEventListener("mousemove", resize);
+            window.removeEventListener("mouseup", stopResizing);
+        };
+    }, [isResizing]);
 
     const role: string = user?.role ?? "";
     const profileHref = getProfilePathForRole(role);
@@ -129,17 +162,34 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             {/* Overlay solo en móvil */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-[190] md:hidden"
+                    className="fixed inset-0 bg-black/50 z-[190] xl:hidden"
                     onClick={onClose}
                 />
             )}
-            <aside data-tour="sidebar" className={cn(
-                "bg-[#003366] text-white flex flex-col h-screen border-r border-white/5 shadow-2xl transition-all duration-300 ease-in-out overflow-hidden shrink-0",
-                "fixed top-0 left-0 z-[200] md:relative md:z-0",
-                isOpen 
-                    ? "w-72 translate-x-0 opacity-100" 
-                    : "w-0 -translate-x-full opacity-0"
-            )}>
+            <aside 
+                data-tour="sidebar" 
+                style={{ width: isOpen ? `${width}px` : '0px' }}
+                className={cn(
+                    "bg-[#003366] text-white flex flex-col h-screen border-r border-white/10 shadow-2xl transition-[transform,opacity] duration-300 ease-in-out z-[200] lg:relative lg:z-0",
+                    "fixed top-0 left-0",
+                    !isOpen && "-translate-x-full opacity-0",
+                    isResizing && "transition-none select-none"
+                )}
+            >
+                {/* Custom Scrollbar Styles */}
+                <style jsx global>{`
+                    .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+                    .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+                    .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+                    .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: rgba(197,160,89,0.5); }
+                `}</style>
+
+                {/* Resize Handle */}
+                <div
+                    onMouseDown={startResizing}
+                    className="absolute top-0 right-0 w-1.5 h-full cursor-col-resize hover:bg-[#C5A059]/30 active:bg-[#C5A059] transition-colors z-50 group"
+                />
+
             {/* Botón cerrar interno - visible en todo momento para facilitar el cierre */}
             <div className="absolute top-8 right-6 z-20">
                 <button
@@ -172,7 +222,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             </div>
 
             {/* Main Navigation */}
-            <nav data-tour="sidebar-navigation" className="flex-1 px-4 overflow-y-auto">
+            <nav data-tour="sidebar-navigation" className="flex-1 px-4 overflow-y-auto sidebar-scroll">
                 <p className="px-4 text-[9px] font-black uppercase tracking-[0.3em] text-white/30 mb-4">{t.sidebar.mainMenu}</p>
                 <div className="space-y-1.5">
                     {menuItems.map((item) => (

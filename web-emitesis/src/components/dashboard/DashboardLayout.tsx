@@ -22,7 +22,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const handleInitialState = () => {
-      if (window.innerWidth >= 768) {
+      if (window.innerWidth >= 1024) {
         setSidebarOpen(true);
       }
     };

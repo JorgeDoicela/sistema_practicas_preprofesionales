@@ -32,6 +32,7 @@ import { AnalyticsOverview } from "./AnalyticsOverview";
 import { attendancesService } from "@/services/attendances.service";
 import { settingsService } from "@/services/settings.service";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { AnnouncementCarousel } from "./AnnouncementCarousel";
 import dynamic from "next/dynamic";
 
 // Importación dinámica de Leaflet para evitar errores de SSR
@@ -508,8 +509,8 @@ export function DashboardMain() {
 
   return (
     <div className="space-y-8 md:space-y-12">
-      <section className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6">
-        <div>
+      <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
+        <div className="max-w-2xl">
           <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
             {appRole === ROLES.ESTUDIANTE
               ? t.dashboard.summaryStudent
@@ -517,24 +518,25 @@ export function DashboardMain() {
                 ? t.dashboard.summaryTutor
                 : t.dashboard.summaryAdmin}
           </span>
-          <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-[#003366] tracking-tight leading-tight">
             {t.dashboard.greeting}{" "}
-            <span className="text-slate-400">
+            <span className="text-slate-300">
               {user?.fullName?.split(" ")[0] || t.dashboard.defaultUser}
             </span>
           </h2>
-          <p className="text-slate-500 font-medium mt-2">
+          <p className="text-slate-500 font-medium mt-2 text-sm md:text-base">
             {t.dashboard.liveData}
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
+
+        <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
           {(appRole === ROLES.ADMIN || appRole === ROLES.COORDINADOR) && (
             <>
-              <div className="relative">
+              <div className="relative flex-1 sm:flex-none min-w-[200px]">
                 <select
                   value={selectedCareerId}
                   onChange={(e) => setSelectedCareerId(e.target.value)}
-                  className="pl-4 pr-10 py-2.5 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-xs font-black text-[#003366] uppercase tracking-widest appearance-none focus:outline-none focus:ring-2 focus:ring-[#C5A059]/20"
+                  className="w-full pl-4 pr-10 py-3 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-[10px] font-black text-[#003366] uppercase tracking-widest appearance-none focus:outline-none focus:ring-2 focus:ring-[#C5A059]/20"
                 >
                   <option value="">{t.dashboard.allInstitution}</option>
                   {careers.map((c) => (
@@ -547,20 +549,21 @@ export function DashboardMain() {
               <button
                 onClick={handleExport}
                 disabled={exporting}
-                className="flex items-center gap-2 px-5 py-2.5 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-sm font-bold text-slate-600 disabled:opacity-50"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-xs font-bold text-slate-600 disabled:opacity-50 flex-1 sm:flex-none"
               >
                 {exporting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <FileDown className="w-4 h-4 text-[#C5A059]" />
                 )}
-                <span className="hidden sm:inline">{t.dashboard.masterReport}</span>
+                <span>{t.dashboard.masterReport}</span>
               </button>
             </>
           )}
-          <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
+          
+          <div className="hidden sm:flex items-center gap-3 bg-white p-1.5 rounded-2xl shadow-sm border border-slate-100 ml-auto lg:ml-0">
             <div className="px-4 py-2 bg-emerald-50 rounded-xl">
-              <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+              <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest whitespace-nowrap">
                 {loading ? t.dashboard.syncing : error ? t.dashboard.apiError : t.dashboard.dataOk}
               </span>
             </div>
@@ -568,44 +571,24 @@ export function DashboardMain() {
         </div>
       </section>
 
-      {/* Anuncios Globales */}
-      <AnimatePresence>
-        {announcements
-          .filter(a => !closedAnnouncements.includes(a.id))
-          .map((a) => (
-            <motion.div
-              key={a.id}
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className={`relative overflow-hidden group rounded-[2rem] border-l-8 p-6 flex items-start gap-6 shadow-xl ${
-                a.type === 'SUCCESS' ? 'bg-emerald-50 border-emerald-500 text-emerald-900' :
-                a.type === 'WARNING' ? 'bg-amber-50 border-amber-500 text-amber-900' :
-                a.type === 'DANGER' ? 'bg-rose-50 border-rose-500 text-rose-900' :
-                'bg-blue-50 border-blue-500 text-blue-900'
-              }`}
-            >
-              <div className={`p-4 rounded-2xl bg-white shadow-sm flex-shrink-0 ${
-                a.type === 'SUCCESS' ? 'text-emerald-500' :
-                a.type === 'WARNING' ? 'text-amber-500' :
-                a.type === 'DANGER' ? 'text-rose-500' :
-                'text-blue-500'
-              }`}>
-                 <Megaphone className="w-6 h-6" />
-              </div>
-              <div className="flex-1 pr-10">
-                 <h4 className="text-xl font-black tracking-tight leading-none mb-2 uppercase">{a.title}</h4>
-                 <p className="text-sm font-medium opacity-80 leading-relaxed">{a.content}</p>
-              </div>
-              <button 
-                onClick={() => setClosedAnnouncements([...closedAnnouncements, a.id])}
-                className="absolute top-6 right-6 p-2 rounded-full hover:bg-black/5 transition-colors"
-              >
-                 <X className="w-4 h-4 opacity-40 hover:opacity-100" />
-              </button>
-            </motion.div>
-          ))}
-      </AnimatePresence>
+      {/* Anuncios Globales (Carrusel Compacto) */}
+      <div className="relative group">
+        <AnimatePresence mode="wait">
+          {announcements.length > 0 && (() => {
+            const visibleAnnouncements = announcements.filter(a => !closedAnnouncements.includes(a.id));
+            if (visibleAnnouncements.length === 0) return null;
+
+            // Estado para el carrusel interno
+            return (
+              <AnnouncementCarousel 
+                items={visibleAnnouncements} 
+                onClose={(id) => setClosedAnnouncements([...closedAnnouncements, id])}
+                t={t}
+              />
+            );
+          })()}
+        </AnimatePresence>
+      </div>
 
       {error && (
         <div className="flex items-center gap-3 rounded-2xl border border-rose-100 bg-rose-50 px-5 py-4 text-rose-800 text-sm font-semibold">
@@ -760,7 +743,7 @@ export function DashboardMain() {
                   <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">{t.dashboard.analytics.title}</h3>
                 </div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-12">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-12">
                   <div className="space-y-6">
                     <div>
                       <div className="flex justify-between mb-2 text-[10px] font-black uppercase tracking-widest">
