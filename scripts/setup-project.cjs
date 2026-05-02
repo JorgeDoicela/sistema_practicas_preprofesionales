@@ -1,6 +1,5 @@
 /**
- * Setup Script: Industrializa el arranque del proyecto.
- * Realiza verificaciones de entorno, genera Prisma Client y resetea la BD.
+ * Setup Script: Industrializa el arranque del proyecto con resiliencia.
  */
 const { execSync } = require('child_process');
 const fs = require('fs');
@@ -9,22 +8,31 @@ const path = require('path');
 const root = path.join(__dirname, '..');
 const apiDir = path.join(root, 'api-emitesis');
 
-function run(cmd, cwd = root) {
-  console.log(`\n> Ejecutando: ${cmd} (en ${path.relative(root, cwd) || '.'})`);
-  try {
-    execSync(cmd, { cwd, stdio: 'inherit' });
-  } catch (e) {
-    console.error(`Error ejecutando comando: ${cmd}`);
-    process.exit(1);
+/**
+ * Ejecuta un comando con reintentos automáticos (útil para DBs en la nube como Neon)
+ */
+function run(cmd, cwd = root, retries = 3) {
+  for (let i = 1; i <= retries; i++) {
+    console.log(`\n> [${i}/${retries}] Ejecutando: ${cmd} (en ${path.relative(root, cwd) || '.'})`);
+    try {
+      execSync(cmd, { cwd, stdio: 'inherit' });
+      return; // Éxito, salir de la función
+    } catch (e) {
+      if (i === retries) {
+        console.error(`\x1b[31m[ERROR]\x1b[0m Falló tras ${retries} intentos: ${cmd}`);
+        process.exit(1);
+      }
+      console.warn(`\x1b[33m[REINTENTO]\x1b[0m El comando falló. Esperando 5 segundos antes de reintentar...`);
+      execSync('powershell -Command "Start-Sleep -s 5"', { stdio: 'ignore' });
+    }
   }
 }
 
 console.log('===================================================');
-const title = '   SISTEMA EMITESIS - CONFIGURACIÓN INDUSTRIAL   ';
-console.log(`\x1b[33m${title}\x1b[0m`);
+console.log('\x1b[33m   SISTEMA EMITESIS - CONFIGURACIÓN INDUSTRIAL   \x1b[0m');
 console.log('===================================================');
 
-// 1. Verificar .env (ya no se copian de example porque el usuario quiere comitearlos)
+// 1. Verificar .env
 const envs = [
   path.join(root, '.env'),
   path.join(apiDir, '.env'),
@@ -33,26 +41,42 @@ const envs = [
 
 envs.forEach(env => {
   if (!fs.existsSync(env)) {
-    console.warn(`\x1b[31m[ADVERTENCIA]\x1b[0m No se encontró el archivo: ${path.relative(root, env)}`);
+    console.warn(`\x1b[31m[ADVERTENCIA]\x1b[0m No se encontró: ${path.relative(root, env)}`);
   } else {
     console.log(`\x1b[32m[OK]\x1b[0m Configuración detectada: ${path.relative(root, env)}`);
   }
 });
 
-// 2. Generar Prisma Client
+// 2. Limpieza de Prisma (Evita EPERM en Windows)
+try {
+  const prismaDir = path.join(root, 'node_modules', '.prisma');
+  if (fs.existsSync(prismaDir)) {
+    console.log('\n[INFO] Limpiando caché de Prisma...');
+    fs.rmSync(prismaDir, { recursive: true, force: true });
+  }
+} catch (e) {}
+
+// 3. Generar Prisma Client
 run('npx prisma generate', apiDir);
 
-// 3. Sincronizar Base de Datos
+// 4. Sincronizar Base de Datos (con reintentos para manejar timeouts de Neon)
 const isVercel = process.env.VERCEL === '1' || !!process.env.CI;
 
 if (isVercel) {
   console.log('\n\x1b[36m[INFO]\x1b[0m Entorno de CI/Vercel detectado. Usando "migrate deploy"...');
   run('npx prisma migrate deploy', apiDir);
-  console.log('\x1b[36m[INFO]\x1b[0m Ejecutando seed de base de datos...');
+  console.log('\x1b[36m[INFO]\x1b[0m Ejecutando seed...');
   run('npx prisma db seed', apiDir);
 } else {
-  console.log('\n\x1b[31m[IMPORTANTE]\x1b[0m Se procederá a resetear y sembrar (seed) la base de datos...');
-  run('npx prisma migrate reset --force', apiDir);
+  console.log('\n\x1b[31m[IMPORTANTE]\x1b[0m Se procederá a un REINICIO TOTAL de la base de datos...');
+  console.log('[INFO] Usando db push --force-reset para saltar bloqueos de seguridad (advisory locks).');
+  
+  // 1. Forzar el reset del esquema (esto borra todo y recrea tablas)
+  run('npx prisma db push --force-reset', apiDir, 3);
+  
+  // 2. Ejecutar el sembrado de datos (seed)
+  console.log('\x1b[36m[INFO]\x1b[0m Poblando base de datos con datos iniciales (seed)...');
+  run('npx prisma db seed', apiDir, 2);
 }
 
 console.log('\n===================================================');

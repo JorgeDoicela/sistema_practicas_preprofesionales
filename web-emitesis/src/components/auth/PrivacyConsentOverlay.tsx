@@ -26,9 +26,10 @@ export const PrivacyConsentOverlay: React.FC<PrivacyConsentOverlayProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [linkOpened, setLinkOpened] = useState(false);
 
   const handleAccept = async () => {
-    if (!acceptedTerms) return;
+    if (!acceptedTerms || !linkOpened) return;
     
     setLoading(true);
     try {
@@ -135,32 +136,46 @@ export const PrivacyConsentOverlay: React.FC<PrivacyConsentOverlayProps> = ({
              </div>
 
              <div className="space-y-8">
-                <label className="flex items-start gap-4 p-6 bg-blue-50/50 rounded-2xl border border-blue-100 cursor-pointer group hover:bg-blue-50 transition-colors">
-                   <div className="relative mt-1">
-                      <input 
-                        type="checkbox" 
-                        checked={acceptedTerms}
-                        onChange={(e) => setAcceptedTerms(e.target.checked)}
-                        className="peer hidden" 
-                      />
-                      <div className="w-6 h-6 border-2 border-[#003366]/20 rounded-lg flex items-center justify-center transition-all peer-checked:bg-[#003366] peer-checked:border-[#003366]">
-                         <Check className="w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
-                      </div>
-                   </div>
-                   <div className="flex-1">
-                      <p className="text-xs font-bold text-[#003366] leading-relaxed">
-                         He leído y acepto expresamente el <Link href="/privacidad" target="_blank" className="underline decoration-2 underline-offset-4 hover:text-[#C5A059]">Aviso de Privacidad</Link> y el tratamiento de mis datos personales según la ley ecuatoriana.
-                      </p>
-                   </div>
-                </label>
+                <div className={cn(
+                    "flex flex-col gap-2 p-6 rounded-2xl border transition-all",
+                    linkOpened ? "bg-blue-50/50 border-blue-100" : "bg-slate-50 border-slate-200 opacity-60"
+                )}>
+                    <label className={cn(
+                        "flex items-start gap-4 cursor-pointer group",
+                        !linkOpened && "cursor-not-allowed"
+                    )}>
+                    <div className="relative mt-1">
+                        <input 
+                            type="checkbox" 
+                            checked={acceptedTerms}
+                            disabled={!linkOpened}
+                            onChange={(e) => setAcceptedTerms(e.target.checked)}
+                            className="peer hidden" 
+                        />
+                        <div className="w-6 h-6 border-2 border-[#003366]/20 rounded-lg flex items-center justify-center transition-all peer-checked:bg-[#003366] peer-checked:border-[#003366]">
+                            <Check className="w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                        </div>
+                    </div>
+                    <div className="flex-1">
+                        <p className="text-xs font-bold text-[#003366] leading-relaxed">
+                            He leído y acepto expresamente el <Link onClick={() => setLinkOpened(true)} href="/privacidad" target="_blank" className="underline decoration-2 underline-offset-4 hover:text-[#C5A059]">Aviso de Privacidad</Link> y el tratamiento de mis datos personales según la ley ecuatoriana.
+                        </p>
+                        {!linkOpened && (
+                            <p className="text-[9px] font-black text-red-500 uppercase mt-2 animate-pulse">
+                                * Debe abrir el link de política antes de aceptar
+                            </p>
+                        )}
+                    </div>
+                    </label>
+                </div>
 
                 <div className="flex flex-col md:flex-row gap-4">
                    <button
                      onClick={handleAccept}
-                     disabled={!acceptedTerms || loading}
+                     disabled={!acceptedTerms || !linkOpened || loading}
                      className={cn(
                         "flex-1 h-16 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 shadow-xl",
-                        acceptedTerms && !loading 
+                        acceptedTerms && linkOpened && !loading 
                            ? "bg-[#003366] text-white hover:bg-[#003366]/90 shadow-blue-900/10 active:scale-[0.98]" 
                            : "bg-slate-200 text-slate-400 cursor-not-allowed"
                      )}
@@ -170,6 +185,7 @@ export const PrivacyConsentOverlay: React.FC<PrivacyConsentOverlayProps> = ({
                    </button>
                    
                    <Link 
+                     onClick={() => setLinkOpened(true)}
                      href="/privacidad" 
                      target="_blank"
                      className="px-8 h-16 rounded-2xl border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center justify-center gap-2 hover:bg-slate-50 transition-all active:scale-[0.98]"

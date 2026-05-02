@@ -11,13 +11,17 @@ export class PrivacyService {
     private chatService: ChatService,
   ) {}
 
-  async recordConsent(userId: string, dto: PrivacyConsentDto) {
+  async recordConsent(userId: string, dto: PrivacyConsentDto, ip?: string, userAgent?: string) {
     if (!dto.accepted) {
       throw new BadRequestException('Debe aceptar la política de privacidad para continuar.');
     }
 
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+
     try {
-      return await this.prisma.user.update({
+      // 1. Actualizar el estado del usuario
+      await this.prisma.user.update({
         where: { id: userId },
         data: {
           lopdpAccepted: true,
@@ -25,13 +29,37 @@ export class PrivacyService {
           lopdpVersion: dto.version,
         },
       });
+
+      // 2. Crear un log detallado para auditoría (RF-LOPDP)
+      return await this.prisma.lopdpLog.create({
+        data: {
+          userId,
+          fullName: user.fullName,
+          email: user.email,
+          ip: ip || 'Desconocida',
+          userAgent: userAgent || 'Desconocido',
+          version: dto.version,
+        },
+      });
     } catch (error) {
-      // Si el token contiene un userId obsoleto (p.ej. después de un reseed), forzar re-login.
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
         throw new UnauthorizedException('Tu sesión ya no es válida. Inicia sesión nuevamente.');
       }
       throw error;
     }
+  }
+
+  async findAllLogs() {
+    return this.prisma.lopdpLog.findMany({
+      orderBy: { acceptedAt: 'desc' },
+      include: {
+        user: {
+          select: {
+            role: true,
+          }
+        }
+      }
+    });
   }
 
   async createArcoRequest(userId: string, dto: ArcoRequestDto) {

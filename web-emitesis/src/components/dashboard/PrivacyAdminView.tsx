@@ -18,6 +18,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { privacyService } from "@/services/privacy.service";
 import { toast } from "sonner";
+import Link from "next/link";
 
 interface ArcoRequest {
   id: string;
@@ -134,13 +135,22 @@ export function PrivacyAdminView() {
             Administración institucional de solicitudes bajo la Ley Orgánica de Protección de Datos (LOPDP).
           </p>
         </div>
-        <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-2">
-          <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
-             <ShieldAlert className="w-5 h-5" />
-          </div>
-          <div className="pr-4">
-            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Estado LOPDP</p>
-            <p className="text-sm font-black text-slate-800">Gobernanza Activa</p>
+        <div className="flex items-center gap-4">
+          <Link 
+            href="/admin/privacidad/logs"
+            className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-all text-[10px] font-black uppercase tracking-widest text-[#003366]"
+          >
+            <ShieldAlert className="w-4 h-4 text-[#C5A059]" />
+            Ver Logs de Aceptación
+          </Link>
+          <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-2">
+            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+               <ShieldAlert className="w-5 h-5" />
+            </div>
+            <div className="pr-4">
+              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Estado LOPDP</p>
+              <p className="text-sm font-black text-slate-800">Gobernanza Activa</p>
+            </div>
           </div>
         </div>
       </div>

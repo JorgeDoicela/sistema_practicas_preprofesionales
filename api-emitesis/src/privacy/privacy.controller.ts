@@ -13,7 +13,9 @@ export class PrivacyController {
 
   @Post('consent')
   recordConsent(@Req() req: any, @Body() dto: PrivacyConsentDto) {
-    return this.privacyService.recordConsent(req.user.userId, dto);
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const userAgent = req.headers['user-agent'];
+    return this.privacyService.recordConsent(req.user.userId, dto, String(ip), userAgent);
   }
 
   @Post('arco-request')
@@ -35,9 +37,16 @@ export class PrivacyController {
 
   @Get('admin/requests')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.COORDINADOR)
   findAllAdmin() {
     return this.privacyService.findAllRequests();
+  }
+
+  @Get('admin/logs')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.COORDINADOR)
+  findAllLogs() {
+    return this.privacyService.findAllLogs();
   }
 
   @Patch('admin/requests/:id/respond')

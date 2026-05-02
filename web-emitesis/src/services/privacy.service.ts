@@ -23,6 +23,10 @@ export const privacyService = {
     return api.get('/privacy/admin/requests');
   },
 
+  async getLopdpLogs() {
+    return api.get('/privacy/admin/logs');
+  },
+
   async respondAdmin(requestId: string, responseText: string, status: string) {
     return api.patch(`/privacy/admin/requests/${requestId}/respond`, { 
       response: responseText, 

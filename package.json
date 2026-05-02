@@ -12,6 +12,7 @@
     "docker:down": "node scripts/docker-down.cjs",
     "docker:logs": "docker compose logs -f",
     "setup": "node scripts/setup-project.cjs",
+    "fix:setup": "powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Where-Object { $_.Id -ne $PID } | Stop-Process -Force -ErrorAction SilentlyContinue; rd -s -q node_modules\\.prisma; npm run setup\"",
     "postinstall": "npm run setup",
     "dev:back": "npm run start:dev -w api-emitesis",
     "dev:front": "npm run dev -w web-emitesis",

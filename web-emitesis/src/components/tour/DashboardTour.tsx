@@ -556,7 +556,7 @@ export function DashboardTour() {
           animate={{ scale: 1, opacity: 1 }}
           whileHover={{ scale: 1.06 }}
           whileTap={{ scale: 0.96 }}
-          className="fixed bottom-6 right-6 z-[90] flex h-[3.75rem] w-[3.75rem] items-center justify-center rounded-2xl bg-gradient-to-br from-[#003366] via-[#0a4d8c] to-[#003366] text-white shadow-[0_12px_40px_-8px_rgba(0,51,102,0.55)] ring-2 ring-[#C5A059]/50 ring-offset-2 ring-offset-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-[#C5A059]"
+          className="fixed bottom-6 right-24 z-[90] flex h-[3.75rem] w-[3.75rem] items-center justify-center rounded-2xl bg-gradient-to-br from-[#003366] via-[#0a4d8c] to-[#003366] text-white shadow-[0_12px_40px_-8px_rgba(0,51,102,0.55)] ring-2 ring-[#C5A059]/50 ring-offset-2 ring-offset-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-[#C5A059]"
           aria-label="Abrir recorrido de ayuda del panel"
           title="Ayuda: recorrido con flechas"
         >
