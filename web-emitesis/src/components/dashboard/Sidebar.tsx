@@ -129,24 +129,27 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             {/* Overlay solo en móvil */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-[190] lg:hidden"
+                    className="fixed inset-0 bg-black/50 z-[190] md:hidden"
                     onClick={onClose}
                 />
             )}
             <aside data-tour="sidebar" className={cn(
-                "w-72 bg-[#003366] text-white flex flex-col h-screen border-r border-white/5 shadow-2xl z-[200]",
-                "fixed top-0 left-0 transition-transform duration-300 ease-in-out",
-                "lg:sticky lg:translate-x-0 lg:shrink-0",
-                isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+                "bg-[#003366] text-white flex flex-col h-screen border-r border-white/5 shadow-2xl transition-all duration-300 ease-in-out overflow-hidden shrink-0",
+                "fixed top-0 left-0 z-[200] md:relative md:z-0",
+                isOpen 
+                    ? "w-72 translate-x-0 opacity-100" 
+                    : "w-0 -translate-x-full opacity-0"
             )}>
-            {/* Botón cerrar solo en móvil */}
-            <button
-                onClick={onClose}
-                className="lg:hidden absolute top-4 right-4 w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-colors z-10"
-                aria-label={t.sidebar.closeMenu}
-            >
-                <X className="w-4 h-4" />
-            </button>
+            {/* Botón cerrar interno - visible en todo momento para facilitar el cierre */}
+            <div className="absolute top-8 right-6 z-20">
+                <button
+                    onClick={onClose}
+                    className="p-2 rounded-xl bg-white/10 text-white/50 hover:text-white hover:bg-white/20 transition-all flex items-center justify-center"
+                    aria-label={t.sidebar.closeMenu}
+                >
+                    <X className="w-5 h-5" />
+                </button>
+            </div>
 
             {/* Brand Header */}
             <div className="p-8 pb-12">
