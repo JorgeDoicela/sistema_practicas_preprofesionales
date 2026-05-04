@@ -222,10 +222,8 @@ export class InternshipsService {
     const where: any = {};
     if (filter?.careerId) {
       where.careerId = filter.careerId;
-    } else if (filter?.role === 'COORDINADOR') {
-      // Si el coordinador no envía careerId, no listar nada (evitar fuga de datos)
-      return { items: [], meta: { total: 0, page, lastPage: 0 } };
     }
+    // Si es coordinador y no tiene careerId, permitimos ver todo (Coordinador Institucional)
 
     const [items, total] = await Promise.all([
       this.prisma.internship.findMany({

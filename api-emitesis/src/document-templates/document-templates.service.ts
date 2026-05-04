@@ -216,6 +216,7 @@ export class DocumentTemplatesService {
         isRequired: dto.isRequired ?? true,
         isCertificateSlot,
         blankFileKey: dto.blankFileKey?.trim() || null,
+        careerId: dto.careerId || null,
       },
     });
 
@@ -261,6 +262,7 @@ export class DocumentTemplatesService {
         ...(dto.blankFileKey !== undefined
           ? { blankFileKey: dto.blankFileKey?.trim() || null }
           : {}),
+        ...(dto.careerId !== undefined ? { careerId: dto.careerId || null } : {}),
       },
     });
 

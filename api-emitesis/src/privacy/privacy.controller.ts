@@ -37,7 +37,7 @@ export class PrivacyController {
 
   @Get('admin/requests')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.COORDINADOR)
   findAllAdmin() {
     return this.privacyService.findAllRequests();
   }
@@ -51,7 +51,7 @@ export class PrivacyController {
 
   @Patch('admin/requests/:id/respond')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.COORDINADOR)
   respondAdmin(
     @Param('id') id: string,
     @Body() body: { response: string; status: string }

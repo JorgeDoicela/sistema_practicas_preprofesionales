@@ -37,4 +37,8 @@ export class CreateDocumentTemplateDto {
   @IsString()
   @MaxLength(120)
   blankFileKey?: string | null;
+
+  @IsOptional()
+  @IsString()
+  careerId?: string | null;
 }

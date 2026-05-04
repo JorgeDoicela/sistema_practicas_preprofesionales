@@ -12,8 +12,12 @@ import {
   Building2, 
   AlertCircle,
   Loader2,
-  ChevronRight
+  ChevronRight,
+  TrendingUp,
+  ShieldAlert
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { reportsService, GlobalStats } from "@/services/reports.service";
 import { cn } from "@/lib/utils";
@@ -100,28 +104,30 @@ export default function ReportesPage() {
                 title={t.coordinator.reports.stats.activeInternships}
                 value={String(stats?.assignmentsCount || 0)} 
                 hint={t.coordinator.reports.stats.activeInternshipsHint}
-                icon={<Users />}
+                icon={<Users className="w-6 h-6" />}
                 color="blue"
+                href="/coordinador/estudiantes"
               />
               <ReportStatCard 
                 title={t.coordinator.reports.stats.pendingReviews}
                 value={String(stats?.pendingDocs || 0)} 
                 hint={t.coordinator.reports.stats.pendingReviewsHint}
-                icon={<BarChart3 />}
+                icon={<BarChart3 className="w-6 h-6" />}
                 color="rose"
+                href="/coordinador/estudiantes"
               />
               <ReportStatCard 
                 title={t.coordinator.reports.stats.hoursCompletion}
                 value={`${stats?.totalCompletedHours || 0}h`} 
                 hint={t.coordinator.reports.stats.hoursCompletionHint.replace("{total}", String(stats?.totalPlannedHours || 0))}
-                icon={<Clock />}
+                icon={<TrendingUp className="w-6 h-6" />}
                 color="amber"
               />
               <ReportStatCard 
                 title={t.coordinator.reports.stats.alerts}
                 value={String(stats?.activeBlocks || 0)} 
                 hint={t.coordinator.reports.stats.alertsHint}
-                icon={<AlertCircle />}
+                icon={<ShieldAlert className="w-6 h-6" />}
                 color="indigo"
               />
             </section>
@@ -224,30 +230,61 @@ export default function ReportesPage() {
   );
 }
 
-function ReportStatCard({ title, value, hint, icon, color }: any) {
+function ReportStatCard({ title, value, hint, icon, color, href }: any) {
+  const router = useRouter();
   const colorMap: any = {
-    blue: "bg-blue-500 text-blue-500",
-    rose: "bg-rose-500 text-rose-500",
-    amber: "bg-amber-500 text-amber-500",
-    indigo: "bg-indigo-500 text-indigo-500",
+    blue: "from-blue-600 to-blue-400 text-blue-600 shadow-blue-200",
+    rose: "from-rose-600 to-rose-400 text-rose-600 shadow-rose-200",
+    amber: "from-amber-600 to-amber-400 text-amber-600 shadow-amber-200",
+    indigo: "from-indigo-600 to-indigo-400 text-indigo-600 shadow-indigo-200",
+  };
+
+  const CardWrapper = ({ children }: { children: React.ReactNode }) => {
+    if (href) {
+      return (
+        <Link href={href} className="block group">
+          {children}
+        </Link>
+      );
+    }
+    return <div className="group">{children}</div>;
   };
 
   return (
-    <motion.div 
-      whileHover={{ y: -5 }}
-      className="bg-white p-5 sm:p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl relative overflow-hidden group"
-    >
-      <div className="flex items-start justify-between mb-6 md:mb-8">
-        <div className={cn("p-4 rounded-2xl bg-opacity-10", colorMap[color].split(" ")[0])}>
-          {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: cn("w-6 h-6", colorMap[color].split(" ")[1]) })}
+    <CardWrapper>
+      <motion.div 
+        whileHover={{ y: -8, scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className={cn(
+          "bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-xl relative overflow-hidden transition-all duration-300",
+          href && "cursor-pointer hover:border-[#C5A059]/30"
+        )}
+      >
+        <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
+           {React.cloneElement(icon as React.ReactElement, { className: "w-32 h-32 rotate-12" })}
         </div>
-        <div className="w-8 h-8 rounded-full border border-slate-100 flex items-center justify-center text-slate-300 group-hover:text-[#003366] transition-colors">
-           <ChevronRight className="w-4 h-4" />
+
+        <div className="flex items-start justify-between mb-8">
+          <div className={cn(
+            "w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br shadow-lg",
+            colorMap[color].split(" ").slice(0, 2).join(" "),
+            "text-white"
+          )}>
+            {icon}
+          </div>
+          {href && (
+            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-[#003366] group-hover:text-white transition-all">
+               <ChevronRight className="w-5 h-5" />
+            </div>
+          )}
         </div>
-      </div>
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
-      <h4 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tighter break-words">{value}</h4>
-      <p className="text-[11px] font-semibold text-slate-500 mt-3">{hint}</p>
-    </motion.div>
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
+        <h4 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tighter">{value}</h4>
+        <p className="text-[11px] font-semibold text-slate-500 mt-3 flex items-center gap-2">
+           <div className={cn("w-1.5 h-1.5 rounded-full", colorMap[color].split(" ")[0].replace('from-', 'bg-'))} />
+           {hint}
+        </p>
+      </motion.div>
+    </CardWrapper>
   );
 }

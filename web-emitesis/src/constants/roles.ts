@@ -10,7 +10,7 @@ export type Role = typeof ROLES[keyof typeof ROLES];
 
 export const ROLE_LABELS: Record<Role, string> = {
   [ROLES.ADMIN]: 'Administrador',
-  [ROLES.COORDINADOR]: 'Coordinador de Prácticas',
+  [ROLES.COORDINADOR]: 'Coordinador de Cumplimiento LOPDP',
   [ROLES.TUTOR]: 'Tutor Académico',
   [ROLES.ESTUDIANTE]: 'Estudiante',
   [ROLES.EMPRESA]: 'Empresa',
@@ -18,7 +18,7 @@ export const ROLE_LABELS: Record<Role, string> = {
 
 export const ROLE_REDIRECTS: Record<Role, string> = {
   [ROLES.ADMIN]: '/dashboard',
-  [ROLES.COORDINADOR]: '/dashboard',
+  [ROLES.COORDINADOR]: '/admin/privacidad',
   [ROLES.TUTOR]: '/tutor-academico/dashboard',
   [ROLES.ESTUDIANTE]: '/dashboard',
   [ROLES.EMPRESA]: '/empresa/dashboard',

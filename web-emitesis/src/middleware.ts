@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { ROLE_REDIRECTS, Role } from './constants/roles';
 
 /** Rutas completamente públicas (no requieren autenticación ni redireccionan). */
 const PUBLIC_PREFIXES = [
@@ -46,9 +47,9 @@ export function middleware(request: NextRequest) {
   
   // SI ESTÁ LOGEADO y trata de ir a Login/Registro → Redirigir a su Dashboard
   if (token && user && (pathname === '/login' || pathname === '/registrarse' || pathname === '/')) {
-    const role = user.role;
-    // Redirección simple al dashboard general (el layout interno se encargará de la precisión por rol)
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    const role = user.role as Role;
+    const homePath = ROLE_REDIRECTS[role] || '/dashboard';
+    return NextResponse.redirect(new URL(homePath, request.url));
   }
 
   // SI NO ESTÁ LOGEADO y trata de ir a rutas privadas → Redirigir a Login

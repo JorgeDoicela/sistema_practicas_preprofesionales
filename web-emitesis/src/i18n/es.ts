@@ -266,7 +266,7 @@ export const es = {
     closeMenu: "Cerrar menú",
     roles: {
       ADMIN: "Administrador",
-      COORDINADOR: "Coordinador",
+      COORDINADOR: "Coordinador de Cumplimiento LOPDP",
       TUTOR: "Tutor Académico",
 
       ESTUDIANTE: "Estudiante",
@@ -723,7 +723,7 @@ export const es = {
     noData: "No hay datos disponibles",
     roles: {
       ADMIN: "Administrador",
-      COORDINADOR: "Coordinador",
+      COORDINADOR: "Coordinador de Cumplimiento LOPDP",
       TUTOR: "Tutor Académico",
 
       ESTUDIANTE: "Estudiante",

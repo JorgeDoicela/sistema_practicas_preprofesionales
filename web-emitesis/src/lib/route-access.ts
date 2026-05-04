@@ -6,6 +6,7 @@ import { Role, ROLES, ROLE_REDIRECTS } from "@/constants/roles";
  */
 const RULES: { match: RegExp; allow: Role[] }[] = [
   // ── Rutas protegidas (orden: más específico primero) ───────────────────────
+  { match: /^\/admin\/privacidad(\/|$)/, allow: [ROLES.ADMIN, ROLES.COORDINADOR] },
   { match: /^\/admin(\/|$)/, allow: [ROLES.ADMIN] },
   { match: /^\/coordinador(\/|$)/, allow: [ROLES.ADMIN, ROLES.COORDINADOR] },
   { match: /^\/tutor-academico\/perfil/, allow: [ROLES.ADMIN, ROLES.TUTOR] },

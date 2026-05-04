@@ -36,4 +36,8 @@ export class UpdateDocumentTemplateDto {
   @IsString()
   @MaxLength(120)
   blankFileKey?: string | null;
+
+  @IsOptional()
+  @IsString()
+  careerId?: string | null;
 }
