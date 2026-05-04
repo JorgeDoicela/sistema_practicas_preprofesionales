@@ -19,6 +19,7 @@ import {
   ClipboardCheck,
   MapPin,
   User,
+  AlertTriangle,
 } from "lucide-react";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { motion, AnimatePresence } from "framer-motion";
