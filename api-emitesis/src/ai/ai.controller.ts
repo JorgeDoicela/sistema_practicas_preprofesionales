@@ -86,7 +86,7 @@ export class AiController {
    * Recibe la imagen en base64 y devuelve una descripción generada por IA.
    */
   @Post('suggest-description')
-  @Roles(Role.ESTUDIANTE, Role.ADMIN)
+  @Roles(Role.ESTUDIANTE)
   async suggestDescription(@Body() body: SuggestDescriptionDto) {
     const description = await this.aiService.suggestActivityDescription(
       body.base64Image,
@@ -99,7 +99,7 @@ export class AiController {
    * RF-AI-01: Endpoint de consulta para el Copilot de Estudiantes.
    */
   @Post('ask')
-  @Roles(Role.ESTUDIANTE, Role.ADMIN)
+  @Roles(Role.ESTUDIANTE)
   async ask(@Body() body: AskDto) {
     const answer = await this.aiService.askQuestion(
       body.context,
@@ -112,7 +112,7 @@ export class AiController {
    * RF-AI-01: Pre-verificación de documentos PDF.
    */
   @Post('pre-verify')
-  @Roles(Role.ESTUDIANTE, Role.ADMIN)
+  @Roles(Role.ESTUDIANTE)
   async preVerify(@Body() body: PreVerifyDto, @Req() req: any) {
     return this.aiService.preVerifyDocument(
       body.documentName,
@@ -123,7 +123,7 @@ export class AiController {
   }
 
   @Post('risk-assessment')
-  @Roles(Role.ADMIN, Role.COORDINADOR)
+  @Roles(Role.COORDINADOR)
   async riskAssessment(@Body() body: RiskAssessmentDto) {
     const analysis = await this.aiService.getRiskAssessment(body);
     return { analysis };

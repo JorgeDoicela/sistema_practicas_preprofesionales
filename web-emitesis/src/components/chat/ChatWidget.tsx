@@ -57,7 +57,7 @@ export default function ChatWidget() {
   const ROLE_LABELS: Record<string, string> = {
     ADMIN: t.sidebar.roles.ADMIN,
     COORDINADOR: t.sidebar.roles.COORDINADOR,
-    TUTOR: t.sidebar.roles.TUTOR_ACADEMICO,
+    TUTOR: t.sidebar.roles.TUTOR,
 
     ESTUDIANTE: t.sidebar.roles.ESTUDIANTE,
     EMPRESA: t.sidebar.roles.EMPRESA,

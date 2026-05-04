@@ -30,7 +30,7 @@ export class DocumentTemplatesController {
   constructor(private readonly documentTemplatesService: DocumentTemplatesService) {}
 
   @Get('blank-format-keys')
-  @Roles(Role.COORDINADOR, Role.ADMIN)
+  @Roles(Role.COORDINADOR)
   async knownFormats() {
     const keys = await this.documentTemplatesService.resolveBlankFormatKeys();
     return {
@@ -40,7 +40,7 @@ export class DocumentTemplatesController {
   }
 
   @Delete('blank-template')
-  @Roles(Role.COORDINADOR, Role.ADMIN)
+  @Roles(Role.COORDINADOR)
   removeBlank(@Query('key') key?: string) {
     if (!key?.trim()) {
       throw new BadRequestException('Indique el parámetro key con el nombre del archivo .docx');
@@ -49,7 +49,7 @@ export class DocumentTemplatesController {
   }
 
   @Post('upload-blank')
-  @Roles(Role.COORDINADOR, Role.ADMIN)
+  @Roles(Role.COORDINADOR)
   @UseInterceptors(
     FileInterceptor('file', {
       limits: { fileSize: 20 * 1024 * 1024 },
@@ -73,25 +73,25 @@ export class DocumentTemplatesController {
   }
 
   @Get()
-  @Roles(Role.COORDINADOR, Role.ADMIN)
+  @Roles(Role.COORDINADOR)
   findAll(@Query('includeInactive') includeInactive?: string) {
     return this.documentTemplatesService.findAllForAdmin(includeInactive === 'true');
   }
 
   @Post()
-  @Roles(Role.COORDINADOR, Role.ADMIN)
+  @Roles(Role.COORDINADOR)
   create(@Body() dto: CreateDocumentTemplateDto) {
     return this.documentTemplatesService.create(dto);
   }
 
   @Patch(':id')
-  @Roles(Role.COORDINADOR, Role.ADMIN)
+  @Roles(Role.COORDINADOR)
   update(@Param('id') id: string, @Body() dto: UpdateDocumentTemplateDto) {
     return this.documentTemplatesService.update(id, dto);
   }
 
   @Delete(':id')
-  @Roles(Role.COORDINADOR, Role.ADMIN)
+  @Roles(Role.COORDINADOR)
   remove(@Param('id') id: string) {
     return this.documentTemplatesService.remove(id);
   }

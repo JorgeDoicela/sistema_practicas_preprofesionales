@@ -50,7 +50,7 @@ export class AbsencesController {
   }
 
   @Get('internship/:id')
-  @Roles(Role.ESTUDIANTE, Role.TUTOR, Role.COORDINADOR, Role.ADMIN)
+  @Roles(Role.ESTUDIANTE, Role.TUTOR, Role.COORDINADOR)
   findByInternship(@Param('id') id: string) {
     return this.absencesService.findByInternship(id);
   }
@@ -62,13 +62,13 @@ export class AbsencesController {
   }
 
   @Get('all')
-  @Roles(Role.COORDINADOR, Role.ADMIN)
+  @Roles(Role.COORDINADOR)
   findAll() {
     return this.absencesService.findAllForCoordinator();
   }
 
   @Patch(':id/review')
-  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ADMIN)
+  @Roles(Role.TUTOR, Role.COORDINADOR)
   review(@Param('id') id: string, @Req() req: any, @Body() dto: ReviewAbsenceDto) {
     return this.absencesService.review(id, req.user.sub, dto);
   }

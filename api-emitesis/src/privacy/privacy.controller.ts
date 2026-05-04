@@ -37,14 +37,14 @@ export class PrivacyController {
 
   @Get('admin/requests')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.COORDINADOR)
+  @Roles(Role.ADMIN)
   findAllAdmin() {
     return this.privacyService.findAllRequests();
   }
 
   @Get('admin/logs')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.COORDINADOR)
+  @Roles(Role.ADMIN)
   findAllLogs() {
     return this.privacyService.findAllLogs();
   }

@@ -15,7 +15,7 @@ export class ExportController {
   constructor(private exportService: ExportService) {}
 
   @Get('master-report')
-  @Roles(Role.ADMIN, Role.COORDINADOR)
+  @Roles(Role.COORDINADOR)
   @ApiOperation({ summary: 'Genera y descarga el reporte maestro de pasantías en formato Excel' })
   async downloadMasterReport(@Res() res: Response) {
     return this.exportService.generateMasterReport(res);

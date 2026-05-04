@@ -31,7 +31,7 @@ export class DocumentsController {
   }
 
   @Get(':id/comments')
-  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ADMIN, Role.ESTUDIANTE)
+  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ESTUDIANTE)
   findComments(@Param('id') id: string) {
     return this.documentCommentsService.findByDocument(id);
   }
@@ -66,19 +66,19 @@ export class DocumentsController {
   }
 
   @Get('internship/:id')
-  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ADMIN, Role.ESTUDIANTE)
+  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ESTUDIANTE)
   findByInternship(@Param('id') id: string) {
     return this.documentsService.findByInternship(id);
   }
 
   @Get(':id/versions')
-  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ADMIN)
+  @Roles(Role.TUTOR, Role.COORDINADOR)
   findVersions(@Param('id') id: string) {
     return this.documentsService.getVersions(id);
   }
 
   @Patch(':id/dates')
-  @Roles(Role.TUTOR, Role.ADMIN) // RF-DOC-001: Actor Tutor Académico
+  @Roles(Role.TUTOR) // RF-DOC-001: Actor Tutor Académico
   @UseGuards(TwoFactorGuard)
   updateDates(
     @Param('id') id: string,
@@ -88,7 +88,7 @@ export class DocumentsController {
   }
 
   @Get(':id/template')
-  @Roles(Role.ESTUDIANTE, Role.ADMIN)
+  @Roles(Role.ESTUDIANTE, Role.COORDINADOR, Role.TUTOR)
   async downloadTemplate(@Param('id') id: string, @Res() res: Response) {
     const { fileName, url } = await this.documentsService.getTemplatePath(id);
 
@@ -133,7 +133,7 @@ export class DocumentsController {
   }
 
   @Patch(':id/delete-file')
-  @Roles(Role.ESTUDIANTE, Role.ADMIN)
+  @Roles(Role.ESTUDIANTE, Role.COORDINADOR)
   @UseGuards(TwoFactorGuard)
   deleteFile(@Param('id') id: string) {
     return this.documentsService.deleteDocumentFile(id);

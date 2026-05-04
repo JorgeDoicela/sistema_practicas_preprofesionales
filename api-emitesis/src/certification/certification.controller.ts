@@ -20,7 +20,7 @@ export class CertificationController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('check/:internshipId')
-  @Roles('COORDINADOR', 'ADMIN')
+  @Roles('COORDINADOR')
   @ApiOperation({ summary: 'Verificar elegibilidad para certificado' })
   async checkEligibility(@Param('internshipId') internshipId: string) {
     return this.certificationService.checkEligibility(internshipId);
@@ -29,7 +29,7 @@ export class CertificationController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('generate/:internshipId')
-  @Roles('COORDINADOR', 'ADMIN')
+  @Roles('COORDINADOR')
   @ApiOperation({ summary: 'Generar certificado de culminación' })
   async generateCertificate(@Param('internshipId') internshipId: string) {
     return this.certificationService.generateCertificate(internshipId);

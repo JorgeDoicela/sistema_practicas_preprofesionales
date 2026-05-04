@@ -16,8 +16,10 @@ import {
   PieChart,
   FileDown,
   ChevronRight,
+  ScrollText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 import { User as UserType } from "@/types/user";
 import { ROLES, normalizeApiRoleToAppRole, type Role } from "@/constants/roles";
 import { internshipsService } from "@/services/internships.service";
@@ -30,8 +32,7 @@ import { AICopilot } from "./AICopilot";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import { AnalyticsOverview } from "./AnalyticsOverview";
 import { attendancesService } from "@/services/attendances.service";
-import { settingsService } from "@/services/settings.service";
-import { useLanguage } from "@/providers/LanguageProvider";
+import { analyticsService, AdminStats } from "@/services/analytics.service";
 import { AnnouncementCarousel } from "./AnnouncementCarousel";
 import dynamic from "next/dynamic";
 
@@ -100,6 +101,7 @@ export function DashboardMain() {
   const [internships, setInternships] = useState<InternshipRow[]>([]);
   const [agreementsCount, setAgreementsCount] = useState<number | null>(null);
   const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
+  const [adminStats, setAdminStats] = useState<AdminStats | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [closedAnnouncements, setClosedAnnouncements] = useState<string[]>([]);
   const [careers, setCareers] = useState<any[]>([]);
@@ -131,8 +133,8 @@ export function DashboardMain() {
     setError(null);
 
     try {
-      if (role === ROLES.ADMIN || role === ROLES.COORDINADOR) {
-        const [allRes, agrRes, stats, careerList]: [any, any, any, any] = await Promise.all([
+      if (role === ROLES.COORDINADOR) {
+        const [allRes, agrRes, statsRes, careerList] = await Promise.all([
           internshipsService.findAll(1, 20, cId),
           agreementsService.findAll(),
           reportsService.getGlobalStats(cId),
@@ -144,7 +146,17 @@ export function DashboardMain() {
 
         setInternships(allItems);
         setAgreementsCount(Array.isArray(agrItems) ? agrItems.filter((a: any) => (a.status ?? "Activo") === "Activo").length : 0);
-        setGlobalStats(stats?.data || stats || null);
+        setGlobalStats(statsRes?.data || statsRes || null);
+        setCareers(Array.isArray(careerList) ? careerList : (Array.isArray(careerList?.data) ? careerList.data : []));
+        return;
+      }
+
+      if (role === ROLES.ADMIN) {
+        const [statsRes, careerList] = await Promise.all([
+          analyticsService.getStats(),
+          settingsService.findAllCareers(),
+        ]);
+        setAdminStats(statsRes?.data || statsRes || null);
         setCareers(Array.isArray(careerList) ? careerList : (Array.isArray(careerList?.data) ? careerList.data : []));
         return;
       }
@@ -177,7 +189,7 @@ export function DashboardMain() {
         return;
       }
 
-      if (role === ROLES.TUTOR_ACADEMICO) {
+      if (role === ROLES.TUTOR) {
         const res: any = await internshipsService.findByTutor(u.id);
         const list = res?.items || (Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []));
         setInternships(list);
@@ -230,7 +242,7 @@ export function DashboardMain() {
       };
     }
 
-    if (appRole === ROLES.ADMIN || appRole === ROLES.COORDINADOR) {
+    if (appRole === ROLES.COORDINADOR) {
       const agrEmpty = agreementsCount ?? 0;
       if (internships.length === 0) {
         return {
@@ -307,6 +319,41 @@ export function DashboardMain() {
             hint: t.stats.pendingCoord,
             icon: <FileCheck className="w-6 h-6" />,
             color: "bg-rose-500",
+          },
+        ],
+      };
+    }
+
+    if (appRole === ROLES.ADMIN) {
+      return {
+        cards: [
+          {
+            title: "Usuarios Totales",
+            value: adminStats ? String(adminStats.counters.totalUsers) : "—",
+            hint: "Usuarios activos en DB",
+            icon: <Users className="w-6 h-6" />,
+            color: "bg-blue-500",
+          },
+          {
+            title: "Logs Hoy",
+            value: adminStats ? String(adminStats.counters.logsToday) : "—",
+            hint: "Actividad de auditoría",
+            icon: <ScrollText className="w-6 h-6" />,
+            color: "bg-indigo-500",
+          },
+          {
+            title: "Errores Hoy",
+            value: adminStats ? String(adminStats.counters.errorsToday) : "—",
+            hint: "Alertas de estabilidad",
+            icon: <AlertCircle className="w-6 h-6" />,
+            color: adminStats?.counters.errorsToday ? "bg-rose-500" : "bg-emerald-500",
+          },
+          {
+            title: "Latencia Promedio",
+            value: adminStats ? `${Math.round(adminStats.avgResponseTime)}ms` : "—",
+            hint: "Tiempo de respuesta API",
+            icon: <Clock className="w-6 h-6" />,
+            color: "bg-amber-500",
           },
         ],
       };
@@ -399,7 +446,7 @@ export function DashboardMain() {
       };
     }
 
-    if (appRole === ROLES.TUTOR_ACADEMICO) {
+    if (appRole === ROLES.TUTOR) {
       if (internships.length === 0) {
         return {
           cards: [
@@ -503,7 +550,7 @@ export function DashboardMain() {
   const verTodoHref =
     appRole === ROLES.ESTUDIANTE
       ? "/dashboard/asistencia"
-      : appRole === ROLES.TUTOR_ACADEMICO
+      : appRole === ROLES.TUTOR
         ? "/tutor-academico/dashboard"
         : "/coordinador/estudiantes";
 
@@ -514,7 +561,7 @@ export function DashboardMain() {
           <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
             {appRole === ROLES.ESTUDIANTE
               ? t.dashboard.summaryStudent
-              : appRole === ROLES.TUTOR_ACADEMICO
+              : appRole === ROLES.TUTOR
                 ? t.dashboard.summaryTutor
                 : t.dashboard.summaryAdmin}
           </span>
@@ -530,7 +577,7 @@ export function DashboardMain() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-          {(appRole === ROLES.ADMIN || appRole === ROLES.COORDINADOR) && (
+          {appRole === ROLES.COORDINADOR && (
             <>
               <div className="relative flex-1 sm:flex-none min-w-[200px]">
                 <select
@@ -747,85 +794,172 @@ export function DashboardMain() {
           )}
 
           {(appRole === ROLES.ADMIN || appRole === ROLES.COORDINADOR) && globalStats && (
-            <section 
-              className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 shadow-2xl shadow-slate-200/50 border border-slate-50 relative overflow-hidden group"
-              data-tour="dashboard-analytics"
-            >
-              <div className="absolute top-0 right-0 p-8 opacity-5">
-                <BarChart3 className="w-32 h-32 text-[#003366]" />
-              </div>
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-8">
-                  <div className="p-2.5 bg-brand-gold/10 text-brand-gold rounded-xl">
-                    <PieChart className="w-5 h-5" />
-                  </div>
-                  <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">{t.dashboard.analytics.title}</h3>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-12">
-                  <div className="space-y-6">
-                    <div>
-                      <div className="flex justify-between mb-2 text-[10px] font-black uppercase tracking-widest">
-                        <span className="text-slate-400">{t.dashboard.analytics.docsProgress}</span>
-                        <span className="text-emerald-600">
-                          {Math.round((globalStats.approvedDocs / (globalStats.approvedDocs + globalStats.pendingDocs || 1)) * 100)}%
-                        </span>
-                      </div>
-                      <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${(globalStats.approvedDocs / (globalStats.approvedDocs + globalStats.pendingDocs || 1)) * 100}%` }}
-                          className="h-full bg-emerald-500 rounded-full"
-                        />
-                      </div>
-                      <p className="text-[9px] text-slate-400 mt-2 font-medium">{t.dashboard.analytics.docsHint}</p>
+            <div className="space-y-6 mb-12">
+               {globalStats.pendingDocs > 0 && (
+                <motion.div 
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  className="bg-indigo-50 border border-indigo-100 rounded-[2.5rem] p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm"
+                >
+                  <div className="flex items-center gap-6 text-center md:text-left flex-col md:flex-row">
+                    <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-indigo-600 shrink-0">
+                      <FileStack className="w-8 h-8" />
                     </div>
                     <div>
-                      <div className="flex justify-between mb-2 text-[10px] font-black uppercase tracking-widest">
-                        <span className="text-slate-400">{t.dashboard.analytics.hoursProgress}</span>
-                        <span className="text-brand-blue">
-                          {Math.round((globalStats.totalCompletedHours / (globalStats.totalPlannedHours || 1)) * 100)}%
-                        </span>
+                      <h4 className="text-xl font-black text-indigo-900 tracking-tight">Control de Gestión</h4>
+                      <p className="text-sm text-indigo-700/70 font-medium">Hay <span className="font-black text-indigo-600">{globalStats.pendingDocs} documentos</span> esperando su validación técnica.</p>
+                    </div>
+                  </div>
+                  <Link 
+                    href="/dashboard/documentos"
+                    className="px-10 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 active:scale-95"
+                  >
+                    Revisar Expedientes
+                  </Link>
+                </motion.div>
+               )}
+
+              <section 
+                className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 shadow-2xl shadow-slate-200/50 border border-slate-50 relative overflow-hidden group"
+                data-tour="dashboard-analytics"
+              >
+                <div className="absolute top-0 right-0 p-8 opacity-5">
+                  <BarChart3 className="w-32 h-32 text-[#003366]" />
+                </div>
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-8">
+                    <div className="p-2.5 bg-[#C5A059]/10 text-[#C5A059] rounded-xl">
+                      <PieChart className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">{t.dashboard.analytics.title}</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-12">
+                    <div className="space-y-6">
+                      <div>
+                        <div className="flex justify-between mb-2 text-[10px] font-black uppercase tracking-widest">
+                          <span className="text-slate-400">{t.dashboard.analytics.docsProgress}</span>
+                          <span className="text-emerald-600">
+                            {Math.round((globalStats.approvedDocs / (globalStats.approvedDocs + globalStats.pendingDocs || 1)) * 100)}%
+                          </span>
+                        </div>
+                        <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${(globalStats.approvedDocs / (globalStats.approvedDocs + globalStats.pendingDocs || 1)) * 100}%` }}
+                            className="h-full bg-emerald-500 rounded-full"
+                          />
+                        </div>
+                        <p className="text-[9px] text-slate-400 mt-2 font-medium">{t.dashboard.analytics.docsHint}</p>
                       </div>
-                      <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${(globalStats.totalCompletedHours / (globalStats.totalPlannedHours || 1)) * 100}%` }}
-                          className="h-full bg-brand-blue rounded-full"
-                        />
+                      <div>
+                        <div className="flex justify-between mb-2 text-[10px] font-black uppercase tracking-widest">
+                          <span className="text-slate-400">{t.dashboard.analytics.hoursProgress}</span>
+                          <span className="text-[#003366]">
+                            {Math.round((globalStats.totalCompletedHours / (globalStats.totalPlannedHours || 1)) * 100)}%
+                          </span>
+                        </div>
+                        <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${(globalStats.totalCompletedHours / (globalStats.totalPlannedHours || 1)) * 100}%` }}
+                            className="h-full bg-[#003366] rounded-full"
+                          />
+                        </div>
+                        <p className="text-[9px] text-slate-400 mt-2 font-medium">{t.dashboard.analytics.hoursHint}</p>
                       </div>
-                      <p className="text-[9px] text-slate-400 mt-2 font-medium">{t.dashboard.analytics.hoursHint}</p>
+                    </div>
+
+                    <div className="lg:col-span-2 grid sm:grid-cols-3 gap-6">
+                      <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl transition-all cursor-default">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Completadas</p>
+                        <p className="text-3xl font-black text-[#003366]">{globalStats.completedInternships}</p>
+                        <div className="w-full h-1 bg-emerald-100 rounded-full mt-3 overflow-hidden">
+                            <div className="h-full bg-emerald-500 w-[40%]" />
+                        </div>
+                      </div>
+                      <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl transition-all cursor-default">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">En ejecución</p>
+                        <p className="text-3xl font-black text-[#003366]">{globalStats.activeInternships}</p>
+                        <div className="w-full h-1 bg-blue-100 rounded-full mt-3 overflow-hidden">
+                            <div className="h-full bg-blue-500 w-[70%]" />
+                        </div>
+                      </div>
+                      <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl transition-all cursor-default">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Alumnos</p>
+                        <p className="text-3xl font-black text-[#003366]">{globalStats.totalStudents}</p>
+                        <div className="w-full h-1 bg-amber-100 rounded-full mt-3 overflow-hidden">
+                            <div className="h-full bg-amber-500 w-[100%]" />
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="lg:col-span-2 grid sm:grid-cols-3 gap-6">
-                    <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl transition-all cursor-default">
-                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Completadas</p>
-                       <p className="text-3xl font-black text-brand-blue">{globalStats.completedInternships}</p>
-                       <div className="w-full h-1 bg-emerald-100 rounded-full mt-3 overflow-hidden">
-                          <div className="h-full bg-emerald-500 w-[40%]" />
-                       </div>
+                  <AnalyticsOverview stats={globalStats} />
+                </div>
+              </section>
+            </div>
+          )}
+
+          {appRole === ROLES.ADMIN && adminStats && (
+            <div className="space-y-6 mb-12">
+              <section 
+                className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 shadow-2xl shadow-slate-200/50 border border-slate-50 relative overflow-hidden group"
+              >
+                <div className="absolute top-0 right-0 p-8 opacity-5">
+                  <BarChart3 className="w-32 h-32 text-indigo-900" />
+                </div>
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-8">
+                    <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+                      <PieChart className="w-5 h-5" />
                     </div>
-                    <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl transition-all cursor-default">
-                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">En ejecución</p>
-                       <p className="text-3xl font-black text-brand-blue">{globalStats.activeInternships}</p>
-                       <div className="w-full h-1 bg-blue-100 rounded-full mt-3 overflow-hidden">
-                          <div className="h-full bg-blue-500 w-[70%]" />
-                       </div>
+                    <h3 className="text-xl font-black text-indigo-900 uppercase tracking-tight">Salud del Sistema</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div className="space-y-8">
+                      <div>
+                        <div className="flex justify-between mb-2 text-[10px] font-black uppercase tracking-widest">
+                          <span className="text-slate-400">Distribución de Usuarios</span>
+                        </div>
+                        <div className="space-y-3">
+                          {adminStats.rolesDistribution.map((item) => (
+                            <div key={item.role}>
+                              <div className="flex justify-between text-[9px] font-bold uppercase tracking-tighter mb-1">
+                                <span>{item.role}</span>
+                                <span>{item._count}</span>
+                              </div>
+                              <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-indigo-500 rounded-full" 
+                                  style={{ width: `${Math.min(100, (item._count / adminStats.counters.totalUsers) * 100)}%` }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                    <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl transition-all cursor-default">
-                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Alumnos</p>
-                       <p className="text-3xl font-black text-brand-blue">{globalStats.totalStudents}</p>
-                       <div className="w-full h-1 bg-amber-100 rounded-full mt-3 overflow-hidden">
-                          <div className="h-full bg-amber-500 w-[100%]" />
+
+                    <div className="grid sm:grid-cols-2 gap-6">
+                       <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col justify-center">
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Latencia API</p>
+                          <p className="text-3xl font-black text-indigo-900">{Math.round(adminStats.avgResponseTime)}ms</p>
+                          <p className="text-[9px] text-emerald-500 font-bold mt-1">ÓPTIMO</p>
+                       </div>
+                       <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col justify-center">
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Errores/24h</p>
+                          <p className={cn("text-3xl font-black", adminStats.counters.errorsToday > 0 ? "text-rose-600" : "text-emerald-600")}>
+                            {adminStats.counters.errorsToday}
+                          </p>
+                          <p className="text-[9px] text-slate-400 font-bold mt-1">PROMEDIO ESTABLE</p>
                        </div>
                     </div>
                   </div>
                 </div>
-
-                <AnalyticsOverview stats={globalStats} />
-              </div>
-            </section>
+              </section>
+            </div>
           )}
 
           <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
@@ -894,34 +1028,100 @@ export function DashboardMain() {
                         </Link>
                       </>
                     )}
-                    {(appRole === ROLES.ADMIN || appRole === ROLES.COORDINADOR) && (
-                      <>
+                    {appRole === ROLES.COORDINADOR && (
+                      <div className="grid grid-cols-1 gap-3 pt-2">
                         <Link
                           href="/coordinador/estudiantes"
-                          className="w-full py-3.5 bg-white text-[#003366] rounded-2xl text-[10px] font-black uppercase tracking-widest text-center hover:bg-white/90"
+                          className="group w-full p-4 bg-white text-[#003366] rounded-2xl flex items-center justify-between hover:bg-white/95 transition-all shadow-sm"
                         >
-                          Gestión de estudiantes
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                              <Users className="w-4 h-4" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest">Gestión Alumnos</span>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
                         </Link>
                         <Link
                           href="/coordinador/convenios"
-                          className="w-full py-3.5 bg-white/15 border border-white/30 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest text-center hover:bg-white/25"
+                          className="group w-full p-4 bg-white/10 border border-white/20 text-white rounded-2xl flex items-center justify-between hover:bg-white/20 transition-all"
                         >
-                          Convenios
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-white/10 text-white rounded-xl flex items-center justify-center">
+                              <Building2 className="w-4 h-4" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest">Convenios</span>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-white/30 group-hover:translate-x-1 transition-transform" />
                         </Link>
                         <Link
                           href="/coordinador/reportes"
-                          className="w-full py-3.5 bg-slate-900/40 border border-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest text-center hover:bg-black/40"
+                          className="group w-full p-4 bg-slate-900/30 border border-white/5 text-white rounded-2xl flex items-center justify-between hover:bg-black/40 transition-all"
                         >
-                          Módulo de Reportes
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-[#C5A059] text-[#003366] rounded-xl flex items-center justify-center">
+                              <BarChart3 className="w-4 h-4" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest">Módulo Reportes</span>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-white/30 group-hover:translate-x-1 transition-transform" />
                         </Link>
-                      </>
+                      </div>
                     )}
-                    {appRole === ROLES.TUTOR_ACADEMICO && (
+                    {appRole === ROLES.ADMIN && (
+                      <div className="grid grid-cols-1 gap-3 pt-2">
+                        <Link
+                          href="/admin/usuarios"
+                          className="group w-full p-4 bg-white text-[#003366] rounded-2xl flex items-center justify-between hover:bg-white/95 transition-all shadow-sm"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-red-50 text-red-600 rounded-xl flex items-center justify-center">
+                              <Users className="w-4 h-4" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest">Gestión Usuarios</span>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                        <Link
+                          href="/admin/configuracion"
+                          className="group w-full p-4 bg-white/10 border border-white/20 text-white rounded-2xl flex items-center justify-between hover:bg-white/20 transition-all"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-white/10 text-white rounded-xl flex items-center justify-center">
+                              <Settings className="w-4 h-4" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest">Configuración</span>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-white/30 group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                        <Link
+                          href="/admin/logs"
+                          className="group w-full p-4 bg-slate-900/30 border border-white/5 text-white rounded-2xl flex items-center justify-between hover:bg-black/40 transition-all"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-[#C5A059] text-[#003366] rounded-xl flex items-center justify-center">
+                              <ScrollText className="w-4 h-4" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest">Logs de Sistema</span>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-white/30 group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                      </div>
+                    )}
+                    {appRole === ROLES.TUTOR && (
                       <Link
                         href="/tutor-academico/dashboard"
                         className="w-full py-3.5 bg-white text-[#003366] rounded-2xl text-[10px] font-black uppercase tracking-widest text-center hover:bg-white/90"
                       >
                         Panel tutor académico
+                      </Link>
+                    )}
+                    {appRole === ROLES.EMPRESA && (
+                      <Link
+                        href="/empresa/asistencia"
+                        className="w-full py-3.5 bg-white text-[#003366] rounded-2xl text-[10px] font-black uppercase tracking-widest text-center hover:bg-white/90"
+                      >
+                        Control de Asistencia
                       </Link>
                     )}
                   </div>
@@ -949,21 +1149,59 @@ interface StatCardProps {
 }
 
 function StatCard({ title, value, hint, icon, color }: StatCardProps) {
+  // Mapeo de colores para gradientes y sombras (glow)
+  const colorMap: Record<string, { gradient: string, icon: string, shadow: string }> = {
+    'bg-blue-500': { gradient: 'from-blue-500 to-blue-600', icon: 'text-blue-600', shadow: 'shadow-blue-500/20' },
+    'bg-indigo-500': { gradient: 'from-indigo-500 to-indigo-600', icon: 'text-indigo-600', shadow: 'shadow-indigo-500/20' },
+    'bg-amber-500': { gradient: 'from-amber-500 to-amber-600', icon: 'text-amber-600', shadow: 'shadow-amber-500/20' },
+    'bg-emerald-500': { gradient: 'from-emerald-500 to-emerald-600', icon: 'text-emerald-600', shadow: 'shadow-emerald-500/20' },
+    'bg-rose-500': { gradient: 'from-rose-500 to-rose-600', icon: 'text-rose-600', shadow: 'shadow-rose-500/20' },
+  };
+
+  const theme = colorMap[color] || colorMap['bg-blue-500'];
+
   return (
     <motion.div
-      whileHover={{ y: -4 }}
-      className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl relative overflow-hidden h-full"
+      whileHover={{ y: -6, scale: 1.02 }}
+      className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/60 relative overflow-hidden h-full flex flex-col group transition-all"
     >
-      <div className="flex items-start justify-between mb-6">
-        <div className={`p-4 rounded-2xl ${color} bg-opacity-10 text-slate-800`}>
+      <div className="flex items-start justify-between mb-8">
+        <div className={cn(
+          "w-14 h-14 rounded-2xl flex items-center justify-center relative",
+          "bg-white shadow-lg border border-slate-50 transition-transform group-hover:scale-110 duration-500",
+          theme.shadow
+        )}>
+          <div className={cn(
+            "absolute inset-0 rounded-2xl bg-gradient-to-br opacity-[0.08]",
+            theme.gradient
+          )} />
           {React.cloneElement(icon as React.ReactElement<{ className?: string }>, {
-            className: `w-6 h-6 ${color.replace("bg-", "text-")}`,
+            className: cn("w-6 h-6", theme.icon),
+            strokeWidth: 2.5
           })}
         </div>
+        
+        {/* Adorno visual sutil */}
+        <div className={cn(
+          "w-24 h-24 absolute -top-8 -right-8 rounded-full bg-gradient-to-br opacity-[0.03] blur-2xl",
+          theme.gradient
+        )} />
       </div>
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
-      <h4 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tighter break-words">{value}</h4>
-      <p className="text-[10px] font-semibold text-slate-500 mt-3 leading-relaxed">{hint}</p>
+
+      <div className="relative z-10">
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">{title}</p>
+        <div className="flex items-baseline gap-2">
+          <h4 className="text-3xl md:text-4xl font-black text-[#003366] tracking-tighter">
+            {value}
+          </h4>
+        </div>
+        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-50">
+          <div className={cn("w-1.5 h-1.5 rounded-full", color)} />
+          <p className="text-[10px] font-bold text-slate-500 leading-relaxed uppercase tracking-wide">
+            {hint}
+          </p>
+        </div>
+      </div>
     </motion.div>
   );
 }

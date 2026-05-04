@@ -1215,6 +1215,7 @@ async function main() {
             { key: 'allowed_file_types', value: 'pdf,docx,jpg,png', category: 'GENERAL', description: 'Tipos de archivo permitidos para carga de documentos.' },
             { key: 'lopdp_version_current', value: '1.0', category: 'GENERAL', description: 'Versión actual de la política de protección de datos LOPDP.' },
             { key: 'webauthn_enabled', value: 'true', category: 'AUTH', description: 'Habilitar autenticación biométrica/WebAuthn para usuarios con credencial registrada.' },
+            { key: 'chat_message_retention_days', value: '730', category: 'CHAT', description: 'Periodo de retención de mensajes de chat antes de su anonimización o purga (días).' },
         ],
     });
     console.log('   ✓ 12 configuraciones del sistema registradas.\n');

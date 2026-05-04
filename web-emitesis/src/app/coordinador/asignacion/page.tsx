@@ -94,7 +94,7 @@ export default function AsignacionPage() {
         setTutors(
           allUsers.filter((u: User) => {
             const r = String(u.role);
-            return (r === "TUTOR" || r === "TUTOR_ACADEMICO") && u.isActive;
+            return (r === "TUTOR") && u.isActive;
           }),
         );
         setAgreements(allAgreements.filter((a: Agreement) => a.status === 'Activo'));

@@ -267,7 +267,7 @@ export const es = {
     roles: {
       ADMIN: "Administrador",
       COORDINADOR: "Coordinador",
-      TUTOR_ACADEMICO: "Tutor Académico",
+      TUTOR: "Tutor Académico",
 
       ESTUDIANTE: "Estudiante",
       EMPRESA: "Empresa",

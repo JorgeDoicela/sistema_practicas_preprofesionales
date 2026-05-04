@@ -15,13 +15,13 @@ export class InternshipsController {
   constructor(private readonly internshipsService: InternshipsService) {}
 
   @Post()
-  @Roles(Role.COORDINADOR, Role.ADMIN)
+  @Roles(Role.COORDINADOR)
   create(@Body() createInternshipDto: CreateInternshipDto) {
     return this.internshipsService.create(createInternshipDto);
   }
 
   @Get()
-  @Roles(Role.COORDINADOR, Role.ADMIN)
+  @Roles(Role.COORDINADOR)
   findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
@@ -47,7 +47,7 @@ export class InternshipsController {
   }
 
   @Get('company/:id')
-  @Roles(Role.EMPRESA, Role.ADMIN, Role.COORDINADOR)
+  @Roles(Role.EMPRESA, Role.COORDINADOR)
   findByCompany(@Param('id') id: string) {
     return this.internshipsService.findByCompany(id);
   }
@@ -72,13 +72,13 @@ export class InternshipsController {
   }
 
   @Patch(':id/status')
-  @Roles(Role.ADMIN, Role.COORDINADOR)
+  @Roles(Role.COORDINADOR)
   updateStatus(@Param('id') id: string, @Body() body: { status: string, reason?: string }, @Req() req: any) {
     return this.internshipsService.changeStatus(id, body.status, req.user.id, body.reason);
   }
 
   @Post(':id/sync-sigafi')
-  @Roles(Role.COORDINADOR, Role.ADMIN)
+  @Roles(Role.COORDINADOR)
   syncSigafi(@Param('id') id: string) {
     return this.internshipsService.syncSigafi(id);
   }

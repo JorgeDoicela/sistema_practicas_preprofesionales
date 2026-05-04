@@ -31,7 +31,7 @@ export class AttendanceController {
   }
 
   @Get('internship/:id')
-  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ADMIN, Role.ESTUDIANTE)
+  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ESTUDIANTE)
   findByInternship(
     @Param('id') id: string,
     @Req() req: any
@@ -41,7 +41,7 @@ export class AttendanceController {
   }
 
   @Get('internship/:id/summary')
-  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ADMIN, Role.ESTUDIANTE)
+  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ESTUDIANTE)
   getSummary(@Param('id') id: string) {
     return this.attendanceService.getSummary(id);
   }
@@ -88,7 +88,7 @@ export class AttendanceController {
 
   /** RF-17: Obtener fotos de actividades de un registro */
   @Get('activity-photos/:attendanceId')
-  @Roles(Role.ESTUDIANTE, Role.TUTOR, Role.COORDINADOR, Role.ADMIN)
+  @Roles(Role.ESTUDIANTE, Role.TUTOR, Role.COORDINADOR)
   getActivityPhotos(@Param('attendanceId') attendanceId: string) {
     return this.attendanceService.getActivityPhotos(attendanceId);
   }

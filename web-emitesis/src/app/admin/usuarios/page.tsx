@@ -33,7 +33,6 @@ const RoleBadge = ({ role }: { role: UserRole | string }) => {
     ADMIN: 'bg-red-50 text-red-700 border-red-100',
     COORDINADOR: 'bg-blue-50 text-blue-700 border-blue-100',
     TUTOR: 'bg-green-50 text-green-700 border-green-100',
-    TUTOR_ACADEMICO: 'bg-green-50 text-green-700 border-green-100',
 
     ESTUDIANTE: 'bg-purple-50 text-purple-700 border-purple-100',
     EMPRESA: 'bg-indigo-50 text-indigo-700 border-indigo-100',
@@ -441,7 +440,7 @@ export default function UsuariosManagementPage() {
                   >
 
                     <option value="ESTUDIANTE">{t.sidebar.roles.ESTUDIANTE}</option>
-                    <option value="TUTOR">{t.sidebar.roles.TUTOR_ACADEMICO}</option>
+                    <option value="TUTOR">{t.sidebar.roles.TUTOR}</option>
                     <option value="COORDINADOR">{t.sidebar.roles.COORDINADOR}</option>
                     <option value="ADMIN">{t.sidebar.roles.ADMIN}</option>
                     <option value="EMPRESA">{t.sidebar.roles.EMPRESA}</option>

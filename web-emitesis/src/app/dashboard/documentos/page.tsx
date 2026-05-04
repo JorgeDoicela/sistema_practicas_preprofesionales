@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { internshipsService } from "@/services/internships.service";
 import { documentsService } from "@/services/documents.service";
-import { ROLES } from "@/constants/roles";
+import { ROLES, normalizeApiRoleToAppRole } from "@/constants/roles";
 import { TwoFactorModal } from "@/components/auth/TwoFactorModal";
 import { DoubleConfirmationModal } from "@/components/shared/DoubleConfirmationModal";
 import { api } from "@/services/auth.service";
@@ -69,9 +69,9 @@ export default function DocumentosPage() {
       const user = JSON.parse(userStr);
       setCurrentUser(user);
       setUserRole(user.role);
-      
+      const role = normalizeApiRoleToAppRole(user.role);
       let res;
-      if (user.role === ROLES.TUTOR_ACADEMICO || user.role === "TUTOR") {
+      if (role === ROLES.TUTOR) {
         res = await internshipsService.findByTutor(user.id);
       } else if (user.role === ROLES.ESTUDIANTE) {
         res = await internshipsService.findByStudent(user.id);

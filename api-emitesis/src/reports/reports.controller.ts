@@ -12,13 +12,13 @@ export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
   @Get('global-stats')
-  @Roles(Role.ADMIN, Role.COORDINADOR)
+  @Roles(Role.COORDINADOR)
   async getGlobalStats(@Query('careerId') careerId?: string) {
     return this.reportsService.getGlobalStats(careerId);
   }
 
   @Get('export/global/excel')
-  @Roles(Role.ADMIN, Role.COORDINADOR)
+  @Roles(Role.COORDINADOR)
   async exportGlobalExcel(@Res() res: Response) {
     const buffer = await this.reportsService.exportGlobalStatusExcel();
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -27,7 +27,7 @@ export class ReportsController {
   }
 
   @Get('export/global/pdf')
-  @Roles(Role.ADMIN, Role.COORDINADOR)
+  @Roles(Role.COORDINADOR)
   async exportGlobalPdf(@Res() res: Response) {
     const buffer = await this.reportsService.exportGlobalStatusPdf();
     res.setHeader('Content-Type', 'application/pdf');

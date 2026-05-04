@@ -28,7 +28,7 @@ export class SettingsController {
   }
 
   @Get(':key')
-  @Roles(Role.ADMIN, Role.COORDINADOR)
+  @Roles(Role.ADMIN, Role.COORDINADOR, Role.TUTOR, Role.ESTUDIANTE, Role.EMPRESA)
   @ApiOperation({ summary: 'Obtener una configuración específica por clave' })
   findOne(@Param('key') key: string) {
     return this.settingsService.findByKey(key);

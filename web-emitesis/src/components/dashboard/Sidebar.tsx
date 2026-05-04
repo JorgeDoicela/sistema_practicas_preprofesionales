@@ -35,6 +35,7 @@ import { User as UserType } from "@/types/user";
 import { BRAND_LOGO_SRC } from "@/lib/brand";
 import { getProfilePathForRole } from "@/lib/profile-route";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { normalizeApiRoleToAppRole } from "@/constants/roles";
 import Cookies from "js-cookie";
 
 // ── Menús por rol ──────────────────────────────────────────────────────────
@@ -56,16 +57,9 @@ const MENU_DEFS: Record<string, Array<{ icon: ElementType; labelKey: SidebarMenu
         { icon: BarChart3,       labelKey: "healthMetrics",   href: "/admin/salud" },
         { icon: Star,            labelKey: "announcements",   href: "/admin/anuncios" },
         { icon: BookOpen,        labelKey: "careers",         href: "/admin/carreras" },
-        { icon: FileText,        labelKey: "templates",       href: "/coordinador/plantillas-documentos" },
         { icon: ScrollText,      labelKey: "auditLogs",       href: "/admin/logs" },
         { icon: ShieldAlert,     labelKey: "lopdp",           href: "/admin/privacidad" },
         { icon: Users,           labelKey: "users",           href: "/admin/usuarios" },
-        { icon: UserPlus,        labelKey: "assignments",     href: "/coordinador/asignacion" },
-        { icon: List,            labelKey: "agreementList",   href: "/coordinador/convenios/list" },
-        { icon: Handshake,       labelKey: "newAgreement",    href: "/coordinador/convenios" },
-        { icon: GraduationCap,   labelKey: "manageStudents",  href: "/coordinador/estudiantes" },
-        { icon: ClipboardCheck,  labelKey: "evaluations",     href: "/coordinador/evaluaciones" },
-        { icon: FileStack,       labelKey: "documents",       href: "/dashboard/documentos" },
     ],
     COORDINADOR: [
         { icon: LayoutDashboard, labelKey: "dashboard",       href: "/dashboard" },
@@ -79,7 +73,7 @@ const MENU_DEFS: Record<string, Array<{ icon: ElementType; labelKey: SidebarMenu
         { icon: BarChart3,       labelKey: "reports",         href: "/coordinador/reportes" },
         { icon: FileStack,       labelKey: "documents",       href: "/dashboard/documentos" },
     ],
-    TUTOR_ACADEMICO: [
+    TUTOR: [
         { icon: LayoutDashboard, labelKey: "dashboard",          href: "/tutor-academico/dashboard" },
         { icon: GraduationCap,   labelKey: "myStudents",          href: "/tutor-academico/estudiantes" },
         { icon: FileStack,       labelKey: "documents",           href: "/dashboard/documentos" },
@@ -171,8 +165,9 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         };
     }, [isResizing]);
 
-    const role: string = user?.role ?? "";
-    const profileHref = getProfilePathForRole(role);
+    const roleRaw: string = user?.role ?? "";
+    const role = normalizeApiRoleToAppRole(roleRaw);
+    const profileHref = getProfilePathForRole(roleRaw);
     const menuDefs = MENU_DEFS[role] ?? MENU_DEFS["ESTUDIANTE"];
     const menuItems = menuDefs.map(item => ({ ...item, label: t.sidebar.menu[item.labelKey] }));
     const isEmpresaRole = role === "EMPRESA";

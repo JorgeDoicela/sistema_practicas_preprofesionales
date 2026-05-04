@@ -90,7 +90,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.COORDINADOR)
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }

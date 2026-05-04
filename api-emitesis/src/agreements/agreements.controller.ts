@@ -39,7 +39,7 @@ export class AgreementsController {
   constructor(private readonly agreementsService: AgreementsService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.COORDINADOR) // Precondición: Administrador o Coordinador
+  @Roles(Role.COORDINADOR) // Solo el Coordinador gestiona convenios
   @UseInterceptors(
     FileInterceptor('file', {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
@@ -82,7 +82,7 @@ export class AgreementsController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.COORDINADOR)
+  @Roles(Role.COORDINADOR)
   findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
