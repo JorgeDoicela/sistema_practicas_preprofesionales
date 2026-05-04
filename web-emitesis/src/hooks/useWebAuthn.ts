@@ -72,18 +72,13 @@ export function useWebAuthn() {
     return ac.signal;
   };
 
-  /** Verifica si el dispositivo soporta WebAuthn con autenticador de plataforma */
+  /** Verifica si el dispositivo soporta WebAuthn */
   const checkSupport = useCallback(async (): Promise<boolean> => {
     setState("checking");
-    if (!browserSupportsWebAuthn()) {
-      setIsSupported(false);
-      setState("idle");
-      return false;
-    }
-    const ok = await platformAuthenticatorIsAvailable();
-    setIsSupported(ok);
+    const supported = browserSupportsWebAuthn();
+    setIsSupported(supported);
     setState("idle");
-    return ok;
+    return supported;
   }, []);
 
   /** Verifica si el usuario ya tiene credencial registrada en el servidor */

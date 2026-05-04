@@ -8,24 +8,35 @@ export class StorageService {
   private readonly isProduction: boolean;
 
   constructor(private configService: ConfigService) {
-    this.token = this.configService.get<string>('BLOB_READ_WRITE_TOKEN');
-    this.isProduction = !!this.token && process.env.NODE_ENV === 'production';
+    const rawToken = this.configService.get<string>('BLOB_READ_WRITE_TOKEN');
+    // Limpiar posibles comillas si el .env las incluyó por error
+    this.token = rawToken?.replace(/['"]/g, '');
+    
+    // RF-BLOB: Usar Vercel Blob si el token está presente y es válido
+    this.isProduction = !!this.token && this.token.startsWith('vercel_blob_rw_');
+    
+    const maskedToken = this.token ? `${this.token.substring(0, 15)}...` : 'NULO';
+    console.log(`[StorageService] Inicializado. Token: ${maskedToken}. Modo Vercel Blob: ${this.isProduction ? 'ACTIVO' : 'DESACTIVADO (Modo Local)'}`);
   }
 
   async upload(path: string, file: string | Buffer | Blob | ReadableStream | ArrayBuffer, options?: Partial<PutCommandOptions>): Promise<PutBlobResult> {
     if (!this.isProduction) {
-      console.log(`[StorageService] Local Mode: Archivo listo para ${path}`);
+      console.warn(`[StorageService] ALERTA: Usando Modo Local (No persistente) para ${path}. Verifique BLOB_READ_WRITE_TOKEN.`);
       return { url: `/uploads/${path}`, downloadUrl: `/uploads/${path}`, pathname: path, contentType: '', contentDisposition: '', size: 0 } as PutBlobResult;
     }
 
     try {
-      return await put(path, file, {
+      console.log(`[StorageService] Intentando subir a Vercel Blob: ${path}`);
+      const result = await put(path, file, {
         access: 'public',
         token: this.token,
         ...options,
       });
+      console.log(`[StorageService] Subida exitosa: ${result.url}`);
+      return result;
     } catch (error: unknown) {
-      console.error('[StorageService] Error en Vercel Blob:', (error as Error).message);
+      console.error('[StorageService] ERROR CRÍTICO en Vercel Blob:', (error as Error).message);
+      // Fallback a URL local para no romper el flujo, pero avisando del error
       return { url: `/uploads/${path}`, downloadUrl: `/uploads/${path}`, pathname: path, contentType: '', contentDisposition: '', size: 0 } as PutBlobResult;
     }
   }

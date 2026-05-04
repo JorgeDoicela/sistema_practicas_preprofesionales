@@ -80,7 +80,7 @@ export function getDashboardTourSteps(role: Role, pathname: string): TourStep[] 
         id: "att-actions",
         selector: '[data-tour="attendance-actions"]',
         title: "Registro Biométrico",
-        getDescription: () => "Use estos botones para registrar su jornada. Recuerde que el sistema solicita una foto de actividad y verificación WebAuthn (huella/FaceID).",
+        getDescription: () => "Use estos botones para registrar su jornada. Recuerde que el sistema solicita una foto de actividad y verificación WebAuthn (Windows Hello, PIN, Huella o reconocimiento).",
       }
     ];
   }
@@ -710,7 +710,7 @@ export function getDashboardTourSteps(role: Role, pathname: string): TourStep[] 
         id: "stu-asist-actions",
         selector: '[data-tour="attendance-actions"]',
         title: "Registro Biométrico",
-        getDescription: () => "Para marcar, deberá tomarse una foto de biometría facial y validar su identidad mediante huella o reconocimiento del dispositivo.",
+        getDescription: () => "Para marcar, deberá tomarse una foto de presencia y validar su identidad mediante el método de seguridad de su dispositivo (Windows Hello, PIN o Biometría).",
       },
       {
         id: "stu-asist-activities",

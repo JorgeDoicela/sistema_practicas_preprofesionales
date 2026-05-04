@@ -40,8 +40,7 @@ export class WebauthnService {
         userDisplayName: user.fullName,
         attestationType: 'none',
         authenticatorSelection: {
-          authenticatorAttachment: 'platform',
-          userVerification: 'required',
+          userVerification: 'preferred',
           residentKey: 'preferred',
         },
         supportedAlgorithmIDs: [-7, -257],
@@ -69,6 +68,12 @@ export class WebauthnService {
       throw new BadRequestException('No hay un challenge activo para este usuario');
     }
 
+    console.log('[WebauthnService] Verificando registro:', {
+      expectedChallenge: user.webauthnChallenge,
+      expectedOrigin: this.origin,
+      expectedRPID: this.rpID,
+    });
+
     let verification;
     try {
       verification = await verifyRegistrationResponse({
@@ -76,9 +81,10 @@ export class WebauthnService {
         expectedChallenge: user.webauthnChallenge,
         expectedOrigin: this.origin,
         expectedRPID: this.rpID,
-        requireUserVerification: true,
+        requireUserVerification: false,
       });
-    } catch {
+    } catch (err: any) {
+      console.error('[WebauthnService] Error en verifyRegistrationResponse:', err);
       throw new UnauthorizedException('La verificación biométrica falló');
     }
 
@@ -122,7 +128,7 @@ export class WebauthnService {
 
     const options = await generateAuthenticationOptions({
       rpID: this.rpID,
-      userVerification: 'required',
+      userVerification: 'preferred',
       allowCredentials: [
         {
           id: storedCredential.credentialId, // already Base64URLString
@@ -153,6 +159,12 @@ export class WebauthnService {
     // publicKey se guardó como Base64URLString, reconvertir a Uint8Array
     const publicKeyBuffer = isoBase64URL.toBuffer(storedCredential.publicKey);
 
+    console.log('[WebauthnService] Verificando autenticación:', {
+      expectedChallenge: user.webauthnChallenge,
+      expectedOrigin: this.origin,
+      expectedRPID: this.rpID,
+    });
+
     let verification;
     try {
       verification = await verifyAuthenticationResponse({
@@ -160,14 +172,15 @@ export class WebauthnService {
         expectedChallenge: user.webauthnChallenge,
         expectedOrigin: this.origin,
         expectedRPID: this.rpID,
-        requireUserVerification: true,
+        requireUserVerification: false,
         credential: {
           id: storedCredential.credentialId, // Base64URLString
           publicKey: publicKeyBuffer,         // Uint8Array
           counter: storedCredential.counter,
         },
       });
-    } catch {
+    } catch (err: any) {
+      console.error('[WebauthnService] Error en verifyAuthenticationResponse:', err);
       throw new UnauthorizedException('Verificación biométrica fallida');
     }
 

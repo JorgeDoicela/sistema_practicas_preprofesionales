@@ -62,7 +62,9 @@ function countDocsByStatus(docs: Array<{ status?: string }> | undefined, st: str
 }
 
 function isActiveInternship(status: string | undefined) {
-  return status === 'EN_CURSO';
+  if (!status) return false;
+  const s = status.toLowerCase();
+  return s === 'activo' || s === 'en proceso' || s === 'en_curso';
 }
 
 function flattenRecentAttendances(internships: InternshipRow[], limit: number, t: any) {
@@ -215,7 +217,10 @@ export function DashboardMain() {
 
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
-    if (!savedUser) return;
+    if (!savedUser) {
+      setLoading(false);
+      return;
+    }
     try {
       const parsed = JSON.parse(savedUser) as UserType & { role: string };
       const roleNorm = normalizeApiRoleToAppRole(parsed.role);
@@ -224,9 +229,16 @@ export function DashboardMain() {
         localStorage.setItem("user", JSON.stringify(merged));
       }
       setUser(merged);
-      void loadDashboard(merged, selectedCareerId);
+
+      const cId = selectedCareerId || (roleNorm === ROLES.COORDINADOR ? merged.careerId : "");
+      if (roleNorm === ROLES.COORDINADOR && !selectedCareerId && merged.careerId) {
+        setSelectedCareerId(merged.careerId);
+      }
+
+      void loadDashboard(merged, cId);
       void loadAnnouncements();
-    } catch {
+    } catch (err) {
+      console.error("[DashboardMain] Error during mount-time session restore:", err);
       setLoading(false);
     }
   }, [loadDashboard, selectedCareerId]);
@@ -255,14 +267,14 @@ export function DashboardMain() {
             {
               title: t.stats.activeInternships,
               value: "0",
-              hint: t.stats.noAssignment,
+              hint: t.stats.noPractices,
               icon: <Users className="w-6 h-6" />,
               color: "bg-blue-500",
             },
             {
               title: t.stats.activeAgreements,
               value: String(agrEmpty),
-              hint: t.stats.noAgreements,
+              hint: agrEmpty > 0 ? `${agrEmpty} ${t.stats.activeAgreements.toLowerCase()}` : t.stats.noAgreements,
               icon: <Building2 className="w-6 h-6" />,
               color: "bg-indigo-500",
             },
@@ -275,7 +287,7 @@ export function DashboardMain() {
             },
             {
               title: t.stats.documentation,
-              value: "—",
+              value: "0%",
               hint: t.stats.noDocs,
               icon: <CheckCircle2 className="w-6 h-6" />,
               color: "bg-emerald-500",
@@ -308,7 +320,7 @@ export function DashboardMain() {
           {
             title: t.stats.activeAgreements,
             value: String(agr),
-            hint: t.stats.noAgreements,
+            hint: agr > 0 ? `${agr} ${t.stats.activeAgreements.toLowerCase()}` : t.stats.noAgreements,
             icon: <Building2 className="w-6 h-6" />,
             color: "bg-indigo-500",
             href: "/coordinador/convenios/list",
@@ -572,7 +584,7 @@ export function DashboardMain() {
     appRole === ROLES.ESTUDIANTE
       ? "/dashboard/asistencia"
       : appRole === ROLES.TUTOR
-        ? "/tutor-academico/dashboard"
+        ? "/tutor-academico/estudiantes"
         : "/coordinador/estudiantes";
 
   return (

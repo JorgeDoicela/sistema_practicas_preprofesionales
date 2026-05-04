@@ -29,7 +29,7 @@ export class InternshipsController {
     @Req() req: any,
   ) {
     return this.internshipsService.findAll(page, limit, {
-      careerId: queryCareerId,
+      careerId: queryCareerId || req.user.careerId,
       role: req.user.role,
     });
   }

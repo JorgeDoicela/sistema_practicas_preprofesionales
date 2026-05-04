@@ -234,7 +234,8 @@ export class AuthService {
       email: user.email, 
       sub: user.id, 
       role: user.role,
-      fullName: user.fullName 
+      fullName: user.fullName,
+      careerId: (user as any).careerId ?? null,
     };
 
     const [accessToken, refreshToken] = await Promise.all([
@@ -277,6 +278,7 @@ export class AuthService {
         careerId: (user as any).careerId ?? null,
         cedula: (user as any).cedula ?? null,
         isTwoFactorEnabled: (user as any).isTwoFactorEnabled || false,
+        lopdpAccepted: (user as any).lopdpAccepted || false,
       }
     };
   }
@@ -298,7 +300,19 @@ export class AuthService {
     const tokens = await this.getTokens(user);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
 
-    return tokens;
+    return {
+      ...tokens,
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+        careerId: user.careerId ?? null,
+        cedula: user.cedula ?? null,
+        isTwoFactorEnabled: user.isTwoFactorEnabled || false,
+        lopdpAccepted: user.lopdpAccepted || false,
+      }
+    };
   }
 
   async logout(userId: string) {

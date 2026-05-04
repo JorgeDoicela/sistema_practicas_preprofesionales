@@ -32,39 +32,44 @@ export class AiService {
       );
     }
 
-    const dataUrl = `data:${mimeType};base64,${base64Image}`;
+    try {
+      const dataUrl = `data:${mimeType};base64,${base64Image}`;
 
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-4o',
-      max_tokens: 150,
-      messages: [
-        {
-          role: 'system',
-          content:
-            'Eres un asistente que ayuda a estudiantes de prácticas preprofesionales a describir sus actividades diarias. ' +
-            'Analiza la imagen proporcionada y genera una descripción breve y profesional (máximo 2 oraciones) de la actividad o tarea que se observa en la imagen. ' +
-            'Responde SOLO con la descripción, sin introducciones ni explicaciones adicionales. ' +
-            'Responde siempre en español.',
-        },
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image_url',
-              image_url: { url: dataUrl, detail: 'low' },
-            },
-            {
-              type: 'text',
-              text: 'Describe brevemente la actividad que se muestra en esta imagen de prácticas preprofesionales.',
-            },
-          ],
-        },
-      ],
-    });
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-4o',
+        max_tokens: 150,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'Eres un asistente que ayuda a estudiantes de prácticas preprofesionales a describir sus actividades diarias. ' +
+              'Analiza la imagen proporcionada y genera una descripción breve y profesional (máximo 2 oraciones) de la actividad o tarea que se observa en la imagen. ' +
+              'Responde SOLO con la descripción, sin introducciones ni explicaciones adicionales. ' +
+              'Responde siempre en español.',
+          },
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'image_url',
+                image_url: { url: dataUrl, detail: 'low' },
+              },
+              {
+                type: 'text',
+                text: 'Describe brevemente la actividad que se muestra en esta imagen de prácticas preprofesionales.',
+              },
+            ],
+          },
+        ],
+      });
 
-    const suggestion = response.choices[0]?.message?.content?.trim();
-    if (!suggestion) throw new Error('El modelo no generó una descripción');
-    return suggestion;
+      const suggestion = response.choices[0]?.message?.content?.trim();
+      if (!suggestion) throw new Error('El modelo no generó una descripción');
+      return suggestion;
+    } catch (err: any) {
+      this.logger.error('Error en suggestActivityDescription:', err.message);
+      return 'No se pudo generar una descripción automática en este momento.';
+    }
   }
 
   /**
@@ -140,44 +145,47 @@ export class AiService {
       Responde en formato JSON: {"isValid": boolean, "feedback": "explicación", "hoursFound": number | null}.
     `;
 
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-4o',
-      max_tokens: 300,
-      messages: [
-        {
-          role: 'system',
-          content: verificationPrompt,
-        },
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image_url',
-              image_url: { url: `data:image/jpeg;base64,${base64Image}`, detail: 'high' },
-            },
-            {
-              type: 'text',
-              text: `Analiza este documento para ${studentName || 'un estudiante'}. Horas esperadas: ${systemHours || 'desconocidas'}.`,
-            },
-          ],
-        },
-      ],
-      response_format: { type: 'json_object' },
-    });
-
-    const content = response.choices[0]?.message?.content;
-    if (!content) return { isValid: true, feedback: 'Error en la respuesta de IA.' };
-
     try {
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-4o',
+        max_tokens: 300,
+        messages: [
+          {
+            role: 'system',
+            content: verificationPrompt,
+          },
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'image_url',
+                image_url: { url: `data:image/jpeg;base64,${base64Image}`, detail: 'high' },
+              },
+              {
+                type: 'text',
+                text: `Analiza este documento para ${studentName || 'un estudiante'}. Horas esperadas: ${systemHours || 'desconocidas'}.`,
+              },
+            ],
+          },
+        ],
+        response_format: { type: 'json_object' },
+      });
+
+      const content = response.choices[0]?.message?.content;
+      if (!content) return { isValid: true, feedback: 'Error en la respuesta de IA.' };
+
       const parsed = JSON.parse(content);
       return {
         isValid: parsed.isValid ?? true,
         feedback: parsed.feedback ?? 'Sin observaciones del modelo.',
         hoursFound: parsed.hoursFound ?? undefined,
       };
-    } catch {
-      this.logger.error('preVerifyDocument: respuesta del modelo no es JSON válido', content);
-      return { isValid: true, feedback: 'No se pudo interpretar la respuesta de la IA.' };
+    } catch (err: any) {
+      this.logger.error('Error en preVerifyDocument:', err.message);
+      return { 
+        isValid: true, 
+        feedback: 'El servicio de pre-verificación de IA no pudo procesar este archivo. Puede continuar con la carga manual.' 
+      };
     }
   }
 

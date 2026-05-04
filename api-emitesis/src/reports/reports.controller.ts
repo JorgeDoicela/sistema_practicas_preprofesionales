@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Res, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Res, Query, UseGuards, Req } from '@nestjs/common';
 import type { Response } from 'express';
 import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
@@ -13,8 +13,8 @@ export class ReportsController {
 
   @Get('global-stats')
   @Roles(Role.COORDINADOR)
-  async getGlobalStats(@Query('careerId') careerId?: string) {
-    return this.reportsService.getGlobalStats(careerId);
+  async getGlobalStats(@Query('careerId') careerId?: string, @Req() req?: any) {
+    return this.reportsService.getGlobalStats(careerId || req?.user?.careerId);
   }
 
   @Get('export/global/excel')

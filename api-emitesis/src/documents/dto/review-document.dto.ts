@@ -18,4 +18,8 @@ export class ReviewDocumentDto {
   @IsOptional()
   @Allow()
   annotations?: unknown;
+
+  @IsOptional()
+  @IsString()
+  twoFactorCode?: string;
 }

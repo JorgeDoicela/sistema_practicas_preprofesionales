@@ -237,6 +237,10 @@ export class InternshipsService {
           company: true,
           tutor: true,
           career: true,
+          attendances: {
+            orderBy: { checkIn: 'desc' },
+            take: 5,
+          },
         },
         orderBy: { createdAt: 'desc' },
       }),

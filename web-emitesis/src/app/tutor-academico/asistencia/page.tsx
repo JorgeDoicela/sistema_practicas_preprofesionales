@@ -164,15 +164,39 @@ export default function TutorAsistenciaPage() {
 
   const handleAddLocation = () => {
     setAddLocError(null);
-    const lat = parseFloat(newLocLat);
-    const lng = parseFloat(newLocLng);
+    
+    // Sanitización: Convertir comas a puntos en las coordenadas (común en teclados en español)
+    const sanitizedLat = newLocLat.toString().replace(',', '.');
+    const sanitizedLng = newLocLng.toString().replace(',', '.');
+    
+    const lat = parseFloat(sanitizedLat);
+    const lng = parseFloat(sanitizedLng);
     const radius = parseInt(newLocRadius, 10);
-    if (!newLocLabel.trim()) { setAddLocError(t.common.errors.generic); return; }
-    if (isNaN(lat) || lat < -90 || lat > 90) { setAddLocError(t.common.errors.generic); return; }
-    if (isNaN(lng) || lng < -180 || lng > 180) { setAddLocError(t.common.errors.generic); return; }
-    if (isNaN(radius) || radius < 50 || radius > 5000) { setAddLocError(t.common.errors.generic); return; }
+
+    if (!newLocLabel.trim()) { 
+      setAddLocError("Por favor, asigne un nombre a la sede (ej: Sede Norte)"); 
+      return; 
+    }
+    if (isNaN(lat) || lat < -90 || lat > 90) { 
+      setAddLocError("La latitud debe ser un número entre -90 y 90"); 
+      return; 
+    }
+    if (isNaN(lng) || lng < -180 || lng > 180) { 
+      setAddLocError("La longitud debe ser un número entre -180 y 180"); 
+      return; 
+    }
+    if (isNaN(radius) || radius < 50 || radius > 5000) { 
+      setAddLocError("El radio debe estar entre 50m y 5000m"); 
+      return; 
+    }
+
     setEditingLocations((prev) => [...prev, { label: newLocLabel.trim(), lat, lng, radiusM: radius }]);
-    setNewLocLabel(""); setNewLocLat(""); setNewLocLng(""); setNewLocRadius("200");
+    // Limpiar campos y cerrar mapa para ver la lista
+    setNewLocLabel(""); 
+    setNewLocLat(""); 
+    setNewLocLng(""); 
+    setNewLocRadius("200");
+    setShowMapSelector(false);
   };
 
   const handleRemoveLocation = (idx: number) => {

@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Patch, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, UseGuards, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { NotificationsService } from './notifications.service';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
@@ -12,13 +13,13 @@ export class NotificationsController {
 
   @ApiOperation({ summary: 'Obtener mis notificaciones recientes' })
   @Get('my')
-  async getMyNotifications(@Request() req) {
+  async getMyNotifications(@Req() req: any) {
     return this.notificationsService.findAllForUser(req.user.id);
   }
 
   @ApiOperation({ summary: 'Contar notificaciones no leídas' })
   @Get('unread-count')
-  async getUnreadCount(@Request() req) {
+  async getUnreadCount(@Req() req: any) {
     const count = await this.notificationsService.countUnread(req.user.id);
     return { count };
   }
@@ -31,7 +32,7 @@ export class NotificationsController {
 
   @ApiOperation({ summary: 'Marcar todas las notificaciones como leídas' })
   @Post('read-all')
-  async markAllAsRead(@Request() req) {
+  async markAllAsRead(@Req() req: any) {
     await this.notificationsService.markAllAsRead(req.user.id);
     return { success: true };
   }

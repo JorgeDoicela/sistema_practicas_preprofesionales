@@ -52,34 +52,57 @@ api.interceptors.response.use(
             refreshToken
           });
 
-          // Extraer nuevos tokens (vienen en data.data por el envoltorio del backend)
-          const tokens = response.data.data;
+          // Extraer nuevos tokens y usuario
+          const rawResult = response.data;
+          // Manejar caso donde venga envuelto en { success, data }
+          const result = (rawResult && typeof rawResult === 'object' && 'success' in rawResult) 
+            ? rawResult.data 
+            : rawResult;
           
-          localStorage.setItem('token', tokens.accessToken);
-          localStorage.setItem('refresh_token', tokens.refreshToken);
-          Cookies.set('token', tokens.accessToken, { secure: true, sameSite: 'strict' });
+          if (!result || (!result.accessToken && !result.access_token)) {
+            throw new Error('Tokens no encontrados en la respuesta de refresco');
+          }
+
+          const newAccessToken = result.accessToken || result.access_token;
+          const newRefreshToken = result.refreshToken || result.refresh_token;
+
+          localStorage.setItem('token', newAccessToken);
+          localStorage.setItem('refresh_token', newRefreshToken);
+          
+          if (result.user) {
+            localStorage.setItem('user', JSON.stringify(result.user));
+          }
+
+          Cookies.set('token', newAccessToken, { secure: true, sameSite: 'strict' });
 
           // Reintentar petición original
           if (originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${tokens.accessToken}`;
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           }
           return api(originalRequest);
         } catch (refreshError) {
+          console.error('[AuthService] Error crítico durante el refresco de token:', refreshError);
           // Si el refresh falla, el token es inválido o expiró → Logout total
-          localStorage.clear();
+          localStorage.removeItem('token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem('user');
           Cookies.remove('token');
           Cookies.remove('user');
-          if (!window.location.pathname.includes('/login')) {
+          
+          if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
             window.location.href = '/login?sessionExpired=true';
           }
           return Promise.reject(refreshError);
         }
       } else {
+        console.warn('[AuthService] Sesión expirada y no hay refresh token disponible.');
         // No hay refresh token → Logout inmediato
-        localStorage.clear();
+        localStorage.removeItem('token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
         Cookies.remove('token');
         Cookies.remove('user');
-        if (!window.location.pathname.includes('/login')) {
+        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
           window.location.href = '/login?sessionExpired=true';
         }
       }

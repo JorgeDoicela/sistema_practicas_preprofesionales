@@ -17,14 +17,16 @@ interface MapComponentProps {
   center: { lat: number; lng: number };
   zoom?: number;
   points?: Array<{ lat: number; lng: number; label?: string }>;
-  radiusM?: number; // Geocerca opcional
+  radiusM?: number; // Geocerca opcional (usará el centro del mapa)
+  circles?: Array<{ lat: number; lng: number; radiusM: number }>; // Múltiples geocercas
 }
 
-export default function MapComponent({ center, zoom = 14, points = [], radiusM }: MapComponentProps) {
+export default function MapComponent({ center, zoom = 14, points = [], radiusM, circles }: MapComponentProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const circleRef = useRef<L.Circle | null>(null);
+  const circlesRef = useRef<L.Circle[]>([]);
 
   useEffect(() => {
     if (!mapRef.current || mapInstance.current) return;
@@ -62,19 +64,35 @@ export default function MapComponent({ center, zoom = 14, points = [], radiusM }
       markersRef.current.push(marker);
     });
 
-    // Update Circle (Geofence)
-    if (circleRef.current) circleRef.current.remove();
-    if (radiusM) {
-        circleRef.current = L.circle([center.lat, center.lng], {
-          radius: radiusM,
+    // Update Circles (Geofences)
+    circlesRef.current.forEach(c => c.remove());
+    circlesRef.current = [];
+
+    if (circles && circles.length > 0) {
+      circles.forEach(c => {
+        const circle = L.circle([c.lat, c.lng], {
+          radius: c.radiusM,
           fillColor: "#003366",
           fillOpacity: 0.1,
           color: "#003366",
           weight: 1,
           dashArray: "5, 5",
         }).addTo(map);
+        circlesRef.current.push(circle);
+      });
+    } else if (radiusM) {
+      // Fallback for single radius centered on map
+      const circle = L.circle([center.lat, center.lng], {
+        radius: radiusM,
+        fillColor: "#003366",
+        fillOpacity: 0.1,
+        color: "#003366",
+        weight: 1,
+        dashArray: "5, 5",
+      }).addTo(map);
+      circlesRef.current.push(circle);
     }
-  }, [center, zoom, points, radiusM]);
+  }, [center, zoom, points, radiusM, circles]);
 
   return (
     <div className="h-full w-full relative">

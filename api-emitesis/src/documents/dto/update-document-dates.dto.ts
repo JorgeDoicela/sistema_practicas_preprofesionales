@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsDateString } from 'class-validator';
+import { IsNotEmpty, IsDateString, IsOptional, IsString } from 'class-validator';
 
 export class UpdateDocumentDatesDto {
   @IsDateString()
@@ -8,4 +8,8 @@ export class UpdateDocumentDatesDto {
   @IsDateString()
   @IsNotEmpty()
   dueDate: string;
+
+  @IsOptional()
+  @IsString()
+  twoFactorCode?: string;
 }

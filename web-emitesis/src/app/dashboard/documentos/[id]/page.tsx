@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { API_URL } from "@/lib/api-base";
 import { internshipsService } from "@/services/internships.service";
 import { documentsService } from "@/services/documents.service";
 import { attendancesService } from "@/services/attendances.service";
@@ -222,16 +223,24 @@ export default function DocumentDetailPage() {
 
   const handlePreviewFile = (doc: any) => {
     setPreviewedIds(prev => new Set(prev).add(doc.id));
-    window.open(doc.filePath, '_blank');
+    const fullUrl = doc.filePath?.startsWith('http') 
+      ? doc.filePath 
+      : `${API_URL.replace('/api', '')}${doc.filePath}`;
+    window.open(fullUrl, '_blank');
   };
 
-  const handleReviewSubmit = async (status: 'APROBADO_TUTOR' | 'RECHAZADO_TUTOR') => {
-    if (status === 'RECHAZADO_TUTOR' && !observations.trim()) {
+  const handleReviewSubmit = async (type: 'APPROVE' | 'REJECT') => {
+    const isCoord = currentUser?.role === 'COORDINADOR';
+    const status = isCoord 
+      ? (type === 'APPROVE' ? 'APROBADO_DEFINITIVO' : 'RECHAZADO_COORDINADOR')
+      : (type === 'APPROVE' ? 'APROBADO_TUTOR' : 'RECHAZADO_TUTOR');
+
+    if (type === 'REJECT' && !observations.trim()) {
       alert(t.documents.detail.errors.observationsRequired);
       return;
     }
 
-    if (status === 'APROBADO_TUTOR' && !previewedIds.has(selectedDoc.id)) {
+    if (type === 'APPROVE' && !previewedIds.has(selectedDoc.id)) {
       if (!confirm(t.documents.detail.errors.previewRecommendation)) {
         return;
       }
@@ -239,24 +248,28 @@ export default function DocumentDetailPage() {
 
     setSaving(true);
     try {
+      const reviewPayload = { status, observations, annotations: reviewAnnotationsRef.current };
+      
       if (currentUser?.isTwoFactorEnabled) {
           setPendingAction(async (code: string) => {
-            await documentsService.reviewDocument(
-              selectedDoc.id,
-              { status, observations, annotations: reviewAnnotationsRef.current },
-              code,
-            );
+            if (isCoord) {
+              await documentsService.coordinatorReviewDocument(selectedDoc.id, reviewPayload, code);
+            } else {
+              await documentsService.reviewDocument(selectedDoc.id, reviewPayload, code);
+            }
           });
           setIs2faModalOpen(true);
           setSaving(false);
           return;
       }
-      await documentsService.reviewDocument(selectedDoc.id, {
-        status,
-        observations,
-        annotations: reviewAnnotationsRef.current,
-      });
-      alert(status === 'APROBADO_TUTOR' ? t.common.success.generic : t.common.success.generic);
+
+      if (isCoord) {
+        await documentsService.coordinatorReviewDocument(selectedDoc.id, reviewPayload);
+      } else {
+        await documentsService.reviewDocument(selectedDoc.id, reviewPayload);
+      }
+      
+      alert(t.common.success.generic);
       await loadData();
       setIsReviewDrawerOpen(false);
     } catch (error: any) {
@@ -666,7 +679,7 @@ export default function DocumentDetailPage() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 200 }}
-              className="fixed top-0 right-0 z-[101] flex h-full min-h-0 w-full max-w-[min(100vw,1180px)] flex-col bg-white shadow-2xl"
+              className="fixed top-0 right-0 z-[101] flex h-full min-h-0 w-full max-w-[min(100vw,1200px)] flex-col bg-white shadow-2xl"
             >
               <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-emerald-50/30 p-6 lg:p-10">
                 <div className="flex items-center gap-5">
@@ -686,7 +699,7 @@ export default function DocumentDetailPage() {
                 </button>
               </div>
 
-              <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden p-6 lg:flex-row lg:p-8">
+              <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto lg:overflow-hidden p-6 lg:flex-row lg:p-8">
                 <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/40 p-4">
                   <div className="mb-3 shrink-0">
                     <h4 className="text-[11px] font-black uppercase tracking-widest text-[#C5A059]">{t.documents.detail.docToReview}</h4>
@@ -696,7 +709,7 @@ export default function DocumentDetailPage() {
                     {selectedDoc && (
                       <DocumentPdfReviewEditor
                         key={selectedDoc.id}
-                        fileUrl={selectedDoc.filePath}
+                        fileUrl={selectedDoc.filePath ? (selectedDoc.filePath.startsWith('http') ? selectedDoc.filePath : `${API_URL.replace('/api', '')}${selectedDoc.filePath}`) : null}
                         initialItems={parseReviewAnnotations(selectedDoc.reviewAnnotations).items}
                         onItemsChange={handleReviewAnnotationsChange}
                       />
@@ -717,7 +730,7 @@ export default function DocumentDetailPage() {
                 </div>
 
                 {/* FEEDBACK THREADS v5.0 */}
-                <div className="lg:col-span-1 border-t lg:border-t-0 lg:border-l border-slate-100 flex flex-col min-h-0 pt-6 lg:pt-0 lg:pl-8">
+                <div className="lg:w-[350px] border-t lg:border-t-0 lg:border-l border-slate-100 flex flex-col min-h-0 overflow-y-auto pt-6 lg:pt-0 lg:pl-8">
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-[#C5A059] mb-4 flex items-center gap-2">
                      <MessageSquare size={14} /> {t.documents.detail.feedbackThread}
                   </h4>
@@ -761,10 +774,23 @@ export default function DocumentDetailPage() {
                   </div>
                 </div>
 
-              <div className="p-4 sm:p-6 md:p-8 border-t border-slate-100 bg-white grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              <div className="p-4 sm:p-6 md:p-8 border-t border-slate-100 bg-white flex flex-col gap-4">
+                <div className="w-full">
+                   <h4 className="text-[10px] font-black uppercase tracking-widest text-[#C5A059] mb-3 flex items-center gap-2">
+                      <Edit3 size={14} /> {t.documents.detail.observationsLabel}
+                   </h4>
+                   <textarea 
+                     value={observations}
+                     onChange={(e) => setObservations(e.target.value)}
+                     placeholder={t.documents.detail.observationsPlaceholder}
+                     rows={1}
+                     className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-[11px] font-bold outline-none focus:ring-2 focus:ring-[#003366]/5 transition-all resize-none shadow-inner"
+                   />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 <button 
-                  onClick={() => handleReviewSubmit('RECHAZADO_TUTOR')}
-                  disabled={saving || !observations.trim()}
+                  onClick={() => handleReviewSubmit('REJECT')}
+                  disabled={saving || (currentUser?.role === 'COORDINADOR' && selectedDoc?.status !== 'APROBADO_TUTOR')}
                   className="h-14 bg-white border-2 border-rose-100 text-rose-600 rounded-2xl font-black uppercase tracking-widest hover:bg-rose-50 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <XCircle className="w-5 h-5" />}
@@ -783,8 +809,8 @@ export default function DocumentDetailPage() {
                 )}
 
                 <button 
-                  onClick={() => handleReviewSubmit('APROBADO_TUTOR')}
-                  disabled={saving}
+                  onClick={() => handleReviewSubmit('APPROVE')}
+                  disabled={saving || (currentUser?.role === 'COORDINADOR' && selectedDoc?.status !== 'APROBADO_TUTOR')}
                   className={cn(
                     "h-14 rounded-2xl font-black uppercase tracking-widest transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl shadow-blue-900/20",
                     currentUser?.role === 'COORDINADOR' ? "bg-slate-100 text-[#003366]" : "bg-[#003366] text-white"
@@ -794,9 +820,10 @@ export default function DocumentDetailPage() {
                   {currentUser?.role === 'COORDINADOR' ? t.documents.detail.approveWithoutSigning : t.documents.detail.approve}
                 </button>
               </div>
-            </motion.div>
-          </>
-        )}
+            </div>
+          </motion.div>
+        </>
+      )}
       </AnimatePresence>
       <TwoFactorModal 
         isOpen={is2faModalOpen}

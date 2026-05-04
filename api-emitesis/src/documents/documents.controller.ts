@@ -78,7 +78,7 @@ export class DocumentsController {
   }
 
   @Patch(':id/dates')
-  @Roles(Role.TUTOR) // RF-DOC-001: Actor Tutor Académico
+  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ADMIN) // RF-DOC-001: Actor Tutor Académico / Autoridad
   @UseGuards(TwoFactorGuard)
   updateDates(
     @Param('id') id: string,

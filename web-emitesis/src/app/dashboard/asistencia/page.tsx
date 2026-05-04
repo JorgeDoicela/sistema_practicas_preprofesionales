@@ -358,17 +358,24 @@ export default function AsistenciaPage() {
         photoUrl = uploaded.url;
       }
 
+      const attendanceData = {
+        lat: coords.lat,
+        lng: coords.lng,
+      };
+
       if (modalAction === "IN") {
-        await attendancesService.checkIn({ ...coords, checkInPhotoUrl: photoUrl });
+        await attendancesService.checkIn({ ...attendanceData, checkInPhotoUrl: photoUrl });
       } else {
-        await attendancesService.checkOut({ ...coords, checkOutPhotoUrl: photoUrl });
+        await attendancesService.checkOut({ ...attendanceData, checkOutPhotoUrl: photoUrl });
       }
 
       setModalStep("done");
       await loadData();
-    } catch (err: unknown) {
+    } catch (err: any) {
       console.error(err);
-      setModalError(geoErrorMessage(err));
+      // Intentar obtener mensaje detallado de la API (Axios error)
+      const apiMessage = err.response?.data?.message;
+      setModalError(apiMessage || geoErrorMessage(err));
       setModalStep("error");
     }
   };
@@ -504,7 +511,7 @@ export default function AsistenciaPage() {
               );
             })()}
             <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-xl">
-              <Fingerprint className="w-4 h-4" />
+              <ShieldCheck className="w-4 h-4" />
               <span className="text-[10px] font-black uppercase tracking-widest">{t.asistencia.requirements.biometrics}</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-700 rounded-xl">
@@ -524,12 +531,19 @@ export default function AsistenciaPage() {
                 <div className="md:col-span-2 h-[350px] rounded-[2rem] overflow-hidden group border border-slate-50">
                   <LeafletMap 
                      center={currentCoords || { lat: -0.1807, lng: -78.4678 }}
-                     zoom={16}
-                     points={currentCoords ? [{ ...currentCoords, label: t.asistencia.requirements.currentLocation }] : []}
-                     radiusM={
+                     zoom={15}
+                     points={[
+                       ...(currentCoords ? [{ ...currentCoords, label: t.asistencia.requirements.currentLocation }] : []),
+                       ...(Array.isArray((internship as any).allowedLocations) 
+                          ? (internship as any).allowedLocations.map((loc: any) => ({ lat: loc.lat, lng: loc.lng, label: loc.label }))
+                          : ((internship as any).lat && (internship as any).lng 
+                              ? [{ lat: (internship as any).lat, lng: (internship as any).lng, label: "Sede Principal" }] 
+                              : []))
+                     ]}
+                     circles={
                        Array.isArray((internship as any).allowedLocations) && (internship as any).allowedLocations.length > 0
-                        ? (internship as any).allowedLocations[0].radiusM || 200
-                        : (internship as any).lat && (internship as any).lng ? 200 : undefined
+                        ? (internship as any).allowedLocations.map((loc: any) => ({ lat: loc.lat, lng: loc.lng, radiusM: loc.radiusM || 200 }))
+                        : (internship as any).lat && (internship as any).lng ? [{ lat: (internship as any).lat, lng: (internship as any).lng, radiusM: 200 }] : []
                      }
                   />
                 </div>
@@ -645,7 +659,7 @@ export default function AsistenciaPage() {
                     {!status && (
                       <div className="flex items-center gap-2 mt-2">
                         <StepBadge icon={Camera} label={t.asistencia.actions.photo} />
-                        <StepBadge icon={Fingerprint} label={t.asistencia.actions.fingerprint} />
+                        <StepBadge icon={ShieldCheck} label={t.asistencia.actions.fingerprint} />
                         <StepBadge icon={MapPin} label={t.asistencia.actions.gps} />
                       </div>
                     )}
@@ -693,7 +707,7 @@ export default function AsistenciaPage() {
                     {status && !(status as Record<string, unknown>)?.checkOut && (
                       <div className="flex items-center gap-2 mt-2">
                         <StepBadge icon={Camera} label={t.asistencia.actions.photo} />
-                        <StepBadge icon={Fingerprint} label={t.asistencia.actions.fingerprint} />
+                        <StepBadge icon={ShieldCheck} label={t.asistencia.actions.fingerprint} />
                         <StepBadge icon={MapPin} label={t.asistencia.actions.gps} />
                       </div>
                     )}
@@ -866,13 +880,13 @@ export default function AsistenciaPage() {
                   </p>
                   <div className="flex items-center gap-2 mt-1">
                     {modalStep === "photo"      && <Camera     className="w-5 h-5 text-white/70" />}
-                    {modalStep === "biometric"  && <Fingerprint className="w-5 h-5 text-white/70" />}
+                    {modalStep === "biometric"  && <ShieldCheck className="w-5 h-5 text-white/70" />}
                     {modalStep === "submitting" && <MapPin      className="w-5 h-5 text-white/70 animate-pulse" />}
                     {modalStep === "done"       && <CheckCircle2 className="w-5 h-5 text-emerald-300" />}
                     {modalStep === "error"      && <AlertCircle  className="w-5 h-5 text-rose-300" />}
                     <p className="text-white font-black text-lg">
                       {modalStep === "photo"      && "Paso 1 — Foto"}
-                      {modalStep === "biometric"  && "Paso 2 — Biometría"}
+                      {modalStep === "biometric"  && "Paso 2 — Verificación"}
                       {modalStep === "submitting" && "Registrando…"}
                       {modalStep === "done"       && "¡Registrado!"}
                       {modalStep === "error"      && "No se pudo registrar"}
@@ -1011,19 +1025,18 @@ export default function AsistenciaPage() {
                           ? <ShieldX className="w-10 h-10 text-rose-500" />
                           : webAuthn.state === "authenticating" || webAuthn.state === "registering" || webAuthn.state === "checking"
                           ? <Loader2 className="w-10 h-10 text-white animate-spin" />
-                          : <Fingerprint className="w-10 h-10 text-blue-600" />
+                          : <ShieldCheck className="w-10 h-10 text-blue-600" />
                         }
                       </motion.div>
 
-                      <div className="text-center px-4 space-y-1">
-                        <p className="text-sm font-black text-blue-900">
-                          {(biometricPlatformOk === null || hasSavedCredential === null || webAuthn.state === "checking") && t.asistencia.modal.verifying}
-                          {biometricPlatformOk === true && webAuthn.state === "idle"          && t.asistencia.modal.verifying}
-                          {webAuthn.state === "registering"                                   && t.asistencia.modal.verifying}
-                          {webAuthn.state === "authenticating"                                && t.asistencia.modal.verifying}
-                          {webAuthn.state === "verified"                                      && t.asistencia.modal.stepDone}
-                          {webAuthn.state === "error"                                         && t.asistencia.modal.stepError}
+                      <div className="text-center px-6">
+                        <p className="text-xs font-black text-blue-900 uppercase tracking-widest mb-1">
+                          {webAuthn.state === "registering" ? "Creando credencial segura" : "Iniciando verificación"}
                         </p>
+                        <p className="text-[10px] font-bold text-blue-700 opacity-80 leading-relaxed">
+                          {t.asistencia.modal.biometricHint}
+                        </p>
+                      </div>
                         {biometricPlatformOk === true && hasSavedCredential !== null && webAuthn.state === "idle" && (
                           <p className="text-[9px] text-blue-500 font-bold">
                             {hasSavedCredential
@@ -1037,7 +1050,6 @@ export default function AsistenciaPage() {
                           </p>
                         )}
                       </div>
-                    </div>
 
                     {modalError && (
                       <div className="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start gap-3 text-rose-600">

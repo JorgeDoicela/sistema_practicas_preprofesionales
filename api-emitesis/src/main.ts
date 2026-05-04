@@ -8,6 +8,8 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { SanitizationPipe } from './common/security/sanitization.pipe';
 import helmet from 'helmet';
 
+import { json, urlencoded } from 'express';
+
 /** En Vercel no se debe crear Nest en cada petición (agota tiempo/memoria y provoca FUNCTION_INVOCATION_FAILED). */
 let vercelExpressApp: unknown = null;
 let vercelBootstrapPromise: Promise<unknown> | null = null;
@@ -16,6 +18,18 @@ async function createConfiguredApp(): Promise<INestApplication> {
   const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
   const app = await NestFactory.create(AppModule, {
     logger: isProduction ? ['error', 'warn'] : ['error', 'warn', 'log'],
+  });
+
+  // Aumentar límites para el envío de imágenes base64 (RF-AI-01)
+  app.use(json({ limit: '10mb' }));
+  app.use(urlencoded({ extended: true, limit: '10mb' }));
+
+  // Debug Logger: Ver qué peticiones llegan realmente
+  app.use((req: any, res: any, next: any) => {
+    if (!isProduction) {
+      console.log(`[Request] ${req.method} ${req.url} - Origin: ${req.headers.origin}`);
+    }
+    next();
   });
 
   const config = new DocumentBuilder()
@@ -54,13 +68,13 @@ async function createConfiguredApp(): Promise<INestApplication> {
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean);
-    
+
   if (corsOrigins.length > 0) {
     app.enableCors({
       origin: corsOrigins,
       credentials: true,
       methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'x-2fa-code'],
     });
   } else {
     // Si no hay orígenes, solo permitimos local por seguridad en dev
@@ -78,7 +92,7 @@ async function createConfiguredApp(): Promise<INestApplication> {
       whitelist: true,
       transform: true,
       transformOptions: { enableImplicitConversion: true },
-      forbidNonWhitelisted: true, // Estricto: no permite campos extraños
+      forbidNonWhitelisted: true,
     }),
   );
 

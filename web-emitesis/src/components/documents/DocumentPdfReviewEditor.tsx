@@ -146,79 +146,77 @@ export function DocumentPdfReviewEditor({
     onItemsChange({ version: 1, items: notes });
   }, [notes, onItemsChange]);
 
-  const highlightPluginInstance = React.useMemo(() => {
-    const renderHighlightTarget = (props: RenderHighlightTargetProps) => (
-      <div
-        className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1.5 shadow-md"
-        style={{
-          position: "absolute",
-          left: `${props.selectionRegion.left}%`,
-          top: `${props.selectionRegion.top}%`,
-          transform: "translate(0, 8px)",
-          zIndex: 40,
-        }}
+  const renderHighlightTarget = React.useCallback((props: RenderHighlightTargetProps) => (
+    <div
+      className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1.5 shadow-md"
+      style={{
+        position: "absolute",
+        left: `${props.selectionRegion.left}%`,
+        top: `${props.selectionRegion.top}%`,
+        transform: "translate(0, 8px)",
+        zIndex: 40,
+      }}
+    >
+      <button
+        type="button"
+        onClick={props.toggle}
+        className="flex items-center gap-1.5 rounded-md bg-[#C5A059] px-2 py-1 text-[9px] font-black uppercase tracking-wider text-white hover:opacity-95"
       >
-        <button
-          type="button"
-          onClick={props.toggle}
-          className="flex items-center gap-1.5 rounded-md bg-[#C5A059] px-2 py-1 text-[9px] font-black uppercase tracking-wider text-white hover:opacity-95"
-        >
-          <MessageSquareText className="h-3.5 w-3.5" />
-          Anotar
-        </button>
-        <button
-          type="button"
-          onClick={props.cancel}
-          className="px-2 py-1 text-[9px] font-bold uppercase text-slate-400 hover:text-slate-600"
-        >
-          Cerrar
-        </button>
-      </div>
-    );
+        <MessageSquareText className="h-3.5 w-3.5" />
+        Anotar
+      </button>
+      <button
+        type="button"
+        onClick={props.cancel}
+        className="px-2 py-1 text-[9px] font-bold uppercase text-slate-400 hover:text-slate-600"
+      >
+        Cerrar
+      </button>
+    </div>
+  ), []);
 
-    const renderHighlightContent = (props: RenderHighlightContentProps) => (
-      <HighlightPopover
-        {...props}
-        onAdd={(item) => setNotes((prev) => [...prev, item])}
-      />
-    );
+  const renderHighlightContent = React.useCallback((props: RenderHighlightContentProps) => (
+    <HighlightPopover
+      {...props}
+      onAdd={(item) => setNotes((prev) => [...prev, item])}
+    />
+  ), []);
 
-    const renderHighlights = (props: RenderHighlightsProps) => (
-      <div>
-        {notes.map((note) => {
-          const highlightAreas = note.highlightAreas.filter(
-            (area) => area.pageIndex === props.pageIndex && area.width > 0,
-          );
-          if (!highlightAreas.length) return null;
+  const renderHighlights = React.useCallback((props: RenderHighlightsProps) => (
+    <div>
+      {notes.map((note) => {
+        const highlightAreas = note.highlightAreas.filter(
+          (area) => area.pageIndex === props.pageIndex && area.width > 0,
+        );
+        if (!highlightAreas.length) return null;
 
-          return (
-            <React.Fragment key={note.id}>
-              {highlightAreas.map((area, idx) => (
-                <div
-                  key={`${note.id}-${idx}`}
-                  style={areaStyle(
-                    note.kind,
-                    props.getCssProperties(area as HighlightArea, props.rotation),
-                  )}
-                />
-              ))}
-            </React.Fragment>
-          );
-        })}
-      </div>
-    );
+        return (
+          <React.Fragment key={note.id}>
+            {highlightAreas.map((area, idx) => (
+              <div
+                key={`${note.id}-${idx}`}
+                style={areaStyle(
+                  note.kind,
+                  props.getCssProperties(area as HighlightArea, props.rotation),
+                )}
+              />
+            ))}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  ), [notes]);
 
-    return highlightPlugin({
-      trigger: Trigger.TextSelection,
-      renderHighlightTarget,
-      renderHighlightContent,
-      renderHighlights,
-    });
-  }, [notes]);
+  const highlightPluginInstance = highlightPlugin({
+    trigger: Trigger.TextSelection,
+    renderHighlightTarget,
+    renderHighlightContent,
+    renderHighlights,
+  });
 
   const { jumpToHighlightArea } = highlightPluginInstance;
 
-  const defaultLayoutPluginInstance = React.useMemo(() => defaultLayoutPlugin(), []);
+  const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
   const removeNote = (id: string) => {
     setNotes((prev) => prev.filter((n) => n.id !== id));
@@ -238,9 +236,9 @@ export function DocumentPdfReviewEditor({
         Seleccione texto en el PDF y pulse <span className="text-[#003366]">Anotar</span> para resaltar, tachar o
         añadir un comentario al fragmento.
       </p>
-      <div className="min-h-[min(55vh,520px)] flex-1 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+      <div className="relative w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-inner">
         <Worker workerUrl={PDFJS_WORKER}>
-          <div className="h-[min(55vh,520px)]">
+          <div className="h-[650px]">
             <Viewer
               fileUrl={fileUrl}
               plugins={[defaultLayoutPluginInstance, highlightPluginInstance]}

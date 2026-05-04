@@ -63,6 +63,7 @@ const MENU_DEFS: Record<string, Array<{ icon: ElementType; labelKey: SidebarMenu
     ],
     COORDINADOR: [
         { icon: LayoutDashboard, labelKey: "dashboard",       href: "/dashboard" },
+        { icon: ShieldAlert,     labelKey: "lopdp",           href: "/admin/privacidad" },
         { icon: FileText,        labelKey: "templates",       href: "/coordinador/plantillas-documentos" },
         { icon: UserPlus,        labelKey: "assignments",     href: "/coordinador/asignacion" },
         { icon: List,            labelKey: "agreementList",   href: "/coordinador/convenios/list" },

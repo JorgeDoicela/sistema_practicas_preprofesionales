@@ -82,10 +82,18 @@ export default function DocumentosPage() {
       const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
       setInternships(list);
 
-      if (user.role === ROLES.ESTUDIANTE && list.length > 0) {
-        const docsRes: any = await documentsService.findByInternship(list[0].id);
-        const docsData = Array.isArray(docsRes) ? docsRes : (Array.isArray(docsRes?.items) ? docsRes.items : []);
-        setUserDocuments(docsData);
+      // RF-DOC-001: Para estudiantes, cargar sus documentos vinculados a la pasantía más reciente
+      if (role === ROLES.ESTUDIANTE && list.length > 0) {
+        const activeInternship = list[0];
+        // Si la pasantía ya trae los documentos (que debería por el include de la API), los usamos directamente
+        if (activeInternship.documents && activeInternship.documents.length > 0) {
+          setUserDocuments(activeInternship.documents);
+        } else {
+          // Fallback: Si no vienen, hacemos la llamada por separado
+          const docsRes: any = await documentsService.findByInternship(activeInternship.id);
+          const docsData = Array.isArray(docsRes) ? docsRes : (Array.isArray(docsRes?.items) ? docsRes.items : []);
+          setUserDocuments(docsData);
+        }
       }
     } catch (error) {
       console.error("Error loading internships:", error);
@@ -505,8 +513,8 @@ export default function DocumentosPage() {
                       {!isApproved && doc.filePath && (
                         <button
                           onClick={() => handleDeleteClick(doc.id)}
-                          disabled={isExpired || isUnderReview}
-                          className="col-span-2 py-4 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all active:scale-[0.98] border border-rose-100"
+                          disabled={isExpired}
+                          className="col-span-2 py-4 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all active:scale-[0.98] border border-rose-100 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                            <Trash2 className="w-3.5 h-3.5" />
                            {t.documents.student.delete}
