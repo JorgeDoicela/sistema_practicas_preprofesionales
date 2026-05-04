@@ -230,9 +230,18 @@ export default function ReportesPage() {
   );
 }
 
-function ReportStatCard({ title, value, hint, icon, color, href }: any) {
+interface ReportStatCardProps {
+  title: string;
+  value: string;
+  hint: string;
+  icon: React.ReactElement;
+  color: 'blue' | 'rose' | 'amber' | 'indigo';
+  href?: string;
+}
+
+function ReportStatCard({ title, value, hint, icon, color, href }: ReportStatCardProps) {
   const router = useRouter();
-  const colorMap: any = {
+  const colorMap: Record<string, string> = {
     blue: "from-blue-600 to-blue-400 text-blue-600 shadow-blue-200",
     rose: "from-rose-600 to-rose-400 text-rose-600 shadow-rose-200",
     amber: "from-amber-600 to-amber-400 text-amber-600 shadow-amber-200",
@@ -261,7 +270,7 @@ function ReportStatCard({ title, value, hint, icon, color, href }: any) {
         )}
       >
         <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
-           {React.cloneElement(icon as React.ReactElement, { className: "w-32 h-32 rotate-12" })}
+           {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: "w-32 h-32 rotate-12" })}
         </div>
 
         <div className="flex items-start justify-between mb-8">
