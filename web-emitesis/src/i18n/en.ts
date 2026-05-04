@@ -874,6 +874,7 @@ export const en = {
     interns: "Interns",
     noInternships: "No internships",
     inProgress: "In progress",
+    noPractices: "No assignment yet",
   },
 
   profile: {

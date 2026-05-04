@@ -787,6 +787,7 @@ export const es = {
     interns: "Pasantes",
     noInternships: "Sin prácticas",
     inProgress: "En proceso",
+    noPractices: "Sin asignación aún",
   },
 
   profile: {
