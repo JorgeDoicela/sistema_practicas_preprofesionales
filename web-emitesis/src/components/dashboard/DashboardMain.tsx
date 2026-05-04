@@ -17,6 +17,9 @@ import {
   FileDown,
   ChevronRight,
   ScrollText,
+  Settings,
+  Megaphone,
+  X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -26,7 +29,7 @@ import { internshipsService } from "@/services/internships.service";
 import { agreementsService } from "@/services/agreements.service";
 import { reportsService, GlobalStats } from "@/services/reports.service";
 import { announcementsService, Announcement } from "@/services/announcements.service";
-import { Megaphone, X } from "lucide-react";
+
 import { StudentRoadmap } from "./StudentRoadmap";
 import { AICopilot } from "./AICopilot";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
