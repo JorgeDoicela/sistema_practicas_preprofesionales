@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { HelpCircle, ChevronRight, Sparkles, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { normalizeApiRoleToAppRole, type Role } from "@/constants/roles";
-import { getDashboardTourSteps } from "@/lib/dashboard-tour-config";
+import { getDashboardTourSteps, type TourStep } from "@/lib/dashboard-tour-config";
 
 type Rect = { top: number; left: number; width: number; height: number };
 
@@ -256,6 +256,15 @@ export function DashboardTour() {
     }
     setStep((s) => s + 1);
   };
+
+  useEffect(() => {
+    if (open && steps[step]?.onBefore) {
+      steps[step].onBefore?.();
+      // Pequeño delay para que la UI reaccione (ej: animaciones de apertura)
+      const t = setTimeout(() => updateRect(), 100);
+      return () => clearTimeout(t);
+    }
+  }, [step, open, steps, updateRect]);
 
   if (!mounted) return null;
 

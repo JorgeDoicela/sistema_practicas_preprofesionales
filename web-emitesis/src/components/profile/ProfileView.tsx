@@ -157,6 +157,7 @@ export function ProfileView() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col sm:flex-row sm:items-center gap-6"
+        data-tour="profile-header"
       >
         <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-[#003366] text-white flex items-center justify-center text-2xl sm:text-3xl font-black shrink-0 shadow-xl shadow-blue-900/20">
           {profile.fullName?.charAt(0).toUpperCase() ?? "?"}
@@ -191,6 +192,7 @@ export function ProfileView() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
           className="bg-white rounded-3xl border border-slate-200 p-6 md:p-8 shadow-sm"
+          data-tour="profile-data"
         >
           <h2 className="text-xs font-black text-[#003366] uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
             <User className="w-4 h-4" />
@@ -233,6 +235,7 @@ export function ProfileView() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="bg-white rounded-3xl border border-slate-200 p-6 md:p-8 shadow-sm"
+          data-tour="profile-security"
         >
           <h2 className="text-xs font-black text-[#003366] uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
             <Shield className="w-4 h-4" />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { 
   FileStack, 
   Search, 
@@ -17,7 +18,8 @@ import {
   CheckCircle2,
   Lock,
   FileText,
-  FileCheck
+  FileCheck,
+  Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -62,7 +64,8 @@ export default function DocumentosPage() {
   const loadInternships = async () => {
     try {
       const userStr = localStorage.getItem("user");
-      if (!userStr) return;
+      const token = localStorage.getItem("token");
+      if (!userStr || !token) return;
       const user = JSON.parse(userStr);
       setCurrentUser(user);
       setUserRole(user.role);
@@ -295,27 +298,34 @@ export default function DocumentosPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-20">
-      {/* Header Section */}
-      <div className="bg-white border-b border-white/10 shadow-sm sticky top-0 z-30">
-        <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-4 md:h-24 flex items-center justify-between gap-3">
+    <DashboardLayout>
+      <div className="space-y-8 max-w-[1600px] mx-auto pb-20">
+        {/* Header Section */}
+        <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="flex items-center gap-3 md:gap-5 min-w-0">
             <div className="w-10 h-10 md:w-14 md:h-14 bg-[#003366] rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg shadow-blue-900/10 shrink-0">
               <FileStack className="text-[#C5A059] w-5 h-5 md:w-7 md:h-7" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-lg md:text-2xl font-black text-[#003366] tracking-tight truncate">{t.documents.title}</h1>
-              <p className="text-xs md:text-sm text-slate-500 font-medium hidden sm:block">{t.documents.subtitle}</p>
+              <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
+                {userRole === ROLES.ESTUDIANTE ? t.sidebar.menu.myDocuments : t.sidebar.menu.documents}
+              </span>
+              <h1 className="text-xl md:text-4xl font-black text-[#003366] tracking-tight truncate">
+                {t.documents.title}
+              </h1>
+              <p className="text-xs md:text-base text-slate-500 font-medium mt-1">
+                {t.documents.subtitle}
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-4 shrink-0">
-             <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <div className="flex items-center gap-4 shrink-0">
+             <div className="flex bg-white p-1 rounded-2xl border border-slate-200 shadow-sm">
                 <button 
                   onClick={() => setViewMode('grid')}
                   className={cn(
-                    "p-2.5 rounded-lg transition-all",
-                    viewMode === 'grid' ? "bg-white shadow-sm text-[#003366]" : "text-slate-400 hover:text-slate-600"
+                    "p-3 rounded-xl transition-all",
+                    viewMode === 'grid' ? "bg-[#003366] text-white shadow-lg" : "text-slate-400 hover:text-slate-600"
                   )}
                 >
                   <LayoutGrid className="w-5 h-5" />
@@ -323,57 +333,58 @@ export default function DocumentosPage() {
                 <button 
                   onClick={() => setViewMode('list')}
                   className={cn(
-                    "p-2.5 rounded-lg transition-all",
-                    viewMode === 'list' ? "bg-white shadow-sm text-[#003366]" : "text-slate-400 hover:text-slate-600"
+                    "p-3 rounded-xl transition-all",
+                    viewMode === 'list' ? "bg-[#003366] text-white shadow-lg" : "text-slate-400 hover:text-slate-600"
                   )}
                 >
                   <ListIcon className="w-5 h-5" />
                 </button>
              </div>
           </div>
-        </div>
-      </div>
+        </section>
 
-      <div className="max-w-[1600px] mx-auto px-4 md:px-6 mt-6 md:mt-8">
         {/* Search and Filters */}
-        {userRole !== 'ESTUDIANTE' && (
-          <div className="flex flex-col md:flex-row gap-4 mb-8">
-            <div className="relative flex-1">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+        {userRole !== ROLES.ESTUDIANTE && (
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1 group">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 group-focus-within:text-[#003366] transition-colors" />
               <input 
                 type="text" 
                 placeholder={t.documents.searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-14 pr-6 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-[#003366]/10 focus:border-[#003366] transition-all outline-none font-medium text-slate-700"
+                className="w-full pl-14 pr-6 py-4 bg-white border border-slate-200 rounded-[1.5rem] shadow-sm focus:ring-4 focus:ring-[#003366]/5 focus:border-[#003366] transition-all outline-none font-medium text-slate-700"
               />
             </div>
             
             <div className="flex gap-4">
-              <div className="relative">
-                <Filter className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+              <div className="relative group">
+                <Filter className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 group-focus-within:text-[#003366] transition-colors" />
                 <select 
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="pl-12 pr-10 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-[#003366]/10 outline-none appearance-none font-semibold text-slate-600 cursor-pointer"
+                  className="pl-12 pr-12 py-4 bg-white border border-slate-200 rounded-[1.5rem] shadow-sm focus:ring-4 focus:ring-[#003366]/5 focus:border-[#003366] outline-none appearance-none font-black text-[10px] uppercase tracking-widest text-[#003366] cursor-pointer"
                 >
                   <option value={t.documents.filters.all}>{t.documents.filters.all}</option>
                   <option value={t.documents.filters.inProgress}>{t.documents.filters.inProgress}</option>
                   <option value={t.documents.filters.active}>{t.documents.filters.active}</option>
                   <option value={t.documents.filters.finished}>{t.documents.filters.finished}</option>
                 </select>
+                <ChevronRight className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none rotate-90" />
               </div>
             </div>
           </div>
         )}
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center h-96 gap-4">
-            <div className="w-12 h-12 border-4 border-slate-200 border-t-[#003366] rounded-full animate-spin" />
-            <p className="text-slate-500 font-bold animate-pulse">{t.documents.loading}</p>
+          <div className="flex flex-col items-center justify-center py-40 gap-4">
+            <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 animate-pulse">{t.documents.loading}</p>
           </div>
-        ) : userRole === 'ESTUDIANTE' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-tour="documents-list">
+        ) : (
+          <div className="mt-2">
+            {userRole === ROLES.ESTUDIANTE ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-tour="documents-list">
             {userDocuments.map((doc, idx) => {
               const now = new Date();
               const isCertSlot = Boolean(doc.isCertificateSlot);
@@ -455,7 +466,7 @@ export default function DocumentosPage() {
                           )}
                         >
                           {downloadingId === doc.id ? (
-                            <div className="w-3 h-3 border-2 border-[#003366]/30 border-t-[#003366] rounded-full animate-spin" />
+                            <div className="w-3 h-3 border-2 border-[#003366]/30 border-t-[#003366] rounded-full animate-spin"></div>
                           ) : (
                             <Download className="w-3.5 h-3.5" />
                           )}
@@ -482,7 +493,7 @@ export default function DocumentosPage() {
                             )}
                           >
                             {uploadingId === doc.id ? (
-                              <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                             ) : (
                               <FileCheck className="w-3.5 h-3.5" />
                             )}
@@ -525,7 +536,7 @@ export default function DocumentosPage() {
           </div>
         ) : filteredInternships.length > 0 ? (
           viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-tour="documents-list">
               <AnimatePresence mode='popLayout'>
                 {filteredInternships.map((item, idx) => (
                   <motion.div
@@ -581,7 +592,7 @@ export default function DocumentosPage() {
               </AnimatePresence>
             </div>
           ) : (
-            <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden" data-tour="documents-list">
                <table className="w-full text-left">
                   <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
@@ -646,8 +657,11 @@ export default function DocumentosPage() {
             <h3 className="text-xl font-bold text-slate-800 mb-2">{t.documents.empty.title}</h3>
             <p className="text-slate-500 max-w-sm mx-auto">{t.documents.empty.desc}</p>
           </div>
+            )}
+          </div>
         )}
       </div>
+
       <TwoFactorModal 
         isOpen={is2faModalOpen}
         onClose={() => {
@@ -709,6 +723,6 @@ export default function DocumentosPage() {
           </div>
         )}
       </AnimatePresence>
-    </div>
+    </DashboardLayout>
   );
 }

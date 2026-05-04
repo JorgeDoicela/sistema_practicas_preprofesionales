@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { 
@@ -284,39 +285,41 @@ export default function DocumentDetailPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-[#F8FAFC]">
-        <div className="w-12 h-12 border-4 border-slate-200 border-t-[#003366] rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-slate-200 border-t-[#003366] rounded-full animate-spin"></div>
         <p className="text-slate-500 font-bold">{t.documents.detail.loading}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-20">
-      {/* Detail Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3 sm:py-0 sm:min-h-[5rem] flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+    <DashboardLayout>
+      <div className="space-y-8 max-w-[1400px] mx-auto pb-20">
+        {/* Detail Header */}
+        <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="flex items-center gap-3 md:gap-5 min-w-0">
             <button 
               onClick={() => router.back()}
-              className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-slate-100 transition-colors text-slate-500 shrink-0"
+              className="w-12 h-12 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center hover:bg-slate-50 transition-all text-[#003366] shrink-0"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <div className="h-8 w-px bg-slate-200 hidden sm:block shrink-0" />
             <div className="min-w-0">
-              <h1 className="text-base sm:text-xl font-black text-[#003366] tracking-tight truncate">
+              <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
+                {t.documents.detail.documentFile}
+              </span>
+              <h1 className="text-xl md:text-4xl font-black text-[#003366] tracking-tight truncate">
                 {internship?.student?.fullName}
               </h1>
-              <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-slate-400 font-black uppercase tracking-wider">
-                <Building2 className="w-3 h-3 shrink-0" />
+              <div className="flex items-center gap-2 text-xs md:text-sm text-slate-500 font-medium mt-1">
+                <Building2 className="w-4 h-4 shrink-0 text-slate-400" />
                 <span className="truncate">{internship?.company?.name}</span>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 justify-end sm:justify-end w-full sm:w-auto">
+          <div className="flex items-center gap-3 shrink-0">
             {internship?.status != null && internship?.status !== "" && (
-              <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl bg-slate-100 text-[#003366] border border-slate-200">
+              <span className="text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-2xl bg-white text-[#003366] border border-slate-200 shadow-sm">
                 {String(internship.status)}
               </span>
             )}
@@ -334,17 +337,16 @@ export default function DocumentDetailPage() {
                   }
                 }}
                 disabled={isSyncingSigafi}
-                className="flex items-center justify-center gap-2 bg-[#C5A059]/10 text-[#C5A059] px-4 sm:px-6 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-[#C5A059]/30 hover:bg-[#C5A059]/20 transition-all"
+                className="flex items-center justify-center gap-2 bg-[#003366] text-white px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#003366]/90 transition-all shadow-lg shadow-blue-900/10"
               >
                 {isSyncingSigafi ? <Loader2 size={14} className="animate-spin" /> : <Activity size={14} />}
                 SIGAFI Sync
               </button>
             )}
           </div>
-        </div>
-      </div>
+        </section>
 
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 mt-6 sm:mt-10">
+        <div className="mt-10">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Quick Info Sidebar */}
           <div className="lg:col-span-1 space-y-6">
@@ -804,6 +806,7 @@ export default function DocumentDetailPage() {
         }}
         onConfirm={handle2faConfirm}
       />
-    </div>
-);
+      </div>
+    </DashboardLayout>
+  );
 }

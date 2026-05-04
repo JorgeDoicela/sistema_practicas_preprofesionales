@@ -1,12 +1,13 @@
 import type { Role } from "@/constants/roles";
 import { ROLE_LABELS } from "@/constants/roles";
 
-export type TourStepDef = {
+export type TourStep = {
   id: string;
   /** Selector CSS; debe existir un `data-tour` en el DOM */
   selector: string;
   title: string;
   getDescription: (role: Role) => string;
+  onBefore?: () => void;
 };
 
 function roleLabel(role: Role): string {
@@ -17,7 +18,7 @@ function roleLabel(role: Role): string {
  * Pasos dinámicos por página. 
  * El sistema busca coincidencias en la URL para ofrecer ayuda específica.
  */
-export function getDashboardTourSteps(role: Role, pathname: string): TourStepDef[] {
+export function getDashboardTourSteps(role: Role, pathname: string): TourStep[] {
   // 1. Ayuda específica para el TABLERO PRINCIPAL
   if (pathname === "/dashboard" || pathname.endsWith("/dashboard")) {
     return [
@@ -122,30 +123,67 @@ export function getDashboardTourSteps(role: Role, pathname: string): TourStepDef
 
   // 5. Ayuda específica para DOCUMENTOS
   if (pathname.includes("/documentos")) {
-    return [
+    const steps: TourStep[] = [
       {
         id: "docs-list",
         selector: '[data-tour="documents-list"]',
         title: "Expediente Digital",
-        getDescription: () => "Lista de documentos obligatorios y opcionales. El color indica el estado: verde (aprobado), azul (en revisión) o rojo (rechazado).",
-      },
-      {
+        getDescription: (rl) => rl === 'ESTUDIANTE' 
+          ? "Lista de sus documentos de prácticas. El color indica el estado: verde (aprobado), azul (en revisión) o rojo (rechazado)."
+          : "Gestione el expediente digital de los estudiantes. Visualice el estado de cumplimiento y acceda a los documentos cargados.",
+      }
+    ];
+
+    if (role === 'ESTUDIANTE') {
+      steps.push({
         id: "docs-upload",
         selector: '[data-tour="documents-upload"]',
         title: "Carga y Validación AI",
         getDescription: () => "Descargue plantillas oficiales y suba sus PDFs. El sistema utiliza Visión Artificial para pre-verificar el contenido antes del envío.",
+      });
+    }
+
+    return steps;
+  }
+
+  // 6. Ayuda específica para PERFIL (Todos los roles)
+  if (pathname.includes("/perfil") && !pathname.includes("/privacidad")) {
+    return [
+      {
+        id: "profile-header",
+        selector: '[data-tour="profile-header"]',
+        title: "Identidad Institucional",
+        getDescription: () => "Consulte su información básica y rol asignado. Puede editar su nombre público y contraseña desde el botón de edición.",
+      },
+      {
+        id: "profile-data",
+        selector: '[data-tour="profile-data"]',
+        title: "Datos de Cuenta",
+        getDescription: () => "Aquí se detalla su correo institucional, estado de la cuenta y fecha de ingreso al ecosistema EMITESIS.",
+      },
+      {
+        id: "profile-security",
+        selector: '[data-tour="profile-security"]',
+        title: "Seguridad y Privacidad",
+        getDescription: () => "Monitoree el estado de su 2FA. Recuerde que la seguridad de su cuenta es fundamental para la integridad de los procesos académicos.",
       }
     ];
   }
 
-  // 6. Ayuda específica para CONVENIOS (Coordinador)
+  // 7. Ayuda específica para CONVENIOS (Coordinador)
   if (pathname.includes("/coordinador/convenios/list")) {
     return [
       {
         id: "conv-list",
-        selector: '[data-tour="agreements-table"]',
+        selector: '[data-tour="convenios-table"]',
         title: "Convenios Vigentes",
         getDescription: () => "Aquí puede visualizar todos los convenios activos y caducados. Use los filtros para buscar por RUC o Nombre de la Empresa.",
+      },
+      {
+        id: "conv-new",
+        selector: '[data-tour="convenios-new"]',
+        title: "Registro de Convenio",
+        getDescription: () => "Haga clic aquí para iniciar el registro de un nuevo acuerdo con una institución receptora.",
       }
     ];
   }
@@ -391,18 +429,36 @@ export function getDashboardTourSteps(role: Role, pathname: string): TourStepDef
         selector: '[data-tour="student-ai-risk"]',
         title: "Análisis Predictivo IA",
         getDescription: () => "Use nuestra IA para detectar riesgos de deserción o problemas de salud. El sistema analiza patrones de asistencia y cumplimiento para emitir una alerta temprana.",
+        onBefore: () => {
+          const firstCard = document.querySelector('[data-tour="estudiantes-table"] > div:first-child > div:first-child');
+          if (firstCard instanceof HTMLElement && !document.querySelector('[data-tour="student-ai-risk"]')) {
+            firstCard.click();
+          }
+        }
       },
       {
         id: "stud-elig",
         selector: '[data-tour="student-eligibility"]',
         title: "Dashboard de Elegibilidad",
         getDescription: () => "Verifique si el estudiante cumple con los dos requisitos legales: 240 horas de asistencia y 7 documentos aprobados.",
+        onBefore: () => {
+          const firstCard = document.querySelector('[data-tour="estudiantes-table"] > div:first-child > div:first-child');
+          if (firstCard instanceof HTMLElement && !document.querySelector('[data-tour="student-eligibility"]')) {
+            firstCard.click();
+          }
+        }
       },
       {
         id: "stud-cert",
         selector: '[data-tour="student-certification"]',
         title: "Certificación Digital",
         getDescription: () => "Una vez cumplidos los requisitos, podrá generar el Certificado de Culminación firmado digitalmente con un solo clic.",
+        onBefore: () => {
+          const firstCard = document.querySelector('[data-tour="estudiantes-table"] > div:first-child > div:first-child');
+          if (firstCard instanceof HTMLElement && !document.querySelector('[data-tour="student-certification"]')) {
+            firstCard.click();
+          }
+        }
       }
     ];
   }
@@ -475,6 +531,16 @@ export function getDashboardTourSteps(role: Role, pathname: string): TourStepDef
         selector: '[data-tour="tutor-asistencia-list"]',
         title: "Historial y Evidencia",
         getDescription: () => "Expanda cada fila para ver las fotos de biometría, las coordenadas GPS de cada marcación y el historial de los últimos 15 días.",
+        onBefore: () => {
+          const firstCard = document.querySelector('[data-tour="tutor-asistencia-list"] > div:first-child button:first-child');
+          if (firstCard instanceof HTMLElement) {
+            // No podemos saber fácilmente si está expandido sin mirar el DOM interno, 
+            // pero si no hay una tabla dentro, probablemente esté colapsado.
+            if (!document.querySelector('[data-tour="tutor-asistencia-list"] table')) {
+              firstCard.click();
+            }
+          }
+        }
       },
       {
         id: "tut-asist-locs",
@@ -547,6 +613,14 @@ export function getDashboardTourSteps(role: Role, pathname: string): TourStepDef
         selector: '[data-tour="empresa-asistencia-list"]',
         title: "Evidencia de Jornada",
         getDescription: () => "Expanda cada fila para verificar la puntualidad y las fotografías tomadas por el sistema en cada punto de marcación.",
+        onBefore: () => {
+          const firstCard = document.querySelector('[data-tour="empresa-asistencia-list"] > div:first-child button:first-child');
+          if (firstCard instanceof HTMLElement) {
+            if (!document.querySelector('[data-tour="empresa-asistencia-list"] table')) {
+              firstCard.click();
+            }
+          }
+        }
       }
     ];
   }

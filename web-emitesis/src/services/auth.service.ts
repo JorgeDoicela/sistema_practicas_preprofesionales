@@ -74,6 +74,14 @@ api.interceptors.response.use(
           }
           return Promise.reject(refreshError);
         }
+      } else {
+        // No hay refresh token → Logout inmediato
+        localStorage.clear();
+        Cookies.remove('token');
+        Cookies.remove('user');
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login?sessionExpired=true';
+        }
       }
     }
 
