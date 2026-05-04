@@ -148,8 +148,8 @@ export function DashboardMain() {
 
         setInternships(allItems);
         setAgreementsCount(Array.isArray(agrItems) ? agrItems.filter((a: any) => (a.status ?? "Activo") === "Activo").length : 0);
-        setGlobalStats(statsRes?.data || statsRes || null);
-        setCareers(Array.isArray(careerList) ? careerList : (Array.isArray(careerList?.data) ? careerList.data : []));
+        setGlobalStats(statsRes || null);
+        setCareers(Array.isArray(careerList) ? careerList : []);
         return;
       }
 
@@ -158,8 +158,8 @@ export function DashboardMain() {
           analyticsService.getStats(),
           settingsService.findAllCareers(),
         ]);
-        setAdminStats(statsRes?.data || statsRes || null);
-        setCareers(Array.isArray(careerList) ? careerList : (Array.isArray(careerList?.data) ? careerList.data : []));
+        setAdminStats(statsRes || null);
+        setCareers(Array.isArray(careerList) ? careerList : []);
         return;
       }
 
