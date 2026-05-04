@@ -130,12 +130,14 @@ export function DocumentPdfReviewEditor({
   fileUrl,
   initialItems,
   onItemsChange,
+  readonly: readonlyProp,
 }: {
   fileUrl: string | null | undefined;
   initialItems: PdfReviewAnnotationItem[];
   onItemsChange?: (payload: PdfReviewAnnotationsPayload) => void;
+  readonly?: boolean;
 }) {
-  const readonly = !onItemsChange;
+  const readonly = readonlyProp ?? !onItemsChange;
   const [notes, setNotes] = React.useState<PdfReviewAnnotationItem[]>(() =>
     initialItems.map((n) => ({
       ...n,
