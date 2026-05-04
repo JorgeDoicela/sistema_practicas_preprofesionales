@@ -303,6 +303,7 @@ export function DashboardMain() {
             hint: `${internships.length} ${t.common.search}`, // Usando algo similar o literal si falta
             icon: <Users className="w-6 h-6" />,
             color: "bg-blue-500",
+            href: "/coordinador/estudiantes",
           },
           {
             title: t.stats.activeAgreements,
@@ -310,6 +311,7 @@ export function DashboardMain() {
             hint: t.stats.noAgreements,
             icon: <Building2 className="w-6 h-6" />,
             color: "bg-indigo-500",
+            href: "/coordinador/convenios/list",
           },
           {
             title: t.stats.completedHours,
@@ -317,6 +319,7 @@ export function DashboardMain() {
             hint: globalStats ? `${t.common.back} ${globalStats.totalPlannedHours}h ${t.dashboard.hours.required}` : "—",
             icon: <Clock className="w-6 h-6" />,
             color: "bg-amber-500",
+            href: "/coordinador/reportes",
           },
           {
             title: t.stats.pendingDocs,
@@ -324,6 +327,7 @@ export function DashboardMain() {
             hint: t.stats.pendingCoord,
             icon: <FileCheck className="w-6 h-6" />,
             color: "bg-rose-500",
+            href: "/dashboard/documentos",
           },
         ],
       };
@@ -338,6 +342,7 @@ export function DashboardMain() {
             hint: "Usuarios activos en DB",
             icon: <Users className="w-6 h-6" />,
             color: "bg-blue-500",
+            href: "/admin/usuarios",
           },
           {
             title: "Logs Hoy",
@@ -345,6 +350,7 @@ export function DashboardMain() {
             hint: "Actividad de auditoría",
             icon: <ScrollText className="w-6 h-6" />,
             color: "bg-indigo-500",
+            href: "/admin/logs",
           },
           {
             title: "Errores Hoy",
@@ -352,6 +358,7 @@ export function DashboardMain() {
             hint: "Alertas de estabilidad",
             icon: <AlertCircle className="w-6 h-6" />,
             color: adminStats?.counters.errorsToday ? "bg-rose-500" : "bg-emerald-500",
+            href: "/admin/logs?level=ERROR",
           },
           {
             title: "Latencia Promedio",
@@ -359,6 +366,7 @@ export function DashboardMain() {
             hint: "Tiempo de respuesta API",
             icon: <Clock className="w-6 h-6" />,
             color: "bg-amber-500",
+            href: "/admin/salud",
           },
         ],
       };
@@ -425,6 +433,7 @@ export function DashboardMain() {
             hint: internships.length ? t.stats.myPractices : t.stats.noAssignment,
             icon: <GraduationCap className="w-6 h-6" />,
             color: "bg-blue-500",
+            href: "/dashboard",
           },
           {
             title: t.stats.programHours,
@@ -432,6 +441,7 @@ export function DashboardMain() {
             hint: primary?.company?.name ? `${t.dashboard.company}: ${primary.company.name}` : t.stats.noHours,
             icon: <Clock className="w-6 h-6" />,
             color: "bg-amber-500",
+            href: "/dashboard/asistencia",
           },
           {
             title: t.stats.documentation,
@@ -439,6 +449,7 @@ export function DashboardMain() {
             hint: `${approved} ${t.common.approved} ${t.common.back} ${total || 0}`,
             icon: <FileStack className="w-6 h-6" />,
             color: "bg-emerald-500",
+            href: "/dashboard/documentos",
           },
           {
             title: t.stats.attendance,
@@ -446,6 +457,7 @@ export function DashboardMain() {
             hint: incomplete > 0 ? t.stats.openPending : t.stats.allClosed,
             icon: <CheckCircle2 className="w-6 h-6" />,
             color: incomplete > 0 ? "bg-rose-500" : "bg-indigo-500",
+            href: "/dashboard/asistencia",
           },
         ],
       };
@@ -509,6 +521,7 @@ export function DashboardMain() {
             hint: t.stats.interns,
             icon: <Users className="w-6 h-6" />,
             color: "bg-blue-500",
+            href: "/tutor-academico/estudiantes",
           },
           {
             title: t.stats.inProgress,
@@ -516,6 +529,7 @@ export function DashboardMain() {
             hint: t.stats.inProgress,
             icon: <FileStack className="w-6 h-6" />,
             color: "bg-amber-500",
+            href: "/dashboard/documentos",
           },
           {
             title: t.stats.pendingCoord,
@@ -523,6 +537,7 @@ export function DashboardMain() {
             hint: t.stats.pendingCoord,
             icon: <FileCheck className="w-6 h-6" />,
             color: "bg-indigo-500",
+            href: "/dashboard/documentos",
           },
            {
             title: t.stats.plannedHours,
@@ -530,13 +545,14 @@ export function DashboardMain() {
             hint: t.stats.pending,
             icon: <Clock className="w-6 h-6" />,
             color: "bg-emerald-500",
+            href: "/tutor-academico/asistencia",
           },
         ],
       };
     }
 
     return { cards: [] };
-  }, [appRole, internships, agreementsCount]);
+  }, [appRole, internships, agreementsCount, adminStats, globalStats]);
 
   const recentAttendances = useMemo(() => {
     return flattenRecentAttendances(internships, 6, t);
@@ -1151,9 +1167,10 @@ interface StatCardProps {
   hint: string;
   icon: React.ReactElement;
   color: string;
+  href?: string;
 }
 
-function StatCard({ title, value, hint, icon, color }: StatCardProps) {
+function StatCard({ title, value, hint, icon, color, href }: StatCardProps) {
   // Mapeo de colores para gradientes y sombras (glow)
   const colorMap: Record<string, { gradient: string, icon: string, shadow: string }> = {
     'bg-blue-500': { gradient: 'from-blue-500 to-blue-600', icon: 'text-blue-600', shadow: 'shadow-blue-500/20' },
@@ -1165,10 +1182,10 @@ function StatCard({ title, value, hint, icon, color }: StatCardProps) {
 
   const theme = colorMap[color] || colorMap['bg-blue-500'];
 
-  return (
+  const CardContent = (
     <motion.div
       whileHover={{ y: -6, scale: 1.02 }}
-      className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/60 relative overflow-hidden h-full flex flex-col group transition-all"
+      className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/60 relative overflow-hidden h-full flex flex-col group transition-all cursor-pointer"
     >
       <div className="flex items-start justify-between mb-8">
         <div className={cn(
@@ -1209,6 +1226,16 @@ function StatCard({ title, value, hint, icon, color }: StatCardProps) {
       </div>
     </motion.div>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="block h-full">
+        {CardContent}
+      </Link>
+    );
+  }
+
+  return CardContent;
 }
 
 interface ActivityRowProps {

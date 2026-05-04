@@ -43,7 +43,7 @@ export default function LopdpLogsPage() {
   const fetchLogs = async () => {
     try {
       const response = await privacyService.getLopdpLogs();
-      setLogs(response.data);
+      setLogs(Array.isArray(response) ? response : []);
     } catch (error) {
       console.error("Error fetching LOPDP logs:", error);
     } finally {

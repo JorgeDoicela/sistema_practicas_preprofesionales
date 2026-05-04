@@ -24,22 +24,30 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { api } from "@/services/auth.service";
 import { useSocket } from "@/providers/SocketProvider";
+import { useSearchParams } from "next/navigation";
 
-export default function AdminLogsPage() {
+import { Suspense } from "react";
+
+function AdminLogsContent() {
+  const searchParams = useSearchParams();
+  const initialLevel = searchParams.get("level") || "";
+
   const [logs, setLogs] = useState<any[]>([]);
   const [liveLogs, setLiveLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLiveEnabled, setIsLiveEnabled] = useState(true);
+  const [level, setLevel] = useState(initialLevel);
   
   const { socket, connected } = useSocket();
   const liveLogsEndRef = useRef<HTMLDivElement>(null);
 
-  const loadLogs = useCallback(async (p: number) => {
+  const loadLogs = useCallback(async (p: number, lvl: string) => {
     try {
       setLoading(true);
-      const res: any = await api.get(`/system-logs?page=${p}&limit=20`);
+      const url = `/system-logs?page=${p}&limit=20${lvl ? `&level=${lvl}` : ""}`;
+      const res: any = await api.get(url);
       const data = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.items) ? res.data.items : (Array.isArray(res.data?.data) ? res.data.data : []));
       setLogs(data);
       setTotalPages(res.data?.meta?.totalPages || res.meta?.totalPages || 1);
@@ -51,8 +59,8 @@ export default function AdminLogsPage() {
   }, []);
 
   useEffect(() => {
-    loadLogs(page);
-  }, [page, loadLogs]);
+    loadLogs(page, level);
+  }, [page, level, loadLogs]);
 
   useEffect(() => {
     if (socket && isLiveEnabled) {
@@ -270,5 +278,17 @@ export default function AdminLogsPage() {
         </div>
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function AdminLogsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+      </div>
+    }>
+      <AdminLogsContent />
+    </Suspense>
   );
 }

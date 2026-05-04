@@ -44,7 +44,7 @@ export class PrivacyController {
 
   @Get('admin/logs')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.COORDINADOR)
   findAllLogs() {
     return this.privacyService.findAllLogs();
   }
