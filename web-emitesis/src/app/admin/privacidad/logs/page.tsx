@@ -202,7 +202,7 @@ export default function LopdpLogsPage() {
 
       <footer className="text-center pb-10">
         <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">
-          Emitesis LOPDP Auditor — v2.0
+          Praxis Hub LOPDP Auditor — v2.0
         </p>
       </footer>
     </div>

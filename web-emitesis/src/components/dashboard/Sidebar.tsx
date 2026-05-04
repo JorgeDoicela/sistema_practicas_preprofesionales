@@ -223,7 +223,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform overflow-hidden p-1.5">
                         <Image
                             src={BRAND_LOGO_SRC}
-                            alt="Emitesis"
+                            alt="Praxis Hub"
                             width={40}
                             height={40}
                             className="object-contain w-full h-full"
@@ -231,7 +231,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                         />
                     </div>
                     <div>
-                        <h1 className="text-xl font-black tracking-tight leading-none">EMITESIS</h1>
+                        <h1 className="text-xl font-black tracking-tight leading-none">PRAXIS HUB</h1>
                         <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[#C5A059] mt-1">{t.sidebar.subtitle}</p>
                     </div>
                 </div>

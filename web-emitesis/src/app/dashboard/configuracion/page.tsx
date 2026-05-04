@@ -252,7 +252,7 @@ export default function ConfigurationPage() {
               Datos personales (LOPDP Ecuador)
             </h3>
             <p className="text-xs text-slate-500 leading-relaxed mb-4">
-              Información sobre finalidades, conservación y cómo ejercer tus derechos sobre los datos tratados en Emitesis.
+              Información sobre finalidades, conservación y cómo ejercer tus derechos sobre los datos tratados en Praxis Hub.
             </p>
             <Link
               href="/privacidad"

@@ -110,7 +110,7 @@ export function NotificationBell() {
               </div>
               
               <div className="p-4 bg-slate-50 border-t border-slate-50 text-center">
-                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Emitesis Intelligence v2.0</p>
+                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Praxis Hub Intelligence v2.0</p>
               </div>
             </motion.div>
           </>

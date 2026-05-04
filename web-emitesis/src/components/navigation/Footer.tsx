@@ -55,7 +55,7 @@ export function Footer() {
                                 className="h-8 w-auto grayscale opacity-50"
                             />
                             <div className="w-px h-6 bg-slate-300" />
-                            <span className="text-xs font-black uppercase tracking-[0.3em] text-brand-blue">Emitesis</span>
+                            <span className="text-xs font-black uppercase tracking-[0.3em] text-brand-blue">Praxis Hub</span>
                         </div>
                         <p className="text-sm font-medium text-slate-500 max-w-sm leading-relaxed mb-8">
                             {t.footer.description}

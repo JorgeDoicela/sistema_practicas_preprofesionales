@@ -96,7 +96,7 @@ function AdminLogsContent() {
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
-              Emitesis X-Ray / Observabilidad
+              Praxis Hub X-Ray / Observabilidad
             </span>
             <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
               Logs del <span className="text-slate-400">Sistema</span>
@@ -141,7 +141,7 @@ function AdminLogsContent() {
                         <div className="w-3 h-3 rounded-full bg-rose-500" />
                         <div className="w-3 h-3 rounded-full bg-amber-500" />
                         <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                        <span className="ml-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">admin@emitesis:~/monitor/live-stream</span>
+                        <span className="ml-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">admin@praxis-hub:~/monitor/live-stream</span>
                      </div>
                      <span className="text-[10px] font-black text-indigo-400 animate-pulse uppercase tracking-widest">● LIVE STREAMING</span>
                   </div>

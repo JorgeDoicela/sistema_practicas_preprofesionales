@@ -159,7 +159,7 @@ export function getDashboardTourSteps(role: Role, pathname: string): TourStep[] 
         id: "profile-data",
         selector: '[data-tour="profile-data"]',
         title: "Datos de Cuenta",
-        getDescription: () => "Aquí se detalla su correo institucional, estado de la cuenta y fecha de ingreso al ecosistema EMITESIS.",
+        getDescription: () => "Aquí se detalla su correo institucional, estado de la cuenta y fecha de ingreso al ecosistema Praxis Hub.",
       },
       {
         id: "profile-security",

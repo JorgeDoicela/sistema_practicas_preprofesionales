@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { User as UserType } from "@/types/user";
@@ -9,6 +10,7 @@ import { NotificationBell } from "./NotificationBell";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { getProfilePathForRole } from "@/lib/profile-route";
 
 export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
   const [user, setUser] = useState<UserType | null>(null);
@@ -117,12 +119,16 @@ export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
                       <p className="text-xs font-bold text-[#003366] truncate">{user?.email || "usuario@istpet.edu.ec"}</p>
                     </div>
                     <div className="p-2">
-                       <button className="w-full flex items-center gap-3 p-4 rounded-2xl hover:bg-slate-50 transition-colors group">
+                       <Link 
+                          href={getProfilePathForRole(user?.role)}
+                          onClick={() => setIsOpen(false)}
+                          className="w-full flex items-center gap-3 p-4 rounded-2xl hover:bg-slate-50 transition-colors group"
+                       >
                           <div className="p-2 bg-slate-100 text-slate-500 rounded-xl group-hover:bg-[#003366]/5 group-hover:text-[#003366] transition-colors">
                             <User className="w-4 h-4" />
                           </div>
                           <span className="text-[11px] font-black text-slate-600 uppercase tracking-wider">{t.sidebar.myProfile}</span>
-                       </button>
+                       </Link>
                        <button 
                          onClick={handleLogout}
                          className="w-full flex items-center gap-3 p-4 rounded-2xl hover:bg-red-50 transition-colors group"

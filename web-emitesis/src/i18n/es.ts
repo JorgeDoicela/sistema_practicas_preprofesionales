@@ -1,7 +1,7 @@
 export const es = {
   // ── Navbar ──────────────────────────────────────────────────────
   nav: {
-    brand: "Emitesis",
+    brand: "Praxis Hub",
     brandSub: "Tecnológico Traversari · ISTPET",
     links: {
       home: "Inicio",
@@ -25,20 +25,20 @@ export const es = {
     location: "Ubicación",
     locationValue: "Quito, Ecuador — Sector Chillogallo",
     links: {
-      about: "Sobre Emitesis",
+      about: "Sobre Praxis Hub",
       services: "Servicios Académicos",
       companies: "Portal Empresas",
       privacy: "Datos personales (LOPDP)",
       support: "Soporte Técnico",
     },
-    copyright: "© 2026 ISTPET – Emitesis. Desarrollado por Cristhofer Steve Parreño Poma.",
+    copyright: "© 2026 ISTPET – Praxis Hub. Desarrollado por Cristhofer Steve Parreño Poma.",
     privacyLink: "Privacidad",
   },
 
   // ── Landing / Home ──────────────────────────────────────────────
   home: {
     hero: {
-      badge: "Plataforma Institucional ISTPET · EmiTesis",
+      badge: "Plataforma Institucional ISTPET · Praxis Hub",
       title1: "Gobernanza digital",
       title2: "de las",
       titleHighlight: "Prácticas",
@@ -146,7 +146,7 @@ export const es = {
     security: {
       label: "Seguridad y cumplimiento",
       title: "Privacidad por diseño, auditoría por defecto",
-      subtitle: "EmiTesis cumple con la {law} a nivel estructural. Los derechos {arco} están implementados como modelo Prisma {model} y la portabilidad exporta el perfil completo en JSON.",
+      subtitle: "Praxis Hub cumple con la {law} a nivel estructural. Los derechos {arco} están implementados como modelo Prisma {model} y la portabilidad exporta el perfil completo en JSON.",
       law: "LOPDP del Ecuador",
       arco: "ARCO",
       model: "DataRequest",
@@ -167,7 +167,7 @@ export const es = {
     },
     cta: {
       badge: "Listo para usar",
-      title: "Únete al ecosistema EmiTesis",
+      title: "Únete al ecosistema Praxis Hub",
       subtitle: "Accede con tu rol institucional y descubre cómo la IA, el geofencing y la firma electrónica redefinen las prácticas preprofesionales.",
       login: "Iniciar sesión",
       corporate: "Portal corporativo",
@@ -340,7 +340,7 @@ export const es = {
     hero: {
       label: "Servicios académicos",
       title: "Todo lo que necesitas para tus prácticas preprofesionales",
-      subtitle: "Desde la asignación hasta la certificación, EmiTesis digitaliza y automatiza cada paso del proceso institucional.",
+      subtitle: "Desde la asignación hasta la certificación, Praxis Hub digitaliza y automatiza cada paso del proceso institucional.",
     },
     academic: {
       title: "Gestión Académica",
@@ -441,7 +441,7 @@ export const es = {
   },
   about: {
     hero: {
-      label: "Sobre Emitesis",
+      label: "Sobre Praxis Hub",
       title: "La plataforma que transforma las prácticas en Ecuador",
     },
     vision: {
@@ -482,7 +482,7 @@ export const es = {
     },
     cta: {
       title: "Parte del ISTPET",
-      subtitle: "Si eres estudiante, empresa o tutor, el ecosistema EmiTesis está listo para ti.",
+      subtitle: "Si eres estudiante, empresa o tutor, el ecosistema Praxis Hub está listo para ti.",
       btnSystem: "Acceder al sistema",
       btnServices: "Ver servicios",
     },
@@ -545,11 +545,11 @@ export const es = {
     intro: "En cumplimiento con la Ley Orgánica de Protección de Datos Personales (LOPDP), el ISTPET garantiza la seguridad y privacidad de sus datos.",
     back: "Volver al inicio",
     header: {
-      label: "ISTPET · Emitesis",
+      label: "ISTPET · Praxis Hub",
       title: "Política de Privacidad Institucional",
       version: "Cumplimiento LOPDP Ecuador · Versión 1.0 · Abril 2026",
     },
-    introFull: "El presente documento constituye el Aviso de Privacidad para el tratamiento de datos personales del sistema Emitesis, en cumplimiento estricto con la Ley Orgánica de Protección de Datos Personales (LOPDP) de la República del Ecuador. El ISTPET garantiza el ejercicio soberano de sus derechos informativos.",
+    introFull: "El presente documento constituye el Aviso de Privacidad para el tratamiento de datos personales del sistema Praxis Hub, en cumplimiento estricto con la Ley Orgánica de Protección de Datos Personales (LOPDP) de la República del Ecuador. El ISTPET garantiza el ejercicio soberano de sus derechos informativos.",
     tech: [
       {
         title: "Seguridad Técnica",
@@ -564,7 +564,7 @@ export const es = {
       {
         num: "01",
         title: "Responsable del Tratamiento",
-        desc: "ISTPET, domiciliado en Quito, Ecuador, es la entidad responsable que determina los fines y medios del tratamiento de la información personal gestionada en la plataforma Emitesis.",
+        desc: "ISTPET, domiciliado en Quito, Ecuador, es la entidad responsable que determina los fines y medios del tratamiento de la información personal gestionada en la plataforma Praxis Hub.",
         items: [],
         dpoLabel: "",
         dpoBtn: "",
@@ -907,7 +907,7 @@ export const es = {
     settings: {
       title: "Parámetros del Sistema",
       subtitle: "Configuración Avanzada",
-      description: "Ajusta los límites técnicos y comportamientos globales del sistema Emitesis.",
+      description: "Ajusta los límites técnicos y comportamientos globales del sistema Praxis Hub.",
       syncBtn: "Sincronizar",
       loading: "Cargando parámetros...",
       updateSuccess: "Configuración {key} actualizada con éxito.",
@@ -1379,7 +1379,7 @@ export const es = {
     settings: {
       title: "Parámetros del Sistema",
       subtitle: "Configuración Avanzada",
-      description: "Ajusta los límites técnicos y comportamientos globales del sistema Emitesis.",
+      description: "Ajusta los límites técnicos y comportamientos globales del sistema Praxis Hub.",
       syncBtn: "Sincronizar",
       loading: "Cargando parámetros...",
       updateSuccess: "Configuración {key} actualizada con éxito.",
@@ -1627,7 +1627,7 @@ export const es = {
         actions: "Acciones",
       },
       ai: {
-        title: "Emitesis AI Predictor",
+        title: "Praxis Hub AI Predictor",
         button: "Ejecutar Análisis de Riesgo",
         running: "Analizando...",
         description: "Presiona el botón para analizar el progreso y detectar riesgos tempranamente.",
@@ -1939,7 +1939,7 @@ export const es = {
     },
     lopdp: {
       title: "Datos personales (LOPDP Ecuador)",
-      desc: "Información sobre finalidades, conservación y cómo ejercer tus derechos sobre los datos tratados en Emitesis.",
+      desc: "Información sobre finalidades, conservación y cómo ejercer tus derechos sobre los datos tratados en Praxis Hub.",
       viewNotice: "Ver aviso de privacidad",
     }
   }

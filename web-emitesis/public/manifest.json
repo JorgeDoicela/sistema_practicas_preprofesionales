@@ -1,6 +1,6 @@
 {
-  "name": "Emitesis ISTPET",
-  "short_name": "Emitesis",
+  "name": "Praxis Hub ISTPET",
+  "short_name": "Praxis Hub",
   "description": "Sistema de Gestión de Prácticas Preprofesionales - ISTPET",
   "start_url": "/",
   "display": "standalone",

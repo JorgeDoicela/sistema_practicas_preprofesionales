@@ -15,7 +15,7 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "Emitesis - Prácticas Preprofesionales",
+  title: "Praxis Hub - Prácticas Preprofesionales",
   description: "Plataforma para la gestión integral de prácticas preprofesionales.",
   icons: {
     icon: "/images/Logo.png",
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Emitesis",
+    title: "Praxis Hub",
   },
   formatDetection: {
     telephone: false,

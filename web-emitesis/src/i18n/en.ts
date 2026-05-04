@@ -1,7 +1,7 @@
 export const en = {
   // ── Navbar ──────────────────────────────────────────────────────
   nav: {
-    brand: "Emitesis",
+    brand: "Praxis Hub",
     brandSub: "Traversari Technological Institute · ISTPET",
     links: {
       home: "Home",
@@ -25,20 +25,20 @@ export const en = {
     location: "Location",
     locationValue: "Quito, Ecuador — Chillogallo District",
     links: {
-      about: "About Emitesis",
+      about: "About Praxis Hub",
       services: "Academic Services",
       companies: "Companies Portal",
       privacy: "Personal Data (LOPDP)",
       support: "Technical Support",
     },
-    copyright: "© 2026 ISTPET – Emitesis. Developed by Cristhofer Steve Parreño Poma.",
+    copyright: "© 2026 ISTPET – Praxis Hub. Developed by Cristhofer Steve Parreño Poma.",
     privacyLink: "Privacy",
   },
 
   // ── Landing / Home ──────────────────────────────────────────────
   home: {
     hero: {
-      badge: "ISTPET Institutional Platform · EmiTesis",
+      badge: "ISTPET Institutional Platform · Praxis Hub",
       title1: "Digital governance",
       title2: "of",
       titleHighlight: "Professional",
@@ -146,7 +146,7 @@ export const en = {
     security: {
       label: "Security & Compliance",
       title: "Privacy by design, audit by default",
-      subtitle: "EmiTesis structurally complies with the {law}. {arco} rights are implemented as the Prisma {model} model and data portability exports the full profile as JSON.",
+      subtitle: "Praxis Hub structurally complies with the {law}. {arco} rights are implemented as the Prisma {model} model and data portability exports the full profile as JSON.",
       law: "Ecuador LOPDP",
       arco: "ARCO",
       model: "DataRequest",
@@ -167,7 +167,7 @@ export const en = {
     },
     cta: {
       badge: "Ready to use",
-      title: "Join the EmiTesis ecosystem",
+      title: "Join the Praxis Hub ecosystem",
       subtitle: "Access with your institutional role and discover how AI, geofencing and electronic signatures redefine professional internships.",
       login: "Sign in",
       corporate: "Corporate portal",
@@ -340,7 +340,7 @@ export const en = {
     hero: {
       label: "Academic services",
       title: "Everything you need for your professional internships",
-      subtitle: "From assignment to certification, EmiTesis digitizes and automates every step of the institutional process.",
+      subtitle: "From assignment to certification, Praxis Hub digitizes and automates every step of the institutional process.",
     },
     academic: {
       title: "Academic Management",
@@ -441,7 +441,7 @@ export const en = {
   },
   about: {
     hero: {
-      label: "About Emitesis",
+      label: "About Praxis Hub",
       title: "The platform that transforms internships in Ecuador",
     },
     vision: {
@@ -482,7 +482,7 @@ export const en = {
     },
     cta: {
       title: "Part of ISTPET",
-      subtitle: "Whether you are a student, company, or tutor, the EmiTesis ecosystem is ready for you.",
+      subtitle: "Whether you are a student, company, or tutor, the Praxis Hub ecosystem is ready for you.",
       btnSystem: "Access the system",
       btnServices: "View services",
     },
@@ -545,11 +545,11 @@ export const en = {
     intro: "In compliance with the Organic Law on Personal Data Protection (LOPDP), ISTPET guarantees the security and privacy of your data.",
     back: "Back to home",
     header: {
-      label: "ISTPET · Emitesis",
+      label: "ISTPET · Praxis Hub",
       title: "Institutional Privacy Policy",
       version: "Ecuador LOPDP Compliance · Version 1.0 · April 2026",
     },
-    introFull: "This document constitutes the Privacy Notice for the processing of personal data of the Emitesis system, in strict compliance with the Organic Law on Personal Data Protection (LOPDP) of the Republic of Ecuador. ISTPET guarantees the sovereign exercise of your information rights.",
+    introFull: "This document constitutes the Privacy Notice for the processing of personal data of the Praxis Hub system, in strict compliance with the Organic Law on Personal Data Protection (LOPDP) of the Republic of Ecuador. ISTPET guarantees the sovereign exercise of your information rights.",
     tech: [
       {
         title: "Technical Security",
@@ -564,7 +564,7 @@ export const en = {
       {
         num: "01",
         title: "Data Controller",
-        desc: "ISTPET, located in Quito, Ecuador, is the responsible entity that determines the purposes and means of the processing of personal information managed on the Emitesis platform.",
+        desc: "ISTPET, located in Quito, Ecuador, is the responsible entity that determines the purposes and means of the processing of personal information managed on the Praxis Hub platform.",
         items: [],
         dpoLabel: "",
         dpoBtn: "",
@@ -991,7 +991,7 @@ export const en = {
     settings: {
       title: "System Parameters",
       subtitle: "Advanced Configuration",
-      description: "Adjust technical limits and global behaviors of the Emitesis system.",
+      description: "Adjust technical limits and global behaviors of the Praxis Hub system.",
       syncBtn: "Synchronize",
       loading: "Loading parameters...",
       updateSuccess: "Configuration {key} updated successfully.",
@@ -1688,7 +1688,7 @@ export const en = {
         actions: "Actions",
       },
       ai: {
-        title: "Emitesis AI Predictor",
+        title: "Praxis Hub AI Predictor",
         button: "Run Risk Analysis",
         running: "Analyzing...",
         description: "Press the button to analyze progress and detect risks early.",
@@ -2001,7 +2001,7 @@ export const en = {
     },
     lopdp: {
       title: "Personal Data (LOPDP Ecuador)",
-      desc: "Information about purposes, retention, and how to exercise your rights over data processed in Emitesis.",
+      desc: "Information about purposes, retention, and how to exercise your rights over data processed in Praxis Hub.",
       viewNotice: "View privacy notice",
     }
   }
