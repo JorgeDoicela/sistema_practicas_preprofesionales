@@ -169,7 +169,7 @@ export default function EvaluacionesPage() {
               {t.coordinator.evaluations.description}
             </p>
           </div>
-          <div className="relative group">
+          <div className="relative group" data-tour="evaluations-search">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
             <input
               type="text"
@@ -183,7 +183,7 @@ export default function EvaluacionesPage() {
 
         {/* KPIs */}
         {!loading && (
-          <section className="grid sm:grid-cols-3 gap-6">
+          <section className="grid sm:grid-cols-3 gap-6" data-tour="evaluations-kpis">
              <KpiCard
               icon={<Users className="w-6 h-6" />}
               title={t.coordinator.evaluations.kpis.total}
@@ -213,7 +213,7 @@ export default function EvaluacionesPage() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-4" data-tour="evaluations-list">
             {filtered.length === 0 ? (
               <div className="bg-white rounded-[2.5rem] border border-dashed border-slate-200 p-20 text-center">
                 <AlertCircle className="w-16 h-16 text-slate-200 mx-auto mb-4" />

@@ -67,7 +67,7 @@ export default function ReportesPage() {
             <p className="text-slate-500 font-medium mt-2">{t.coordinator.reports.description}</p>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3" data-tour="reportes-export-actions">
              <button 
                 onClick={() => handleExport("excel")}
                 disabled={exporting !== null}
@@ -95,7 +95,7 @@ export default function ReportesPage() {
         ) : (
           <>
             {/* Stats Cards */}
-             <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+             <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6" data-tour="reportes-stats-grid">
               <ReportStatCard 
                 title={t.coordinator.reports.stats.activeInternships}
                 value={String(stats?.assignmentsCount || 0)} 
@@ -129,7 +129,7 @@ export default function ReportesPage() {
             {/* Main Content Areas */}
             <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
               <div className="lg:col-span-2 space-y-8">
-                 <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
+                 <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden" data-tour="reportes-efficiency-metrics">
                     <div className="p-4 sm:p-6 md:p-8 border-b border-slate-50 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                        <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">{t.coordinator.reports.summary.title}</h3>
                        <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-xl">
@@ -170,7 +170,7 @@ export default function ReportesPage() {
               </div>
 
               <div className="space-y-8">
-                 <div className="bg-[#003366] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white shadow-2xl relative overflow-hidden group">
+                 <div className="bg-[#003366] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white shadow-2xl relative overflow-hidden group" data-tour="reportes-master">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-white/10 transition-colors" />
                     <div className="relative z-10 space-y-6">
                        <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10">

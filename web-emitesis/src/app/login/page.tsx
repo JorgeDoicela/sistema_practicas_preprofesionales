@@ -14,6 +14,7 @@ import { ROLE_REDIRECTS, Role, normalizeApiRoleToAppRole } from "@/constants/rol
 import { useLanguage } from "@/providers/LanguageProvider";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import Cookies from "js-cookie";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -61,9 +62,16 @@ export default function LoginPage() {
                 return;
             }
 
+            // Guardar en LocalStorage para compatibilidad con hooks existentes
             localStorage.setItem("token", data.access_token);
+            localStorage.setItem("refresh_token", data.refresh_token);
             const user = { ...data.user, role: normalizeApiRoleToAppRole(String(data.user.role)) };
             localStorage.setItem("user", JSON.stringify(user));
+
+            // GUARDAR EN COOKIES (Nivel Bancario - Permite que el Middleware lo vea en el Servidor)
+            Cookies.set("token", data.access_token, { expires: 1, secure: true, sameSite: 'strict' });
+            Cookies.set("user", JSON.stringify(user), { expires: 1, secure: true, sameSite: 'strict' });
+
             const role = user.role as Role;
             router.push(ROLE_REDIRECTS[role] || "/dashboard");
         } catch (err: unknown) {
@@ -80,9 +88,16 @@ export default function LoginPage() {
         try {
             if (!mfaUserId) return;
             const data = await authService.authenticate2FA(mfaUserId, mfaCode);
+            
             localStorage.setItem("token", data.access_token);
+            localStorage.setItem("refresh_token", data.refresh_token);
             const user = { ...data.user, role: normalizeApiRoleToAppRole(String(data.user.role)) };
             localStorage.setItem("user", JSON.stringify(user));
+
+            // Cookies para Middleware
+            Cookies.set("token", data.access_token, { expires: 1, secure: true, sameSite: 'strict' });
+            Cookies.set("user", JSON.stringify(user), { expires: 1, secure: true, sameSite: 'strict' });
+
             const role = user.role as Role;
             router.push(ROLE_REDIRECTS[role] || "/dashboard");
         } catch (err: unknown) {

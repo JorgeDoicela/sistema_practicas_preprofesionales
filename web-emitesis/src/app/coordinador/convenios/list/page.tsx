@@ -75,6 +75,7 @@ export default function ConveniosListPage() {
               <RefreshCw size={16} />
             </button>
             <Link href="/coordinador/convenios"
+              data-tour="convenios-new"
               className="flex flex-1 sm:flex-initial min-w-0 items-center justify-center gap-2 bg-[#003366] text-white px-5 sm:px-6 py-3.5 sm:py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:translate-y-[-2px] transition-all">
               <Plus size={16} /> Nuevo Convenio
             </Link>
@@ -127,7 +128,7 @@ export default function ConveniosListPage() {
             <p className="font-bold">No hay convenios en esta categoría</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4" data-tour="convenios-table">
             {filtered.map(ag => {
               const days = daysUntil(ag.endDate);
               const isExpiringSoon = days !== null && days <= 30 && days > 0 && ag.status === "Activo";

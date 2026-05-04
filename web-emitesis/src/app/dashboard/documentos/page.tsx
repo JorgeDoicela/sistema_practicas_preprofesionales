@@ -373,7 +373,7 @@ export default function DocumentosPage() {
             <p className="text-slate-500 font-bold animate-pulse">{t.documents.loading}</p>
           </div>
         ) : userRole === 'ESTUDIANTE' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-tour="documents-list">
             {userDocuments.map((doc, idx) => {
               const now = new Date();
               const isCertSlot = Boolean(doc.isCertificateSlot);
@@ -464,7 +464,7 @@ export default function DocumentosPage() {
                       )}
 
                       {!isApproved && (
-                        <div className="relative">
+                        <div className="relative" data-tour="documents-upload">
                           <input
                             type="file"
                             accept=".pdf"

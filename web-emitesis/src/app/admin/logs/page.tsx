@@ -123,7 +123,7 @@ export default function AdminLogsPage() {
            <div className={cn(
              "lg:col-span-12 transition-all duration-700 overflow-hidden",
              isLiveEnabled ? "h-[450px] opacity-100" : "h-0 opacity-0 mb-[-2rem]"
-           )}>
+           )} data-tour="logs-live">
               <div className="bg-slate-900 rounded-[2.5rem] h-full flex flex-col border border-white/5 shadow-2xl relative">
                   <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
                      <Terminal className="w-40 h-40 text-white" />
@@ -164,7 +164,7 @@ export default function AdminLogsPage() {
            </div>
 
            {/* Registro Histórico */}
-           <div className="lg:col-span-12">
+           <div className="lg:col-span-12" data-tour="logs-history">
               <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
                  <div className="p-4 sm:p-6 md:p-8 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">

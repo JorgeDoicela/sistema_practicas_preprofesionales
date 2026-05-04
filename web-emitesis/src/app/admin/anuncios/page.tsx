@@ -174,7 +174,7 @@ export default function AdminAnnouncementsPage() {
           )}
         </AnimatePresence>
 
-        <div className="grid gap-6">
+        <div className="grid gap-6" data-tour="anuncios-list">
           {loading && announcements.length === 0 ? (
             <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-4">
                <Loader2 className="w-10 h-10 animate-spin text-[#003366]" />

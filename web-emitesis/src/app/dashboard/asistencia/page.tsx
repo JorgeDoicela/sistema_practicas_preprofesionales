@@ -516,7 +516,10 @@ export default function AsistenciaPage() {
 
         {/* ── Visual Geofencing Context ────────────────────────────── */}
         {internship && (
-          <section className="bg-white p-2 rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden">
+          <section 
+            className="bg-white p-2 rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden"
+            data-tour="attendance-radar"
+          >
              <div className="grid md:grid-cols-3 gap-2">
                 <div className="md:col-span-2 h-[350px] rounded-[2rem] overflow-hidden group border border-slate-50">
                   <LeafletMap 
@@ -611,7 +614,7 @@ export default function AsistenciaPage() {
         ) : (
           <div className="space-y-10">
             {/* ── Botones de Control ───────────────────────────────────── */}
-            <div className="grid lg:grid-cols-2 gap-6">
+            <div className="grid lg:grid-cols-2 gap-6" data-tour="attendance-actions">
               {/* Check-in */}
               <button
                 onClick={() => openAttendanceModal("IN")}
@@ -718,7 +721,10 @@ export default function AsistenciaPage() {
 
             {/* ── RF-17: Fotos de Actividades ──────────────────────────── */}
             {status && (
-              <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
+              <div 
+                className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden"
+                data-tour="attendance-activities"
+              >
                 <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                     <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
@@ -770,7 +776,10 @@ export default function AsistenciaPage() {
             )}
 
             {/* ── Historial ────────────────────────────────────────────── */}
-            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
+            <div 
+              className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden"
+              data-tour="attendance-history"
+            >
               <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 space-y-4 md:space-y-6">
                 <div className="flex items-center gap-3 sm:gap-4">
                   <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-[#003366]">

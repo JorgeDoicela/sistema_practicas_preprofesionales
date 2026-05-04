@@ -235,7 +235,7 @@ export default function TutorAsistenciaPage() {
               {t.tutor.desc}
             </p>
           </div>
-          <div className="relative group">
+          <div className="relative group" data-tour="tutor-asistencia-search">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
             <input
               type="text"
@@ -249,7 +249,7 @@ export default function TutorAsistenciaPage() {
 
         {/* KPIs */}
         {!loading && rows.length > 0 && (
-          <section className="grid sm:grid-cols-3 gap-6">
+          <section className="grid sm:grid-cols-3 gap-6" data-tour="tutor-asistencia-kpis">
             <KpiCard icon={<Clock className="w-6 h-6" />} title={t.asistencia.company.activeInterns} value={rows.filter((r) => r.status !== "Finalizado").length} color="bg-blue-500" />
             <KpiCard icon={<CheckCircle2 className="w-6 h-6" />} title={t.asistencia.company.accumulatedHours} value={`${totalHoursAll}h`} color="bg-emerald-500" />
             <KpiCard icon={<CalendarCheck className="w-6 h-6" />} title={t.tutor.avgProgress} value={avgProgress !== null ? `${avgProgress}%` : "—"} color="bg-amber-500" />
@@ -269,7 +269,7 @@ export default function TutorAsistenciaPage() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-4" data-tour="tutor-asistencia-list">
             {filtered.map((row, idx) => (
               <motion.div
                 key={row.internshipId}
@@ -345,6 +345,7 @@ export default function TutorAsistenciaPage() {
                     
                     <button
                       onClick={() => openLocationModal(row)}
+                      data-tour="tutor-asistencia-locations"
                       className="flex items-center gap-2 px-4 py-2.5 border-2 border-[#003366]/20 rounded-2xl text-[10px] font-black text-[#003366] uppercase tracking-widest hover:bg-[#003366] hover:text-white hover:border-[#003366] transition-all"
                     >
                       <Edit3 className="w-3.5 h-3.5" />

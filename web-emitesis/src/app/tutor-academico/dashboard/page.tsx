@@ -142,7 +142,7 @@ export default function TutorAcademicoDashboardPage() {
 
         {/* KPIs and Chart Section */}
         <section className="grid lg:grid-cols-3 gap-6 md:gap-8">
-          <div className="lg:col-span-2 grid sm:grid-cols-2 gap-6">
+          <div className="lg:col-span-2 grid sm:grid-cols-2 gap-6" data-tour="tutor-dashboard-kpis">
             <KpiCard
               title={t.tutor.dashboard.kpi.activeInterns}
               value={activeCount}
@@ -174,7 +174,7 @@ export default function TutorAcademicoDashboardPage() {
             />
           </div>
 
-          <div className="bg-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl flex flex-col min-w-0">
+          <div className="bg-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl flex flex-col min-w-0" data-tour="tutor-dashboard-chart">
             <h3 className="text-lg font-black text-[#003366] mb-6 flex items-center gap-2">
               <FileText className="w-5 h-5 text-[#C5A059]" />
               {t.tutor.dashboard.charts.docsGlobal}
@@ -255,7 +255,7 @@ export default function TutorAcademicoDashboardPage() {
                 {t.tutor.dashboard.list.subtitle}
               </p>
             </div>
-            <div className="relative group">
+            <div className="relative group" data-tour="tutor-dashboard-search">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
               <input
                 type="text"
@@ -303,7 +303,7 @@ export default function TutorAcademicoDashboardPage() {
               </p>
             </div>
           ) : (
-            <div className="grid gap-6">
+            <div className="grid gap-6" data-tour="tutor-dashboard-list">
               <AnimatePresence mode="popLayout">
                 {filtered.map((internship, idx) => (
                   <motion.div

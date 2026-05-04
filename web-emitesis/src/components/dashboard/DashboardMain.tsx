@@ -572,7 +572,7 @@ export function DashboardMain() {
       </section>
 
       {/* Anuncios Globales (Carrusel Compacto) */}
-      <div className="relative group">
+      <div className="relative group" data-tour="dashboard-announcements">
         <AnimatePresence mode="wait">
           {announcements.length > 0 && (() => {
             const visibleAnnouncements = announcements.filter(a => !closedAnnouncements.includes(a.id));
@@ -601,6 +601,16 @@ export function DashboardMain() {
         <DashboardSkeleton />
       ) : (
         <>
+          {/* Dashboard Stats Cards */}
+          <div 
+            className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
+            data-tour="dashboard-stats"
+          >
+            {stats.cards.map((card, idx) => (
+              <StatCard key={idx} {...card} />
+            ))}
+          </div>
+
           {/* Alertas de Acción Requerida (Proactive) */}
           {appRole === ROLES.ESTUDIANTE && internships.length > 0 && (
             <div className="space-y-4 mb-12">
@@ -660,7 +670,10 @@ export function DashboardMain() {
 
           {appRole === ROLES.ESTUDIANTE && internships.length > 0 && (
             <section className="grid md:grid-cols-3 gap-6 md:gap-8">
-              <div className="md:col-span-2 bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-slate-100 shadow-xl relative overflow-hidden flex flex-col md:flex-row gap-6 md:gap-8">
+              <div 
+                className="md:col-span-2 bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-slate-100 shadow-xl relative overflow-hidden flex flex-col md:flex-row gap-6 md:gap-8"
+                data-tour="dashboard-attendance-card"
+              >
                 <div className="flex-1 space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
@@ -695,7 +708,10 @@ export function DashboardMain() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-[#003366] to-[#002244] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white shadow-xl flex flex-col justify-center">
+              <div 
+                className="bg-gradient-to-br from-[#003366] to-[#002244] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white shadow-xl flex flex-col justify-center"
+                data-tour="dashboard-hours-card"
+              >
                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-6">
                     <BarChart3 className="w-6 h-6 text-[#C5A059]" />
                  </div>
@@ -731,7 +747,10 @@ export function DashboardMain() {
           )}
 
           {(appRole === ROLES.ADMIN || appRole === ROLES.COORDINADOR) && globalStats && (
-            <section className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 shadow-2xl shadow-slate-200/50 border border-slate-50 relative overflow-hidden group">
+            <section 
+              className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 shadow-2xl shadow-slate-200/50 border border-slate-50 relative overflow-hidden group"
+              data-tour="dashboard-analytics"
+            >
               <div className="absolute top-0 right-0 p-8 opacity-5">
                 <BarChart3 className="w-32 h-32 text-[#003366]" />
               </div>
@@ -933,7 +952,7 @@ function StatCard({ title, value, hint, icon, color }: StatCardProps) {
   return (
     <motion.div
       whileHover={{ y: -4 }}
-      className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl relative overflow-hidden"
+      className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl relative overflow-hidden h-full"
     >
       <div className="flex items-start justify-between mb-6">
         <div className={`p-4 rounded-2xl ${color} bg-opacity-10 text-slate-800`}>

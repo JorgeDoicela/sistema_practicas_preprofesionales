@@ -255,7 +255,7 @@ export default function GestionEstudiantesPage() {
             <p className="text-slate-500 font-medium mt-2">{t.coordinator.students.description}</p>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4" data-tour="estudiantes-search">
              <div className="relative group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
                 <input 
@@ -275,7 +275,7 @@ export default function GestionEstudiantesPage() {
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.coordinator.students.loading}</p>
           </div>
         ) : (
-          <div className="grid gap-6">
+          <div className="grid gap-6" data-tour="estudiantes-table">
             {filteredInternships.map((internship) => (
               <StudentInternshipCard 
                 key={internship.id}
@@ -667,7 +667,7 @@ function StudentInternshipCard({
           >
             <div className="p-4 md:p-8 space-y-8 md:space-y-10">
                {/* Sección de IA Predictiva */}
-               <div className="bg-gradient-to-br from-[#003366] to-[#001122] rounded-[2rem] p-5 sm:p-6 md:p-8 text-white relative overflow-hidden group/ia">
+               <div className="bg-gradient-to-br from-[#003366] to-[#001122] rounded-[2rem] p-5 sm:p-6 md:p-8 text-white relative overflow-hidden group/ia" data-tour="student-ai-risk">
                   <div className="absolute top-0 right-0 p-4 md:p-8 lg:p-10 opacity-5 rotate-12 group-hover/ia:rotate-0 transition-transform duration-1000">
                      <BrainCircuit className="w-24 h-24 sm:w-32 sm:h-32" />
                   </div>
@@ -713,7 +713,7 @@ function StudentInternshipCard({
 
                {/* Dashboard de Requisitos */}
                {eligibility && (
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white p-4 md:p-8 rounded-[2rem] border border-slate-200 shadow-sm">
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white p-4 md:p-8 rounded-[2rem] border border-slate-200 shadow-sm" data-tour="student-eligibility">
                     <div className="space-y-4 md:border-r border-slate-100 md:pr-4">
                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.coordinator.students.kpi.docs}</h4>
                        <div className="flex items-end gap-3">
@@ -751,7 +751,7 @@ function StudentInternshipCard({
                        </div>
                     </div>
 
-                    <div className="flex flex-col justify-center pl-4">
+                    <div className="flex flex-col justify-center pl-4" data-tour="student-certification">
                        {internship.status === 'Finalizado' ? (
                           <div className="text-center p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
                              <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />

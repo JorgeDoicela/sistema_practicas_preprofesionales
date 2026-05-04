@@ -24,6 +24,11 @@ import {
     Document,
     DocumentTemplate,
     Prisma,
+    Absence,
+    ChatRoom,
+    ChatRoomMember,
+    ChatMessage,
+    LopdpLog,
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
@@ -50,6 +55,15 @@ const pick = <T>(arr: T[]): T => arr[randInt(0, arr.length - 1)];
 
 const docUrl = (name: string): string =>
     `/uploads/documents/seed/${name.replace(/\s+/g, '_').toLowerCase()}.pdf`;
+
+const genCedula = () => {
+    const province = randInt(1, 24).toString().padStart(2, '0');
+    const digits = Array.from({ length: 7 }, () => randInt(0, 9)).join('');
+    const last = randInt(0, 9);
+    return `${province}${digits}${last}`;
+};
+
+const genPhone = () => `09${randInt(7, 9)}${randInt(1000000, 9999999)}`;
 
 const photoUrl = (seed: string | number): string =>
     `https://picsum.photos/seed/${seed}/800/600`;
@@ -292,6 +306,9 @@ async function main() {
             address: c.address,
             representative: c.rep,
             email: c.email,
+            phone: `02${randInt(2, 3)}${randInt(100000, 999999)}`,
+            city: 'Quito',
+            sector: pick(['Tecnología', 'Servicios', 'Educación', 'Industrial', 'Alimentación']),
         })),
     });
 
@@ -328,7 +345,15 @@ async function main() {
         { name: 'Lcda. Rosa Herrera Burbano', email: 'coordinador.edu@istpet.edu.ec' },
     ];
     const coordinators = await (prisma.user as any).createManyAndReturn({
-        data: coordsData.map(cd => ({ email: cd.email, password, fullName: cd.name, role: Role.COORDINADOR, ...lopdp })),
+        data: coordsData.map(cd => ({
+            email: cd.email,
+            password,
+            fullName: cd.name,
+            role: Role.COORDINADOR,
+            cedula: genCedula(),
+            phone: genPhone(),
+            ...lopdp
+        })),
     });
 
     // Tutores académicos — docentes del ISTPET asignados por carrera
@@ -359,6 +384,8 @@ async function main() {
                 fullName: names[t],
                 role: Role.TUTOR,
                 careerId: career.id,
+                cedula: genCedula(),
+                phone: genPhone(),
                 ...lopdp,
             });
         }
@@ -373,6 +400,8 @@ async function main() {
             fullName: getUniqueName(),
             role: Role.EMPRESA,
             companyId: comp.id,
+            cedula: genCedula(),
+            phone: genPhone(),
             ...lopdp,
         })),
     });
@@ -397,6 +426,9 @@ async function main() {
             fullName: getUniqueName(),
             role: Role.ESTUDIANTE,
             careerId: careers[i % careers.length].id,
+            cedula: genCedula(),
+            phone: genPhone(),
+            ciclo: `${randInt(1, 6)}to Ciclo`,
             ...lopdp,
         })),
     });
@@ -419,6 +451,21 @@ async function main() {
         `   ✓ 1 admin + ${coordinators.length} coordinadores + ${tutorsAcad.length} tutores acad. + ` +
         `${tutorsEmp.length} supervisores + 4 portales empresa + ${students.length} estudiantes + 1 bloqueado.\n`,
     );
+
+    // ─── 5b. REGISTROS LOPDP ──────────────────────────────────────────────────
+    console.log('⚖️  [5b] Creando logs de aceptación LOPDP...');
+    const allUsersForLopdp = [adminUser, ...coordinators, ...tutorsAcad, ...tutorsEmp, ...students];
+    await prisma.lopdpLog.createMany({
+        data: allUsersForLopdp.filter(u => u.lopdpAccepted).map(u => ({
+            userId: u.id,
+            fullName: u.fullName,
+            email: u.email,
+            ip: `192.168.${randInt(1, 10)}.${randInt(1, 254)}`,
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+            acceptedAt: daysAgo(randInt(30, 90)),
+        })),
+    });
+    console.log(`   ✓ ${allUsersForLopdp.length} logs de aceptación LOPDP creados.\n`);
 
     // ─── 6. CREDENCIALES WEBAUTHN ─────────────────────────────────────────────
     console.log('🔑 [6/12] Creando credenciales WebAuthn...');
@@ -750,6 +797,28 @@ async function main() {
     });
     await prisma.monitoringVisit.createMany({ data: visitsBatchData });
     await prisma.evaluation.createMany({ data: evalBatchData });
+
+    // ─── 7b. AUSENCIAS JUSTIFICADAS ───────────────────────────────────────────
+    const absenceBatch: Prisma.AbsenceCreateManyInput[] = [];
+    for (let i = 0; i < internshipsCreated.length; i++) {
+        if (i % 5 === 0) { // Un 20% de estudiantes tienen alguna falta
+            const internship = internshipsCreated[i];
+            const tutor = tutorsAcad[i % tutorsAcad.length];
+            absenceBatch.push({
+                internshipId: internship.id,
+                date: daysAgo(randInt(10, 50)),
+                reason: pick(['Cita médica en el IESS', 'Problemas familiares urgentes', 'Trámites académicos en campus', 'Fallecimiento de familiar cercano']),
+                type: pick(['ENFERMEDAD', 'PERSONAL', 'OTRA']),
+                status: i % 10 === 0 ? 'APROBADA' : 'PENDIENTE',
+                reviewedById: i % 10 === 0 ? tutor.id : null,
+                reviewedAt: i % 10 === 0 ? daysAgo(randInt(1, 5)) : null,
+                reviewNotes: i % 10 === 0 ? 'Justificativo médico verificado correctamente.' : null,
+                filePath: `/uploads/absences/seed/justificativo_${i}.pdf`,
+            });
+        }
+    }
+    await prisma.absence.createMany({ data: absenceBatch });
+    console.log(`   ✓ ${absenceBatch.length} registros de ausencia creados.\n`);
 
     // Batches de nivel 3: Fotos de actividades, Comentarios, Versiones
     const activityPhotoBatch: any[] = [];
@@ -1101,6 +1170,35 @@ async function main() {
     const enabledCount = chatPermPairs.filter(p => isAcademicPair(p.fromRole, p.toRole)).length;
     console.log(`   ✓ ${chatPermPairs.length} pares de permisos de chat creados (${enabledCount} canales académicos activos por defecto).\n`);
 
+    // ─── 12c. CONVERSACIONES REALES ───────────────────────────────────────────
+    console.log('💬 [12c] Generando conversaciones de prueba...');
+    // Crear salas entre algunos estudiantes y sus tutores
+    for (let i = 0; i < 10; i++) {
+        const student = students[i];
+        const tutor = tutorsAcad[i % tutorsAcad.length];
+        
+        const room = await prisma.chatRoom.create({
+            data: {
+                isGroup: false,
+                members: {
+                    create: [
+                        { userId: student.id },
+                        { userId: tutor.id },
+                    ]
+                },
+                messages: {
+                    create: [
+                        { senderId: student.id, content: 'Hola estimado tutor, tengo una duda con el formato F02.' },
+                        { senderId: tutor.id, content: 'Hola, dime en qué puedo ayudarte.', readAt: new Date() },
+                        { senderId: student.id, content: '¿En la sección de actividades debo ser muy detallado o un resumen general?', readAt: new Date() },
+                        { senderId: tutor.id, content: 'Es mejor ser detallado por semanas. Saludos.', readAt: new Date() },
+                    ]
+                }
+            }
+        });
+    }
+    console.log('   ✓ 10 salas de chat con mensajes generadas.\n');
+
     // ─── 12. CONFIGURACIONES DEL SISTEMA ──────────────────────────────────────
     console.log('⚙️  [12/12] Configurando ajustes del sistema...');
     await prisma.systemSetting.createMany({
@@ -1144,10 +1242,14 @@ async function main() {
         notifications: await prisma.inAppNotification.count(),
         dataRequests: await prisma.dataRequest.count(),
         settings: await prisma.systemSetting.count(),
+        absences: await prisma.absence.count(),
+        chatRooms: await prisma.chatRoom.count(),
+        chatMessages: await prisma.chatMessage.count(),
+        lopdpLogs: await prisma.lopdpLog.count(),
     };
 
     console.log('═══════════════════════════════════════════════════════════');
-    console.log('✅ MASTER SEED v13.0 — ISTPET "Mayor Pedro Traversari" OK');
+    console.log('✅ MASTER SEED v13.5 — ISTPET "Mayor Pedro Traversari" OK');
     console.log('═══════════════════════════════════════════════════════════');
     console.log('\n📊 RESUMEN DE REGISTROS CREADOS:');
     console.log('─────────────────────────────────────────────────────');
@@ -1166,11 +1268,15 @@ async function main() {
     console.log(`  💬 Comentarios en documentos : ${counts.docComments}`);
     console.log(`  ⭐ Evaluaciones              : ${counts.evaluations}`);
     console.log(`  🏫 Visitas de monitoreo      : ${counts.monitoringVisits}`);
+    console.log(`  🏥 Ausencias justificadas    : ${counts.absences}`);
+    console.log(`  🗨️  Salas de chat             : ${counts.chatRooms}`);
+    console.log(`  ✉️  Mensajes de chat          : ${counts.chatMessages}`);
     console.log(`  📜 Logs del sistema          : ${counts.systemLogs}`);
     console.log(`  📧 Logs de email             : ${counts.emailLogs}`);
     console.log(`  📢 Anuncios                  : ${counts.announcements}`);
     console.log(`  🔔 Notificaciones in-app     : ${counts.notifications}`);
     console.log(`  🔒 Solicitudes ARCO (LOPDP)  : ${counts.dataRequests}`);
+    console.log(`  ⚖️  Logs de aceptación LOPDP  : ${counts.lopdpLogs}`);
     console.log(`  ⚙️  Configuraciones del sistema: ${counts.settings}`);
     console.log('─────────────────────────────────────────────────────\n');
     console.log('  🔐 Credenciales de acceso (contraseña universal: password123):');

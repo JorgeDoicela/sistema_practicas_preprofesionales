@@ -1,16 +1,17 @@
-"use client";
-
 import axios from 'axios';
 import { API_URL } from '@/lib/api-base';
 import { toast } from 'sonner';
+import Cookies from 'js-cookie';
 
 export const api = axios.create({
   baseURL: API_URL,
 });
 
 type RetryableConfig = {
+  _retry?: boolean;
   __retryCount?: number;
   method?: string;
+  headers?: any;
 };
 
 // Interceptor para incluir el token en cada petición
@@ -24,50 +25,80 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Interceptor de respuesta para manejar rate limiting y unwrap de datos
+// Interceptor de respuesta para manejar refresh token y errores
 api.interceptors.response.use(
   (response) => {
-    // Si la respuesta viene envuelta en el formato { success, data, timestamp }
     if (response.data && typeof response.data === 'object' && 'success' in response.data) {
       return response.data.data;
     }
     return response.data;
   },
-  (error) => {
-    const config = (error.config || {}) as RetryableConfig;
-    const isNetworkError = !error.response && error.code === 'ERR_NETWORK';
-    const isGetRequest = (config.method || '').toLowerCase() === 'get';
-    const retryCount = config.__retryCount ?? 0;
+  async (error) => {
+    const originalRequest = error.config as RetryableConfig;
+    
+    // Si es 401 y no hemos reintentado ya
+    if (error.response?.status === 401 && !originalRequest._retry && typeof window !== 'undefined') {
+      originalRequest._retry = true;
+      
+      const refreshToken = localStorage.getItem('refresh_token');
+      const userStr = localStorage.getItem('user');
 
-    // Reintento corto para cortes transitorios de API en modo dev (reinicios por watch).
-    if (isNetworkError && isGetRequest && retryCount < 2) {
-      config.__retryCount = retryCount + 1;
-      return new Promise((resolve) => {
-        setTimeout(() => resolve(api(config)), 350);
-      });
+      if (refreshToken && userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          // Llamada directa con axios para evitar el interceptor infinito
+          const response = await axios.post(`${API_URL}/auth/refresh`, {
+            userId: user.id,
+            refreshToken
+          });
+
+          // Extraer nuevos tokens (vienen en data.data por el envoltorio del backend)
+          const tokens = response.data.data;
+          
+          localStorage.setItem('token', tokens.accessToken);
+          localStorage.setItem('refresh_token', tokens.refreshToken);
+          Cookies.set('token', tokens.accessToken, { secure: true, sameSite: 'strict' });
+
+          // Reintentar petición original
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${tokens.accessToken}`;
+          }
+          return api(originalRequest);
+        } catch (refreshError) {
+          // Si el refresh falla, el token es inválido o expiró → Logout total
+          localStorage.clear();
+          Cookies.remove('token');
+          Cookies.remove('user');
+          if (!window.location.pathname.includes('/login')) {
+            window.location.href = '/login?sessionExpired=true';
+          }
+          return Promise.reject(refreshError);
+        }
+      }
     }
 
-    if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('role');
-      toast.error('Sesión expirada', {
-        description: 'Por seguridad, vuelve a iniciar sesión.',
+    const isNetworkError = !error.response && error.code === 'ERR_NETWORK';
+    const isGetRequest = (originalRequest.method || '').toLowerCase() === 'get';
+    const retryCount = originalRequest.__retryCount ?? 0;
+
+    if (isNetworkError && isGetRequest && retryCount < 2) {
+      originalRequest.__retryCount = retryCount + 1;
+      return new Promise((resolve) => {
+        setTimeout(() => resolve(api(originalRequest)), 350);
       });
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
-      }
     }
 
     if (error.response?.status === 429) {
       toast.error('Demasiadas peticiones', {
-        description: 'Has superado el límite de intentos permitidos. Por favor, espera unos minutos antes de reintentar.',
+        description: 'Has superado el límite. Por favor, espera unos minutos.',
         duration: 5000,
       });
     }
+
     return Promise.reject(error);
   }
 );
+
 
 export const authService = {
   async login(email: string, password: string, recaptchaToken: string) {

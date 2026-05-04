@@ -186,7 +186,7 @@ export function PrivacyAdminView() {
       </div>
 
       {/* Requests Table */}
-      <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
+      <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/60 border border-slate-100 overflow-hidden" data-tour="arco-list">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>

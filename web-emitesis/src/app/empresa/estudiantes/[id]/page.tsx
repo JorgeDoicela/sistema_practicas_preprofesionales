@@ -212,7 +212,7 @@ export default function EvaluarEstudiantePage() {
         </div>
 
         {/* Ficha del pasante */}
-        <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 shadow-sm p-5 md:p-8">
+        <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 shadow-sm p-5 md:p-8" data-tour="empresa-eval-intern-file">
           <div className="flex flex-col md:flex-row md:items-center gap-6">
             <div className="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] md:rounded-[1.75rem] bg-[#003366]/5 flex items-center justify-center text-2xl md:text-3xl font-black text-[#003366] flex-shrink-0">
               {internship.student.fullName.charAt(0)}
@@ -229,7 +229,7 @@ export default function EvaluarEstudiantePage() {
         </div>
 
         {/* Evidence Explorer */}
-        <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden" data-tour="empresa-eval-evidence">
           <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
                <Camera className="w-5 h-5 text-[#C5A059]" />
@@ -266,7 +266,7 @@ export default function EvaluarEstudiantePage() {
 
         {/* Formulario de evaluación */}
         <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-10 py-8 border-b border-slate-100 flex items-center justify-between">
+          <div className="px-10 py-8 border-b border-slate-100 flex items-center justify-between" data-tour="empresa-eval-criteria">
             <div>
               <h3 className="text-xl font-black text-[#003366]">{t.empresa.evaluation.criteriaTitle}</h3>
               <p className="text-sm text-slate-500 font-medium mt-1">
@@ -337,7 +337,7 @@ export default function EvaluarEstudiantePage() {
             </div>
 
             {/* Resultado parcial */}
-            <div className="bg-slate-50 rounded-[2rem] p-4 sm:p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6 border border-slate-100">
+            <div className="bg-slate-50 rounded-[2rem] p-4 sm:p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6 border border-slate-100" data-tour="empresa-eval-result">
               <div className="flex-1">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
                   {t.empresa.evaluation.totalScore}

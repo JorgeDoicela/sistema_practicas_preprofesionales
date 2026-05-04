@@ -151,7 +151,7 @@ export default function CarrerasAdminPage() {
             <p className="text-sm mt-1">{t.admin.careers.createFirst}</p>
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" data-tour="carreras-list">
             {careers.map((career) => (
               <motion.div key={career.id} layout
                 className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all">

@@ -97,7 +97,10 @@ export default function AusenciasPage() {
     <DashboardLayout>
       <div className="max-w-3xl mx-auto py-8 px-4 space-y-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div 
+          className="flex flex-col sm:flex-row sm:items-end justify-between gap-4"
+          data-tour="absences-header"
+        >
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
               <CalendarOff size={12} /> Mis Ausencias
@@ -138,7 +141,7 @@ export default function AusenciasPage() {
             <p className="text-sm mt-1">Puedes registrar una ausencia cuando sea necesario.</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4" data-tour="absences-list">
             {absences.map(ab => {
               const badge = statusBadge[ab.status] || statusBadge.PENDIENTE;
               return (

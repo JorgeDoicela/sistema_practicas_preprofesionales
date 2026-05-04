@@ -35,6 +35,7 @@ import { User as UserType } from "@/types/user";
 import { BRAND_LOGO_SRC } from "@/lib/brand";
 import { getProfilePathForRole } from "@/lib/profile-route";
 import { useLanguage } from "@/providers/LanguageProvider";
+import Cookies from "js-cookie";
 
 // ── Menús por rol ──────────────────────────────────────────────────────────
 // Las claves deben coincidir exactamente con los valores de Role en el backend
@@ -123,6 +124,25 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         if (storedWidth) setWidth(parseInt(storedWidth));
     }, []);
 
+    useEffect(() => {
+        const nav = document.getElementById("sidebar-nav");
+        if (nav && user) {
+            const savedScroll = sessionStorage.getItem("sidebarScroll");
+            if (savedScroll) {
+                // Pequeño delay para asegurar que el contenido se ha renderizado
+                setTimeout(() => {
+                    nav.scrollTop = parseInt(savedScroll);
+                }, 0);
+            }
+
+            const handleScroll = () => {
+                sessionStorage.setItem("sidebarScroll", nav.scrollTop.toString());
+            };
+            nav.addEventListener("scroll", handleScroll);
+            return () => nav.removeEventListener("scroll", handleScroll);
+        }
+    }, [user]);
+
     const startResizing = (e: React.MouseEvent) => {
         e.preventDefault();
         setIsResizing(true);
@@ -162,7 +182,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             {/* Overlay solo en móvil */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-[190] xl:hidden"
+                    className="fixed inset-0 bg-black/50 z-[190] lg:hidden"
                     onClick={onClose}
                 />
             )}
@@ -183,13 +203,13 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
                     .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: rgba(197,160,89,0.5); }
                 `}</style>
-
+ 
                 {/* Resize Handle */}
                 <div
                     onMouseDown={startResizing}
                     className="absolute top-0 right-0 w-1.5 h-full cursor-col-resize hover:bg-[#C5A059]/30 active:bg-[#C5A059] transition-colors z-50 group"
                 />
-
+ 
             {/* Botón cerrar interno - visible en todo momento para facilitar el cierre */}
             <div className="absolute top-8 right-6 z-20">
                 <button
@@ -200,7 +220,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     <X className="w-5 h-5" />
                 </button>
             </div>
-
+ 
             {/* Brand Header */}
             <div className="p-8 pb-12">
                 <div className="flex items-center gap-3 group">
@@ -220,16 +240,20 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     </div>
                 </div>
             </div>
-
+ 
             {/* Main Navigation */}
-            <nav data-tour="sidebar-navigation" className="flex-1 px-4 overflow-y-auto sidebar-scroll">
+            <nav id="sidebar-nav" data-tour="sidebar-main" className="flex-1 px-4 overflow-y-auto sidebar-scroll">
                 <p className="px-4 text-[9px] font-black uppercase tracking-[0.3em] text-white/30 mb-4">{t.sidebar.mainMenu}</p>
                 <div className="space-y-1.5">
                     {menuItems.map((item) => (
                         <SidebarItem
                             key={item.href + item.label}
                             {...item}
-                            active={pathname === item.href || pathname.startsWith(item.href + "/")}
+                            active={
+                                (item.href === "/dashboard" || item.href === "/coordinador/convenios")
+                                    ? pathname === item.href 
+                                    : (pathname === item.href || pathname.startsWith(item.href + "/"))
+                            }
                         />
                     ))}
                 </div>
@@ -285,6 +309,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 <button
                     onClick={() => {
                         localStorage.clear();
+                        Cookies.remove("token");
+                        Cookies.remove("user");
                         window.location.href = "/login";
                     }}
                     className="w-full flex items-center gap-4 px-5 py-4 text-white/50 hover:text-red-400 hover:bg-red-400/5 rounded-2xl transition-all group"

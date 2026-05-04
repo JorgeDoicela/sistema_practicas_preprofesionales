@@ -169,6 +169,7 @@ export function DocumentTemplatesView() {
         </div>
         <button
           onClick={() => { resetForm(); setShowForm(true); }}
+          data-tour="templates-new"
           className="flex items-center gap-3 px-8 py-4 bg-brand-blue text-white rounded-2xl shadow-xl shadow-blue-900/20 hover:bg-brand-blue/90 transition-all text-[11px] font-black uppercase tracking-widest"
         >
           <Plus className="w-5 h-5" /> Nueva Plantilla
@@ -177,7 +178,7 @@ export function DocumentTemplatesView() {
 
       <div className="grid lg:grid-cols-3 gap-10">
         {/* Main List */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6" data-tour="templates-list">
           <AnimatePresence mode="popLayout">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-4">
@@ -264,6 +265,7 @@ export function DocumentTemplatesView() {
               initial={{ opacity: 0, x: 100 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 100 }}
+              data-tour="templates-form"
               className="bg-white p-10 rounded-[2.5rem] shadow-2xl border border-slate-100 h-fit sticky top-10"
             >
               <div className="flex items-center justify-between mb-8">

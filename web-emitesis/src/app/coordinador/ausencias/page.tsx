@@ -66,7 +66,7 @@ export default function CoordinadorAusenciasPage() {
         </div>
 
         {/* Filtros */}
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap" data-tour="ausencias-filters">
           {["Todos", "PENDIENTE", "APROBADA", "RECHAZADA"].map(s => (
             <button key={s} onClick={() => setFilterStatus(s)}
               className={cn(
@@ -86,7 +86,7 @@ export default function CoordinadorAusenciasPage() {
             <p className="font-bold">Sin ausencias en esta categoría</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3" data-tour="ausencias-list">
             {filtered.map(ab => (
               <motion.div key={ab.id} layout
                 className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm flex items-center justify-between gap-4">

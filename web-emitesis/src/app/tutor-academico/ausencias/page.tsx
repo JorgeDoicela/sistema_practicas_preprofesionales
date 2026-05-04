@@ -84,7 +84,7 @@ export default function TutorAusenciasPage() {
             <p className="text-sm mt-1">Todos los registros están al día.</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4" data-tour="tutor-ausencias-list">
             {absences.map(ab => (
               <motion.div key={ab.id} layout
                 className="bg-white rounded-3xl border border-amber-200 p-6 shadow-sm">

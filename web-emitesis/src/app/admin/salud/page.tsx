@@ -134,7 +134,7 @@ export default function AdminHealthPage() {
 
         <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
           <div className="lg:col-span-2 space-y-6 md:space-y-8">
-            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-10 shadow-xl shadow-slate-200/50 border border-slate-50">
+            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-10 shadow-xl shadow-slate-200/50 border border-slate-50" data-tour="health-latency">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
                    <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
@@ -194,7 +194,7 @@ export default function AdminHealthPage() {
           </div>
 
           <div className="space-y-8">
-            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8 shadow-xl border border-slate-50">
+            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8 shadow-xl border border-slate-50" data-tour="health-actions">
                <h3 className="text-sm font-black text-[#003366] uppercase tracking-widest mb-6">{t.admin.health.maintenance}</h3>
                <div className="space-y-4">
                   <button 

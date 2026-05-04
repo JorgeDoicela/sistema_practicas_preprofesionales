@@ -197,7 +197,7 @@ export default function AsignacionPage() {
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {/* Main Form */}
           <div className="md:col-span-2 space-y-6">
-            <div className="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-slate-100 space-y-6">
+            <div className="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-slate-100 space-y-6" data-tour="assignment-actors">
               <div className="flex items-center gap-3 mb-2">
                 <GraduationCap className="text-[#C5A059]" size={20} />
                 <h3 className="font-bold text-[#003366] uppercase tracking-widest text-sm">{t.coordinator.assignment.actorsTitle}</h3>
@@ -245,7 +245,7 @@ export default function AsignacionPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-slate-100 space-y-6">
+            <div className="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-slate-100 space-y-6" data-tour="assignment-details">
               <div className="flex items-center gap-3 mb-2">
                 <Briefcase className="text-[#C5A059]" size={20} />
                 <h3 className="font-bold text-[#003366] uppercase tracking-widest text-sm">{t.coordinator.assignment.detailsTitle}</h3>
@@ -326,7 +326,7 @@ export default function AsignacionPage() {
                     />
                   </div>
                   
-                  <div className="mt-8 space-y-6">
+                  <div className="mt-8 space-y-6" data-tour="assignment-geofence">
                     <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                       <div>
                         <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#003366]">{t.coordinator.assignment.geofenceTitle}</h4>
@@ -488,7 +488,7 @@ export default function AsignacionPage() {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-[#003366] text-white rounded-3xl p-5 md:p-8 shadow-xl">
+            <div className="bg-[#003366] text-white rounded-3xl p-5 md:p-8 shadow-xl" data-tour="assignment-submit">
               <ShieldCheck className="text-[#C5A059] mb-4" size={32} />
               <h4 className="font-bold text-lg mb-2 italic">{t.coordinator.assignment.warningTitle}</h4>
               <p className="text-white/70 text-sm leading-relaxed mb-6">

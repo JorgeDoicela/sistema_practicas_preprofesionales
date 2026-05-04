@@ -79,7 +79,10 @@ export function StudentRoadmap({ internship }: StudentRoadmapProps) {
   ];
 
   return (
-    <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl p-10 relative overflow-hidden">
+    <div 
+      className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl p-10 relative overflow-hidden"
+      data-tour="dashboard-roadmap"
+    >
       <div className="absolute top-0 right-0 p-10 opacity-[0.03]">
         <CheckCircle2 className="w-40 h-40 text-[#003366]" />
       </div>

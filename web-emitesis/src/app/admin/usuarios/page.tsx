@@ -229,7 +229,7 @@ export default function UsuariosManagementPage() {
             <p className="text-slate-500 mt-2">{t.admin.users.subtitle}</p>
           </div>
           
-          <div className="flex flex-wrap items-center gap-3 md:gap-4">
+          <div className="flex flex-wrap items-center gap-3 md:gap-4" data-tour="users-new">
             <div className="relative">
               <input 
                 type="file" 
@@ -256,7 +256,7 @@ export default function UsuariosManagementPage() {
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
+        <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4" data-tour="users-search">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
@@ -270,7 +270,7 @@ export default function UsuariosManagementPage() {
         </div>
 
         {/* Users Table */}
-        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden" data-tour="users-table">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>

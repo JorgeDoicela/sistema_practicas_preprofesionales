@@ -403,6 +403,7 @@ export default function ChatConfigPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.08 }}
           className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden mb-6"
+          data-tour="chat-permissions"
         >
           <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-slate-700">{t.chatConfig.table.title}</h2>
@@ -529,6 +530,7 @@ export default function ChatConfigPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.24 }}
           className="mt-6 rounded-2xl border border-[#C5A059]/30 bg-amber-50 p-6 shadow-sm"
+          data-tour="chat-retention"
         >
           <div className="flex items-start gap-3 mb-4">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#C5A059]/20">

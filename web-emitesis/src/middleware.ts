@@ -27,10 +27,36 @@ function isPublicPath(pathname: string): boolean {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  
+  // 1. Obtener sesión de las Cookies (Servidor)
+  const token = request.cookies.get('token')?.value;
+  const userJson = request.cookies.get('user')?.value;
+  
+  let user = null;
+  try {
+    if (userJson) user = JSON.parse(decodeURIComponent(userJson));
+  } catch (e) {}
 
-  // Archivos estáticos (contienen extensión) → pasar siempre
+  // Archivos estáticos → pasar siempre
   if (/\.[a-z0-9]+$/i.test(pathname)) {
     return NextResponse.next();
+  }
+
+  // 2. Lógica de Redirección Proactiva
+  
+  // SI ESTÁ LOGEADO y trata de ir a Login/Registro → Redirigir a su Dashboard
+  if (token && user && (pathname === '/login' || pathname === '/registrarse' || pathname === '/')) {
+    const role = user.role;
+    // Redirección simple al dashboard general (el layout interno se encargará de la precisión por rol)
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  // SI NO ESTÁ LOGEADO y trata de ir a rutas privadas → Redirigir a Login
+  const isPrivatePath = !isPublicPath(pathname);
+  if (!token && isPrivatePath) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('callbackUrl', pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   const response = NextResponse.next();
@@ -45,15 +71,6 @@ export function middleware(request: NextRequest) {
     'camera=(self), microphone=(), geolocation=(self)',
   );
 
-  // Para rutas protegidas, Next.js no puede leer localStorage (solo existe en el cliente).
-  // La protección real se aplica en DashboardLayout (client-side).
-  // Aquí nos limitamos a añadir los headers de seguridad y devolver la respuesta.
-  if (isPublicPath(pathname)) {
-    return response;
-  }
-
-  // Ruta no pública: devolver con headers de seguridad.
-  // DashboardLayout se encargará de redirigir si el usuario no está autenticado.
   return response;
 }
 

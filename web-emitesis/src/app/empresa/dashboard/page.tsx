@@ -121,7 +121,7 @@ export default function EmpresaDashboardPage() {
         </section>
 
         {/* KPI Cards */}
-        <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6" data-tour="empresa-dashboard-kpis">
           <KpiCard title={t.empresa.dashboard.kpi.active} value={activeCount} icon={<Users className="w-6 h-6" />} color="bg-blue-500" />
           <KpiCard title={t.empresa.dashboard.kpi.hours} value={`${totalHours.toFixed(0)}h`} icon={<Clock className="w-6 h-6" />} color="bg-amber-500" />
           <KpiCard title={t.empresa.dashboard.kpi.tests} value={testEnabledCount} icon={<FlaskConical className="w-6 h-6" />} color="bg-violet-500" />
@@ -138,7 +138,7 @@ export default function EmpresaDashboardPage() {
                   {t.empresa.dashboard.list.desc}
                 </p>
               </div>
-              <div className="relative group">
+              <div className="relative group" data-tour="empresa-dashboard-search">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
                 <input
                   type="text"
@@ -170,7 +170,7 @@ export default function EmpresaDashboardPage() {
                 </p>
               </div>
             ) : (
-              <div className="grid gap-5">
+              <div className="grid gap-5" data-tour="empresa-dashboard-list">
                 <AnimatePresence mode="popLayout">
                   {filtered.map((internship, idx) => (
                     <motion.div
@@ -303,6 +303,7 @@ function PasanteCard({
             <button
               onClick={onToggleTest}
               disabled={toggling}
+              data-tour="empresa-dashboard-test-toggle"
               title={internship.testEnabled ? t.empresa.card.test.deactivate : t.empresa.card.test.activate}
               className={cn(
                 "flex items-center gap-2 px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50",

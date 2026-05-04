@@ -106,7 +106,11 @@ export default function AdminSettingsPage() {
               if (sectionSettings.length === 0) return null;
 
               return (
-                <div key={section.id} className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-50 overflow-hidden">
+                <div 
+                  key={section.id} 
+                  className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-50 overflow-hidden"
+                  data-tour={section.id === 'GPS' ? 'admin-settings-gps' : section.id === 'AUTH' ? 'admin-settings-auth' : undefined}
+                >
                   <div className="p-5 md:p-10 border-b border-slate-50 bg-slate-50/30">
                     <div className="flex items-center gap-4">
                       <div className="p-3 bg-[#003366] text-white rounded-2xl">

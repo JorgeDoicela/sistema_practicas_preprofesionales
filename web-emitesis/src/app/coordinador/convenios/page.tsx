@@ -182,7 +182,7 @@ export default function RegistrarConvenioPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-8">
                     {/* Sección 1: Datos de la Empresa */}
-                    <div className="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-slate-100">
+                    <div className="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-slate-100" data-tour="agreement-form-entity">
                         <div className="flex items-center gap-3 mb-6 md:mb-8 pb-4 border-b border-slate-50">
                             <Building2 className="text-[#C5A059]" size={20} />
                             <h3 className="font-bold text-[#003366] uppercase tracking-widest text-sm">{t.coordinator.agreements.entityInfo}</h3>
@@ -324,7 +324,7 @@ export default function RegistrarConvenioPage() {
                     </div>
 
                     {/* Sección 2: Documento y Validación */}
-                    <div className="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-slate-100">
+                    <div className="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-slate-100" data-tour="agreement-form-legal">
                         <div className="flex items-center gap-3 mb-6 md:mb-8 pb-4 border-b border-slate-50">
                             <ShieldCheck className="text-[#C5A059]" size={20} />
                             <h3 className="font-bold text-[#003366] uppercase tracking-widest text-sm">{t.coordinator.agreements.formalization}</h3>
@@ -437,7 +437,7 @@ export default function RegistrarConvenioPage() {
                             </div>
                         )}
 
-                        <div className="mt-10 flex flex-col md:flex-row gap-4">
+                        <div className="mt-10 flex flex-col md:flex-row gap-4" data-tour="agreement-form-submit">
                             <button 
                                 type="submit"
                                 disabled={isLoading}

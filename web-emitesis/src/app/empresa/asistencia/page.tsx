@@ -129,7 +129,7 @@ export default function EmpresaAsistenciaPage() {
               {t.asistencia.company.desc}
             </p>
           </div>
-          <div className="relative group">
+          <div className="relative group" data-tour="empresa-asistencia-search">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#003366] transition-colors" />
             <input
               type="text"
@@ -143,7 +143,7 @@ export default function EmpresaAsistenciaPage() {
 
         {/* KPIs */}
         {!loading && rows.length > 0 && (
-          <section className="grid sm:grid-cols-3 gap-6">
+          <section className="grid sm:grid-cols-3 gap-6" data-tour="empresa-asistencia-kpis">
             {[
               { icon: <TrendingUp className="w-6 h-6" />, title: t.asistencia.company.activeInterns, value: activeCount, color: "bg-blue-500" },
               { icon: <Clock className="w-6 h-6" />, title: t.asistencia.company.accumulatedHours, value: `${totalAccum.toFixed(0)}h`, color: "bg-emerald-500" },
@@ -175,7 +175,7 @@ export default function EmpresaAsistenciaPage() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-4" data-tour="empresa-asistencia-list">
             {filtered.map((row, idx) => (
               <motion.div
                 key={row.internshipId}

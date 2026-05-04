@@ -114,6 +114,7 @@ export function AICopilot({ user, internship }: AICopilotProps) {
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(true)}
         className="fixed bottom-8 right-8 w-16 h-16 bg-[#003366] text-[#C5A059] rounded-full shadow-2xl flex items-center justify-center z-50 group border border-blue-900/30 overflow-hidden"
+        data-tour="dashboard-ai-copilot"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         <Sparkles className="w-8 h-8 group-hover:rotate-12 transition-transform" />

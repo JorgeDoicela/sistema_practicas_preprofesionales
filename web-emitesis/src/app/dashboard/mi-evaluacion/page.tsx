@@ -128,6 +128,7 @@ export default function MiEvaluacionPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-gradient-to-br from-[#003366] to-[#001a44] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white shadow-2xl shadow-blue-900/30 relative overflow-hidden"
+                data-tour="evaluation-grade"
               >
                 <div className="absolute top-0 right-0 p-4 sm:p-10 opacity-5">
                   <Trophy className="w-40 h-40" />
@@ -178,7 +179,7 @@ export default function MiEvaluacionPage() {
               </motion.div>
             )}
 
-            <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
+            <div className="grid lg:grid-cols-2 gap-6 md:gap-8" data-tour="evaluation-cards">
               {/* Tarjeta Académica */}
               <EvalCard 
                 type="ACADEMICA"

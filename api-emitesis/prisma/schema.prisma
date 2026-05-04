@@ -49,6 +49,7 @@ model User {
   chatRoomMembers      ChatRoomMember[]
   sentMessages         ChatMessage[]
   lopdpLogs            LopdpLog[]
+  refreshToken         String?
 }
 
 /// Registro de actividad del sistema (peticiones HTTP, eventos relevantes, etc.)

@@ -115,6 +115,7 @@ export default function ConfigurationPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden"
+            data-tour="settings-security"
           >
             <div className="p-5 md:p-8 lg:p-10">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-10">
@@ -246,7 +247,7 @@ export default function ConfigurationPage() {
              </div>
           </div>
 
-          <div className="p-5 md:p-8 bg-white rounded-[2rem] border border-slate-100 shadow-sm">
+          <div className="p-5 md:p-8 bg-white rounded-[2rem] border border-slate-100 shadow-sm" data-tour="settings-sessions">
             <h3 className="text-sm font-black text-[#003366] uppercase tracking-widest mb-2">
               Datos personales (LOPDP Ecuador)
             </h3>

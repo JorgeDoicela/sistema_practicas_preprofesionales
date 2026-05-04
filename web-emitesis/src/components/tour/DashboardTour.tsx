@@ -4,6 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "reac
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { HelpCircle, ChevronRight, Sparkles, X } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { normalizeApiRoleToAppRole, type Role } from "@/constants/roles";
 import { getDashboardTourSteps } from "@/lib/dashboard-tour-config";
 
@@ -17,8 +18,6 @@ type PopoverLayout = {
   width: number;
   height: number;
   placement: Placement;
-  lineFrom: { x: number; y: number };
-  lineTo: { x: number; y: number };
 };
 
 const CARD_W_MAX = 400;
@@ -72,43 +71,6 @@ function rectsOverlap(
   return ax1 < bx2 && ax2 > bx1 && ay1 < by2 && ay2 > by1;
 }
 
-function buildLayout(
-  placement: Placement,
-  left: number,
-  top: number,
-  cardW: number,
-  cardH: number,
-  rect: Rect,
-): PopoverLayout {
-  const rcx = rect.left + rect.width / 2;
-  const rcy = rect.top + rect.height / 2;
-  let lineFrom = { x: 0, y: 0 };
-  let lineTo = { x: rcx, y: rcy };
-  switch (placement) {
-    case "right":
-      lineFrom = { x: left, y: top + cardH / 2 };
-      lineTo = { x: rect.left + rect.width, y: rcy };
-      break;
-    case "left":
-      lineFrom = { x: left + cardW, y: top + cardH / 2 };
-      lineTo = { x: rect.left, y: rcy };
-      break;
-    case "bottom":
-      lineFrom = { x: left + cardW / 2, y: top };
-      lineTo = { x: rcx, y: rect.top + rect.height };
-      break;
-    case "top":
-      lineFrom = { x: left + cardW / 2, y: top + cardH };
-      lineTo = { x: rcx, y: rect.top };
-      break;
-  }
-  return { left, top, width: cardW, height: cardH, placement, lineFrom, lineTo };
-}
-
-/**
- * Coloca la tarjeta sin tapar el área resaltada: prueba lados y, si hace falta,
- * desplaza la tarjeta a la derecha del bloque (típico con barra lateral ancha).
- */
 function computePopoverLayout(rect: Rect): PopoverLayout {
   const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
   const vh = typeof window !== "undefined" ? window.innerHeight : 800;
@@ -116,7 +78,7 @@ function computePopoverLayout(rect: Rect): PopoverLayout {
   const cardH = CARD_H;
   const rcx = rect.left + rect.width / 2;
   const rcy = rect.top + rect.height / 2;
-  /* Margen extra: la insignia de flecha sobresale ~24px del borde de la tarjeta */
+  /* Margen extra */
   const margin = 28;
 
   const tryPlacement = (placement: Placement): PopoverLayout | null => {
@@ -159,7 +121,7 @@ function computePopoverLayout(rect: Rect): PopoverLayout {
     }
     const box = { left, top, width: cardW, height: cardH };
     if (rectsOverlap(box, rect, margin)) return null;
-    return buildLayout(placement, left, top, cardW, cardH, rect);
+    return { ...box, placement };
   };
 
   for (const p of ["right", "left", "bottom", "top"] as const) {
@@ -167,24 +129,10 @@ function computePopoverLayout(rect: Rect): PopoverLayout {
     if (L) return L;
   }
 
-  /* Último recurso: a la derecha del foco o, si no cabe, esquina inferior derecha */
   const leftPreferred = rect.left + rect.width + GAP;
   const left = clamp(leftPreferred, VIEW_PAD, Math.max(VIEW_PAD, vw - cardW - VIEW_PAD));
   const top = clamp(vh - cardH - VIEW_PAD, VIEW_PAD, vh - cardH - VIEW_PAD);
-  return buildLayout("right", left, top, cardW, cardH, rect);
-}
-
-function lineEndTrimmed(
-  from: { x: number; y: number },
-  to: { x: number; y: number },
-  trimPx: number,
-) {
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  const len = Math.hypot(dx, dy);
-  if (len < trimPx + 8) return to;
-  const u = (len - trimPx) / len;
-  return { x: from.x + dx * u, y: from.y + dy * u };
+  return { left, top, width: cardW, height: cardH, placement: "right" };
 }
 
 /** Oscurece solo el exterior del rectángulo: el interior queda 100 % transparente al contenido real */
@@ -217,35 +165,8 @@ function DimAroundHole({ rect }: { rect: Rect }) {
   );
 }
 
-function CardArrowBadge({ placement }: { placement: Placement }) {
-  const base =
-    "absolute flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#C5A059] to-amber-700 text-white shadow-lg shadow-amber-900/30";
-  const pos =
-    placement === "right"
-      ? "left-0 top-1/2 -translate-x-[calc(50%+6px)] -translate-y-1/2"
-      : placement === "left"
-        ? "right-0 top-1/2 translate-x-[calc(50%+6px)] -translate-y-1/2"
-        : placement === "bottom"
-          ? "left-1/2 top-0 -translate-x-1/2 -translate-y-[calc(50%+6px)]"
-          : "bottom-0 left-1/2 -translate-x-1/2 translate-y-[calc(50%+6px)]";
-
-  const rotate =
-    placement === "right"
-      ? "rotate-180"
-      : placement === "left"
-        ? ""
-        : placement === "bottom"
-          ? "-rotate-90"
-          : "rotate-90";
-
-  return (
-    <div className={`${base} ${pos} z-10`}>
-      <ChevronRight className={`h-6 w-6 ${rotate}`} strokeWidth={2.5} />
-    </div>
-  );
-}
-
 export function DashboardTour() {
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
@@ -253,7 +174,13 @@ export function DashboardTour() {
   const [rect, setRect] = useState<Rect | null>(null);
   const [layout, setLayout] = useState<PopoverLayout | null>(null);
 
-  const steps = useMemo(() => getDashboardTourSteps(role), [role]);
+  const steps = useMemo(() => getDashboardTourSteps(role, pathname), [role, pathname]);
+
+  useEffect(() => {
+    // Al cambiar de página, cerramos el tour si estaba abierto para evitar saltos raros
+    setOpen(false);
+    setStep(0);
+  }, [pathname]);
 
   useEffect(() => {
     setMounted(true);
@@ -379,62 +306,38 @@ export function DashboardTour() {
           </motion.div>
         )}
 
-        {layout && rect && (() => {
-          const end = lineEndTrimmed(layout.lineFrom, layout.lineTo, 16);
-          return (
-            <svg className="pointer-events-none fixed inset-0 z-[201] h-full w-full" aria-hidden>
-              <defs>
-                <linearGradient id="tour-line-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#f4e4bc" />
-                  <stop offset="50%" stopColor="#C5A059" />
-                  <stop offset="100%" stopColor="#b45309" />
-                </linearGradient>
-                <filter id="tour-glow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="2" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-                <marker
-                  id="tour-arrowhead"
-                  markerWidth="12"
-                  markerHeight="12"
-                  refX="10"
-                  refY="6"
-                  orient="auto"
-                  markerUnits="strokeWidth"
-                >
-                  <path d="M0,0 L12,6 L0,12 L3,6 z" fill="#C5A059" stroke="#fef3c7" strokeWidth="0.5" />
-                </marker>
-              </defs>
-              <motion.line
-                key={`ln-${step}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
-                x1={layout.lineFrom.x}
-                y1={layout.lineFrom.y}
-                x2={end.x}
-                y2={end.y}
-                stroke="url(#tour-line-grad)"
-                strokeWidth={4}
-                strokeLinecap="round"
-                strokeDasharray="10 6"
-                filter="url(#tour-glow)"
-                markerEnd="url(#tour-arrowhead)"
-              />
-            </svg>
-          );
-        })()}
-
-        {!rect && (
-          <p className="fixed left-1/2 top-24 z-[203] max-w-md -translate-x-1/2 rounded-2xl border border-amber-200/80 bg-amber-50/95 px-5 py-3 text-center text-xs text-amber-950 shadow-lg">
-            No se encontró el elemento de esta ayuda. Use <strong>Siguiente</strong> u <strong>Omitir</strong>.
-          </p>
+        {/* Si no hay rect, mostramos un aviso en el centro junto con la tarjeta para que el usuario no se pierda */}
+        {(!rect || !layout) && open && (
+          <div className="fixed inset-0 z-[203] flex items-center justify-center pointer-events-none p-4">
+             <div className="max-w-md w-full bg-amber-50/95 border border-amber-200/80 rounded-3xl p-6 shadow-2xl pointer-events-auto text-center space-y-4">
+                <div className="flex justify-center">
+                   <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600">
+                      <HelpCircle className="w-6 h-6" />
+                   </div>
+                </div>
+                <h3 className="text-sm font-black text-amber-900 uppercase tracking-widest">{current.title}</h3>
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  No pudimos localizar este elemento en la vista actual. Probablemente sea una opción específica de otro rol o esté oculta.
+                </p>
+                <div className="flex items-center justify-center gap-3 pt-2">
+                  <button
+                    onClick={skip}
+                    className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-amber-700/50 hover:text-amber-700 transition-colors"
+                  >
+                    Omitir
+                  </button>
+                  <button
+                    onClick={next}
+                    className="px-6 py-2.5 bg-amber-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-amber-600/20 hover:bg-amber-700 transition-all"
+                  >
+                    {isLast ? "Finalizar" : "Siguiente"}
+                  </button>
+                </div>
+             </div>
+          </div>
         )}
 
-        {layout && (
+        {layout && rect && (
           <motion.div
             key={`card-${step}`}
             layout
@@ -448,8 +351,6 @@ export function DashboardTour() {
               width: layout.width,
             }}
           >
-            <CardArrowBadge placement={layout.placement} />
-
             <div className="relative overflow-hidden rounded-3xl border border-white/50 bg-gradient-to-br from-white via-white to-slate-50/95 p-0.5 shadow-[0_25px_60px_-12px_rgba(0,51,102,0.35)]">
               <div className="flex max-h-[min(58vh,360px)] flex-col rounded-[22px] bg-gradient-to-br from-[#003366]/5 via-transparent to-[#C5A059]/10 px-6 pb-6 pt-5">
                 <div className="mb-4 flex items-start justify-between gap-3">
