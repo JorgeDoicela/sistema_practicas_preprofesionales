@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { 
   FileStack, 
@@ -54,7 +54,7 @@ const DocumentPdfReviewViewer = dynamic(
   },
 );
 
-export default function DocumentosPage() {
+function DocumentosContent() {
   const { t } = useLanguage();
   const searchParams = useSearchParams();
   const highlightId = searchParams.get("id");
@@ -860,5 +860,17 @@ export default function DocumentosPage() {
         )}
       </AnimatePresence>
     </DashboardLayout>
+  );
+}
+
+export default function DocumentosPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
+      </div>
+    }>
+      <DocumentosContent />
+    </Suspense>
   );
 }
