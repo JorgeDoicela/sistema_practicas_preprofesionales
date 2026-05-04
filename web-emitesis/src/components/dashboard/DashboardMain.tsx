@@ -230,7 +230,7 @@ export function DashboardMain() {
       }
       setUser(merged);
 
-      const cId = selectedCareerId || (roleNorm === ROLES.COORDINADOR ? merged.careerId : "");
+      const cId = selectedCareerId || (roleNorm === ROLES.COORDINADOR ? (merged.careerId ?? undefined) : undefined);
       if (roleNorm === ROLES.COORDINADOR && !selectedCareerId && merged.careerId) {
         setSelectedCareerId(merged.careerId);
       }
