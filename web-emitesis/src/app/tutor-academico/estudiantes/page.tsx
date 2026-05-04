@@ -236,7 +236,7 @@ function InternshipCard({ internship }: { internship: any }) {
             {docs.map((doc: any) => (
               <div
                 key={doc.id}
-                title={`${doc.name}: ${t.tutor.documentStatus[doc.status] || doc.status}`}
+                title={`${doc.name}: ${(t.tutor.documentStatus as any)[doc.status] || doc.status}`}
                 className={cn(
                   "h-2.5 rounded-full transition-all",
                   doc.status === "APROBADO_DEFINITIVO" ? "bg-emerald-500 shadow-sm shadow-emerald-500/20" :
