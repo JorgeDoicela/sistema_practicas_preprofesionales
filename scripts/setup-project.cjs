@@ -77,8 +77,8 @@ if (isVercel) {
     process.exit(0); // Salir sin error para permitir que el build de Vercel continúe (si es posible)
   }
 
-  console.log('\x1b[36m[INFO]\x1b[0m Usando "migrate deploy"...');
-  run('npx prisma migrate deploy', apiDir);
+  console.log('\x1b[36m[INFO]\x1b[0m Usando "db push" para sincronizar el esquema...');
+  run('npx prisma db push', apiDir);
   console.log('\x1b[36m[INFO]\x1b[0m Ejecutando seed...');
   run('npx prisma db seed', apiDir);
 } else {
