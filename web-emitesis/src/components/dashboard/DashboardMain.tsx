@@ -1180,7 +1180,7 @@ function StatCard({ title, value, hint, icon, color }: StatCardProps) {
             "absolute inset-0 rounded-2xl bg-gradient-to-br opacity-[0.08]",
             theme.gradient
           )} />
-          {React.cloneElement(icon as React.ReactElement<{ className?: string }>, {
+          {React.cloneElement(icon as React.ReactElement<{ className?: string; strokeWidth?: number }>, {
             className: cn("w-6 h-6", theme.icon),
             strokeWidth: 2.5
           })}
