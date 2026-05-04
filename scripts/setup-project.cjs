@@ -23,7 +23,13 @@ function run(cmd, cwd = root, retries = 3) {
         process.exit(1);
       }
       console.warn(`\x1b[33m[REINTENTO]\x1b[0m El comando falló. Esperando 5 segundos antes de reintentar...`);
-      execSync('powershell -Command "Start-Sleep -s 5"', { stdio: 'ignore' });
+      
+      // Cross-platform sleep (Linux/Mac/Windows)
+      if (process.platform === 'win32') {
+        execSync('timeout /t 5 /nobreak', { stdio: 'ignore' });
+      } else {
+        execSync('sleep 5', { stdio: 'ignore' });
+      }
     }
   }
 }
@@ -63,7 +69,15 @@ run('npx prisma generate', apiDir);
 const isVercel = process.env.VERCEL === '1' || !!process.env.CI;
 
 if (isVercel) {
-  console.log('\n\x1b[36m[INFO]\x1b[0m Entorno de CI/Vercel detectado. Usando "migrate deploy"...');
+  console.log('\n\x1b[36m[INFO]\x1b[0m Entorno de CI/Vercel detectado. Validando variables...');
+  
+  if (!process.env.DATABASE_URL) {
+    console.error('\x1b[31m[ERROR]\x1b[0m DATABASE_URL no encontrada. Saltando migraciones para evitar fallo de build.');
+    console.log('[INFO] Asegúrate de configurar DATABASE_URL en el panel de Vercel.');
+    process.exit(0); // Salir sin error para permitir que el build de Vercel continúe (si es posible)
+  }
+
+  console.log('\x1b[36m[INFO]\x1b[0m Usando "migrate deploy"...');
   run('npx prisma migrate deploy', apiDir);
   console.log('\x1b[36m[INFO]\x1b[0m Ejecutando seed...');
   run('npx prisma db seed', apiDir);

@@ -285,6 +285,12 @@ export function getDashboardTourSteps(role: Role, pathname: string): TourStep[] 
         selector: '[data-tour="templates-form"]',
         title: "Panel de Configuración",
         getDescription: () => "Desde aquí controla los metadatos: si el documento es obligatorio, su posición en el flujo y si actúa como el slot final para el certificado.",
+        onBefore: () => {
+          const btn = document.querySelector('[data-tour="templates-new"]');
+          if (btn instanceof HTMLElement && !document.querySelector('[data-tour="templates-form"]')) {
+            btn.click();
+          }
+        }
       }
     ];
   }
