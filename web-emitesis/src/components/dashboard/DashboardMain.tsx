@@ -1165,10 +1165,7 @@ export function DashboardMain() {
         </>
       )}
 
-      {/* Copilot de IA para Estudiantes */}
-      {appRole === ROLES.ESTUDIANTE && (
-        <AICopilot user={user} internship={internships.find(i => isActiveInternship(i.status)) ?? internships[0]} />
-      )}
+      {/* El Copilot de IA ahora es global en DashboardLayout */}
     </div>
   );
 }

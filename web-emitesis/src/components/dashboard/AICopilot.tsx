@@ -71,13 +71,15 @@ export function AICopilot({ user, internship }: AICopilotProps) {
 
     try {
       // Construir contexto para la IA
-      const context = `
-        ${t.nexo.context.student}: ${user?.fullName}
-        ${t.nexo.context.internship}: ${internship?.company?.name || t.nexo.context.none}
+      const ROLES = { ADMIN: 'ADMIN', COORDINADOR: 'COORDINADOR', TUTOR: 'TUTOR' };
+      const isManagementRole = [ROLES.ADMIN, ROLES.COORDINADOR, ROLES.TUTOR].includes(user?.role);
+    
+      const context = isManagementRole 
+        ? `Usuario: ${user?.fullName} (${user?.role}). Rol de Gestión: Acceso a normativas, reglamentos de prácticas e indicadores de riesgo de estudiantes. Foco: Auditoría y cumplimiento.`
+        : `Usuario: ${user?.fullName} (${user?.role}). Práctica: ${internship?.company?.name || 'Ninguna'}. Foco: Seguimiento de actividades y documentos del estudiante.
         ${t.nexo.context.status}: ${internship?.status || "N/A"}
         ${t.nexo.context.docs}: ${internship?.documents?.length || 0}
-        ${t.nexo.context.hours}: ${internship?.totalHours || 0}
-      `;
+        ${t.nexo.context.hours}: ${internship?.totalHours || 0}`;
 
       const answer = await aiService.askQuestion(userMsg.text, context);
       
@@ -113,7 +115,7 @@ export function AICopilot({ user, internship }: AICopilotProps) {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-8 right-8 w-16 h-16 bg-[#003366] text-[#C5A059] rounded-full shadow-2xl flex items-center justify-center z-50 group border border-blue-900/30 overflow-hidden"
+        className="fixed bottom-6 right-44 w-14 h-14 bg-[#003366] text-[#C5A059] rounded-full shadow-2xl flex items-center justify-center z-50 group border border-blue-900/30 overflow-hidden"
         data-tour="dashboard-ai-copilot"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -127,7 +129,7 @@ export function AICopilot({ user, internship }: AICopilotProps) {
             initial={{ opacity: 0, y: 100, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.9 }}
-            className="fixed bottom-28 right-8 w-[400px] h-[600px] bg-white rounded-[2.5rem] shadow-[0_32px_128px_-16px_rgba(0,51,102,0.3)] border border-slate-100 flex flex-col z-50 overflow-hidden"
+            className="fixed bottom-24 right-6 w-[400px] h-[580px] bg-white rounded-[2.5rem] shadow-[0_32px_128px_-16px_rgba(0,51,102,0.3)] border border-slate-100 flex flex-col z-[51] overflow-hidden"
           >
             {/* Header del Copilot */}
             <div className="bg-[#003366] p-6 text-white relative">

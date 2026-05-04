@@ -133,8 +133,9 @@ export function DocumentPdfReviewEditor({
 }: {
   fileUrl: string | null | undefined;
   initialItems: PdfReviewAnnotationItem[];
-  onItemsChange: (payload: PdfReviewAnnotationsPayload) => void;
+  onItemsChange?: (payload: PdfReviewAnnotationsPayload) => void;
 }) {
+  const readonly = !onItemsChange;
   const [notes, setNotes] = React.useState<PdfReviewAnnotationItem[]>(() =>
     initialItems.map((n) => ({
       ...n,
@@ -143,37 +144,42 @@ export function DocumentPdfReviewEditor({
   );
 
   React.useEffect(() => {
-    onItemsChange({ version: 1, items: notes });
+    if (onItemsChange) {
+      onItemsChange({ version: 1, items: notes });
+    }
   }, [notes, onItemsChange]);
 
-  const renderHighlightTarget = React.useCallback((props: RenderHighlightTargetProps) => (
-    <div
-      className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1.5 shadow-md"
-      style={{
-        position: "absolute",
-        left: `${props.selectionRegion.left}%`,
-        top: `${props.selectionRegion.top}%`,
-        transform: "translate(0, 8px)",
-        zIndex: 40,
-      }}
-    >
-      <button
-        type="button"
-        onClick={props.toggle}
-        className="flex items-center gap-1.5 rounded-md bg-[#C5A059] px-2 py-1 text-[9px] font-black uppercase tracking-wider text-white hover:opacity-95"
+  const renderHighlightTarget = React.useCallback((props: RenderHighlightTargetProps) => {
+    if (readonly) return <></>;
+    return (
+      <div
+        className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1.5 shadow-md"
+        style={{
+          position: "absolute",
+          left: `${props.selectionRegion.left}%`,
+          top: `${props.selectionRegion.top}%`,
+          transform: "translate(0, 8px)",
+          zIndex: 40,
+        }}
       >
-        <MessageSquareText className="h-3.5 w-3.5" />
-        Anotar
-      </button>
-      <button
-        type="button"
-        onClick={props.cancel}
-        className="px-2 py-1 text-[9px] font-bold uppercase text-slate-400 hover:text-slate-600"
-      >
-        Cerrar
-      </button>
-    </div>
-  ), []);
+        <button
+          type="button"
+          onClick={props.toggle}
+          className="flex items-center gap-1.5 rounded-md bg-[#C5A059] px-2 py-1 text-[9px] font-black uppercase tracking-wider text-white hover:opacity-95"
+        >
+          <MessageSquareText className="h-3.5 w-3.5" />
+          Anotar
+        </button>
+        <button
+          type="button"
+          onClick={props.cancel}
+          className="px-2 py-1 text-[9px] font-bold uppercase text-slate-400 hover:text-slate-600"
+        >
+          Cerrar
+        </button>
+      </div>
+    );
+  }, [readonly]);
 
   const renderHighlightContent = React.useCallback((props: RenderHighlightContentProps) => (
     <HighlightPopover
@@ -232,13 +238,21 @@ export function DocumentPdfReviewEditor({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-        Seleccione texto en el PDF y pulse <span className="text-[#003366]">Anotar</span> para resaltar, tachar o
-        añadir un comentario al fragmento.
-      </p>
+      {!readonly && (
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          Seleccione texto en el PDF y pulse <span className="text-[#003366]">Anotar</span> para resaltar, tachar o
+          añadir un comentario al fragmento.
+        </p>
+      )}
+      {readonly && (
+        <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-amber-400 inline-block animate-pulse" />
+          Modo lectura — correcciones del tutor resaltadas en el documento
+        </p>
+      )}
       <div className="relative w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-inner">
         <Worker workerUrl={PDFJS_WORKER}>
-          <div className="h-[650px]">
+          <div className="h-[650px]" style={{ "--scale-factor": "1" } as React.CSSProperties}>
             <Viewer
               fileUrl={fileUrl}
               plugins={[defaultLayoutPluginInstance, highlightPluginInstance]}
@@ -275,14 +289,16 @@ export function DocumentPdfReviewEditor({
                   <span className="mt-0.5 line-clamp-2 block text-[11px] text-slate-500">{note.comment}</span>
                 ) : null}
               </button>
-              <button
-                type="button"
-                onClick={() => removeNote(note.id)}
-                className="shrink-0 rounded-lg p-1.5 text-rose-500 hover:bg-rose-50"
-                aria-label="Eliminar anotación"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
+              {!readonly && (
+                <button
+                  type="button"
+                  onClick={() => removeNote(note.id)}
+                  className="shrink-0 rounded-lg p-1.5 text-rose-500 hover:bg-rose-50"
+                  aria-label="Eliminar anotación"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
             </div>
           ))}
         </div>

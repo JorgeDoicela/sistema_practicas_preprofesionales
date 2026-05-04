@@ -11,6 +11,9 @@ import { canRoleAccessPath, getHomePathForRole } from "@/lib/route-access";
 import { DashboardTour } from "@/components/tour/DashboardTour";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useRef } from "react";
+import { AICopilot } from "./AICopilot";
+import { internshipsService } from "@/services/internships.service";
+import { ROLES } from "@/constants/roles";
 
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -20,6 +23,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+  const [user, setUser] = useState<any>(null);
+  const [activeInternship, setActiveInternship] = useState<any>(null);
+  const [appRole, setAppRole] = useState<string | null>(null);
 
   // Inactivity Timeout Configuration (Enterprise Grade)
   const INACTIVITY_LIMIT = 15 * 60 * 1000; // 15 minutos
@@ -110,6 +116,22 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         }
 
         console.log("[DashboardLayout] Access granted");
+        const roleNorm = role;
+        setAppRole(roleNorm);
+        setUser(parsed);
+
+        // Si es estudiante, cargar su práctica para darle contexto a la IA
+        if (roleNorm === ROLES.ESTUDIANTE && parsed.id) {
+          internshipsService.findByStudent(parsed.id).then(res => {
+            const list = res?.items || (Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []));
+            const active = list.find((i: any) => {
+              const s = (i.status || "").toLowerCase();
+              return s === "activo" || s === "en proceso" || s === "en_curso";
+            }) || list[0];
+            setActiveInternship(active);
+          }).catch(err => console.error("[DashboardLayout] Error fetching internship:", err));
+        }
+
         setIsAuthorized(true);
         setIsLoading(false);
       } catch (err) {
@@ -182,6 +204,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </AnimatePresence>
         </main>
       </div>
+      {/* Nexo AI disponible para todos los roles en el ecosistema administrativo */}
+      {appRole && (
+        <AICopilot user={user} internship={activeInternship} />
+      )}
     </div>
   );
 }

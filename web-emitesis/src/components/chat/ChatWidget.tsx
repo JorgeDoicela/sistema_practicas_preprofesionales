@@ -94,12 +94,16 @@ export default function ChatWidget() {
     return format(date, "EEEE d 'de' MMMM", { locale: currentLocale });
   };
 
+  const [sessionLoaded, setSessionLoaded] = useState(false);
+
   useEffect(() => {
     try {
       const u = JSON.parse(localStorage.getItem("user") ?? "{}");
       setMyId(u.id ?? "");
       setMyName(u.fullName ?? "");
     } catch {}
+    setSessionLoaded(true);
+
     // Cargar período de retención desde la API (SystemSetting)
     const token = localStorage.getItem("token");
     if (token) {
@@ -244,7 +248,7 @@ export default function ChatWidget() {
     return acc;
   }, []);
 
-  if (!myId) return null;
+  if (!sessionLoaded || !myId) return null;
 
   // ── Render ────────────────────────────────────────────────────────────────
 

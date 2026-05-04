@@ -167,16 +167,14 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
 
   // ── Socket setup ─────────────────────────────────────────────────────────
 
-  useEffect(() => {
-    const savedToken = localStorage.getItem("token");
-    if (!savedToken) return;
-    tokenRef.current = savedToken;
-
+  const initSocket = useCallback((savedToken: string) => {
     if (socketRef.current) {
       setSocket(socketRef.current);
       setConnected(socketRef.current.connected);
       return;
     }
+
+    tokenRef.current = savedToken;
 
     const socketUrl = API_URL.replace("/api", "");
     const newSocket = io(`${socketUrl}/chat`, {
@@ -189,7 +187,6 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
 
     newSocket.on("connect", () => {
       setConnected(true);
-      // Pedir lista de online inmediatamente
       newSocket.emit("getOnlineUsers", {}, (res: { onlineUserIds: string[] }) => {
         if (res?.onlineUserIds) {
           setOnlineUserIds(new Set(res.onlineUserIds));
@@ -204,7 +201,6 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     newSocket.on("newMessage", (msg: ChatMessage) => {
       setMessages(prev => {
         if (prev.find(m => m.id === msg.id)) return prev;
-        // Solo añadir si estamos en esa sala
         if (activeRoomRef.current === msg.roomId) return [...prev, msg];
         return prev;
       });
@@ -277,8 +273,42 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       newSocket.close();
       socketRef.current = null;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshRooms, refreshContacts]);
+
+  useEffect(() => {
+    // Intento inicial — puede ser que el token ya esté disponible
+    const savedToken = localStorage.getItem("token");
+    if (savedToken) {
+      const cleanup = initSocket(savedToken);
+      return cleanup;
+    }
+
+    // Si el token aún no está (login desde otra tab o refresh rápido),
+    // escuchar el evento storage para inicializar el socket en cuanto aparezca
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "token" && e.newValue) {
+        const cleanup = initSocket(e.newValue);
+        window.removeEventListener("storage", handleStorage);
+        return cleanup;
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
+    // También intentar con un pequeño delay para cubrir el caso de hydration
+    const retryTimer = setTimeout(() => {
+      const retryToken = localStorage.getItem("token");
+      if (retryToken && !socketRef.current) {
+        initSocket(retryToken);
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(retryTimer);
+      window.removeEventListener("storage", handleStorage);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initSocket]);
 
   // Cargar historial al cambiar sala activa
   useEffect(() => {
