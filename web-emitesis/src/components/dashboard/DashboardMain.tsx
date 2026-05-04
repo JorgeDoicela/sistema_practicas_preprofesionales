@@ -35,6 +35,8 @@ import { attendancesService } from "@/services/attendances.service";
 import { analyticsService, AdminStats } from "@/services/analytics.service";
 import { AnnouncementCarousel } from "./AnnouncementCarousel";
 import dynamic from "next/dynamic";
+import { useLanguage } from "@/providers/LanguageProvider";
+import { settingsService } from "@/services/settings.service";
 
 // Importación dinámica de Leaflet para evitar errores de SSR
 const MiniMap = dynamic(() => import("./MapComponent"), { 

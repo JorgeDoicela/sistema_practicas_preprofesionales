@@ -1,5 +1,5 @@
 /**
- * Setup Script: Industrializa el arranque del proyecto con resiliencia.
+ * Setup Script: Industrializa el arranque del proyecto con resiliencia extrema.
  */
 const { execSync } = require('child_process');
 const fs = require('fs');
@@ -7,93 +7,131 @@ const path = require('path');
 
 const root = path.join(__dirname, '..');
 const apiDir = path.join(root, 'api-emitesis');
+const isVercel = process.env.VERCEL === '1' || !!process.env.CI;
+
+// Estado de la ejecución para resumen final
+const status = {
+  env: 'Detectando...',
+  prismaGenerate: 'Pendiente',
+  dbSync: 'Pendiente',
+  dbSeed: 'Pendiente',
+  errors: []
+};
 
 /**
- * Ejecuta un comando con reintentos automáticos (útil para DBs en la nube como Neon)
+ * Ejecuta un comando con reintentos y manejo de errores resiliente.
  */
-function run(cmd, cwd = root, retries = 3) {
+function run(cmd, cwd = root, retries = 3, critical = true) {
   for (let i = 1; i <= retries; i++) {
-    console.log(`\n> [${i}/${retries}] Ejecutando: ${cmd} (en ${path.relative(root, cwd) || '.'})`);
+    console.log(`\n> [${i}/${retries}] Ejecutando: ${cmd}`);
     try {
       execSync(cmd, { cwd, stdio: 'inherit' });
-      return; // Éxito, salir de la función
+      return true; 
     } catch (e) {
       if (i === retries) {
-        console.error(`\x1b[31m[ERROR]\x1b[0m Falló tras ${retries} intentos: ${cmd}`);
-        process.exit(1);
+        const errorMsg = `Falló tras ${retries} intentos: ${cmd}`;
+        console.error(`\x1b[31m[ERROR]\x1b[0m ${errorMsg}`);
+        status.errors.push(errorMsg);
+        
+        if (critical && !isVercel) {
+          process.exit(1);
+        }
+        return false;
       }
-      console.warn(`\x1b[33m[REINTENTO]\x1b[0m El comando falló. Esperando 5 segundos antes de reintentar...`);
       
-      // Cross-platform sleep (Linux/Mac/Windows)
+      console.warn(`\x1b[33m[REINTENTO]\x1b[0m Fallo detectado. Esperando 5s...`);
       if (process.platform === 'win32') {
-        execSync('timeout /t 5 /nobreak', { stdio: 'ignore' });
+        try { execSync('timeout /t 5 /nobreak', { stdio: 'ignore' }); } catch(e) { /* fallback */ }
       } else {
-        execSync('sleep 5', { stdio: 'ignore' });
+        try { execSync('sleep 5', { stdio: 'ignore' }); } catch(e) { /* fallback */ }
       }
     }
   }
 }
 
-console.log('===================================================');
-console.log('\x1b[33m   SISTEMA EMITESIS - CONFIGURACIÓN INDUSTRIAL   \x1b[0m');
-console.log('===================================================');
+console.log('\n\x1b[35m%s\x1b[0m', '===================================================');
+console.log('\x1b[35m%s\x1b[0m', '   EMITESIS CORE - GUARDIÁN DE CONFIGURACIÓN     ');
+console.log('\x1b[35m%s\x1b[0m', '===================================================\n');
 
-// 1. Verificar .env
-const envs = [
-  path.join(root, '.env'),
-  path.join(apiDir, '.env'),
-  path.join(root, 'web-emitesis', '.env.local')
-];
+// 1. Diagnóstico de Entorno
+status.env = isVercel ? 'Vercel / CI' : 'Local (Development)';
+console.log(`[INFO] Entorno detectado: \x1b[36m${status.env}\x1b[0m`);
 
-envs.forEach(env => {
-  if (!fs.existsSync(env)) {
-    console.warn(`\x1b[31m[ADVERTENCIA]\x1b[0m No se encontró: ${path.relative(root, env)}`);
-  } else {
-    console.log(`\x1b[32m[OK]\x1b[0m Configuración detectada: ${path.relative(root, env)}`);
-  }
-});
-
-// 2. Limpieza de Prisma (Evita EPERM en Windows)
+// 2. Limpieza Preventiva
 try {
   const prismaDir = path.join(root, 'node_modules', '.prisma');
   if (fs.existsSync(prismaDir)) {
-    console.log('\n[INFO] Limpiando caché de Prisma...');
     fs.rmSync(prismaDir, { recursive: true, force: true });
+    console.log('[OK] Caché de Prisma limpiada.');
   }
-} catch (e) {}
-
-// 3. Generar Prisma Client
-run('npx prisma generate', apiDir);
-
-// 4. Sincronizar Base de Datos (con reintentos para manejar timeouts de Neon)
-const isVercel = process.env.VERCEL === '1' || !!process.env.CI;
-
-if (isVercel) {
-  console.log('\n\x1b[36m[INFO]\x1b[0m Entorno de CI/Vercel detectado. Validando variables...');
-  
-  if (!process.env.DATABASE_URL) {
-    console.error('\x1b[31m[ERROR]\x1b[0m DATABASE_URL no encontrada. Saltando migraciones para evitar fallo de build.');
-    console.log('[INFO] Asegúrate de configurar DATABASE_URL en el panel de Vercel.');
-    process.exit(0); // Salir sin error para permitir que el build de Vercel continúe (si es posible)
-  }
-
-  console.log('\x1b[36m[INFO]\x1b[0m Usando "db push" para sincronizar el esquema...');
-  run('npx prisma db push', apiDir);
-  console.log('\x1b[36m[INFO]\x1b[0m Ejecutando seed...');
-  run('npx prisma db seed', apiDir);
-} else {
-  console.log('\n\x1b[31m[IMPORTANTE]\x1b[0m Se procederá a un REINICIO TOTAL de la base de datos...');
-  console.log('[INFO] Usando db push --force-reset para saltar bloqueos de seguridad (advisory locks).');
-  
-  // 1. Forzar el reset del esquema (esto borra todo y recrea tablas)
-  run('npx prisma db push --force-reset', apiDir, 3);
-  
-  // 2. Ejecutar el sembrado de datos (seed)
-  console.log('\x1b[36m[INFO]\x1b[0m Poblando base de datos con datos iniciales (seed)...');
-  run('npx prisma db seed', apiDir, 2);
+} catch (e) {
+  console.log('[!] No se pudo limpiar node_modules/.prisma (puede estar en uso).');
 }
 
-console.log('\n===================================================');
-console.log('\x1b[32m   CONFIGURACIÓN COMPLETADA CON ÉXITO   \x1b[0m');
-console.log('   Usa "npm run dev" para iniciar el sistema.');
-console.log('===================================================\n');
+// 3. Generación de Cliente (CRÍTICO)
+console.log('\n[1/3] Generando Prisma Client...');
+if (run('npx prisma generate', apiDir, 2, true)) {
+  status.prismaGenerate = 'EXITO';
+} else {
+  status.prismaGenerate = 'FALLIDO';
+}
+
+// 4. Sincronización de Base de Datos
+console.log('\n[2/3] Sincronizando Base de Datos...');
+if (isVercel) {
+  if (!process.env.DATABASE_URL) {
+    console.warn('\x1b[33m[AVISO]\x1b[0m DATABASE_URL no definida. Saltando sincronización.');
+    status.dbSync = 'SALTADO (Sin URL)';
+  } else {
+    // En Vercel usamos db push para evitar errores de historial de migraciones (P3005)
+    if (run('npx prisma db push --skip-generate', apiDir, 3, false)) {
+      status.dbSync = 'EXITO';
+    } else {
+      status.dbSync = 'FALLIDO';
+    }
+  }
+} else {
+  // En local forzamos el reset para asegurar limpieza total
+  if (run('npx prisma db push --force-reset', apiDir, 2, true)) {
+    status.dbSync = 'EXITO (Reset Total)';
+  } else {
+    status.dbSync = 'FALLIDO';
+  }
+}
+
+// 5. Sembrado de Datos
+if (status.dbSync.includes('EXITO')) {
+  console.log('\n[3/3] Ejecutando Seed (Datos Iniciales)...');
+  if (run('npx prisma db seed', apiDir, 2, false)) {
+    status.dbSeed = 'EXITO';
+  } else {
+    status.dbSeed = 'FALLIDO';
+  }
+} else {
+  status.dbSeed = 'SALTADO';
+}
+
+// Resumen Final
+console.log('\n\x1b[35m%s\x1b[0m', '===================================================');
+console.log('\x1b[35m%s\x1b[0m', '           RESUMEN DE CONFIGURACIÓN              ');
+console.log('\x1b[35m%s\x1b[0m', '===================================================');
+console.log(` Entorno:      ${status.env}`);
+console.log(` Prisma Client: ${status.prismaGenerate === 'EXITO' ? '\x1b[32m✔' : '\x1b[31m✘'} ${status.prismaGenerate}\x1b[0m`);
+console.log(` DB Sync:      ${status.dbSync.includes('EXITO') ? '\x1b[32m✔' : '\x1b[31m✘'} ${status.dbSync}\x1b[0m`);
+console.log(` DB Seed:      ${status.dbSeed === 'EXITO' ? '\x1b[32m✔' : '\x1b[31m✘'} ${status.dbSeed}\x1b[0m`);
+
+if (status.errors.length > 0) {
+  console.log('\n\x1b[31m[!] Errores detectados durante el proceso:\x1b[0m');
+  status.errors.forEach(err => console.log(`  - ${err}`));
+  
+  if (isVercel) {
+    console.log('\n\x1b[33m[AVISO CI]\x1b[0m El build continuará para permitir diagnóstico, pero la App puede fallar en runtime.');
+    process.exit(0); 
+  } else {
+    console.log('\n\x1b[31m[ERROR CRÍTICO]\x1b[0m Revisa los logs superiores antes de iniciar el dev server.');
+    process.exit(1);
+  }
+} else {
+  console.log('\n\x1b[32m[PERFECTO] Todo configurado correctamente.\x1b[0m\n');
+}
+
