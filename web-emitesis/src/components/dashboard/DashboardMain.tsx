@@ -1132,8 +1132,8 @@ export function DashboardMain() {
                           className="group w-full p-4 bg-white text-[#003366] rounded-2xl flex items-center justify-between hover:bg-white/95 transition-all shadow-sm"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
-                              <Users className="w-4 h-4" />
+                            <div className="w-8 h-8 text-blue-600 flex items-center justify-center">
+                              <Users className="w-5 h-5" />
                             </div>
                             <span className="text-[10px] font-black uppercase tracking-widest">Gestión Alumnos</span>
                           </div>
@@ -1144,8 +1144,8 @@ export function DashboardMain() {
                           className="group w-full p-4 bg-white/10 border border-white/20 text-white rounded-2xl flex items-center justify-between hover:bg-white/20 transition-all"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-white/10 text-white rounded-xl flex items-center justify-center">
-                              <Building2 className="w-4 h-4" />
+                            <div className="w-8 h-8 text-white flex items-center justify-center">
+                              <Building2 className="w-5 h-5" />
                             </div>
                             <span className="text-[10px] font-black uppercase tracking-widest">Convenios</span>
                           </div>
@@ -1156,8 +1156,8 @@ export function DashboardMain() {
                           className="group w-full p-4 bg-slate-900/30 border border-white/5 text-white rounded-2xl flex items-center justify-between hover:bg-black/40 transition-all"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-[#C5A059] text-[#003366] rounded-xl flex items-center justify-center">
-                              <BarChart3 className="w-4 h-4" />
+                            <div className="w-8 h-8 text-brand-gold flex items-center justify-center">
+                              <BarChart3 className="w-5 h-5" />
                             </div>
                             <span className="text-[10px] font-black uppercase tracking-widest">Módulo Reportes</span>
                           </div>
@@ -1172,8 +1172,8 @@ export function DashboardMain() {
                           className="group w-full p-4 bg-white text-[#003366] rounded-2xl flex items-center justify-between hover:bg-white/95 transition-all shadow-sm"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-red-50 text-red-600 rounded-xl flex items-center justify-center">
-                              <Users className="w-4 h-4" />
+                            <div className="w-8 h-8 text-red-600 flex items-center justify-center">
+                              <Users className="w-5 h-5" />
                             </div>
                             <span className="text-[10px] font-black uppercase tracking-widest">Gestión Usuarios</span>
                           </div>
@@ -1184,8 +1184,8 @@ export function DashboardMain() {
                           className="group w-full p-4 bg-white/10 border border-white/20 text-white rounded-2xl flex items-center justify-between hover:bg-white/20 transition-all"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-white/10 text-white rounded-xl flex items-center justify-center">
-                              <Settings className="w-4 h-4" />
+                            <div className="w-8 h-8 text-white flex items-center justify-center">
+                              <Settings className="w-5 h-5" />
                             </div>
                             <span className="text-[10px] font-black uppercase tracking-widest">Configuración</span>
                           </div>
@@ -1196,8 +1196,8 @@ export function DashboardMain() {
                           className="group w-full p-4 bg-slate-900/30 border border-white/5 text-white rounded-2xl flex items-center justify-between hover:bg-black/40 transition-all"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-[#C5A059] text-[#003366] rounded-xl flex items-center justify-center">
-                              <ScrollText className="w-4 h-4" />
+                            <div className="w-8 h-8 text-brand-gold flex items-center justify-center">
+                              <ScrollText className="w-5 h-5" />
                             </div>
                             <span className="text-[10px] font-black uppercase tracking-widest">Logs de Sistema</span>
                           </div>
@@ -1247,12 +1247,12 @@ interface StatCardProps {
 
 function StatCard({ title, value, hint, icon, color, href, className, isMain }: StatCardProps) {
   // Mapeo de colores para gradientes y sombras (glow)
-  const colorMap: Record<string, { bg: string, icon: string, border: string }> = {
-    'bg-blue-500': { bg: 'bg-brand-blue', icon: 'text-white', border: 'border-brand-blue/10' },
-    'bg-indigo-500': { bg: 'bg-[#114880]', icon: 'text-white', border: 'border-blue-900/10' },
-    'bg-amber-500': { bg: 'bg-brand-gold', icon: 'text-white', border: 'border-brand-gold/10' },
-    'bg-emerald-500': { bg: 'bg-[#196098]', icon: 'text-white', border: 'border-blue-700/10' },
-    'bg-rose-500': { bg: 'bg-rose-600', icon: 'text-white', border: 'border-rose-600/10' },
+  const colorMap: Record<string, { bg: string, iconColor: string, border: string }> = {
+    'bg-blue-500': { bg: 'bg-brand-blue', iconColor: 'text-brand-blue', border: 'border-brand-blue/10' },
+    'bg-indigo-500': { bg: 'bg-[#114880]', iconColor: 'text-[#114880]', border: 'border-blue-900/10' },
+    'bg-amber-500': { bg: 'bg-brand-gold', iconColor: 'text-brand-gold', border: 'border-brand-gold/10' },
+    'bg-emerald-500': { bg: 'bg-[#196098]', iconColor: 'text-[#196098]', border: 'border-blue-700/10' },
+    'bg-rose-500': { bg: 'bg-rose-600', iconColor: 'text-rose-600', border: 'border-rose-600/10' },
   };
 
   const theme = colorMap[color] || colorMap['bg-blue-500'];
@@ -1280,12 +1280,12 @@ function StatCard({ title, value, hint, icon, color, href, className, isMain }: 
         isMain ? "flex-col sm:flex-row items-start sm:items-center" : "flex-row"
       )}>
         <div className={cn(
-          "rounded-3xl flex items-center justify-center shrink-0 shadow-lg transition-transform group-hover:scale-110 duration-500",
-          theme.bg,
-          isMain ? "w-20 h-20" : "w-14 h-14"
+          "flex items-center justify-center shrink-0 transition-all duration-500 group-hover:scale-125",
+          theme.iconColor,
+          isMain ? "w-24 h-24" : "w-16 h-16"
         )}>
           {React.cloneElement(icon as React.ReactElement<{ className?: string; strokeWidth?: number }>, {
-            className: cn(isMain ? "w-10 h-10" : "w-6 h-6", theme.icon),
+            className: cn(isMain ? "w-14 h-14" : "w-8 h-8"),
             strokeWidth: 1.5
           })}
         </div>
@@ -1342,7 +1342,7 @@ function ActivityRow({ name, company, status, time }: ActivityRowProps) {
   return (
     <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all">
       <div className="flex items-center gap-4">
-        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-[10px] font-black text-[#003366]">
+        <div className="w-10 h-10 flex items-center justify-center text-xs font-black text-[#003366] shrink-0">
           {name.charAt(0)}
         </div>
         <div>

@@ -283,7 +283,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 {user && (
                     <div className="bg-white/5 rounded-3xl p-5 border border-white/10 mb-2">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-2xl bg-brand-gold flex items-center justify-center font-black text-brand-blue text-sm shrink-0">
+                            <div className="w-10 h-10 flex items-center justify-center font-black text-brand-gold text-lg shrink-0">
                                 {user.fullName?.charAt(0).toUpperCase()}
                             </div>
 

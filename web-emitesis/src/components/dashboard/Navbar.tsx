@@ -84,10 +84,10 @@ export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
               onClick={() => setIsOpen(!isOpen)}
               className="flex items-center gap-2 group focus:outline-none"
             >
-              <div className="w-10 h-10 rounded-full border border-slate-100 shadow-sm overflow-hidden group-hover:ring-2 group-hover:ring-brand-blue/10 transition-all">
-                <div className="w-full h-full bg-slate-100 flex items-center justify-center text-brand-blue text-sm font-black">
+              <div className="w-10 h-10 rounded-full border border-slate-100 flex items-center justify-center group-hover:bg-slate-50 transition-all">
+                <span className="text-brand-blue text-sm font-black">
                    {user?.fullName?.charAt(0) || "M"}
-                </div>
+                </span>
               </div>
               <ChevronDown className={cn("w-4 h-4 text-slate-400 transition-transform", isOpen && "rotate-180")} />
             </button>
