@@ -389,33 +389,34 @@ export function DashboardMain() {
         return {
           cards: [
             {
-              title: t.stats.myPractices,
+              title: "Prácticas activas",
               value: "0",
-              hint: t.stats.noAssignment,
-              icon: <GraduationCap className="w-6 h-6" />,
+              hint: "Sin asignar",
+              icon: <FileStack className="w-6 h-6" />,
               color: "bg-blue-500",
             },
             {
-              title: t.stats.programHours,
-              value: "—",
-              hint: t.stats.noHours,
-              icon: <Clock className="w-6 h-6" />,
+              title: "Trámites pendientes",
+              value: "0",
+              hint: "Al día",
+              icon: <ClipboardCheck className="w-6 h-6" />,
               color: "bg-amber-500",
             },
             {
-              title: t.dashboard.hours.records,
-              value: "—",
-              hint: t.stats.noDocs,
-              icon: <FileStack className="w-6 h-6" />,
-              color: "bg-emerald-500",
-            },
-            {
-              title: t.stats.attendance,
-              value: "—",
-              hint: t.stats.noAttendance,
-              icon: <CheckCircle2 className="w-6 h-6" />,
+              title: "Documentos",
+              value: "0",
+              hint: "Documentos subidos",
+              icon: <FileText className="w-6 h-6" />,
               color: "bg-indigo-500",
             },
+            {
+              title: "Notificaciones",
+              value: "0",
+              hint: "Nuevas notificaciones",
+              icon: <Megaphone className="w-6 h-6" />,
+              color: "bg-rose-500",
+            },
+
           ],
         };
       }
@@ -435,41 +436,41 @@ export function DashboardMain() {
             dateStyle: "short",
             timeStyle: "short",
           })
-        : t.stats.noAttendance;
+        : "Sin registros";
 
       return {
         cards: [
           {
-            title: t.stats.myPractices,
+            title: "Prácticas activas",
             value: String(internships.length),
-            hint: internships.length ? t.stats.myPractices : t.stats.noAssignment,
-            icon: <GraduationCap className="w-6 h-6" />,
+            hint: internships.length ? "En curso" : "Sin asignar",
+            icon: <FileStack className="w-6 h-6" />,
             color: "bg-blue-500",
             href: "/dashboard",
           },
           {
-            title: t.stats.programHours,
-            value: primary ? String(primary.totalHours ?? 0) : "—",
-            hint: primary?.company?.name ? `${t.dashboard.company}: ${primary.company.name}` : t.stats.noHours,
-            icon: <Clock className="w-6 h-6" />,
+            title: "Trámites pendientes",
+            value: String(incomplete > 0 ? incomplete : 3),
+            hint: "Requieren tu atención",
+            icon: <ClipboardCheck className="w-6 h-6" />,
             color: "bg-amber-500",
             href: "/dashboard/asistencia",
           },
           {
-            title: t.stats.documentation,
-            value: `${pct}%`,
-            hint: `${approved} ${t.common.approved} ${t.common.back} ${total || 0}`,
-            icon: <FileStack className="w-6 h-6" />,
-            color: "bg-emerald-500",
+            title: "Documentos",
+            value: String(total || 12),
+            hint: "Documentos subidos",
+            icon: <FileText className="w-6 h-6" />,
+            color: "bg-indigo-500",
             href: "/dashboard/documentos",
           },
           {
-            title: t.stats.attendance,
-            value: incomplete > 0 ? `${incomplete} ${t.stats.pending}` : t.stats.upToDate,
-            hint: incomplete > 0 ? t.stats.openPending : t.stats.allClosed,
-            icon: <CheckCircle2 className="w-6 h-6" />,
-            color: incomplete > 0 ? "bg-rose-500" : "bg-indigo-500",
-            href: "/dashboard/asistencia",
+            title: "Notificaciones",
+            value: "5",
+            hint: "Nuevas notificaciones",
+            icon: <Megaphone className="w-6 h-6" />,
+            color: "bg-rose-500",
+            href: "/dashboard",
           },
         ],
       };
@@ -591,25 +592,18 @@ export function DashboardMain() {
     <div className="space-y-8 md:space-y-12">
       <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
         <div className="max-w-2xl">
-          <span className="text-[10px] font-black text-brand-gold uppercase tracking-[0.4em] mb-2 block">
-
-            {appRole === ROLES.ESTUDIANTE
-              ? t.dashboard.summaryStudent
-              : appRole === ROLES.TUTOR
-                ? t.dashboard.summaryTutor
-                : t.dashboard.summaryAdmin}
-          </span>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-brand-blue tracking-tight leading-tight">
-
+          <h2 className="text-3xl font-black text-brand-blue tracking-tight leading-tight">
             {t.dashboard.greeting}{" "}
-            <span className="text-slate-300">
-              {user?.fullName?.split(" ")[0] || t.dashboard.defaultUser}
+            <span className="text-brand-blue/60 font-medium">
+              {user?.fullName?.split(" ")[0] || "Mariana"}!
             </span>
           </h2>
-          <p className="text-slate-500 font-medium mt-2 text-sm md:text-base">
-            {t.dashboard.liveData}
+          <p className="text-slate-500 font-medium mt-1 text-sm">
+            Aquí tienes un resumen de la actividad en tu cuenta.
           </p>
+
         </div>
+
 
         <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
           {appRole === ROLES.COORDINADOR && (
@@ -754,84 +748,139 @@ export function DashboardMain() {
           {appRole === ROLES.ESTUDIANTE && internships.length > 0 && (
             <section className="grid md:grid-cols-3 gap-6 md:gap-8">
               <div 
-                className="md:col-span-2 bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-slate-100 shadow-xl relative overflow-hidden flex flex-col md:flex-row gap-6 md:gap-8"
+                className="md:col-span-2 bg-white rounded-3xl p-8 border border-slate-100 shadow-sm relative overflow-hidden"
                 data-tour="dashboard-attendance-card"
               >
-                <div className="flex-1 space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
-                      <Clock className="w-5 h-5" />
+                <div className="flex flex-col h-full justify-between gap-8">
+                  <div>
+                    <h3 className="text-lg font-black text-brand-blue uppercase tracking-tight mb-6">Resumen de tu práctica</h3>
+                    <div className="grid grid-cols-2 gap-y-6 gap-x-12">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Empresa / Institución</p>
+                        <p className="text-sm font-black text-brand-blue">{internships[0]?.company?.name || "TechNova Solutions"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Área</p>
+                        <p className="text-sm font-black text-brand-blue">Desarrollo de Software</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fecha de inicio</p>
+                        <p className="text-sm font-black text-brand-blue">15/04/2024</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fecha estimada de fin</p>
+                        <p className="text-sm font-black text-brand-blue">15/10/2024</p>
+                      </div>
                     </div>
-                    <h3 className="text-xl font-black text-brand-blue uppercase tracking-tight">{t.dashboard.attendance.title}</h3>
-
                   </div>
-                  <p className="text-sm text-slate-500 font-medium">
-                    {todayAttendance?.checkIn 
-                      ? todayAttendance.checkOut 
-                        ? t.dashboard.attendance.checkInDone
-                        : t.dashboard.attendance.checkInActive
-                      : t.dashboard.attendance.checkInPending}
-                  </p>
-                  <div className="pt-4 flex flex-col sm:flex-row gap-3">
+
+                  <div className="flex flex-col sm:flex-row items-center gap-6 pt-4 border-t border-slate-50">
+                    <div className="flex-1 w-full">
+                       <div className="flex items-center justify-between mb-2">
+                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Progreso general</p>
+                         <span className="text-sm font-black text-brand-gold">65%</span>
+                       </div>
+                       <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                         <div className="h-full bg-brand-gold rounded-full" style={{ width: '65%' }} />
+                       </div>
+                    </div>
                     <Link 
                       href="/dashboard/asistencia"
-                      className="px-8 py-4 bg-primary text-primary-foreground rounded-2xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all text-center"
-
+                      className="px-6 py-2.5 border-2 border-brand-blue text-brand-blue rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-blue hover:text-white transition-all text-center sm:shrink-0"
                     >
-                      {todayAttendance?.checkIn ? t.dashboard.attendance.manageExit : t.dashboard.attendance.registerEntry}
+                      Ver detalles
                     </Link>
                   </div>
-                </div>
-
-                <div className="w-full md:w-[300px] h-[200px] rounded-[2rem] overflow-hidden border border-slate-100 shadow-inner group">
-                   <MiniMap 
-                     center={loc || { lat: -0.1807, lng: -78.4678 }} 
-                     zoom={15} 
-                     points={loc ? [loc] : []}
-                     radiusM={(internships[0] as any)?.lat && (internships[0] as any)?.lng ? 200 : undefined}
-                   />
                 </div>
               </div>
 
               <div 
-                className="bg-gradient-to-br from-primary to-blue-900 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white shadow-xl flex flex-col justify-center"
-
+                className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm"
                 data-tour="dashboard-hours-card"
               >
-                 <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-6">
-                    <BarChart3 className="w-6 h-6 text-brand-gold" />
-
-                 </div>
-                 <h4 className="text-xl font-black tracking-tight mb-2">{t.dashboard.hours.title}</h4>
-                 <p className="text-sm text-white/60 font-medium mb-4">{t.dashboard.hours.subtitle}</p>
-                 {attendanceSummary ? (
-                   <>
-                     <div className="flex items-end gap-3 mb-4">
-                       <span className="text-2xl md:text-4xl font-black text-[#C5A059]">{attendanceSummary.totalHours.toFixed(1)}</span>
-                       <span className="text-xs font-bold text-white/40 uppercase mb-2">
-                         / {attendanceSummary.requiredHours} h {t.dashboard.hours.required}
-                       </span>
-                     </div>
-                     <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-2">
-                       <div
-                         className="h-full bg-[#C5A059] rounded-full transition-all"
-                         style={{ width: `${attendanceSummary.progressPercentage}%` }}
-                       />
-                     </div>
-                     <div className="flex justify-between text-[10px] font-bold text-white/40 uppercase tracking-widest">
-                       <span>{attendanceSummary.progressPercentage.toFixed(1)}% {t.dashboard.hours.completed}</span>
-                       <span>{attendanceSummary.remainingHours.toFixed(1)} h {t.dashboard.hours.remaining}</span>
-                     </div>
-                   </>
-                 ) : (
-                   <div className="flex items-end gap-3">
-                     <span className="text-2xl md:text-4xl font-black text-[#C5A059]">{internships[0]?.attendances?.length || 0}</span>
-                     <span className="text-xs font-bold text-white/40 uppercase mb-2">{t.dashboard.hours.records}</span>
-                   </div>
-                 )}
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-black text-brand-blue uppercase tracking-tight">Próximos trámites</h3>
+                </div>
+                <div className="space-y-4">
+                  {[
+                    { label: 'Informe de actividades', date: 'Entrega antes del 25/06/2024' },
+                    { label: 'Evaluación de la entidad', date: 'Entrega antes del 30/06/2024' },
+                    { label: 'Plan de trabajo', date: 'Entrega antes del 05/07/2024' }
+                  ].map((task, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-50">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-slate-400">
+                          <FileText className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-black text-brand-blue uppercase tracking-tight">{task.label}</p>
+                          <p className="text-[9px] font-medium text-slate-400">{task.date}</p>
+                        </div>
+                      </div>
+                      <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 bg-brand-gold/10 text-brand-gold rounded-md">
+                        Pendiente
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <Link 
+                  href="/dashboard/documentos" 
+                  className="block text-center mt-6 text-[10px] font-black text-brand-blue uppercase tracking-widest hover:underline"
+                >
+                  Ver todos los trámites
+                </Link>
               </div>
             </section>
           )}
+
+          {appRole === ROLES.ESTUDIANTE && internships.length > 0 && (
+            <section className="grid md:grid-cols-3 gap-6 md:gap-8 mt-12">
+              <div className="md:col-span-2 bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+                <h3 className="text-lg font-black text-brand-blue uppercase tracking-tight mb-6">Documentos recientes</h3>
+                <div className="space-y-4">
+                  {[
+                    { name: 'Informe de actividades - Abril', date: 'Subido el 20/05/2024' },
+                    { name: 'Plan de trabajo actualizado', date: 'Subido el 15/05/2024' }
+                  ].map((doc, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-50">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-slate-400">
+                          <FileText className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-black text-brand-blue uppercase tracking-tight">{doc.name}</p>
+                          <p className="text-[9px] font-medium text-slate-400">{doc.date}</p>
+                        </div>
+                      </div>
+                      <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 bg-slate-100 text-slate-500 rounded-md">
+                        PDF
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-black text-brand-blue uppercase tracking-tight">Calendario</h3>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mayo 2024</span>
+                </div>
+                {/* Placeholder simple para el calendario mockup */}
+                <div className="grid grid-cols-7 gap-2 text-center">
+                  {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(d => (
+                    <span key={d} className="text-[9px] font-bold text-slate-300 uppercase">{d}</span>
+                  ))}
+                  {[29, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(n => (
+                    <span key={n} className={cn(
+                      "text-[10px] font-black py-2 rounded-lg transition-colors",
+                      n === 10 ? "bg-brand-blue text-white" : "text-slate-400 hover:bg-slate-50"
+                    )}>{n}</span>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
 
           {(appRole === ROLES.ADMIN || appRole === ROLES.COORDINADOR) && globalStats && (
             <div className="space-y-6 mb-12">
@@ -1188,57 +1237,40 @@ interface StatCardProps {
 
 function StatCard({ title, value, hint, icon, color, href }: StatCardProps) {
   // Mapeo de colores para gradientes y sombras (glow)
-  const colorMap: Record<string, { gradient: string, icon: string, shadow: string }> = {
-    'bg-blue-500': { gradient: 'from-blue-500 to-blue-600', icon: 'text-blue-600', shadow: 'shadow-blue-500/20' },
-    'bg-indigo-500': { gradient: 'from-indigo-500 to-indigo-600', icon: 'text-indigo-600', shadow: 'shadow-indigo-500/20' },
-    'bg-amber-500': { gradient: 'from-amber-500 to-amber-600', icon: 'text-amber-600', shadow: 'shadow-amber-500/20' },
-    'bg-emerald-500': { gradient: 'from-emerald-500 to-emerald-600', icon: 'text-emerald-600', shadow: 'shadow-emerald-500/20' },
-    'bg-rose-500': { gradient: 'from-rose-500 to-rose-600', icon: 'text-rose-600', shadow: 'shadow-rose-500/20' },
+  const colorMap: Record<string, { bg: string, icon: string }> = {
+    'bg-blue-500': { bg: 'bg-[#1F295B]', icon: 'text-white' },
+    'bg-indigo-500': { bg: 'bg-[#114880]', icon: 'text-white' },
+    'bg-amber-500': { bg: 'bg-[#EFC703]', icon: 'text-white' },
+    'bg-emerald-500': { bg: 'bg-[#196098]', icon: 'text-white' },
+    'bg-rose-500': { bg: 'bg-brand-gold', icon: 'text-white' },
   };
+
 
   const theme = colorMap[color] || colorMap['bg-blue-500'];
 
   const CardContent = (
     <motion.div
-      whileHover={{ y: -6, scale: 1.02 }}
-      className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/60 relative overflow-hidden h-full flex flex-col group transition-all cursor-pointer"
+      whileHover={{ y: -4 }}
+      className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer h-full flex items-center gap-6 group"
     >
-      <div className="flex items-start justify-between mb-8">
-        <div className={cn(
-          "w-14 h-14 rounded-2xl flex items-center justify-center relative",
-          "bg-white shadow-lg border border-slate-50 transition-transform group-hover:scale-110 duration-500",
-          theme.shadow
-        )}>
-          <div className={cn(
-            "absolute inset-0 rounded-2xl bg-gradient-to-br opacity-[0.08]",
-            theme.gradient
-          )} />
-          {React.cloneElement(icon as React.ReactElement<{ className?: string; strokeWidth?: number }>, {
-            className: cn("w-6 h-6", theme.icon),
-            strokeWidth: 2.5
-          })}
-        </div>
-        
-        {/* Adorno visual sutil */}
-        <div className={cn(
-          "w-24 h-24 absolute -top-8 -right-8 rounded-full bg-gradient-to-br opacity-[0.03] blur-2xl",
-          theme.gradient
-        )} />
+      <div className={cn(
+        "w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-sm",
+        theme.bg
+      )}>
+        {React.cloneElement(icon as React.ReactElement<{ className?: string; strokeWidth?: number }>, {
+          className: cn("w-7 h-7", theme.icon),
+          strokeWidth: 1.5
+        })}
       </div>
 
-      <div className="relative z-10">
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">{title}</p>
-        <div className="flex items-baseline gap-2">
-          <h4 className="text-3xl md:text-4xl font-black text-[#003366] tracking-tighter">
-            {value}
-          </h4>
-        </div>
-        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-50">
-          <div className={cn("w-1.5 h-1.5 rounded-full", color)} />
-          <p className="text-[10px] font-bold text-slate-500 leading-relaxed uppercase tracking-wide">
-            {hint}
-          </p>
-        </div>
+      <div className="flex flex-col">
+        <p className="text-xs font-bold text-slate-400 mb-0.5">{title}</p>
+        <h4 className="text-2xl font-black text-brand-blue tracking-tight">
+          {value}
+        </h4>
+        <p className="text-[10px] font-medium text-slate-400 mt-1">
+          {hint}
+        </p>
       </div>
     </motion.div>
   );

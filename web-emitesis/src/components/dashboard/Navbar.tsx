@@ -10,6 +10,7 @@ import { NotificationBell } from "./NotificationBell";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { cn } from "@/lib/utils";
 import { getProfilePathForRole } from "@/lib/profile-route";
 
 export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
@@ -42,30 +43,20 @@ export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
     } px-4 md:px-6 lg:px-10`}>
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
 
-        {/* Left side: hamburger (móvil) + buscador (escritorio) */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onMenuToggle}
-            className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-all"
-            aria-label={t.sidebar.menu.dashboard}
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-
-          {/* Search Bar */}
-          <div className="relative group hidden md:block">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search className="w-4 h-4 text-slate-400 group-focus-within:text-brand-blue transition-colors" />
-
+        {/* Center: Search Bar */}
+        <div className="flex-1 flex justify-center max-w-xl mx-auto">
+          <div className="relative group w-full">
+            <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+              <Search className="w-4 h-4 text-slate-300 group-focus-within:text-brand-blue transition-colors" />
             </div>
             <input
               type="text"
-              placeholder={t.common.search + "..."}
-              className="bg-slate-100 hover:bg-slate-200/50 border-none rounded-2xl py-2.5 pl-12 pr-6 text-xs font-semibold focus:ring-2 focus:ring-brand-blue/10 w-56 lg:w-80 transition-all outline-none"
-
+              placeholder="Buscar trámites, documentos o entidades..."
+              className="w-full bg-slate-50 border border-slate-100 rounded-full py-3 pl-14 pr-6 text-sm font-medium focus:ring-2 focus:ring-brand-blue/5 focus:bg-white transition-all outline-none text-slate-600 placeholder:text-slate-300"
             />
           </div>
         </div>
+
 
         {/* Right Actions */}
         <div className="flex items-center gap-3 md:gap-4">
@@ -80,34 +71,27 @@ export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
           {/* User Profile */}
           <div className="flex items-center gap-2 md:gap-4 pl-3 md:pl-6 border-l border-slate-100 relative">
             <div className="text-right hidden sm:block">
-              <p className="text-[11px] font-black text-brand-blue uppercase tracking-wider mb-0.5">
-
-                {user?.fullName || t.dashboard.defaultUser}
+              <p className="text-sm font-black text-brand-blue tracking-tight leading-none mb-1">
+                {user?.fullName || "Mariana López"}
               </p>
-              <div className="flex items-center gap-1.5 justify-end">
-                <ShieldCheck className="w-3 h-3 text-brand-gold" />
-
-                <span className="text-[9px] font-black text-slate-400 tracking-widest uppercase">
-                  {user?.role || "ACCESO"}
-                </span>
-              </div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                {user?.role || "Estudiante"}
+              </p>
             </div>
+
             
             <button 
               onClick={() => setIsOpen(!isOpen)}
               className="flex items-center gap-2 group focus:outline-none"
             >
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-primary to-blue-500 p-[2px] shadow-lg group-hover:scale-105 transition-transform">
-
-                <div className="w-full h-full rounded-[14px] bg-white flex items-center justify-center overflow-hidden">
-                  <div className="w-full h-full bg-primary flex items-center justify-center text-white text-sm font-black uppercase tracking-widest">
-
-                    {user?.fullName?.charAt(0) || <User className="w-5 h-5" />}
-                  </div>
+              <div className="w-10 h-10 rounded-full border border-slate-100 shadow-sm overflow-hidden group-hover:ring-2 group-hover:ring-brand-blue/10 transition-all">
+                <div className="w-full h-full bg-slate-100 flex items-center justify-center text-brand-blue text-sm font-black">
+                   {user?.fullName?.charAt(0) || "M"}
                 </div>
               </div>
-              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+              <ChevronDown className={cn("w-4 h-4 text-slate-400 transition-transform", isOpen && "rotate-180")} />
             </button>
+
 
             {/* Dropdown Menu */}
             <AnimatePresence>

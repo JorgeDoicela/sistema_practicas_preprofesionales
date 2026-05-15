@@ -220,9 +220,9 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             </div>
  
             {/* Brand Header */}
-            <div className="p-8 pb-12">
+            <div className="p-8 pb-10">
                 <div className="flex items-center gap-3 group">
-                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform overflow-hidden p-1.5">
+                    <div className="w-11 h-11 bg-white rounded-2xl flex items-center justify-center shadow-lg transition-transform overflow-hidden p-2">
                         <Image
                             src={BRAND_LOGO_SRC}
                             alt="Praxis Hub"
@@ -233,12 +233,12 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                         />
                     </div>
                     <div>
-                        <h1 className="text-xl font-black tracking-tight leading-none">PRAXIS HUB</h1>
-                        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-brand-gold mt-1">{t.sidebar.subtitle}</p>
-
+                        <h1 className="text-2xl font-medium tracking-tight leading-none text-white">Praxis<span className="font-bold">Hub</span></h1>
+                        <p className="text-[8px] font-medium uppercase tracking-[0.2em] text-brand-gold/80 mt-1.5 whitespace-nowrap">TECNOLÓGICO TRAVERSARI — ISTPET</p>
                     </div>
                 </div>
             </div>
+
  
             {/* Main Navigation */}
             <nav id="sidebar-nav" data-tour="sidebar-main" className="flex-1 px-4 overflow-y-auto sidebar-scroll">
@@ -341,8 +341,9 @@ function SidebarItem({ icon: Icon, label, href, active }: SidebarItemProps) {
             className={cn(
                 "flex items-center justify-between group px-5 py-3.5 rounded-2xl transition-all relative overflow-hidden",
                 active
-                    ? "bg-white text-primary shadow-xl shadow-blue-900/40 translate-x-1"
-                    : "text-white/60 hover:text-white hover:bg-white/5"
+                    ? "bg-black/20 text-white shadow-lg shadow-black/10"
+                    : "text-white/70 hover:text-white hover:bg-white/5"
+
 
             )}
         >
@@ -353,7 +354,8 @@ function SidebarItem({ icon: Icon, label, href, active }: SidebarItemProps) {
             {active ? (
                 <motion.div
                     layoutId="active-indicator"
-                    className="w-1.5 h-1.5 rounded-full bg-brand-gold relative z-10"
+                    className="w-1 h-4 rounded-full bg-brand-gold absolute left-0"
+
 
                 />
             ) : (
@@ -361,8 +363,9 @@ function SidebarItem({ icon: Icon, label, href, active }: SidebarItemProps) {
             )}
 
             {active && (
-                <div className="absolute inset-0 bg-gradient-to-r from-white to-white/90" />
+                <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent pointer-events-none" />
             )}
+
         </Link>
     );
 }
