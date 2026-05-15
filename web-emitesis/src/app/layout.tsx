@@ -9,6 +9,7 @@ export const metadata: Metadata = {
     apple: "/images/brand/color_sinfondo_png.png",
   },
 
+
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

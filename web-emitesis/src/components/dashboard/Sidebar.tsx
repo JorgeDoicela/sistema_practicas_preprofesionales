@@ -32,8 +32,9 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { User as UserType } from "@/types/user";
-import { BRAND_LOGO_SRC } from "@/lib/brand";
+import { BRAND_LOGO_SRC, BRAND_LOGO_NAVY, BRAND_LOGO_BANNER } from "@/lib/brand";
 import { getProfilePathForRole } from "@/lib/profile-route";
+
 import { useLanguage } from "@/providers/LanguageProvider";
 import { normalizeApiRoleToAppRole } from "@/constants/roles";
 import Cookies from "js-cookie";
@@ -221,23 +222,19 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
  
             {/* Brand Header */}
             <div className="p-8 pb-10">
-                <div className="flex items-center gap-3 group">
-                    <div className="w-11 h-11 bg-white rounded-2xl flex items-center justify-center shadow-lg transition-transform overflow-hidden p-2">
-                        <Image
-                            src={BRAND_LOGO_SRC}
-                            alt="Praxis Hub"
-                            width={40}
-                            height={40}
-                            className="object-contain w-full h-full"
-                            priority
-                        />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-medium tracking-tight leading-none text-white">Praxis<span className="font-bold">Hub</span></h1>
-                        <p className="text-[8px] font-medium uppercase tracking-[0.2em] text-brand-gold/80 mt-1.5 whitespace-nowrap">TECNOLÓGICO TRAVERSARI — ISTPET</p>
-                    </div>
-                </div>
+                <Link href="/dashboard" className="block group">
+                    <Image
+                        src={BRAND_LOGO_BANNER}
+                        alt="Praxis Hub"
+                        width={260}
+                        height={100}
+                        className="object-contain w-auto h-24 transition-transform group-hover:scale-[1.02]"
+                        priority
+                    />
+                </Link>
             </div>
+
+
 
  
             {/* Main Navigation */}

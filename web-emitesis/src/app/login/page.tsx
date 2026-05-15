@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { BRAND_LOGO_SRC } from "@/lib/brand";
+import { BRAND_LOGO_SRC, BRAND_LOGO_BANNER } from "@/lib/brand";
+
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Lock, Mail, Eye, EyeOff, AlertTriangle, MapPin, Brain, Fingerprint } from "lucide-react";
@@ -109,21 +110,21 @@ export default function LoginPage() {
 
     const brandTopOnBlue = (
         <Link href="/" className="flex items-center gap-2.5 focus:outline-none">
-            <div className="rounded-lg bg-white/10 p-1.5 ring-1 ring-white/20">
-                <Image src={BRAND_LOGO_SRC} alt="Logo" width={100} height={40} className="h-7 w-auto object-contain brightness-0 invert" />
-            </div>
-            <span className="text-xs font-bold text-white/80">{t.nav.brandSub}</span>
+            <Image src={BRAND_LOGO_BANNER} alt="Logo" width={240} height={60} className="h-14 w-auto object-contain" />
         </Link>
     );
 
+
+
+
     const brandTopOnWhite = (
         <Link href="/" className="flex items-center gap-2.5 focus:outline-none">
-            <div className="rounded-lg bg-brand-blue p-1.5">
-                <Image src={BRAND_LOGO_SRC} alt="Logo" width={100} height={40} className="h-7 w-auto object-contain" />
-            </div>
-            <span className="hidden text-xs font-bold text-slate-400 sm:block">{t.nav.brandSub}</span>
+            <Image src={BRAND_LOGO_BANNER} alt="Logo" width={240} height={60} className="h-14 w-auto object-contain brightness-0 invert grayscale contrast-[2]" />
         </Link>
     );
+
+
+
 
     return (
         <div className="min-h-screen lg:grid lg:grid-cols-2 bg-slate-50">
