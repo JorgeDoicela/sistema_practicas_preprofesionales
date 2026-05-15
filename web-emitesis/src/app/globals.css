@@ -2,13 +2,26 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@font-face {
+  font-family: 'Google Sans Flex';
+  src: url('https://fonts.gstatic.com/s/googlesansflex/v1/khN77m_50UqjYQeYjE_9j_x_x_x_x_x_x_x_x_x_x_x_x_x.woff2') format('woff2');
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
+
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-display: var(--font-montserrat);
-  --font-body: var(--font-roboto);
+  --font-google: 'Google Sans Flex', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-display: var(--font-google);
+  --font-body: var(--font-google);
+  --font-mono: var(--font-google);
+  --font-serif: var(--font-google);
+
   
   /* ISTPET Brand Colors Extended */
   --color-brand-blue: #003366;
@@ -136,10 +149,12 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    font-family: 'Google Sans Flex', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
     transition-property: background-color, border-color, color;
     transition-duration: 200ms;
     transition-timing-function: ease;
   }
+
   body {
     @apply bg-background text-foreground font-body antialiased selection:bg-brand-gold/30;
   }
