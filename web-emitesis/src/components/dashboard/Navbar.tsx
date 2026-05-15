@@ -115,9 +115,8 @@ export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
                           onClick={() => setIsOpen(false)}
                           className="w-full flex items-center gap-3 p-4 rounded-2xl hover:bg-slate-50 transition-colors group"
                        >
-                          <div className="p-2 bg-slate-100 text-slate-500 rounded-xl group-hover:bg-brand-blue/5 group-hover:text-brand-blue transition-colors">
-
-                            <User className="w-4 h-4" />
+                          <div className="p-2 text-slate-500 group-hover:text-brand-blue transition-colors shrink-0">
+                            <User className="w-5 h-5" />
                           </div>
                           <span className="text-[11px] font-black text-slate-600 uppercase tracking-wider">{t.sidebar.myProfile}</span>
                        </Link>
@@ -125,8 +124,8 @@ export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
                          onClick={handleLogout}
                          className="w-full flex items-center gap-3 p-4 rounded-2xl hover:bg-red-50 transition-colors group"
                        >
-                          <div className="p-2 bg-red-50 text-red-500 rounded-xl group-hover:bg-red-100 transition-colors">
-                            <LogOut className="w-4 h-4" />
+                          <div className="p-2 text-red-500 transition-colors shrink-0">
+                            <LogOut className="w-5 h-5" />
                           </div>
                           <span className="text-[11px] font-black text-red-600 uppercase tracking-wider">{t.sidebar.logout}</span>
                        </button>

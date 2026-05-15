@@ -109,13 +109,13 @@ export function StudentRoadmap({ internship }: StudentRoadmapProps) {
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: idx * 0.1 }}
                     className={cn(
-                      "w-14 h-14 rounded-2xl flex items-center justify-center transition-all shadow-lg",
-                      step.status === "completed" ? "bg-[#003366] text-white shadow-blue-900/20" :
-                      step.status === "current" ? "bg-[#C5A059] text-white shadow-amber-900/20 animate-pulse" :
-                      "bg-slate-50 text-slate-300 border border-slate-100 shadow-none"
+                      "w-14 h-14 flex items-center justify-center transition-all",
+                      step.status === "completed" ? "text-[#003366]" :
+                      step.status === "current" ? "text-[#C5A059] animate-pulse" :
+                      "text-slate-200"
                     )}
                   >
-                    <Icon className="w-6 h-6" />
+                    <Icon className="w-8 h-8" />
                   </motion.div>
                   <div className="text-center mt-4">
                     <p className={cn(

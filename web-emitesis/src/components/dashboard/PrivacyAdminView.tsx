@@ -93,26 +93,26 @@ export function PrivacyAdminView() {
     switch (status) {
       case "PENDIENTE":
         return (
-          <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase tracking-widest">
-            <Clock className="w-3 h-3" /> Pendiente
+          <span className="flex items-center gap-1.5 text-amber-600 text-[10px] font-black uppercase tracking-[0.2em]">
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" /> Pendiente
           </span>
         );
       case "EN_REVISION":
         return (
-          <span className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest">
-            <AlertCircle className="w-3 h-3" /> En Revisión
+          <span className="flex items-center gap-1.5 text-blue-600 text-[10px] font-black uppercase tracking-[0.2em]">
+            <div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> En Revisión
           </span>
         );
       case "COMPLETADA":
         return (
-          <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest">
-            <CheckCircle2 className="w-3 h-3" /> Completada
+          <span className="flex items-center gap-1.5 text-emerald-600 text-[10px] font-black uppercase tracking-[0.2em]">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Completada
           </span>
         );
       case "RECHAZADA":
         return (
-          <span className="flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-600 rounded-full text-[10px] font-black uppercase tracking-widest">
-            <XCircle className="w-3 h-3" /> Rechazada
+          <span className="flex items-center gap-1.5 text-rose-600 text-[10px] font-black uppercase tracking-[0.2em]">
+            <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Rechazada
           </span>
         );
       default:
@@ -144,8 +144,8 @@ export function PrivacyAdminView() {
             Ver Logs de Aceptación
           </Link>
           <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-2">
-            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
-               <ShieldAlert className="w-5 h-5" />
+            <div className="p-2 text-indigo-600">
+               <ShieldAlert className="w-6 h-6" />
             </div>
             <div className="pr-4">
               <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Estado LOPDP</p>
@@ -228,7 +228,7 @@ export function PrivacyAdminView() {
                     >
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-xs">
+                          <div className="w-10 h-10 flex items-center justify-center text-indigo-600 font-black text-lg">
                             {req.user.fullName.charAt(0)}
                           </div>
                           <div>
@@ -238,7 +238,7 @@ export function PrivacyAdminView() {
                         </div>
                       </td>
                       <td className="px-6 py-6">
-                        <span className="inline-flex items-center px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-black tracking-widest uppercase">
+                        <span className="inline-flex items-center text-slate-400 text-[10px] font-black tracking-widest uppercase">
                           {req.type}
                         </span>
                       </td>
@@ -287,8 +287,8 @@ export function PrivacyAdminView() {
               <div className="p-10">
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 bg-brand-blue text-white rounded-2xl">
-                      <ShieldAlert className="w-6 h-6" />
+                    <div className="p-3 text-brand-blue shrink-0">
+                      <ShieldAlert className="w-10 h-10" />
                     </div>
                     <div>
                       <h3 className="text-2xl font-black text-brand-blue tracking-tight">Resolver Solicitud ARCO</h3>

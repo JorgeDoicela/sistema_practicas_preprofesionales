@@ -125,14 +125,14 @@ function NotificationItem({ notification, onRead, onClose }: { notification: Not
                notification.type === 'ERROR' ? XCircle : 
                notification.type === 'WARNING' ? AlertCircle : Info;
 
-  const color = notification.type === 'SUCCESS' ? 'text-emerald-500 bg-emerald-50' : 
-                notification.type === 'ERROR' ? 'text-rose-500 bg-rose-50' : 
-                notification.type === 'WARNING' ? 'text-amber-500 bg-amber-50' : 'text-blue-500 bg-blue-50';
+  const color = notification.type === 'SUCCESS' ? 'text-emerald-500' : 
+                notification.type === 'ERROR' ? 'text-rose-500' : 
+                notification.type === 'WARNING' ? 'text-amber-500' : 'text-blue-500';
 
   return (
-    <div className={`p-6 border-b border-slate-50 transition-all hover:bg-slate-50/50 flex gap-4 relative group ${!notification.isRead && "bg-blue-50/30"}`}>
-       <div className={`p-3 rounded-2xl h-fit ${color}`}>
-          <Icon className="w-5 h-5" />
+    <div className={cn("p-6 border-b border-slate-50 transition-all hover:bg-slate-50/50 flex gap-4 relative group", !notification.isRead && "border-l-4 border-l-brand-gold")}>
+       <div className={cn("w-10 h-10 flex items-center justify-center shrink-0", color)}>
+          <Icon className="w-6 h-6" />
        </div>
        <div className="flex-1 min-w-0">
           <h5 className="text-[11px] font-black text-[#003366] uppercase tracking-tight mb-1">{notification.title}</h5>

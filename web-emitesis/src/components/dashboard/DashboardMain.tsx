@@ -639,8 +639,9 @@ export function DashboardMain() {
           )}
           
           <div className="hidden sm:flex items-center gap-3 bg-white p-1.5 rounded-2xl shadow-sm border border-slate-100 ml-auto lg:ml-0">
-            <div className="px-4 py-2 bg-emerald-50 rounded-xl">
-              <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest whitespace-nowrap">
+            <div className="px-4 py-2 flex items-center gap-2">
+              <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", loading ? "bg-amber-400" : error ? "bg-rose-500" : "bg-emerald-500")} />
+              <span className={cn("text-[9px] font-black uppercase tracking-[0.2em] whitespace-nowrap", loading ? "text-amber-600" : error ? "text-rose-600" : "text-emerald-600")}>
                 {loading ? t.dashboard.syncing : error ? t.dashboard.apiError : t.dashboard.dataOk}
               </span>
             </div>
@@ -817,15 +818,15 @@ export function DashboardMain() {
                   ].map((task, idx) => (
                     <div key={idx} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-50">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-slate-400">
-                          <FileText className="w-4 h-4" />
+                        <div className="w-8 h-8 flex items-center justify-center text-slate-400 shrink-0">
+                          <FileText className="w-5 h-5" />
                         </div>
                         <div>
                           <p className="text-[11px] font-black text-brand-blue uppercase tracking-tight">{task.label}</p>
                           <p className="text-[9px] font-medium text-slate-400">{task.date}</p>
                         </div>
                       </div>
-                      <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 bg-brand-gold/10 text-brand-gold rounded-md">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-brand-gold">
                         Pendiente
                       </span>
                     </div>
@@ -852,15 +853,15 @@ export function DashboardMain() {
                   ].map((doc, idx) => (
                     <div key={idx} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-50">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-slate-400">
-                          <FileText className="w-4 h-4" />
+                        <div className="w-8 h-8 flex items-center justify-center text-slate-400 shrink-0">
+                          <FileText className="w-5 h-5" />
                         </div>
                         <div>
                           <p className="text-[11px] font-black text-brand-blue uppercase tracking-tight">{doc.name}</p>
                           <p className="text-[9px] font-medium text-slate-400">{doc.date}</p>
                         </div>
                       </div>
-                      <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 bg-slate-100 text-slate-500 rounded-md">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
                         PDF
                       </span>
                     </div>
@@ -899,8 +900,8 @@ export function DashboardMain() {
                   className="bg-indigo-50 border border-indigo-100 rounded-[2.5rem] p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm"
                 >
                   <div className="flex items-center gap-6 text-center md:text-left flex-col md:flex-row">
-                    <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-indigo-600 shrink-0">
-                      <FileStack className="w-8 h-8" />
+                    <div className="w-16 h-16 flex items-center justify-center text-indigo-600 shrink-0">
+                      <FileStack className="w-10 h-10" />
                     </div>
                     <div>
                       <h4 className="text-xl font-black text-indigo-900 tracking-tight">Control de Gestión</h4>
@@ -925,8 +926,8 @@ export function DashboardMain() {
                 </div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-8">
-                    <div className="p-2.5 bg-[#C5A059]/10 text-[#C5A059] rounded-xl">
-                      <PieChart className="w-5 h-5" />
+                    <div className="p-2.5 text-brand-gold">
+                      <PieChart className="w-6 h-6" />
                     </div>
                     <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">{t.dashboard.analytics.title}</h3>
                   </div>
@@ -1008,8 +1009,8 @@ export function DashboardMain() {
                 </div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-8">
-                    <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
-                      <PieChart className="w-5 h-5" />
+                    <div className="p-2.5 text-indigo-600">
+                      <PieChart className="w-6 h-6" />
                     </div>
                     <h3 className="text-xl font-black text-indigo-900 uppercase tracking-tight">Salud del Sistema</h3>
                   </div>
@@ -1351,7 +1352,7 @@ function ActivityRow({ name, company, status, time }: ActivityRowProps) {
         </div>
       </div>
       <div className="text-right">
-        <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg">
+        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">
           {status}
         </span>
         <p className="text-[9px] font-bold text-slate-400 uppercase mt-1.5">{time}</p>

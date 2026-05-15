@@ -134,8 +134,8 @@ export function AICopilot({ user, internship }: AICopilotProps) {
             {/* Header del Copilot */}
             <div className="bg-[#003366] p-6 text-white relative">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#C5A059] rounded-2xl flex items-center justify-center shadow-lg shadow-black/20">
-                  <Bot className="w-6 h-6 text-[#003366]" />
+                <div className="w-12 h-12 flex items-center justify-center shrink-0">
+                  <Bot className="w-9 h-9 text-[#C5A059]" />
                 </div>
                 <div>
                   <h4 className="text-lg font-black tracking-tight">Nexo AI</h4>
@@ -175,10 +175,10 @@ export function AICopilot({ user, internship }: AICopilotProps) {
                   )}
                 >
                   <div className={cn(
-                    "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
-                    msg.role === "user" ? "bg-[#C5A059]/10 text-[#C5A059]" : "bg-[#003366]/5 text-[#003366]"
+                    "w-8 h-8 flex items-center justify-center flex-shrink-0",
+                    msg.role === "user" ? "text-[#C5A059]" : "text-[#003366]"
                   )}>
-                    {msg.role === "user" ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                    {msg.role === "user" ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
                   </div>
                   <div className={cn(
                     "p-4 rounded-2xl text-[13px] font-medium leading-relaxed max-w-[80%]",
@@ -192,8 +192,8 @@ export function AICopilot({ user, internship }: AICopilotProps) {
               ))}
               {isTyping && (
                 <div className="flex gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#003366]/5 text-[#003366] flex items-center justify-center">
-                    <Bot className="w-4 h-4" />
+                  <div className="w-8 h-8 text-[#003366] flex items-center justify-center shrink-0">
+                    <Bot className="w-5 h-5" />
                   </div>
                   <div className="bg-white border border-slate-100 p-4 rounded-2xl rounded-tl-none shadow-sm">
                     <Loader2 className="w-4 h-4 animate-spin text-slate-300" />

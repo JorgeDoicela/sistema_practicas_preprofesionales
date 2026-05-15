@@ -38,8 +38,8 @@ export function LivePresenceWidget({ internships }: LivePresenceWidgetProps) {
       <div className="p-8 bg-[#003366] text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-             <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
-                <Radar className="w-5 h-5 text-[#C5A059] animate-pulse" />
+             <div className="w-10 h-10 flex items-center justify-center shrink-0">
+                <Radar className="w-8 h-8 text-[#C5A059] animate-pulse" />
              </div>
              <div>
                <h3 className="text-lg font-black tracking-tight">Presencia en Vivo</h3>
@@ -67,7 +67,7 @@ export function LivePresenceWidget({ internships }: LivePresenceWidgetProps) {
                 animate={{ opacity: 1, x: 0 }}
                 className="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center gap-4 group hover:bg-white hover:shadow-lg transition-all"
               >
-                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[#003366] font-black border border-slate-100">
+                <div className="w-10 h-10 flex items-center justify-center text-[#003366] font-black shrink-0 text-lg">
                   {p.name.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">

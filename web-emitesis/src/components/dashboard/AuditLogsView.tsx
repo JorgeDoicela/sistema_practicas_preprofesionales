@@ -52,11 +52,11 @@ export function AuditLogsView() {
   const getLevelBadge = (level: string) => {
     switch (level) {
       case "ERROR":
-        return <span className="px-2 py-0.5 bg-rose-50 text-rose-600 rounded text-[9px] font-black border border-rose-100">ERROR</span>;
+        return <span className="text-rose-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" /> ERROR</span>;
       case "WARN":
-        return <span className="px-2 py-0.5 bg-amber-50 text-amber-600 rounded text-[9px] font-black border border-amber-100">WARN</span>;
+        return <span className="text-amber-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-amber-500" /> WARN</span>;
       default:
-        return <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[9px] font-black border border-blue-100 italic">INFO</span>;
+        return <span className="text-blue-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-blue-400" /> INFO</span>;
     }
   };
 
@@ -161,7 +161,7 @@ export function AuditLogsView() {
                         {getLevelBadge(log.level)}
                       </td>
                       <td className="px-4 py-4">
-                        <div className="flex items-center justify-center w-7 h-7 bg-slate-100 rounded-lg text-slate-400" title={log.category}>
+                        <div className="flex items-center justify-center w-7 h-7 text-slate-400" title={log.category}>
                           {getCategoryIcon(log.category)}
                         </div>
                       </td>
