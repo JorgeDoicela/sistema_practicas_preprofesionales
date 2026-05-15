@@ -186,7 +186,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 data-tour="sidebar" 
                 style={{ width: isOpen ? `${width}px` : '0px' }}
                 className={cn(
-                    "bg-[#003366] text-white flex flex-col h-screen border-r border-white/10 shadow-2xl transition-[transform,opacity] duration-300 ease-in-out z-[200] lg:relative lg:z-0",
+                    "bg-primary text-white flex flex-col h-screen border-r border-white/10 shadow-2xl transition-[transform,opacity] duration-300 ease-in-out z-[200] lg:relative lg:z-0",
+
                     "fixed top-0 left-0",
                     !isOpen && "-translate-x-full opacity-0",
                     isResizing && "transition-none select-none"
@@ -203,7 +204,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 {/* Resize Handle */}
                 <div
                     onMouseDown={startResizing}
-                    className="absolute top-0 right-0 w-1.5 h-full cursor-col-resize hover:bg-[#C5A059]/30 active:bg-[#C5A059] transition-colors z-50 group"
+                    className="absolute top-0 right-0 w-1.5 h-full cursor-col-resize hover:bg-brand-gold/30 active:bg-brand-gold transition-colors z-50 group"
+
                 />
  
             {/* Botón cerrar interno - visible en todo momento para facilitar el cierre */}
@@ -232,7 +234,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     </div>
                     <div>
                         <h1 className="text-xl font-black tracking-tight leading-none">PRAXIS HUB</h1>
-                        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[#C5A059] mt-1">{t.sidebar.subtitle}</p>
+                        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-brand-gold mt-1">{t.sidebar.subtitle}</p>
+
                     </div>
                 </div>
             </div>
@@ -283,12 +286,14 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 {user && (
                     <div className="bg-white/5 rounded-3xl p-5 border border-white/10 mb-2">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-2xl bg-[#C5A059] flex items-center justify-center font-black text-[#003366] text-sm shrink-0">
+                            <div className="w-10 h-10 rounded-2xl bg-brand-gold flex items-center justify-center font-black text-brand-blue text-sm shrink-0">
                                 {user.fullName?.charAt(0).toUpperCase()}
                             </div>
+
                             <div className="overflow-hidden">
                                 <p className="text-[11px] font-black text-white truncate">{user.fullName}</p>
-                                <p className="text-[9px] font-bold uppercase tracking-widest text-[#C5A059]">{t.sidebar.roles[user.role as keyof typeof t.sidebar.roles] || user.role}</p>
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-brand-gold">{t.sidebar.roles[user.role as keyof typeof t.sidebar.roles] || user.role}</p>
+
                             </div>
                         </div>
                     </div>
@@ -336,8 +341,9 @@ function SidebarItem({ icon: Icon, label, href, active }: SidebarItemProps) {
             className={cn(
                 "flex items-center justify-between group px-5 py-3.5 rounded-2xl transition-all relative overflow-hidden",
                 active
-                    ? "bg-white text-[#003366] shadow-xl shadow-indigo-900/40 translate-x-1"
+                    ? "bg-white text-primary shadow-xl shadow-blue-900/40 translate-x-1"
                     : "text-white/60 hover:text-white hover:bg-white/5"
+
             )}
         >
             <div className="flex items-center gap-4 relative z-10">
@@ -347,7 +353,8 @@ function SidebarItem({ icon: Icon, label, href, active }: SidebarItemProps) {
             {active ? (
                 <motion.div
                     layoutId="active-indicator"
-                    className="w-1.5 h-1.5 rounded-full bg-[#C5A059] relative z-10"
+                    className="w-1.5 h-1.5 rounded-full bg-brand-gold relative z-10"
+
                 />
             ) : (
                 <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0" />

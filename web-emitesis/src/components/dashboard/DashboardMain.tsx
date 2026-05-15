@@ -591,14 +591,16 @@ export function DashboardMain() {
     <div className="space-y-8 md:space-y-12">
       <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
         <div className="max-w-2xl">
-          <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
+          <span className="text-[10px] font-black text-brand-gold uppercase tracking-[0.4em] mb-2 block">
+
             {appRole === ROLES.ESTUDIANTE
               ? t.dashboard.summaryStudent
               : appRole === ROLES.TUTOR
                 ? t.dashboard.summaryTutor
                 : t.dashboard.summaryAdmin}
           </span>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-[#003366] tracking-tight leading-tight">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-brand-blue tracking-tight leading-tight">
+
             {t.dashboard.greeting}{" "}
             <span className="text-slate-300">
               {user?.fullName?.split(" ")[0] || t.dashboard.defaultUser}
@@ -616,7 +618,8 @@ export function DashboardMain() {
                 <select
                   value={selectedCareerId}
                   onChange={(e) => setSelectedCareerId(e.target.value)}
-                  className="w-full pl-4 pr-10 py-3 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-[10px] font-black text-[#003366] uppercase tracking-widest appearance-none focus:outline-none focus:ring-2 focus:ring-[#C5A059]/20"
+                  className="w-full pl-4 pr-10 py-3 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-[10px] font-black text-brand-blue uppercase tracking-widest appearance-none focus:outline-none focus:ring-2 focus:ring-brand-gold/20"
+
                 >
                   <option value="">{t.dashboard.allInstitution}</option>
                   {careers.map((c) => (
@@ -759,7 +762,8 @@ export function DashboardMain() {
                     <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
                       <Clock className="w-5 h-5" />
                     </div>
-                    <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">{t.dashboard.attendance.title}</h3>
+                    <h3 className="text-xl font-black text-brand-blue uppercase tracking-tight">{t.dashboard.attendance.title}</h3>
+
                   </div>
                   <p className="text-sm text-slate-500 font-medium">
                     {todayAttendance?.checkIn 
@@ -771,7 +775,8 @@ export function DashboardMain() {
                   <div className="pt-4 flex flex-col sm:flex-row gap-3">
                     <Link 
                       href="/dashboard/asistencia"
-                      className="px-8 py-4 bg-[#003366] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#003366]/90 transition-all text-center"
+                      className="px-8 py-4 bg-primary text-primary-foreground rounded-2xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all text-center"
+
                     >
                       {todayAttendance?.checkIn ? t.dashboard.attendance.manageExit : t.dashboard.attendance.registerEntry}
                     </Link>
@@ -789,11 +794,13 @@ export function DashboardMain() {
               </div>
 
               <div 
-                className="bg-gradient-to-br from-[#003366] to-[#002244] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white shadow-xl flex flex-col justify-center"
+                className="bg-gradient-to-br from-primary to-blue-900 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white shadow-xl flex flex-col justify-center"
+
                 data-tour="dashboard-hours-card"
               >
                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-6">
-                    <BarChart3 className="w-6 h-6 text-[#C5A059]" />
+                    <BarChart3 className="w-6 h-6 text-brand-gold" />
+
                  </div>
                  <h4 className="text-xl font-black tracking-tight mb-2">{t.dashboard.hours.title}</h4>
                  <p className="text-sm text-white/60 font-medium mb-4">{t.dashboard.hours.subtitle}</p>
