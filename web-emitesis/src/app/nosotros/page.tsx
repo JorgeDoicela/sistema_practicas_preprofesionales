@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { GraduationCap, Target, Users, MapPin, Globe2, ArrowRight, CheckCircle2 } from "lucide-react";
+import { BRAND_LOGO_WHITE } from "@/lib/brand";
+
 import { useLanguage } from "@/providers/LanguageProvider";
 
 const SectionLabel = ({ children, dark = false }: { children: React.ReactNode; dark?: boolean }) => (
@@ -143,8 +145,9 @@ export default function NosotrosPage() {
                             <div className="relative bg-gradient-to-br from-brand-blue to-slate-900 rounded-2xl p-12 flex flex-col items-center justify-center min-h-[380px] shadow-xl overflow-hidden">
                                 <div className="absolute top-0 right-0 w-40 h-40 bg-brand-gold/15 rounded-full blur-3xl" />
                                 <Image
-                                    src="/images/Logo.png"
+                                    src={BRAND_LOGO_WHITE}
                                     alt="ISTPET"
+
                                     width={200}
                                     height={80}
                                     className="opacity-90 object-contain relative z-10"

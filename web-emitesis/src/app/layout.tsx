@@ -5,9 +5,10 @@ export const metadata: Metadata = {
   title: "Praxis Hub - Prácticas Preprofesionales",
   description: "Plataforma para la gestión integral de prácticas preprofesionales.",
   icons: {
-    icon: "/images/Logo.png",
-    apple: "/images/Logo.png",
+    icon: "/images/brand/color_sinfondo_png.png",
+    apple: "/images/brand/color_sinfondo_png.png",
   },
+
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
