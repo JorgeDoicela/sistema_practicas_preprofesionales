@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { User as UserType } from "@/types/user";
-import { BRAND_LOGO_SRC, BRAND_LOGO_NAVY, BRAND_LOGO_BANNER } from "@/lib/brand";
+import { BRAND_LOGO_SRC, BRAND_LOGO_NAVY, BRAND_LOGO_BANNER, BRAND_LOGO_WHITE } from "@/lib/brand";
 import { getProfilePathForRole } from "@/lib/profile-route";
 
 import { useLanguage } from "@/providers/LanguageProvider";
@@ -221,14 +221,14 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             </div>
  
             {/* Brand Header */}
-            <div className="p-8 pb-10">
-                <Link href="/dashboard" className="block group">
+            <div className="p-6 pb-8 flex justify-center">
+                <Link href="/dashboard" className="block group w-full">
                     <Image
-                        src={BRAND_LOGO_BANNER}
+                        src={BRAND_LOGO_WHITE}
                         alt="Praxis Hub"
-                        width={260}
-                        height={100}
-                        className="object-contain w-auto h-24 transition-transform group-hover:scale-[1.02]"
+                        width={280}
+                        height={120}
+                        className="object-contain w-full h-auto max-h-28 transition-transform group-hover:scale-[1.02]"
                         priority
                     />
                 </Link>

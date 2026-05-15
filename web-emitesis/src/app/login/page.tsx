@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { BRAND_LOGO_SRC, BRAND_LOGO_BANNER } from "@/lib/brand";
+import { BRAND_LOGO_SRC, BRAND_LOGO_BANNER, BRAND_LOGO_WHITE } from "@/lib/brand";
 
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -110,7 +110,7 @@ export default function LoginPage() {
 
     const brandTopOnBlue = (
         <Link href="/" className="flex items-center gap-2.5 focus:outline-none">
-            <Image src={BRAND_LOGO_BANNER} alt="Logo" width={240} height={60} className="h-14 w-auto object-contain" />
+            <Image src={BRAND_LOGO_WHITE} alt="Logo" width={280} height={70} className="h-16 w-auto object-contain" priority />
         </Link>
     );
 
@@ -119,7 +119,7 @@ export default function LoginPage() {
 
     const brandTopOnWhite = (
         <Link href="/" className="flex items-center gap-2.5 focus:outline-none">
-            <Image src={BRAND_LOGO_BANNER} alt="Logo" width={240} height={60} className="h-14 w-auto object-contain brightness-0 invert grayscale contrast-[2]" />
+            <Image src={BRAND_LOGO_BANNER} alt="Logo" width={240} height={60} className="h-12 w-auto object-contain" />
         </Link>
     );
 

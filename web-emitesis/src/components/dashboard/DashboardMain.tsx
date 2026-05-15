@@ -678,13 +678,21 @@ export function DashboardMain() {
         <DashboardSkeleton />
       ) : (
         <>
-          {/* Dashboard Stats Cards */}
+          {/* Dashboard Stats Bento Grid */}
           <div 
-            className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
+            className="grid sm:grid-cols-2 lg:grid-cols-4 grid-rows-2 gap-6 mb-12"
             data-tour="dashboard-stats"
           >
             {stats.cards.map((card, idx) => (
-              <StatCard key={idx} {...card} />
+              <StatCard 
+                key={idx} 
+                {...card} 
+                className={cn(
+                  idx === 0 ? "lg:col-span-2 lg:row-span-2" : "",
+                  "h-full"
+                )}
+                isMain={idx === 0}
+              />
             ))}
           </div>
 
@@ -1233,51 +1241,88 @@ interface StatCardProps {
   icon: React.ReactElement;
   color: string;
   href?: string;
+  className?: string;
+  isMain?: boolean;
 }
 
-function StatCard({ title, value, hint, icon, color, href }: StatCardProps) {
+function StatCard({ title, value, hint, icon, color, href, className, isMain }: StatCardProps) {
   // Mapeo de colores para gradientes y sombras (glow)
-  const colorMap: Record<string, { bg: string, icon: string }> = {
-    'bg-blue-500': { bg: 'bg-[#1F295B]', icon: 'text-white' },
-    'bg-indigo-500': { bg: 'bg-[#114880]', icon: 'text-white' },
-    'bg-amber-500': { bg: 'bg-[#EFC703]', icon: 'text-white' },
-    'bg-emerald-500': { bg: 'bg-[#196098]', icon: 'text-white' },
-    'bg-rose-500': { bg: 'bg-brand-gold', icon: 'text-white' },
+  const colorMap: Record<string, { bg: string, icon: string, border: string }> = {
+    'bg-blue-500': { bg: 'bg-brand-blue', icon: 'text-white', border: 'border-brand-blue/10' },
+    'bg-indigo-500': { bg: 'bg-[#114880]', icon: 'text-white', border: 'border-blue-900/10' },
+    'bg-amber-500': { bg: 'bg-brand-gold', icon: 'text-white', border: 'border-brand-gold/10' },
+    'bg-emerald-500': { bg: 'bg-[#196098]', icon: 'text-white', border: 'border-blue-700/10' },
+    'bg-rose-500': { bg: 'bg-rose-600', icon: 'text-white', border: 'border-rose-600/10' },
   };
-
 
   const theme = colorMap[color] || colorMap['bg-blue-500'];
 
   const CardContent = (
     <motion.div
-      whileHover={{ y: -4 }}
-      className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer h-full flex items-center gap-6 group"
+      whileHover={{ y: -6, scale: 1.01 }}
+      className={cn(
+        "bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all cursor-pointer h-full flex flex-col justify-between group relative overflow-hidden",
+        isMain ? "p-10" : "p-7",
+        className
+      )}
     >
+      {/* Subtle Background pattern for main card */}
+      {isMain && (
+        <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none">
+          {React.cloneElement(icon as React.ReactElement<{ className?: string }>, {
+            className: "w-48 h-48 -rotate-12"
+          })}
+        </div>
+      )}
+
       <div className={cn(
-        "w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-sm",
-        theme.bg
+        "flex items-center gap-6",
+        isMain ? "flex-col sm:flex-row items-start sm:items-center" : "flex-row"
       )}>
-        {React.cloneElement(icon as React.ReactElement<{ className?: string; strokeWidth?: number }>, {
-          className: cn("w-7 h-7", theme.icon),
-          strokeWidth: 1.5
-        })}
+        <div className={cn(
+          "rounded-3xl flex items-center justify-center shrink-0 shadow-lg transition-transform group-hover:scale-110 duration-500",
+          theme.bg,
+          isMain ? "w-20 h-20" : "w-14 h-14"
+        )}>
+          {React.cloneElement(icon as React.ReactElement<{ className?: string; strokeWidth?: number }>, {
+            className: cn(isMain ? "w-10 h-10" : "w-6 h-6", theme.icon),
+            strokeWidth: 1.5
+          })}
+        </div>
+
+        <div className="flex flex-col">
+          <p className={cn(
+            "font-black uppercase tracking-[0.2em] text-slate-400 mb-1",
+            isMain ? "text-[11px]" : "text-[9px]"
+          )}>
+            {title}
+          </p>
+          <h4 className={cn(
+            "font-black text-brand-blue tracking-tighter leading-none",
+            isMain ? "text-5xl" : "text-3xl"
+          )}>
+            {value}
+          </h4>
+        </div>
       </div>
 
-      <div className="flex flex-col">
-        <p className="text-xs font-bold text-slate-400 mb-0.5">{title}</p>
-        <h4 className="text-2xl font-black text-brand-blue tracking-tight">
-          {value}
-        </h4>
-        <p className="text-[10px] font-medium text-slate-400 mt-1">
+      <div className={cn(
+        "flex items-center justify-between mt-6 pt-6 border-t border-slate-50",
+        isMain ? "mt-10 pt-10" : ""
+      )}>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
           {hint}
         </p>
+        <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-brand-blue group-hover:text-white transition-all">
+          <ChevronRight className="w-4 h-4" />
+        </div>
       </div>
     </motion.div>
   );
 
   if (href) {
     return (
-      <Link href={href} className="block h-full">
+      <Link href={href} className={cn("block h-full", className)}>
         {CardContent}
       </Link>
     );
