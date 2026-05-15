@@ -27,21 +27,56 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [activeInternship, setActiveInternship] = useState<any>(null);
   const [appRole, setAppRole] = useState<string | null>(null);
 
-  // Inactivity Timeout Configuration (Enterprise Grade)
+  // Inactivity & Session Limits (Enterprise Security)
   const INACTIVITY_LIMIT = 15 * 60 * 1000; // 15 minutos
+  const ABSOLUTE_LIMIT = 4 * 60 * 60 * 1000; // 4 horas
+  
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const securityCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const resetInactivityTimer = () => {
+    // 1. Actualizar timestamp global (todas las pestañas ven esto)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('last_activity', Date.now().toString());
+    }
+    
+    // 2. Timer local para ejecución inmediata si esta es la pestaña activa
     if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
     inactivityTimerRef.current = setTimeout(() => {
-      handleLogout();
-    }, INACTIVITY_LIMIT);
+      checkSessionSecurity();
+    }, INACTIVITY_LIMIT + 1000); // Pequeño buffer para dejar que el interval actúe primero
   };
 
-  const handleLogout = () => {
+  const handleLogout = (reason: 'inactivity' | 'absolute' | 'manual' | 'sync' = 'manual') => {
+    console.warn(`[Security] Logging out due to: ${reason}`);
     localStorage.clear();
     if (typeof window !== 'undefined') {
-      window.location.href = "/login?sessionExpired=true";
+      const errorParam = reason === 'inactivity' ? 'sessionExpired=true' : 
+                         reason === 'absolute' ? 'sessionLimit=true' : 'logout=true';
+      window.location.href = `/login?${errorParam}`;
+    }
+  };
+
+  const checkSessionSecurity = () => {
+    if (typeof window === 'undefined') return;
+
+    const now = Date.now();
+    const lastActivity = parseInt(localStorage.getItem('last_activity') || '0');
+    const sessionStart = parseInt(localStorage.getItem('session_start') || '0');
+    const token = localStorage.getItem('token');
+
+    if (!token) return; // Ya se cerró sesión
+
+    // A. Verificar Inactividad Global (Cross-tab)
+    if (lastActivity > 0 && (now - lastActivity) > INACTIVITY_LIMIT) {
+      handleLogout('inactivity');
+      return;
+    }
+
+    // B. Verificar Límite Absoluto
+    if (sessionStart > 0 && (now - sessionStart) > ABSOLUTE_LIMIT) {
+      handleLogout('absolute');
+      return;
     }
   };
 
@@ -53,17 +88,21 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     };
     handleInitialState();
 
-    // Eventos para detectar actividad
-    const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
+    // Eventos para detectar actividad real del usuario
+    const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
     activityEvents.forEach(event => {
       window.addEventListener(event, resetInactivityTimer);
     });
 
-    // Iniciar timer
+    // Vigilante Periódico (Seguridad Activa)
+    securityCheckIntervalRef.current = setInterval(checkSessionSecurity, 30000); // Cada 30 seg
+
+    // Sincronización Inicial
     resetInactivityTimer();
 
     return () => {
       if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+      if (securityCheckIntervalRef.current) clearInterval(securityCheckIntervalRef.current);
       activityEvents.forEach(event => {
         window.removeEventListener(event, resetInactivityTimer);
       });
@@ -72,23 +111,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const validateSession = () => {
-      console.log("[DashboardLayout] Validating session at:", pathname);
-      
       const token = localStorage.getItem("token");
       const userStr = localStorage.getItem("user");
 
-      // Limpieza preventiva de valores corruptos que causan bucles
       if (token === "undefined" || token === "null" || userStr === "undefined" || userStr === "null") {
-        console.warn("[DashboardLayout] Corrupted session detected, cleaning up...");
-        localStorage.removeItem("token");
-        localStorage.removeItem("refresh_token");
-        localStorage.removeItem("user");
-        window.location.href = "/login?error=corrupted_session";
+        handleLogout('sync');
         return;
       }
 
       if (!token || !userStr) {
-        console.warn("[DashboardLayout] No session found, redirecting to login");
         setIsAuthorized(false);
         setIsLoading(false);
         router.replace("/login");
@@ -96,18 +127,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        const parsed = JSON.parse(userStr) as { role?: string; id?: string } & Record<string, unknown>;
-        console.log("[DashboardLayout] Session parsed for user:", parsed.id, "Role:", parsed.role);
-
-        if (!parsed.role || String(parsed.role).trim() === "") {
-          throw new Error("User role is missing or empty");
-        }
-
+        const parsed = JSON.parse(userStr);
         const role = normalizeApiRoleToAppRole(String(parsed.role));
         
-        // Verificación de acceso por ruta
         if (!canRoleAccessPath(role as Role, pathname)) {
-          console.warn("[DashboardLayout] Access denied for role", role, "on path", pathname);
           const redirectPath = getHomePathForRole(role as Role);
           router.replace(redirectPath);
           setIsAuthorized(false);
@@ -115,13 +138,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        console.log("[DashboardLayout] Access granted");
-        const roleNorm = role;
-        setAppRole(roleNorm);
+        setAppRole(role);
         setUser(parsed);
 
-        // Si es estudiante, cargar su práctica para darle contexto a la IA
-        if (roleNorm === ROLES.ESTUDIANTE && parsed.id) {
+        if (role === ROLES.ESTUDIANTE && parsed.id) {
           internshipsService.findByStudent(parsed.id).then(res => {
             const list = res?.items || (Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []));
             const active = list.find((i: any) => {
@@ -129,34 +149,36 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               return s === "activo" || s === "en proceso" || s === "en_curso";
             }) || list[0];
             setActiveInternship(active);
-          }).catch(err => console.error("[DashboardLayout] Error fetching internship:", err));
+          }).catch(err => console.error("[DashboardLayout] Internship Context Error:", err));
         }
 
         setIsAuthorized(true);
         setIsLoading(false);
       } catch (err) {
-        console.error("[DashboardLayout] Error validating session:", err);
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        setIsAuthorized(false);
-        setIsLoading(false);
-        window.location.href = "/login?error=session_error";
+        handleLogout('sync');
       }
     };
 
-    // Validar sesión inicialmente
     validateSession();
 
     /** 
      * GUARDIÁN DE SINCRONIZACIÓN (Cross-tab Security)
-     * Escucha cambios en el localStorage desde otras pestañas.
-     * Si el usuario cambia de rol o cierra sesión en otra pestaña, 
-     * esta pestaña se redirige automáticamente para evitar inconsistencias.
+     * Solo recarga si el token desaparece (logout en otra pestaña)
+     * Ignora actualizaciones de tokens (refrescos automáticos) para evitar "parpadeos"
      */
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'token' || e.key === 'user') {
-        // Si el token cambió o desapareció, forzamos re-validación total
-        window.location.reload(); 
+      if (e.key === 'token') {
+        if (!e.newValue) {
+          // Token eliminado -> Logout inmediato en esta pestaña
+          handleLogout('sync');
+        } else if (e.oldValue !== e.newValue) {
+          // Token cambió pero existe (refresco) -> No recargamos la página, 
+          // los interceptores de Axios usarán el nuevo valor automáticamente.
+          console.log("[Security] Token refreshed in another tab, synchronized silently.");
+        }
+      }
+      if (e.key === 'user' && !e.newValue) {
+         handleLogout('sync');
       }
     };
 
@@ -204,10 +226,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </AnimatePresence>
         </main>
       </div>
-      {/* Nexo AI disponible para todos los roles en el ecosistema administrativo */}
-      {appRole && (
-        <AICopilot user={user} internship={activeInternship} />
-      )}
+      {appRole && <AICopilot user={user} internship={activeInternship} />}
     </div>
   );
 }

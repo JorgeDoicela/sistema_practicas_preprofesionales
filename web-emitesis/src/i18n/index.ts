@@ -3,7 +3,7 @@ export type Locale = "es" | "en";
 
 export const LOCALES: Locale[] = ["es", "en"];
 export const DEFAULT_LOCALE: Locale = "es";
-export const LOCALE_STORAGE_KEY = "emitesis-locale";
+export const LOCALE_STORAGE_KEY = "praxis-hub-locale";
 
 export const LOCALE_LABELS: Record<Locale, { label: string; flag: string; native: string }> = {
   es: { label: "Español", flag: "🇪🇸", native: "Español" },

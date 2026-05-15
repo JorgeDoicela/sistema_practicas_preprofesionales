@@ -66,6 +66,8 @@ export default function LoginPage() {
             // Guardar en LocalStorage para compatibilidad con hooks existentes
             localStorage.setItem("token", data.access_token);
             localStorage.setItem("refresh_token", data.refresh_token);
+            localStorage.setItem("session_start", Date.now().toString());
+            localStorage.setItem("last_activity", Date.now().toString());
             const user = { ...data.user, role: normalizeApiRoleToAppRole(String(data.user.role)) };
             localStorage.setItem("user", JSON.stringify(user));
 
@@ -92,6 +94,8 @@ export default function LoginPage() {
             
             localStorage.setItem("token", data.access_token);
             localStorage.setItem("refresh_token", data.refresh_token);
+            localStorage.setItem("session_start", Date.now().toString());
+            localStorage.setItem("last_activity", Date.now().toString());
             const user = { ...data.user, role: normalizeApiRoleToAppRole(String(data.user.role)) };
             localStorage.setItem("user", JSON.stringify(user));
 

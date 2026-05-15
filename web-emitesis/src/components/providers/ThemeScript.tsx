@@ -6,7 +6,7 @@ export function ThemeScript() {
   const script = `
     (function() {
       try {
-        var saved = localStorage.getItem('emitesis-theme');
+        var saved = localStorage.getItem('praxis-hub-theme');
         var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         var shouldDark = saved === 'dark' || (saved !== 'light' && prefersDark);
         if (shouldDark) {

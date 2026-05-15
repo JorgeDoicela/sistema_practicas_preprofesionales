@@ -1,6 +1,6 @@
 @echo off
 echo ======================================================
-echo   LIMPIEZA DE PROYECTO - EMITESIS WEB
+echo   LIMPIEZA DE PROYECTO - PRAXIS HUB WEB
 echo ======================================================
 
 echo [1/3] Finalizando procesos de Node.js...
