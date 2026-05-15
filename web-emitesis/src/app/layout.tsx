@@ -6,7 +6,8 @@ export const metadata: Metadata = {
   description: "Plataforma para la gestión integral de prácticas preprofesionales.",
   icons: {
     icon: "/images/brand/color_sinfondo_png.png",
-    apple: "/images/brand/color_sinfondo_png.png",
+    shortcut: "/images/brand/color_sinfondo_png.png",
+    apple: "/images/brand/logo_fondo2_png.png",
   },
 
 

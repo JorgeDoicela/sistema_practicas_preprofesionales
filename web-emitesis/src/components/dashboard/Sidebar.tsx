@@ -224,11 +224,11 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <div className="p-6 pb-8 flex justify-center">
                 <Link href="/dashboard" className="block group w-full">
                     <Image
-                        src={BRAND_LOGO_WHITE}
+                        src={BRAND_LOGO_BANNER}
                         alt="Praxis Hub"
                         width={280}
                         height={120}
-                        className="object-contain w-full h-auto max-h-28 transition-transform group-hover:scale-[1.02]"
+                        className="object-contain w-full h-auto max-h-24 transition-transform group-hover:scale-[1.02]"
                         priority
                     />
                 </Link>
