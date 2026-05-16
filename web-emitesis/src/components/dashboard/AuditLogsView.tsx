@@ -52,11 +52,11 @@ export function AuditLogsView() {
   const getLevelBadge = (level: string) => {
     switch (level) {
       case "ERROR":
-        return <span className="text-rose-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" /> ERROR</span>;
+        return <span className="text-rose-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" /> FALLO</span>;
       case "WARN":
-        return <span className="text-amber-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-amber-500" /> WARN</span>;
+        return <span className="text-amber-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-amber-500" /> AVISO</span>;
       default:
-        return <span className="text-blue-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-blue-400" /> INFO</span>;
+        return <span className="text-blue-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-blue-400" /> DETALLE</span>;
     }
   };
 
@@ -78,10 +78,10 @@ export function AuditLogsView() {
             Seguridad Institucional
           </span>
           <h2 className="text-2xl md:text-4xl font-black text-brand-blue tracking-tight">
-            Auditoría de <span className="text-slate-400">Sistema</span>
+            Registro de <span className="text-slate-400">Actividades</span>
           </h2>
           <p className="text-slate-500 font-medium mt-2">
-            Registro inmutable de actividades, accesos y transacciones técnicas.
+            Historial detallado de acciones y accesos de seguridad del sistema.
           </p>
         </div>
         <button 
@@ -100,19 +100,19 @@ export function AuditLogsView() {
               value={filterLevel}
               onChange={(e) => { setFilterLevel(e.target.value); setPage(1); }}
             >
-              <option value="">TODOS LOS NIVELES</option>
-              <option value="INFO">INFORMACIÓN</option>
-              <option value="WARN">ADVERTENCIAS</option>
-              <option value="ERROR">ERRORES</option>
+              <option value="">TODOS LOS EVENTOS</option>
+              <option value="INFO">DETALLES</option>
+              <option value="WARN">AVISOS</option>
+              <option value="ERROR">FALLOS</option>
             </select>
             <select
               className="bg-slate-800 text-white/80 border border-white/10 rounded-xl px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-brand-gold/20 cursor-pointer w-full md:w-auto"
               value={filterCategory}
               onChange={(e) => { setFilterCategory(e.target.value); setPage(1); }}
             >
-              <option value="">TODAS LAS CATEGORÍAS</option>
+              <option value="">TODAS LAS SECCIONES</option>
               <option value="AUTH">AUTENTICACIÓN</option>
-              <option value="HTTP">TRÁFICO HTTP</option>
+              <option value="HTTP">NAVEGACIÓN / WEB</option>
               <option value="SYSTEM">SISTEMA</option>
               <option value="PRIVACY">PRIVACIDAD / LOPDP</option>
             </select>
@@ -128,12 +128,12 @@ export function AuditLogsView() {
           <table className="w-full text-left border-collapse min-w-[1000px]">
             <thead>
               <tr className="bg-slate-50/80">
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Timestamp (LTS)</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha y hora</th>
                 <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nivel</th>
-                <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Cat.</th>
+                <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Sección</th>
                 <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Mensaje / Evento</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Actor / IP</th>
-                <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Duración</th>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Usuario / IP</th>
+                <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Tiempo</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 font-mono text-[11px]">
@@ -183,7 +183,7 @@ export function AuditLogsView() {
                       <td className="px-4 py-4 text-right">
                         {log.durationMs ? (
                           <span className={`font-black ${log.durationMs > 500 ? 'text-amber-500' : 'text-slate-400'}`}>
-                            {log.durationMs}ms
+                            {log.durationMs} ms
                           </span>
                         ) : "—"}
                       </td>
@@ -197,7 +197,7 @@ export function AuditLogsView() {
 
         {/* Pagination */}
         <div className="p-8 bg-slate-50/50 flex items-center justify-between border-t border-slate-100">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Exhibiendo {logs.length} entradas técnicas</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mostrando {logs.length} registros</span>
             <div className="flex items-center gap-2">
                 <button
                   disabled={page === 1 || loading}

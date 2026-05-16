@@ -349,33 +349,33 @@ export function DashboardMain() {
       return {
         cards: [
           {
-            title: "Usuarios Totales",
+            title: t.stats.totalUsers,
             value: adminStats ? String(adminStats.counters.totalUsers) : "—",
-            hint: "Usuarios activos en DB",
+            hint: t.stats.activeInDb,
             icon: <Users className="w-6 h-6" />,
             color: "bg-blue-500",
             href: "/admin/usuarios",
           },
           {
-            title: "Logs Hoy",
+            title: t.stats.logsToday,
             value: adminStats ? String(adminStats.counters.logsToday) : "—",
-            hint: "Actividad de auditoría",
+            hint: t.stats.auditActivity,
             icon: <ScrollText className="w-6 h-6" />,
             color: "bg-indigo-500",
             href: "/admin/logs",
           },
           {
-            title: "Errores Hoy",
+            title: t.stats.errorsToday,
             value: adminStats ? String(adminStats.counters.errorsToday) : "—",
-            hint: "Alertas de estabilidad",
+            hint: t.stats.stabilityAlerts,
             icon: <AlertCircle className="w-6 h-6" />,
             color: adminStats?.counters.errorsToday ? "bg-rose-500" : "bg-emerald-500",
             href: "/admin/logs?level=ERROR",
           },
           {
-            title: "Latencia Promedio",
+            title: t.stats.avgLatency,
             value: adminStats ? `${Math.round(adminStats.avgResponseTime)}ms` : "—",
-            hint: "Tiempo de respuesta API",
+            hint: t.stats.apiResponseTime,
             icon: <Clock className="w-6 h-6" />,
             color: "bg-amber-500",
             href: "/admin/salud",
@@ -765,20 +765,20 @@ export function DashboardMain() {
                     <h3 className="text-lg font-black text-brand-blue uppercase tracking-tight mb-6">Resumen de tu práctica</h3>
                     <div className="grid grid-cols-2 gap-y-6 gap-x-12">
                       <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Empresa / Institución</p>
-                        <p className="text-sm font-black text-brand-blue">{internships[0]?.company?.name || "TechNova Solutions"}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.common.company}</p>
+                        <p className="text-sm font-black text-brand-blue">{internships[0]?.company?.name || "ISTPET"}</p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Área</p>
-                        <p className="text-sm font-black text-brand-blue">Desarrollo de Software</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Área / Departamento</p>
+                        <p className="text-sm font-black text-brand-blue">Área Técnica</p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fecha de inicio</p>
-                        <p className="text-sm font-black text-brand-blue">15/04/2024</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.dashboard.startDate}</p>
+                        <p className="text-sm font-black text-brand-blue">---</p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fecha estimada de fin</p>
-                        <p className="text-sm font-black text-brand-blue">15/10/2024</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fin estimado</p>
+                        <p className="text-sm font-black text-brand-blue">---</p>
                       </div>
                     </div>
                   </div>
@@ -1042,7 +1042,7 @@ export function DashboardMain() {
 
                     <div className="grid sm:grid-cols-2 gap-6">
                        <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col justify-center">
-                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Latencia API</p>
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">{t.stats.avgLatency}</p>
                           <p className="text-3xl font-black text-indigo-900">{Math.round(adminStats.avgResponseTime)}ms</p>
                           <p className="text-[9px] text-emerald-500 font-bold mt-1">ÓPTIMO</p>
                        </div>

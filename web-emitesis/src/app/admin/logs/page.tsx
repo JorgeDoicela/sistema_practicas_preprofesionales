@@ -96,13 +96,13 @@ function AdminLogsContent() {
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
-              Praxis Hub X-Ray / Observabilidad
+              Monitoreo Institucional
             </span>
             <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
-              Logs del <span className="text-slate-400">Sistema</span>
+              Registro de <span className="text-slate-400">Actividades</span>
             </h2>
             <p className="text-slate-500 font-medium mt-2">
-              Auditoría técnica en tiempo real y registro histórico de eventos.
+              Auditoría de seguridad en tiempo real y registro histórico de eventos.
             </p>
           </div>
           
@@ -112,7 +112,7 @@ function AdminLogsContent() {
                connected ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"
              )}>
                 <Zap className={cn("w-3 h-3", connected && "animate-pulse")} />
-                {connected ? "Stream Activo" : "Stream Desconectado"}
+                {connected ? "Conexión Activa" : "Desconectado"}
              </div>
              <button 
                 onClick={() => setIsLiveEnabled(!isLiveEnabled)}
@@ -121,7 +121,7 @@ function AdminLogsContent() {
                   isLiveEnabled ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-200" : "bg-white border-slate-200 text-slate-500"
                 )}
              >
-                {isLiveEnabled ? "Live Monitor ON" : "Live Monitor OFF"}
+                {isLiveEnabled ? "Monitor en Vivo ACTIVADO" : "Monitor en Vivo DESACTIVADO"}
              </button>
           </div>
         </section>
@@ -141,9 +141,9 @@ function AdminLogsContent() {
                         <div className="w-3 h-3 rounded-full bg-rose-500" />
                         <div className="w-3 h-3 rounded-full bg-amber-500" />
                         <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                        <span className="ml-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">admin@praxis-hub:~/monitor/live-stream</span>
+                        <span className="ml-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Seguridad Institucional · Consola de Eventos</span>
                      </div>
-                     <span className="text-[10px] font-black text-indigo-400 animate-pulse uppercase tracking-widest">● LIVE STREAMING</span>
+                     <span className="text-[10px] font-black text-indigo-400 animate-pulse uppercase tracking-widest">● EN VIVO</span>
                   </div>
                   <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 font-mono text-xs space-y-3 custom-scrollbar scroll-smooth">
                      {liveLogs.length === 0 ? (

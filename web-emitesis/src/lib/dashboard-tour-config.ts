@@ -73,14 +73,14 @@ export function getDashboardTourSteps(role: Role, pathname: string): TourStep[] 
       {
         id: "att-radar",
         selector: '[data-tour="attendance-radar"]',
-        title: "Geo-Radar GPS",
-        getDescription: () => "El sistema valida su ubicación mediante el algoritmo Haversine. Debe estar dentro del rango permitido para marcar entrada o salida.",
+        title: "Radar de Ubicación",
+        getDescription: () => "El sistema valida su ubicación para asegurar que se encuentra en la sede autorizada. Debe estar dentro del rango permitido para marcar entrada o salida.",
       },
       {
         id: "att-actions",
         selector: '[data-tour="attendance-actions"]',
-        title: "Registro Biométrico",
-        getDescription: () => "Use estos botones para registrar su jornada. Recuerde que el sistema solicita una foto de actividad y verificación WebAuthn (Windows Hello, PIN, Huella o reconocimiento).",
+        title: "Registro de Identidad",
+        getDescription: () => "Use estos botones para registrar su jornada. El sistema solicitará una foto de actividad y la verificación de su identidad (huella, rostro o PIN del dispositivo).",
       }
     ];
   }
@@ -91,8 +91,8 @@ export function getDashboardTourSteps(role: Role, pathname: string): TourStep[] 
       {
         id: "cfg-security",
         selector: '[data-tour="settings-security"]',
-        title: "Seguridad de Cuenta",
-        getDescription: () => "Configure su Autenticación de Dos Factores (2FA) para proteger su acceso. Es obligatorio para coordinadores y administradores.",
+        title: "Protección de Cuenta",
+        getDescription: () => "Configure el Código de Seguridad para proteger su acceso. Es obligatorio para coordinadores y administradores.",
       },
       {
         id: "cfg-privacy",
@@ -301,8 +301,8 @@ export function getDashboardTourSteps(role: Role, pathname: string): TourStep[] 
       {
         id: "logs-live",
         selector: '[data-tour="logs-live"]',
-        title: "Terminal en Vivo",
-        getDescription: () => "Monitorización en tiempo real vía WebSockets. Vea cada petición HTTP, errores de servidor y accesos de seguridad mientras ocurren.",
+        title: "Monitor en Vivo",
+        getDescription: () => "Vigilancia en tiempo real de las acciones del sistema. Vea cada acceso, registro y actividad técnica mientras ocurre.",
       },
       {
         id: "logs-history",
@@ -331,8 +331,8 @@ export function getDashboardTourSteps(role: Role, pathname: string): TourStep[] 
       {
         id: "health-latency",
         selector: '[data-tour="health-latency"]',
-        title: "Latencia del Servidor",
-        getDescription: () => "Monitorea los tiempos de respuesta promedio. Un valor bajo indica una infraestructura estable y rápida.",
+        title: "Velocidad del Sistema",
+        getDescription: () => "Supervise el tiempo de respuesta y la estabilidad de la plataforma en tiempo real.",
       },
       {
         id: "health-actions",

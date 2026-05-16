@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { 
   ShieldCheck, 
   Download, 
-  FileJson, 
   Trash2, 
   Edit, 
   HelpCircle,
@@ -58,7 +57,7 @@ export default function PrivacyCenterPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `Expediente_Privacidad_ISTPET_${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `Expediente_Datos_ISTPET_${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
@@ -185,7 +184,7 @@ export default function PrivacyCenterPage() {
                          disabled={exporting}
                          className="px-10 h-16 bg-[#C5A059] text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-[#D4B376] transition-all flex items-center gap-3 active:scale-[0.98] disabled:opacity-50"
                        >
-                         {exporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <FileJson className="w-5 h-5" />}
+                         {exporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
                          {t.privacyDashboard.portability.download}
                        </button>
                     </div>

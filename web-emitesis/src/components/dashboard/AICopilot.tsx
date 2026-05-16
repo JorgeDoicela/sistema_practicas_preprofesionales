@@ -138,7 +138,7 @@ export function AICopilot({ user, internship }: AICopilotProps) {
                   <Bot className="w-9 h-9 text-[#C5A059]" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-black tracking-tight">Nexo AI</h4>
+                  <h4 className="text-lg font-black tracking-tight">Nexo - Apoyo Institucional</h4>
                   <div className="flex items-center gap-1.5">
                     <div className={cn(
                       "w-1.5 h-1.5 rounded-full",

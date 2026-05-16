@@ -297,17 +297,17 @@ export default function LoginPage() {
                                                 <div className="flex h-6 w-6 items-center justify-center rounded-md bg-green-100 text-green-600">
                                                     <Lock className="h-3 w-3" />
                                                 </div>
-                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">AES-256 Encrypted</span>
+                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{t.login.security?.encrypted || 'Conexión Segura'}</span>
                                             </div>
                                             <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-100/50 border border-slate-200/50">
                                                 <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-100 text-blue-600">
                                                     <Fingerprint className="h-3 w-3" />
                                                 </div>
-                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">reCAPTCHA v3</span>
+                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{t.login.security?.botProtection || 'Protección Anti-Robots'}</span>
                                             </div>
                                         </div>
                                         <p className="mt-3 text-center text-[10px] text-slate-400 font-medium">
-                                            Sistema monitoreado bajo estándares OWASP Top 10 y LOPDP Ecuador.
+                                            {t.login.security?.standards || 'Sistema monitoreado bajo estándares de seguridad internacional.'}
                                         </p>
                                     </div>
                                 </form>

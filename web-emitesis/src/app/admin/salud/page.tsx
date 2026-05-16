@@ -16,7 +16,10 @@ import {
   RefreshCcw,
   CheckCircle2,
   XCircle,
-  History
+  History,
+  Download,
+  Edit,
+  HelpCircle
 } from "lucide-react";
 import { 
   AreaChart, 
@@ -163,7 +166,7 @@ export default function AdminHealthPage() {
                     <Tooltip 
                       contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                     />
-                    <Area type="monotone" dataKey="avgLatency" name="Latencia (ms)" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorLatency)" />
+                    <Area type="monotone" dataKey="avgLatency" name={t.admin.health.latencyMs} stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorLatency)" />
                   </AreaChart>
                 </ResponsiveContainer>
                 )}
@@ -204,7 +207,7 @@ export default function AdminHealthPage() {
                   >
                     <div className="flex items-center gap-4">
                        <div className="p-3 bg-white text-slate-400 group-hover:text-rose-500 rounded-2xl shadow-sm transition-colors">
-                          {cleaning ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                          {cleaning ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
                        </div>
                        <div>
                           <p className="text-xs font-black text-[#003366] uppercase tracking-tight">{t.admin.health.cleanupTitle}</p>

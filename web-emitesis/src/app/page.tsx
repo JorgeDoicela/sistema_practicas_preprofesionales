@@ -121,10 +121,10 @@ export default function Home() {
                 {/* tech pills — botton right, only xl */}
                 <div className="absolute bottom-8 right-8 hidden xl:flex gap-2 z-10">
                     {[
-                        { icon: <Radio className="w-3.5 h-3.5" />, label: "Haversine GPS" },
-                        { icon: <Brain className="w-3.5 h-3.5" />, label: "GPT-4o Vision" },
-                        { icon: <Fingerprint className="w-3.5 h-3.5" />, label: "WebAuthn FIDO2" },
-                        { icon: <Stamp className="w-3.5 h-3.5" />, label: "SHA-256 Sign" },
+                        { icon: <Radio className="w-3.5 h-3.5" />, label: "Ubicación Satelital" },
+                        { icon: <Brain className="w-3.5 h-3.5" />, label: "Visión Artificial" },
+                        { icon: <Fingerprint className="w-3.5 h-3.5" />, label: "Acceso Seguro" },
+                        { icon: <Stamp className="w-3.5 h-3.5" />, label: "Firma Digital" },
                     ].map(p => (
                         <div key={p.label} className="flex items-center gap-1.5 bg-white/10 backdrop-blur border border-white/20 text-white/80 text-[10px] font-semibold px-3 py-1.5 rounded-full">
                             {p.icon}{p.label}
@@ -375,76 +375,60 @@ export default function Home() {
                     <div className="space-y-12">
                         {[
                             {
-                                cat: "Gestión Académica", color: "bg-blue-500", text: "text-blue-600", border: "border-blue-200", light: "bg-blue-50",
-                                modules: [
-                                    { icon: <Users />, title: "Usuarios y RBAC", desc: "6 roles, bloqueo por intentos, 2FA TOTP y reset con token." },
-                                    { icon: <FileSignature />, title: "Convenios", desc: "Registro por RUC, vigencia, archivo digital y cascada a Empresa." },
-                                    { icon: <Layers />, title: "Asignación de Prácticas", desc: "Cruce estudiante-tutor-empresa con historial de cambios." },
-                                    { icon: <BookOpen />, title: "Carreras", desc: "Config JSON dinámica con horas requeridas y plantillas por carrera." },
-                                ]
+                                cat: t.modules_landing.academic.title, color: "bg-blue-500", text: "text-blue-600", border: "border-blue-200", light: "bg-blue-50",
+                                modules: t.modules_landing.academic.items.map((m: any, i: number) => ({
+                                    icon: i === 0 ? <Users /> : i === 1 ? <FileSignature /> : i === 2 ? <Layers /> : <BookOpen />,
+                                    ...m
+                                }))
                             },
                             {
-                                cat: "Documentación Legal", color: "bg-amber-500", text: "text-amber-600", border: "border-amber-200", light: "bg-amber-50",
-                                modules: [
-                                    { icon: <FileCheck2 />, title: "Documentos (7 estados)", desc: "PENDIENTE → INCUMPLIDO, con flujo completo de aprobación." },
-                                    { icon: <GitBranch />, title: "Document Versions", desc: "Versionado automático en cada re-subida con trazabilidad." },
-                                    { icon: <MessageSquare />, title: "Document Comments", desc: "Hilos de feedback entre estudiante y tutor por documento." },
-                                    { icon: <Stamp />, title: "Firma SHA-256", desc: "Sello ISTPET-SIG-XXXX en base a hash y bitácora institucional." },
-                                ]
+                                cat: t.modules_landing.legal.title, color: "bg-amber-500", text: "text-amber-600", border: "border-amber-200", light: "bg-amber-50",
+                                modules: t.modules_landing.legal.items.map((m: any, i: number) => ({
+                                    icon: i === 0 ? <FileCheck2 /> : i === 1 ? <GitBranch /> : i === 2 ? <MessageSquare /> : <Stamp />,
+                                    ...m
+                                }))
                             },
                             {
-                                cat: "Operación en Campo", color: "bg-emerald-500", text: "text-emerald-600", border: "border-emerald-200", light: "bg-emerald-50",
-                                modules: [
-                                    { icon: <MapPin />, title: "Geofencing Haversine", desc: "allowedLocations JSON, radio por sede y fallback legacy." },
-                                    { icon: <Camera />, title: "Activity Photos", desc: "Fotos de actividades con caption, describibles por GPT-4o." },
-                                    { icon: <Fingerprint />, title: "WebAuthn FIDO2", desc: "@simplewebauthn con platform authenticator y userVerification." },
-                                    { icon: <Eye />, title: "Monitoring Visits", desc: "Visitas presenciales/virtuales con evidencia fotográfica." },
-                                ]
+                                cat: t.modules_landing.operation.title, color: "bg-emerald-500", text: "text-emerald-600", border: "border-emerald-200", light: "bg-emerald-50",
+                                modules: t.modules_landing.operation.items.map((m: any, i: number) => ({
+                                    icon: i === 0 ? <MapPin /> : i === 1 ? <Camera /> : i === 2 ? <Fingerprint /> : <Eye />,
+                                    ...m
+                                }))
                             },
                             {
-                                cat: "Inteligencia Artificial", color: "bg-purple-500", text: "text-purple-600", border: "border-purple-200", light: "bg-purple-50",
-                                modules: [
-                                    { icon: <Bot />, title: "Nexo Copilot", desc: "GPT-4o con contexto del estudiante y zero-hallucination policy." },
-                                    { icon: <Eye />, title: "Suggest Description", desc: "Vision analiza imagen y genera descripción breve de actividad." },
-                                    { icon: <FileText />, title: "Pre-Verify OCR", desc: "Extrae horas del PDF y cruza con nombre del estudiante." },
-                                    { icon: <Gauge />, title: "Risk Assessment", desc: "HealthScore + días activos → riesgo Bajo / Medio / Alto." },
-                                ]
+                                cat: t.modules_landing.ai.title, color: "bg-purple-500", text: "text-purple-600", border: "border-purple-200", light: "bg-purple-50",
+                                modules: t.modules_landing.ai.items.map((m: any, i: number) => ({
+                                    icon: i === 0 ? <Bot /> : i === 1 ? <Eye /> : i === 2 ? <FileText /> : <Gauge />,
+                                    ...m
+                                }))
                             },
                             {
-                                cat: "Automatización y Eventos", color: "bg-rose-500", text: "text-rose-600", border: "border-rose-200", light: "bg-rose-50",
-                                modules: [
-                                    { icon: <Clock />, title: "Motor CRON", desc: "DeadlineChecker + AutomationEngine @midnight, marcan INCUMPLIDO." },
-                                    { icon: <Bell />, title: "Socket.IO Gateway", desc: "Namespace /notifications con rooms por userId en tiempo real." },
-                                    { icon: <Mail />, title: "Email + EmailLog", desc: "SMTP institucional con bitácora éxito/fallo y metadata." },
-                                    { icon: <History />, title: "Status History", desc: "Historial inmutable de transiciones con razón y actor." },
-                                ]
+                                cat: t.modules_landing.automation.title, color: "bg-rose-500", text: "text-rose-600", border: "border-rose-200", light: "bg-rose-50",
+                                modules: t.modules_landing.automation.items.map((m: any, i: number) => ({
+                                    icon: i === 0 ? <Clock /> : i === 1 ? <Bell /> : i === 2 ? <Mail /> : <History />,
+                                    ...m
+                                }))
                             },
                             {
-                                cat: "Evaluaciones y Certificación", color: "bg-cyan-500", text: "text-cyan-600", border: "border-cyan-200", light: "bg-cyan-50",
-                                modules: [
-                                    { icon: <ClipboardList />, title: "Evaluación Dual", desc: "5 rúbricas: puntualidad, equipo, técnica, proactividad, actitud." },
-                                    { icon: <QrCode />, title: "Certificación QR", desc: "Puppeteer + Handlebars A4 landscape, subida al Blob Storage." },
-                                    { icon: <ScrollText />, title: "Plantillas .docx", desc: "8 formatos institucionales preconfigurados y editables." },
-                                    { icon: <TrendingUp />, title: "Eligibility Check", desc: "Valida horas ≥ requeridas y docs obligatorios APROBADO_DEFINITIVO." },
-                                ]
+                                cat: t.modules_landing.certification.title, color: "bg-cyan-500", text: "text-cyan-600", border: "border-cyan-200", light: "bg-cyan-50",
+                                modules: t.modules_landing.certification.items.map((m: any, i: number) => ({
+                                    icon: i === 0 ? <ClipboardList /> : i === 1 ? <QrCode /> : i === 2 ? <ScrollText /> : <TrendingUp />,
+                                    ...m
+                                }))
                             },
                             {
-                                cat: "Observabilidad y Analytics", color: "bg-indigo-500", text: "text-indigo-600", border: "border-indigo-200", light: "bg-indigo-50",
-                                modules: [
-                                    { icon: <BarChart3 />, title: "Analytics Admin", desc: "Contadores, distribución de roles y avg response time." },
-                                    { icon: <LineChart />, title: "Health Time-Series", desc: "Serie 24h por hora: total, errores y avg latency." },
-                                    { icon: <Database />, title: "System Logs", desc: "Categorías HTTP/AUTH/SYSTEM, durationMs, IP e índices." },
-                                    { icon: <HardDriveDownload />, title: "Export Excel", desc: "ExcelJS branded, 12 columnas con % progreso por pasantía." },
-                                ]
+                                cat: t.modules_landing.analytics.title, color: "bg-indigo-500", text: "text-indigo-600", border: "border-indigo-200", light: "bg-indigo-50",
+                                modules: t.modules_landing.analytics.items.map((m: any, i: number) => ({
+                                    icon: i === 0 ? <BarChart3 /> : i === 1 ? <LineChart /> : i === 2 ? <Database /> : <HardDriveDownload />,
+                                    ...m
+                                }))
                             },
                             {
-                                cat: "Gobernanza y DevOps", color: "bg-slate-600", text: "text-slate-600", border: "border-slate-200", light: "bg-slate-50",
-                                modules: [
-                                    { icon: <Lock />, title: "LOPDP + ARCO", desc: "Consentimiento versionado y solicitudes A/R/C/O de datos." },
-                                    { icon: <ShieldAlert />, title: "Helmet + Throttler", desc: "Cabeceras seguras y rate-limit global 100 req/min." },
-                                    { icon: <BookOpen />, title: "Swagger OpenAPI", desc: "Docs en /api/docs con Bearer persistido y tags por módulo." },
-                                    { icon: <Network />, title: "Bridge Académico", desc: "Sincronización con sistema académico externo (matrícula, GPA)." },
-                                ]
+                                cat: t.modules_landing.governance.title, color: "bg-slate-600", text: "text-slate-600", border: "border-slate-200", light: "bg-slate-50",
+                                modules: t.modules_landing.governance.items.map((m: any, i: number) => ({
+                                    icon: i === 0 ? <Lock /> : i === 1 ? <ShieldAlert /> : i === 2 ? <BookOpen /> : <Network />,
+                                    ...m
+                                }))
                             },
                         ].map((cat, ci) => (
                             <motion.div
@@ -500,33 +484,33 @@ export default function Home() {
 
                     {[
                         {
-                            layer: "Frontend", items: [
-                                { icon: <Cpu />, name: "Next.js 16", sub: "App Router · React 19" },
-                                { icon: <Sparkles />, name: "Tailwind + shadcn/ui", sub: "Framer Motion" },
+                            layer: "Interfaz y Experiencia", items: [
+                                { icon: <Cpu />, name: "Tecnología Moderna", sub: "Rápida y Fluida" },
+                                { icon: <Sparkles />, name: "Diseño Adaptable", sub: "Escritorio y Móvil" },
                             ]
                         },
                         {
-                            layer: "Backend", items: [
-                                { icon: <Server />, name: "NestJS 11", sub: "TypeScript · Modular" },
-                                { icon: <Database />, name: "PostgreSQL", sub: "Prisma ORM 5+" },
-                                { icon: <KeyRound />, name: "JWT + Passport", sub: "Guards + Roles" },
-                                { icon: <ShieldAlert />, name: "Helmet + Throttler", sub: "100 req/min" },
+                            layer: "Motor del Sistema", items: [
+                                { icon: <Server />, name: "Núcleo Seguro", sub: "Procesamiento de datos" },
+                                { icon: <Database />, name: "Base de Datos", sub: "Almacenamiento estructurado" },
+                                { icon: <KeyRound />, name: "Acceso Protegido", sub: "Validación de identidad" },
+                                { icon: <ShieldAlert />, name: "Escudo de Seguridad", sub: "Protección de tráfico" },
                             ]
                         },
                         {
-                            layer: "IA & Automatización", items: [
-                                { icon: <Brain />, name: "OpenAI GPT-4o", sub: "Chat + Vision + JSON" },
-                                { icon: <Clock />, name: "@nestjs/schedule", sub: "Cron @midnight" },
-                                { icon: <Bell />, name: "Socket.IO", sub: "Realtime Gateway" },
-                                { icon: <Mail />, name: "Nodemailer", sub: "SMTP + EmailLog" },
+                            layer: "IA y Automatización", items: [
+                                { icon: <Brain />, name: "Cerebro Nexo", sub: "Chat + Visión + Datos" },
+                                { icon: <Clock />, name: "Tareas Automáticas", sub: "Ejecución cada medianoche" },
+                                { icon: <Bell />, name: "Avisos en Vivo", sub: "Notificaciones instantáneas" },
+                                { icon: <Mail />, name: "Envío Seguro", sub: "Notificaciones por email" },
                             ]
                         },
                         {
-                            layer: "Seguridad & Storage", items: [
-                                { icon: <Fingerprint />, name: "@simplewebauthn", sub: "FIDO2 Passkeys" },
-                                { icon: <HardDriveDownload />, name: "Vercel Blob", sub: "Object Storage" },
-                                { icon: <FileText />, name: "Puppeteer + Handlebars", sub: "PDF Certificates" },
-                                { icon: <BarChart3 />, name: "ExcelJS", sub: "Master Reports" },
+                            layer: "Seguridad y Archivo", items: [
+                                { icon: <Fingerprint />, name: "Biometría", sub: "Huella y Rostro" },
+                                { icon: <HardDriveDownload />, name: "Nube Segura", sub: "Archivos y documentos" },
+                                { icon: <FileText />, name: "Generador Oficial", sub: "Certificados en PDF" },
+                                { icon: <BarChart3 />, name: "Reportes Excel", sub: "Informes maestros" },
                             ]
                         },
                     ].map(row => (

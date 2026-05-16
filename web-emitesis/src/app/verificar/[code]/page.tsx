@@ -84,7 +84,7 @@ export default function VerificarCertificadoPage() {
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Estudiante</p>
                   <p className="font-black text-[#003366]">{result.student}</p>
-                  {result.cedula && <p className="text-xs text-slate-400">CI: {result.cedula}</p>}
+                  {result.cedula && <p className="text-xs text-slate-400">Identificación: {result.cedula}</p>}
                 </div>
               </div>
 
@@ -140,7 +140,7 @@ export default function VerificarCertificadoPage() {
               {result.certificateUrl && (
                 <a href={result.certificateUrl} target="_blank" rel="noopener noreferrer"
                   className="block text-center w-full bg-[#003366] text-white rounded-2xl py-4 text-[11px] font-black uppercase tracking-widest hover:bg-[#002244] transition-all">
-                  Ver Certificado Original (PDF)
+                  Ver Certificado Original
                 </a>
               )}
             </div>

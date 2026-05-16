@@ -300,7 +300,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 <div className="mb-4 px-5">
                     <div className="flex items-center gap-2.5 py-2">
                         <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                        <span className="text-[9px] font-black text-emerald-400/80 uppercase tracking-[0.2em]">{t.sidebar.secureSession ?? 'Sesión Segura'} · AES-256</span>
+                        <span className="text-[9px] font-black text-emerald-400/80 uppercase tracking-[0.2em]">{t.sidebar.secureSession ?? 'Sesión Segura'} · {t.login.security?.encrypted || 'Protegida'}</span>
                     </div>
                 </div>
 
