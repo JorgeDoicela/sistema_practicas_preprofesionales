@@ -116,25 +116,25 @@
 
 /* Class-based dark mode (set by ThemeProvider JS) */
 .dark {
-  --background: #000000;
+  --background: #0B1121;
   --foreground: #F8F8F6;
-  --card: #1F295B;
+  --card: #161D2F;
   --card-foreground: #F8F8F6;
-  --popover: #1F295B;
+  --popover: #161D2F;
   --popover-foreground: #F8F8F6;
-  --primary: #C4A857;
-  --primary-foreground: #000000;
-  --secondary: #1F295B;
-  --secondary-foreground: #F8F8F6;
-  --muted: #114880;
-  --muted-foreground: #8FB8D4;
-  --accent: #196098;
-  --accent-foreground: #F8F8F6;
+  --primary: #0F172A;
+  --primary-foreground: #FFFFFF;
+  --secondary: #C4A857;
+  --secondary-foreground: #000000;
+  --muted: #1E293B;
+  --muted-foreground: #94A3B8;
+  --accent: #111827;
+  --accent-foreground: #C4A857;
   --destructive: #F87171;
-  --border: #114880;
-  --input: #114880;
+  --border: #1E293B;
+  --input: #1E293B;
   --ring: #C4A857;
-  --glass-bg: rgba(31, 41, 91, 0.75);
+  --glass-bg: rgba(15, 23, 42, 0.75);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
 }
@@ -143,29 +143,28 @@
 /* Media-query fallback for when JS hasn't run yet */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --background: #000000;
+    --background: #0B1121;
     --foreground: #F8F8F6;
-    --card: #1F295B;
+    --card: #161D2F;
     --card-foreground: #F8F8F6;
-    --popover: #1F295B;
+    --popover: #161D2F;
     --popover-foreground: #F8F8F6;
-    --primary: #C4A857;
-    --primary-foreground: #000000;
-    --secondary: #1F295B;
-    --secondary-foreground: #F8F8F6;
-    --muted: #114880;
-    --muted-foreground: #8FB8D4;
-    --accent: #196098;
-    --accent-foreground: #F8F8F6;
+    --primary: #0F172A;
+    --primary-foreground: #FFFFFF;
+    --secondary: #C4A857;
+    --secondary-foreground: #000000;
+    --muted: #1E293B;
+    --muted-foreground: #94A3B8;
+    --accent: #111827;
+    --accent-foreground: #C4A857;
     --destructive: #F87171;
-    --border: #114880;
-    --input: #114880;
+    --border: #1E293B;
+    --input: #1E293B;
     --ring: #C4A857;
-    --glass-bg: rgba(31, 41, 91, 0.75);
+    --glass-bg: rgba(15, 23, 42, 0.75);
     --glass-border: rgba(255, 255, 255, 0.08);
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
   }
-
 }
 
 @layer base {
@@ -224,95 +223,31 @@
   }
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   GLOBAL DARK MODE OVERRIDES — Flat selectors (max browser compat)
-   Override hardcoded Tailwind classes system-wide when .dark on <html>
-═══════════════════════════════════════════════════════════════════ */
-
-/* ── Backgrounds ── */
+/* ── Global Dark Mode Overrides ── */
 .dark .bg-white,
-.dark [class~="bg-white"]           { background-color: #000000 !important; }
-.dark .bg-slate-50                  { background-color: #000000 !important; }
-.dark .bg-slate-100                 { background-color: #1F295B !important; }
-.dark .bg-slate-200                 { background-color: #1F295B !important; }
+.dark [class~="bg-white"]           { background-color: var(--card) !important; }
+.dark .bg-slate-50                  { background-color: var(--background) !important; }
+.dark .bg-slate-100                 { background-color: var(--muted) !important; }
+.dark .bg-slate-200                 { background-color: var(--muted) !important; }
 
-
-/* ── Text colors ── */
-.dark .text-slate-900               { color: #F8F8F6 !important; }
-.dark .text-slate-800               { color: #D1CFD0 !important; }
-.dark .text-slate-700               { color: #C7DDEB !important; }
-.dark .text-slate-600               { color: #8FB8D4 !important; }
-.dark .text-slate-500               { color: #4B84B1 !important; }
-.dark .text-slate-400               { color: #4B84B1 !important; }
-
-
-/* ── Brand blue → sky on dark ── */
+.dark .text-slate-900               { color: var(--foreground) !important; }
+.dark .text-slate-800               { color: var(--muted-foreground) !important; }
 .dark .text-brand-blue              { color: #38BDF8 !important; }
 
-/* ── Borders ── */
-.dark .border-slate-100             { border-color: #114880 !important; }
-.dark .border-slate-200             { border-color: #114880 !important; }
-.dark .border-slate-300             { border-color: #196098 !important; }
+.dark .border-slate-100             { border-color: var(--border) !important; }
+.dark .border-slate-200             { border-color: var(--border) !important; }
 
+.dark .min-h-screen                 { background-color: var(--background) !important; }
 
-/* ── Divider lines (h-px elements) ── */
-.dark .h-px.bg-slate-200            { background-color: #334155 !important; }
-.dark .flex-1.h-px                  { background-color: #334155 !important; }
+/* ── Specific Overrides for better contrast ── */
+.dark .text-brand-gold               { color: var(--color-brand-gold) !important; }
+.dark .bg-brand-gold                 { background-color: var(--color-brand-gold) !important; }
+.dark .border-brand-gold             { border-color: var(--color-brand-gold) !important; }
 
-/* ── Inline code ── */
-.dark code                          { background-color: #1E293B !important; color: #94A3B8 !important; }
+/* ── Pill/Badge backgrounds ── */
+.dark .bg-blue-50, .dark .bg-blue-500\/10     { background-color: rgba(56, 189, 248, 0.15) !important; }
+.dark .bg-emerald-50, .dark .bg-emerald-500\/10 { background-color: rgba(52, 211, 153, 0.15) !important; }
+.dark .bg-amber-50, .dark .bg-amber-500\/10   { background-color: rgba(251, 191, 36, 0.15) !important; }
+.dark .bg-rose-50, .dark .bg-rose-500\/10     { background-color: rgba(251, 113, 133, 0.15) !important; }
 
-/* ── Category pill backgrounds ── */
-.dark .bg-blue-50                   { background-color: rgba(56, 189, 248, 0.08) !important; }
-.dark .bg-amber-50                  { background-color: rgba(251, 191, 36, 0.08) !important; }
-.dark .bg-emerald-50                { background-color: rgba(52, 211, 153, 0.08) !important; }
-.dark .bg-purple-50                 { background-color: rgba(167, 139, 250, 0.08) !important; }
-.dark .bg-rose-50                   { background-color: rgba(251, 113, 133, 0.08) !important; }
-.dark .bg-cyan-50                   { background-color: rgba(34, 211, 238, 0.08) !important; }
-.dark .bg-indigo-50                 { background-color: rgba(129, 140, 248, 0.08) !important; }
-
-/* ── Hover overrides ── */
-.dark .hover\:bg-white:hover        { background-color: #1E293B !important; }
-.dark .hover\:bg-slate-50:hover     { background-color: #1E293B !important; }
-.dark .hover\:border-brand-blue\/20:hover { border-color: rgba(56, 189, 248, 0.2) !important; }
-
-/* ── Main page root wrapper ── */
-.dark .min-h-screen                 { background-color: #020617 !important; }
-
-/* ── Timeline circle buttons ── */
-.dark .border-slate-200.rounded-full { border-color: #334155 !important; }
-
-/* ── Box shadows in dark (reduce harshness) ── */
-.dark .shadow-sm                    { box-shadow: 0 1px 3px 0 rgba(0,0,0,0.5) !important; }
-.dark .shadow-md                    { box-shadow: 0 4px 8px -1px rgba(0,0,0,0.6) !important; }
-.dark .shadow-lg                    { box-shadow: 0 10px 20px -3px rgba(0,0,0,0.6) !important; }
-.dark .shadow-xl                    { box-shadow: 0 20px 30px -5px rgba(0,0,0,0.6) !important; }
-.dark .shadow-2xl                   { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8) !important; }
-
-/* ── Media query fallback (when .dark is NOT yet set by JS but OS is dark) ── */
-@media (prefers-color-scheme: dark) {
-  html:not([data-theme="light"]) .bg-white            { background-color: #000000 !important; }
-  html:not([data-theme="light"]) .bg-slate-50         { background-color: #000000 !important; }
-  html:not([data-theme="light"]) .bg-slate-100        { background-color: #1F295B !important; }
-  html:not([data-theme="light"]) .bg-slate-200        { background-color: #1F295B !important; }
-  html:not([data-theme="light"]) .text-slate-900      { color: #F8F8F6 !important; }
-  html:not([data-theme="light"]) .text-slate-800      { color: #D1CFD0 !important; }
-  html:not([data-theme="light"]) .text-slate-700      { color: #C7DDEB !important; }
-  html:not([data-theme="light"]) .text-slate-600      { color: #8FB8D4 !important; }
-  html:not([data-theme="light"]) .text-slate-500      { color: #4B84B1 !important; }
-  html:not([data-theme="light"]) .text-brand-blue     { color: #38BDF8 !important; }
-  html:not([data-theme="light"]) .border-slate-100    { border-color: #114880 !important; }
-  html:not([data-theme="light"]) .border-slate-200    { border-color: #114880 !important; }
-  html:not([data-theme="light"]) .bg-blue-50          { background-color: rgba(56, 189, 248, 0.08) !important; }
-  html:not([data-theme="light"]) .bg-amber-50         { background-color: rgba(251, 191, 36, 0.08) !important; }
-  html:not([data-theme="light"]) .bg-emerald-50       { background-color: rgba(52, 211, 153, 0.08) !important; }
-  html:not([data-theme="light"]) .bg-purple-50        { background-color: rgba(167, 139, 250, 0.08) !important; }
-  html:not([data-theme="light"]) .bg-rose-50          { background-color: rgba(251, 113, 133, 0.08) !important; }
-  html:not([data-theme="light"]) .bg-cyan-50          { background-color: rgba(34, 211, 238, 0.08) !important; }
-  html:not([data-theme="light"]) .bg-indigo-50        { background-color: rgba(129, 140, 248, 0.08) !important; }
-  html:not([data-theme="light"]) .min-h-screen        { background-color: #000000 !important; }
-  html:not([data-theme="light"]) .h-px.bg-slate-200   { background-color: #114880 !important; }
-  html:not([data-theme="light"]) .flex-1.h-px         { background-color: #114880 !important; }
-
-}
 
