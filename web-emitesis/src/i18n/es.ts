@@ -762,6 +762,7 @@ export const es = {
   // ── Común ────────────────────────────────────────────────────────
   common: {
     language: "es",
+    ecosystemName: "Praxis Hub",
     loading: "Cargando…",
     success: {
       generic: "Operación completada con éxito",

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { User as UserType } from "@/types/user";
-import { Search, User, ShieldCheck, ChevronDown, LogOut, Menu } from "lucide-react";
+import { User, ShieldCheck, ChevronDown, LogOut, Menu } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
@@ -43,17 +43,25 @@ export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
     } px-4 md:px-6 lg:px-10`}>
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
 
-        {/* Center: Search Bar */}
-        <div className="flex-1 flex justify-center max-w-xl mx-auto">
-          <div className="relative group w-full">
-            <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-              <Search className="w-4 h-4 text-slate-300 group-focus-within:text-brand-blue transition-colors" />
-            </div>
-            <input
-              type="text"
-              placeholder="Buscar trámites, documentos o entidades..."
-              className="w-full bg-slate-50 border border-slate-100 rounded-full py-3 pl-14 pr-6 text-sm font-medium focus:ring-2 focus:ring-brand-blue/5 focus:bg-white transition-all outline-none text-slate-600 placeholder:text-slate-300"
-            />
+        {/* Left Side: Mobile Menu Trigger + Welcome Greeting */}
+        <div className="flex items-center gap-3 min-w-0">
+          {onMenuToggle && (
+            <button
+              onClick={onMenuToggle}
+              className="lg:hidden p-2 rounded-xl bg-slate-50 border border-slate-100 text-[#003366] hover:bg-slate-100 transition-all flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-brand-blue/10 shrink-0"
+              aria-label="Abrir menú"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          )}
+          
+          <div className="min-w-0">
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#C5A059] mb-0.5 block truncate">
+              {t.common?.ecosystemName || "Praxis Hub"}
+            </span>
+            <h1 className="text-sm md:text-base font-black text-[#003366] tracking-tight leading-none truncate max-w-[140px] xs:max-w-[180px] sm:max-w-none">
+              {user ? `¡Hola de nuevo, ${user.fullName.split(' ')[0]}! 👋` : "Panel de Gestión"}
+            </h1>
           </div>
         </div>
 
