@@ -352,8 +352,8 @@ function DocumentosContent() {
         {/* Header Section */}
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="flex items-center gap-3 md:gap-5 min-w-0">
-            <div className="w-10 h-10 md:w-14 md:h-14 bg-[#003366] rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg shadow-blue-900/10 shrink-0">
-              <FileStack className="text-[#C5A059] w-5 h-5 md:w-7 md:h-7" />
+            <div className="flex items-center justify-center text-[#003366] w-9 h-9 shrink-0">
+              <FileStack className="w-6 h-6" />
             </div>
             <div className="min-w-0">
               <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
@@ -457,9 +457,9 @@ function DocumentosContent() {
                 >
                   <div className="flex items-start justify-between mb-6">
                     <div className={cn(
-                      "w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-inner",
-                      isApproved ? "bg-emerald-50 text-emerald-600" : 
-                      isLocked ? "bg-slate-100 text-slate-400" : "bg-blue-50 text-blue-600"
+                      "w-14 h-14 flex items-center justify-center transition-transform group-hover:scale-110",
+                      isApproved ? "text-emerald-600" : 
+                      isLocked ? "text-slate-400" : "text-blue-600"
                     )}>
                       {isApproved ? <CheckCircle2 className="w-7 h-7" /> : 
                        isLocked ? <Lock className="w-7 h-7" /> : <FileText className="w-7 h-7" />}
@@ -640,8 +640,8 @@ function DocumentosContent() {
                       </div>
 
                       <div className="flex flex-col h-full">
-                        <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-[#003366] transition-colors">
-                          <GraduationCap className="text-[#003366] group-hover:text-white transition-colors w-7 h-7" />
+                        <div className="w-14 h-14 flex items-center justify-center mb-6 text-[#003366]">
+                          <GraduationCap className="w-8 h-8" />
                         </div>
 
                         <h3 className="text-lg font-black text-[#003366] mb-1 line-clamp-1">{item.student.fullName}</h3>
@@ -689,8 +689,8 @@ function DocumentosContent() {
                       <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-[#003366]/5 rounded-xl flex items-center justify-center">
-                              <GraduationCap className="text-[#003366] w-5 h-5" />
+                            <div className="w-10 h-10 flex items-center justify-center text-[#003366]">
+                              <GraduationCap className="w-6 h-6" />
                             </div>
                             <span className="font-bold text-[#003366]">{item.student.fullName}</span>
                           </div>
@@ -732,8 +732,8 @@ function DocumentosContent() {
           )
         ) : (
           <div className="bg-white rounded-[2rem] border border-dashed border-slate-300 p-20 text-center">
-            <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
-              <Search className="w-10 h-10 text-slate-300" />
+            <div className="flex items-center justify-center mx-auto mb-6 text-slate-300">
+              <Search className="w-16 h-16" />
             </div>
             <h3 className="text-xl font-bold text-slate-800 mb-2">{t.documents.empty.title}</h3>
             <p className="text-slate-500 max-w-sm mx-auto">{t.documents.empty.desc}</p>
@@ -777,8 +777,8 @@ function DocumentosContent() {
               animate={{ scale: 1, opacity: 1 }}
               className="bg-white rounded-[2.5rem] p-10 max-w-md w-full shadow-2xl border border-rose-100"
             >
-              <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-6">
-                <Wand2 className="w-8 h-8 text-rose-500" />
+              <div className="flex items-center justify-center mb-6 text-rose-500">
+                <Wand2 className="w-14 h-14" />
               </div>
               <h3 className="text-xl font-black text-[#003366] mb-4 uppercase tracking-tight">{t.documents.ai.warning}</h3>
               <p className="text-slate-600 text-sm font-medium leading-relaxed mb-6">
@@ -815,8 +815,8 @@ function DocumentosContent() {
             >
                <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                   <div className="flex items-center gap-4">
-                     <div className="w-12 h-12 bg-[#003366] rounded-2xl flex items-center justify-center shadow-lg">
-                        <FileText className="text-[#C5A059] w-6 h-6" />
+                     <div className="flex items-center justify-center text-[#003366] w-9 h-9">
+                        <FileText className="w-6 h-6" />
                      </div>
                      <div>
                         <h3 className="text-xl font-black text-[#003366] tracking-tight">{viewingDoc.name}</h3>

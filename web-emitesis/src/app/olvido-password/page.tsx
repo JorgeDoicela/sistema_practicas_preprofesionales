@@ -74,8 +74,8 @@ export default function ForgotPasswordPage() {
                     className="w-full max-w-sm"
                 >
                     {/* icon */}
-                    <div className="w-14 h-14 rounded-full bg-brand-blue flex items-center justify-center mx-auto mb-8 shadow-lg">
-                        <ShieldCheck className="w-7 h-7 text-brand-gold" />
+                    <div className="flex items-center justify-center mx-auto mb-6 text-brand-blue">
+                        <ShieldCheck className="w-12 h-12" />
                     </div>
 
                     {/* heading */}
@@ -95,8 +95,8 @@ export default function ForgotPasswordPage() {
                             animate={{ opacity: 1, scale: 1 }}
                             className="text-center space-y-6"
                         >
-                            <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto">
-                                <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                            <div className="flex items-center justify-center mx-auto text-emerald-500">
+                                <CheckCircle2 className="w-14 h-14" />
                             </div>
                             <div>
                                 <p className="font-bold text-slate-800 mb-2">{t.common.approved}</p>

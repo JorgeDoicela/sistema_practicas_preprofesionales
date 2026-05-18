@@ -741,8 +741,8 @@ export default function AsistenciaPage() {
               >
                 <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                    <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
-                      <ImageIcon className="w-5 h-5" aria-hidden />
+                    <div className="flex items-center justify-center text-purple-600 w-9 h-9">
+                      <ImageIcon className="w-6 h-6" aria-hidden />
                     </div>
                     <div>
                       <h3 className="text-sm font-black text-[#003366] uppercase tracking-[0.2em]">{t.asistencia.activityPhotos.title}</h3>
@@ -796,8 +796,8 @@ export default function AsistenciaPage() {
             >
               <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 space-y-4 md:space-y-6">
                 <div className="flex items-center gap-3 sm:gap-4">
-                  <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-[#003366]">
-                    <History className="w-5 h-5" />
+                  <div className="flex items-center justify-center text-[#003366] w-9 h-9">
+                    <History className="w-6 h-6" />
                   </div>
                   <h3 className="text-sm font-black text-[#003366] uppercase tracking-[0.2em]">{t.asistencia.history.title}</h3>
                 </div>
@@ -1118,9 +1118,9 @@ export default function AsistenciaPage() {
                       initial={{ scale: 0.5, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ type: "spring", stiffness: 260, damping: 18 }}
-                      className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center"
+                      className="flex items-center justify-center text-emerald-500"
                     >
-                      <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+                      <CheckCircle2 className="w-16 h-16" />
                     </motion.div>
 
                     <div className="text-center space-y-1">
@@ -1171,8 +1171,8 @@ export default function AsistenciaPage() {
                 {/* ERROR */}
                 {modalStep === "error" && (
                   <div className="flex flex-col items-center gap-5 py-8">
-                    <div className="w-20 h-20 bg-rose-100 rounded-full flex items-center justify-center">
-                      <ShieldX className="w-10 h-10 text-rose-600" />
+                    <div className="flex items-center justify-center text-rose-500">
+                      <ShieldX className="w-16 h-16" />
                     </div>
                     <div className="text-center space-y-2">
                       <p className="font-black text-rose-700">{t.asistencia.modal.stepError}</p>

@@ -294,14 +294,14 @@ export default function LoginPage() {
                                     <div className="pt-6 border-t border-slate-100">
                                         <div className="grid grid-cols-2 gap-3">
                                             <div className="flex items-center gap-2 p-2.5 rounded-full bg-slate-100/50 border border-slate-200/50">
-                                                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-600 flex-shrink-0">
-                                                    <Lock className="h-3 w-3" />
+                                                <div className="flex h-6 w-6 items-center justify-center rounded-full text-green-600 flex-shrink-0">
+                                                    <Lock className="h-4.5 w-4.5" />
                                                 </div>
                                                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight truncate">{t.login.security?.encrypted || 'Conexión Segura'}</span>
                                             </div>
                                             <div className="flex items-center gap-2 p-2.5 rounded-full bg-slate-100/50 border border-slate-200/50">
-                                                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-blue-600 flex-shrink-0">
-                                                    <Fingerprint className="h-3 w-3" />
+                                                <div className="flex h-6 w-6 items-center justify-center rounded-full text-blue-600 flex-shrink-0">
+                                                    <Fingerprint className="h-4.5 w-4.5" />
                                                 </div>
                                                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight truncate">{t.login.security?.botProtection || 'Protección Anti-Robots'}</span>
                                             </div>
@@ -315,8 +315,8 @@ export default function LoginPage() {
                         ) : (
                             <>
                                 <div className="mb-8 text-center">
-                                    <div className="w-14 h-14 rounded-full bg-brand-blue flex items-center justify-center mx-auto mb-5 shadow-lg">
-                                        <Lock className="w-6 h-6 text-white" />
+                                    <div className="flex items-center justify-center mx-auto mb-5 text-brand-blue">
+                                        <Lock className="w-12 h-12" />
                                     </div>
                                     <h1 className="text-2xl font-black text-brand-blue tracking-tight mb-2">{t.login.mfa.title}</h1>
                                     <p className="text-slate-500 text-sm">{t.login.mfa.subtitle}</p>

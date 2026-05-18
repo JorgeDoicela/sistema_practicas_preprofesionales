@@ -39,8 +39,8 @@ export default function VerificarCertificadoPage() {
       <div className="w-full max-w-lg">
         {/* Logo / Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-3xl bg-[#003366] flex items-center justify-center mx-auto mb-4 shadow-xl">
-            <ShieldCheck size={32} className="text-[#C5A059]" />
+          <div className="flex items-center justify-center mx-auto mb-4 text-[#003366]">
+            <ShieldCheck size={48} className="text-[#C5A059]" />
           </div>
           <h1 className="text-2xl font-black text-[#003366]">Verificación de Certificado</h1>
           <p className="text-slate-500 text-sm mt-1">Sistema de Prácticas Preprofesionales</p>
@@ -56,8 +56,8 @@ export default function VerificarCertificadoPage() {
         {!loading && error && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-3xl p-5 sm:p-8 shadow-sm border border-red-100 text-center">
-            <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-              <XCircle size={36} className="text-red-500" />
+            <div className="flex items-center justify-center mx-auto mb-4 text-red-500">
+              <XCircle size={48} />
             </div>
             <h2 className="text-xl font-black text-red-700 mb-2">Certificado Inválido</h2>
             <p className="text-red-500 text-sm">{error}</p>
@@ -78,8 +78,8 @@ export default function VerificarCertificadoPage() {
             {/* Datos */}
             <div className="p-5 sm:p-8 space-y-5">
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#003366]/5 flex items-center justify-center flex-shrink-0">
-                  <User size={16} className="text-[#003366]" />
+                <div className="flex items-center justify-center flex-shrink-0 text-[#003366] w-9 h-9">
+                  <User size={24} />
                 </div>
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Estudiante</p>
@@ -89,8 +89,8 @@ export default function VerificarCertificadoPage() {
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#003366]/5 flex items-center justify-center flex-shrink-0">
-                  <Building2 size={16} className="text-[#003366]" />
+                <div className="flex items-center justify-center flex-shrink-0 text-[#003366] w-9 h-9">
+                  <Building2 size={24} />
                 </div>
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Empresa Receptora</p>
@@ -99,8 +99,8 @@ export default function VerificarCertificadoPage() {
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#003366]/5 flex items-center justify-center flex-shrink-0">
-                  <GraduationCap size={16} className="text-[#003366]" />
+                <div className="flex items-center justify-center flex-shrink-0 text-[#003366] w-9 h-9">
+                  <GraduationCap size={24} />
                 </div>
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tutor Académico</p>

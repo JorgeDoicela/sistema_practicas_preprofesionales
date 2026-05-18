@@ -324,8 +324,8 @@ export function ProfileView() {
               {/* Header */}
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#003366] rounded-2xl flex items-center justify-center">
-                    <Pencil className="w-5 h-5 text-[#C5A059]" />
+                  <div className="flex items-center justify-center text-[#003366] w-9 h-9">
+                    <Pencil className="w-6 h-6" />
                   </div>
                   <div>
                     <h3 className="text-lg font-black text-[#003366]">{t.profile.editProfile}</h3>
