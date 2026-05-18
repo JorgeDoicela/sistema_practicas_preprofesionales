@@ -1015,6 +1015,7 @@ export const es = {
         email: "Notificaciones por Correo",
         security: "Seguridad y Autenticación",
         general: "General",
+        chat: "Chat y Mensajería",
         resourceManagement: "Gestión de recursos {id}",
       },
       noDescription: "Sin descripción disponible",

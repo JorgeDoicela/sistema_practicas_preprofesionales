@@ -1091,6 +1091,7 @@ export const en = {
         email: "Email Notifications",
         security: "Security and Authentication",
         general: "General",
+        chat: "Chat and Messaging",
         resourceManagement: "{id} resource management",
       },
       noDescription: "No description available",

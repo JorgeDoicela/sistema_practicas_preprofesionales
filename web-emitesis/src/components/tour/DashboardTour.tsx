@@ -294,7 +294,7 @@ export function DashboardTour() {
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: "spring", stiffness: 380, damping: 26 }}
-            className="pointer-events-none fixed z-[201] rounded-2xl border-[3px] border-[#C5A059] shadow-[0_0_0_1px_rgba(254,243,199,0.5),0_12px_40px_-8px_rgba(197,160,89,0.45)]"
+            className="pointer-events-none fixed z-[201] rounded-2xl shadow-[0_0_0_2px_rgba(255,255,255,0.4),0_16px_48px_rgba(31,41,91,0.35)]"
             style={{
               top: rect.top - HOLE_PAD,
               left: rect.left - HOLE_PAD,
@@ -303,14 +303,9 @@ export function DashboardTour() {
             }}
           >
             <motion.div
-              className="absolute inset-0 rounded-2xl border border-white/50"
-              animate={{ opacity: [0.4, 0.95, 0.4] }}
+              className="absolute inset-0 rounded-2xl border border-white/30"
+              animate={{ opacity: [0.3, 0.8, 0.3] }}
               transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <motion.div
-              className="absolute -inset-px rounded-[15px] border-2 border-amber-200/70"
-              animate={{ opacity: [0.35, 0.8, 0.35] }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
             />
           </motion.div>
         )}
