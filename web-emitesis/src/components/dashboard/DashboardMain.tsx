@@ -57,6 +57,8 @@ type InternshipRow = {
   company?: { name?: string };
   documents?: Array<{ status?: string }>;
   attendances?: Array<{ id: string; checkIn: string; checkOut?: string | null }>;
+  testEnabled?: boolean;
+  evaluation?: any;
 };
 
 function countDocsByStatus(docs: Array<{ status?: string }> | undefined, st: string) {
@@ -202,6 +204,18 @@ export function DashboardMain() {
         const res: any = await internshipsService.findByTutor(u.id);
         const list = res?.items || (Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []));
         setInternships(list);
+        setAgreementsCount(null);
+        return;
+      }
+
+      if (role === ROLES.EMPRESA) {
+        if (u.companyId) {
+          const res: any = await internshipsService.findByCompany(u.companyId);
+          const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
+          setInternships(list);
+        } else {
+          setInternships([]);
+        }
         setAgreementsCount(null);
         return;
       }
@@ -561,6 +575,58 @@ export function DashboardMain() {
             icon: <Clock className="w-6 h-6" />,
             color: "bg-emerald-500",
             href: "/tutor-academico/asistencia",
+          },
+        ],
+      };
+    }
+
+    if (appRole === ROLES.EMPRESA) {
+      const safeInternships = Array.isArray(internships) ? internships : [];
+      const activeCount = safeInternships.filter((i) => i.status === "En Proceso" || i.status === "Activo").length;
+      const testEnabledCount = safeInternships.filter((i) => i.testEnabled).length;
+      const evaluatedCount = safeInternships.filter((i) => i.evaluation).length;
+      const totalHours = safeInternships.reduce((acc, i) => {
+        const worked = i.attendances?.length ? i.attendances.reduce((s: number, a: any) => {
+          if (!a.checkOut) return s;
+          const diff = (new Date(a.checkOut).getTime() - new Date(a.checkIn).getTime()) / 3600000;
+          return s + diff;
+        }, 0) : 0;
+        return acc + worked;
+      }, 0);
+
+      return {
+        cards: [
+          {
+            title: "Pasantes Activos",
+            value: String(activeCount),
+            hint: `${safeInternships.length} asignados`,
+            icon: <Users className="w-6 h-6" />,
+            color: "bg-blue-500",
+            href: "/empresa/dashboard",
+          },
+          {
+            title: "Horas Trabajadas",
+            value: `${totalHours.toFixed(0)}h`,
+            hint: "Acumulado total",
+            icon: <Clock className="w-6 h-6" />,
+            color: "bg-amber-500",
+            href: "/empresa/dashboard",
+          },
+          {
+            title: "Pruebas Habilitadas",
+            value: String(testEnabledCount),
+            hint: "Listas para evaluar",
+            icon: <FileText className="w-6 h-6" />,
+            color: "bg-indigo-500",
+            href: "/empresa/dashboard",
+          },
+          {
+            title: "Alumnos Evaluados",
+            value: String(evaluatedCount),
+            hint: "Evaluaciones completadas",
+            icon: <CheckCircle2 className="w-6 h-6" />,
+            color: "bg-emerald-500",
+            href: "/empresa/dashboard",
           },
         ],
       };
@@ -1217,12 +1283,32 @@ export function DashboardMain() {
                       </Link>
                     )}
                     {appRole === ROLES.EMPRESA && (
-                      <Link
-                        href="/empresa/asistencia"
-                        className="w-full py-3.5 bg-white text-[#003366] rounded-2xl text-[10px] font-black uppercase tracking-widest text-center hover:bg-white/90"
-                      >
-                        Control de Asistencia
-                      </Link>
+                      <div className="grid grid-cols-1 gap-3 pt-2 w-full">
+                        <Link
+                          href="/empresa/dashboard"
+                          className="group w-full p-4 bg-white text-[#003366] rounded-2xl flex items-center justify-between hover:bg-white/95 transition-all shadow-sm"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 text-blue-600 flex items-center justify-center shrink-0">
+                              <Users className="w-5 h-5" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-left">Portal Empresa</span>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                        <Link
+                          href="/empresa/asistencia"
+                          className="group w-full p-4 bg-white/10 border border-white/20 text-white rounded-2xl flex items-center justify-between hover:bg-white/20 transition-all"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 text-white flex items-center justify-center shrink-0">
+                              <Clock className="w-5 h-5" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-left">Control Asistencia</span>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-white/30 group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                      </div>
                     )}
                   </div>
                 </div>
