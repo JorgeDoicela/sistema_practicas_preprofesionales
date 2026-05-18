@@ -71,22 +71,22 @@ function ResetPasswordForm() {
     <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.resetPassword.password}</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">{t.resetPassword.password}</label>
           <input
             type="password"
             required
-            className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#003366] transition-all"
+            className="appearance-none block w-full px-6 py-3.5 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all"
             placeholder={t.resetPassword.minChars}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">{t.resetPassword.confirm}</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">{t.resetPassword.confirm}</label>
           <input
             type="password"
             required
-            className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#003366] transition-all"
+            className="appearance-none block w-full px-6 py-3.5 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all"
             placeholder={t.resetPassword.minChars}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
@@ -97,15 +97,15 @@ function ResetPasswordForm() {
       <button
         type="submit"
         disabled={loading}
-        className={`w-full flex justify-center py-4 text-sm font-bold rounded-xl text-white bg-[#003366] hover:bg-[#002244] transition-all ${
+        className={`w-full btn-pill-primary py-4 text-sm font-bold cursor-pointer ${
           loading ? 'opacity-50 cursor-not-allowed' : ''
         }`}
       >
         {loading ? t.resetPassword.submitting : t.resetPassword.submit}
       </button>
       {message && (
-        <div className={`p-4 rounded-xl text-xs font-bold text-center border mt-4 ${
-          message.type === 'success' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-600 border-red-100'
+        <div className={`p-4 rounded-2xl text-xs font-bold text-center border mt-4 ${
+          message.type === 'success' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'
         }`}>
           {message.text}
         </div>
@@ -118,10 +118,10 @@ export default function ResetPasswordPage() {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] px-4 py-12">
-      <div className="max-w-md w-full space-y-6 md:space-y-8 bg-white p-5 sm:p-8 md:p-10 rounded-2xl shadow-xl border border-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
+      <div className="max-w-md w-full space-y-6 md:space-y-8 bg-white p-6 sm:p-8 md:p-10 rounded-[2.25rem] shadow-premium border border-slate-100/60">
         <div className="text-center">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#003366] tracking-tight">{t.resetPassword.title}</h2>
+          <h2 className="text-2xl sm:text-3xl font-black text-brand-blue tracking-tight">{t.resetPassword.title}</h2>
           <p className="mt-2 text-sm text-gray-500">{t.resetPassword.subtitle}</p>
         </div>
 
@@ -130,7 +130,7 @@ export default function ResetPasswordPage() {
         </Suspense>
 
         <p className="text-center text-xs text-slate-500 pt-4">
-          <Link href="/privacidad" className="text-[#003366] font-semibold hover:underline underline-offset-2">
+          <Link href="/privacidad" className="text-brand-gold font-bold hover:text-brand-blue transition-colors hover:underline underline-offset-2">
             {t.login.privacyLink}
           </Link>
         </p>

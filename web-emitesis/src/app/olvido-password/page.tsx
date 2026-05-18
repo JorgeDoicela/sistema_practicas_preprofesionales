@@ -74,7 +74,7 @@ export default function ForgotPasswordPage() {
                     className="w-full max-w-sm"
                 >
                     {/* icon */}
-                    <div className="w-14 h-14 rounded-2xl bg-brand-blue flex items-center justify-center mx-auto mb-8">
+                    <div className="w-14 h-14 rounded-full bg-brand-blue flex items-center justify-center mx-auto mb-8 shadow-lg">
                         <ShieldCheck className="w-7 h-7 text-brand-gold" />
                     </div>
 
@@ -104,7 +104,7 @@ export default function ForgotPasswordPage() {
                             </div>
                             <Link
                                 href="/login"
-                                className="inline-flex items-center justify-center gap-2 w-full bg-brand-blue text-white rounded-xl py-3.5 text-sm font-bold hover:bg-brand-gold transition-all"
+                                className="inline-flex items-center justify-center gap-2 w-full btn-pill-primary py-4 text-sm font-bold cursor-pointer"
                             >
                                 <ArrowLeft className="w-4 h-4" />
                                 {t.forgotPassword.backToLogin}
@@ -114,7 +114,7 @@ export default function ForgotPasswordPage() {
                         <form onSubmit={handleSubmit} className="space-y-5">
 
                             {message?.type === 'error' && (
-                                <div className="flex items-start gap-3 p-3.5 bg-red-50 border border-red-200 rounded-xl">
+                                <div className="flex items-start gap-3 p-3.5 bg-red-50 border border-red-200 rounded-2xl">
                                     <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
                                     <p className="text-xs text-red-600 font-medium">{message.text}</p>
                                 </div>
@@ -125,7 +125,7 @@ export default function ForgotPasswordPage() {
                                     {t.forgotPassword.email}
                                 </label>
                                 <div className="relative">
-                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                    <Mail className="absolute left-4.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                     <input
                                         id="email"
                                         name="email"
@@ -134,7 +134,7 @@ export default function ForgotPasswordPage() {
                                         value={email}
                                         onChange={e => setEmail(e.target.value)}
                                         placeholder={t.login.emailPlaceholder}
-                                        className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue outline-none transition-all placeholder:text-slate-300"
+                                        className="w-full bg-white border border-slate-200 rounded-full py-3.5 pl-12 pr-5 text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue outline-none transition-all placeholder:text-slate-300"
                                     />
                                 </div>
                             </div>
@@ -142,7 +142,7 @@ export default function ForgotPasswordPage() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-brand-blue text-white rounded-xl py-3.5 text-sm font-bold hover:bg-brand-gold transition-all shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="w-full btn-pill-primary py-4 text-sm font-bold disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                             >
                                 {loading ? (
                                     <span className="flex items-center justify-center gap-2">

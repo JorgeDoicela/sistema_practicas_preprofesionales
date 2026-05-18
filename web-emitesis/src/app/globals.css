@@ -89,10 +89,12 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+  --shadow-premium: 0 20px 48px -12px rgba(31, 41, 91, 0.08), 0 8px 24px -8px rgba(31, 41, 91, 0.04);
+  --shadow-premium-hover: 0 32px 64px -16px rgba(31, 41, 91, 0.14), 0 12px 32px -10px rgba(31, 41, 91, 0.08);
 }
 
 :root {
-  --radius: 0.75rem;
+  --radius: 1.25rem;
   --background: #F8F8F6;
   --foreground: #000000;
   --card: #FFFFFF;
@@ -220,6 +222,127 @@
       border-color: var(--glass-dark-border, rgba(255, 255, 255, 0.08));
       box-shadow: var(--glass-dark-shadow, 0 8px 32px 0 rgba(0, 0, 0, 0.4));
     }
+  }
+
+  .btn-pill-primary {
+    border-radius: 9999px;
+    background-color: var(--color-brand-blue) !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 20px -6px rgba(31, 41, 91, 0.3) !important;
+  }
+  .btn-pill-primary:hover {
+    background-color: var(--color-blue-navy) !important;
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 12px 24px -6px rgba(31, 41, 91, 0.45) !important;
+  }
+  .btn-pill-primary:active {
+    transform: translateY(1px) scale(0.99);
+    box-shadow: 0 4px 12px -4px rgba(31, 41, 91, 0.25) !important;
+  }
+
+  .btn-pill-secondary {
+    border-radius: 9999px;
+    background-color: var(--color-blue-tint) !important;
+    color: var(--color-brand-blue) !important;
+    font-weight: 700;
+    border: 1px solid rgba(143, 184, 212, 0.2) !important;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-pill-secondary:hover {
+    background-color: var(--color-blue-pale) !important;
+    transform: translateY(-1px) scale(1.01);
+  }
+  .btn-pill-secondary:active {
+    transform: translateY(1px) scale(0.99);
+  }
+
+  .btn-pill-outline {
+    border-radius: 9999px;
+    background-color: #ffffff !important;
+    color: var(--muted-foreground) !important;
+    border: 1px solid var(--border) !important;
+    font-weight: 600;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-pill-outline:hover {
+    background-color: var(--accent) !important;
+    color: var(--color-brand-blue) !important;
+    border-color: var(--color-blue-light) !important;
+    transform: translateY(-1px);
+  }
+  .btn-pill-outline:active {
+    transform: translateY(1px);
+  }
+
+  .card-pill-white {
+    background-color: #ffffff !important;
+    border-radius: 2rem !important;
+    border: 1px solid rgba(209, 207, 208, 0.4) !important;
+    box-shadow: var(--shadow-premium) !important;
+    transition: box-shadow 300ms ease, transform 300ms ease;
+  }
+  .card-pill-white:hover {
+    box-shadow: var(--shadow-premium-hover) !important;
+  }
+
+  .card-pill-navy {
+    background-color: var(--color-brand-blue) !important;
+    border-radius: 2.25rem !important;
+    color: #ffffff !important;
+    box-shadow: var(--shadow-premium) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  }
+
+  .card-pill-gray {
+    background-color: #E1DFDF !important;
+    border-radius: 2rem !important;
+    color: var(--color-brand-blue) !important;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+  .dark .card-pill-gray {
+    background-color: #2D323E !important;
+    color: #ffffff !important;
+  }
+
+  .circle-badge {
+    border-radius: 9999px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 12px 28px -8px rgba(31, 41, 91, 0.18) !important;
+    transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  .circle-badge:hover {
+    transform: translateY(-2px) scale(1.05) !important;
+    box-shadow: 0 16px 36px -8px rgba(31, 41, 91, 0.28) !important;
+  }
+  .circle-badge:active {
+    transform: translateY(0px) scale(0.95) !important;
+  }
+
+  .input-pill {
+    border-radius: 9999px !important;
+    background-color: #ffffff !important;
+    border: 1px solid var(--border) !important;
+    padding: 0.75rem 1.25rem !important;
+    font-size: 0.875rem !important;
+    outline: none !important;
+    transition: all 200ms ease !important;
+  }
+  .input-pill:focus {
+    border-color: var(--color-blue-medium) !important;
+    box-shadow: 0 0 0 4px rgba(75, 132, 177, 0.15) !important;
+  }
+  .dark .input-pill {
+    background-color: var(--card) !important;
+    border-color: var(--border) !important;
+  }
+  .dark .input-pill:focus {
+    border-color: var(--ring) !important;
+    box-shadow: 0 0 0 4px rgba(196, 168, 87, 0.15) !important;
   }
 }
 

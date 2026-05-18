@@ -279,6 +279,7 @@ export const es = {
     company: "Empresa",
     status: "Estado",
     time: "Hora",
+    startDate: "Fecha de inicio",
     alerts: {
       rejectedDocs: "Documentos Rechazados",
       rejectedDesc: "Tienes observaciones en tu expediente que requieren corrección inmediata.",
@@ -345,6 +346,7 @@ export const es = {
     settings: "Configuración",
     logout: "Cerrar Sesión",
     closeMenu: "Cerrar menú",
+    secureSession: "Sesión Segura",
     roles: {
       ADMIN: "Administrador",
       COORDINADOR: "Coordinador de Cumplimiento LOPDP",
@@ -874,6 +876,14 @@ export const es = {
     noInternships: "Sin prácticas",
     inProgress: "En proceso",
     noPractices: "Sin asignación aún",
+    totalUsers: "Usuarios Registrados",
+    activeInDb: "Cuentas activas en el sistema",
+    logsToday: "Registros de Hoy",
+    auditActivity: "Actividades de auditoría",
+    errorsToday: "Errores del Sistema",
+    stabilityAlerts: "Alertas de estabilidad",
+    avgLatency: "Latencia Promedio",
+    apiResponseTime: "Tiempo de respuesta API",
   },
 
   profile: {

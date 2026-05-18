@@ -219,12 +219,12 @@ export default function LoginPage() {
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-slate-600 block">{t.login.email}</label>
                                         <div className="relative">
-                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                            <Mail className="absolute left-4.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                             <input
                                                 type="email" required value={email}
                                                 onChange={e => setEmail(e.target.value)}
                                                 placeholder={t.login.emailPlaceholder}
-                                                className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue outline-none transition-all placeholder:text-slate-300"
+                                                className="w-full bg-white border border-slate-200 rounded-full py-3.5 pl-12 pr-5 text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue outline-none transition-all placeholder:text-slate-300"
                                             />
                                         </div>
                                     </div>
@@ -238,17 +238,17 @@ export default function LoginPage() {
                                             </Link>
                                         </div>
                                         <div className="relative">
-                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                            <Lock className="absolute left-4.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                             <input
                                                 type={showPassword ? "text" : "password"} required value={password}
                                                 onChange={e => setPassword(e.target.value)}
                                                 placeholder={t.login.passwordPlaceholder}
-                                                className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-11 pr-11 text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue outline-none transition-all placeholder:text-slate-300"
+                                                className="w-full bg-white border border-slate-200 rounded-full py-3.5 pl-12 pr-12 text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue outline-none transition-all placeholder:text-slate-300"
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-blue transition-colors"
+                                                className="absolute right-4.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-blue transition-colors cursor-pointer"
                                             >
                                                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                             </button>
@@ -256,7 +256,7 @@ export default function LoginPage() {
                                     </div>
 
                                     {!siteKey && isDev && (
-                                        <div className="flex items-start gap-3 p-3.5 bg-amber-50 border border-amber-200 rounded-xl">
+                                        <div className="flex items-start gap-3 p-3.5 bg-amber-50 border border-amber-200 rounded-2xl">
                                             <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
                                             <div>
                                                 <p className="text-xs font-bold text-amber-700">Modo Desarrollo</p>
@@ -268,7 +268,7 @@ export default function LoginPage() {
                                     )}
 
                                     {error && (
-                                        <div className="flex items-start gap-3 p-3.5 bg-red-50 border border-red-200 rounded-xl">
+                                        <div className="flex items-start gap-3 p-3.5 bg-red-50 border border-red-200 rounded-2xl">
                                             <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
                                             <p className="text-xs text-red-600 font-medium">{error}</p>
                                         </div>
@@ -277,7 +277,7 @@ export default function LoginPage() {
                                     <button
                                         type="submit"
                                         disabled={isLoading}
-                                        className="w-full bg-brand-blue text-white rounded-xl py-3.5 text-sm font-bold hover:bg-brand-gold transition-all shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                                        className="w-full btn-pill-primary py-4 text-sm font-bold disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                                     >
                                         {isLoading ? (
                                             <span className="flex items-center justify-center gap-2">
@@ -293,17 +293,17 @@ export default function LoginPage() {
                                     {/* Panel de Confianza y Seguridad Enterprise */}
                                     <div className="pt-6 border-t border-slate-100">
                                         <div className="grid grid-cols-2 gap-3">
-                                            <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-100/50 border border-slate-200/50">
-                                                <div className="flex h-6 w-6 items-center justify-center rounded-md bg-green-100 text-green-600">
+                                            <div className="flex items-center gap-2 p-2.5 rounded-full bg-slate-100/50 border border-slate-200/50">
+                                                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-600 flex-shrink-0">
                                                     <Lock className="h-3 w-3" />
                                                 </div>
-                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{t.login.security?.encrypted || 'Conexión Segura'}</span>
+                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight truncate">{t.login.security?.encrypted || 'Conexión Segura'}</span>
                                             </div>
-                                            <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-100/50 border border-slate-200/50">
-                                                <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-100 text-blue-600">
+                                            <div className="flex items-center gap-2 p-2.5 rounded-full bg-slate-100/50 border border-slate-200/50">
+                                                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-blue-600 flex-shrink-0">
                                                     <Fingerprint className="h-3 w-3" />
                                                 </div>
-                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{t.login.security?.botProtection || 'Protección Anti-Robots'}</span>
+                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight truncate">{t.login.security?.botProtection || 'Protección Anti-Robots'}</span>
                                             </div>
                                         </div>
                                         <p className="mt-3 text-center text-[10px] text-slate-400 font-medium">
@@ -315,8 +315,8 @@ export default function LoginPage() {
                         ) : (
                             <>
                                 <div className="mb-8 text-center">
-                                    <div className="w-14 h-14 rounded-2xl bg-brand-blue flex items-center justify-center mx-auto mb-5">
-                                        <Lock className="w-7 h-7 text-white" />
+                                    <div className="w-14 h-14 rounded-full bg-brand-blue flex items-center justify-center mx-auto mb-5 shadow-lg">
+                                        <Lock className="w-6 h-6 text-white" />
                                     </div>
                                     <h1 className="text-2xl font-black text-brand-blue tracking-tight mb-2">{t.login.mfa.title}</h1>
                                     <p className="text-slate-500 text-sm">{t.login.mfa.subtitle}</p>
@@ -325,17 +325,17 @@ export default function LoginPage() {
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-slate-600 block">{t.login.mfa.label}</label>
                                         <div className="relative">
-                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                            <Lock className="absolute left-4.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                             <input
                                                 type="text" required autoFocus maxLength={6}
                                                 value={mfaCode} onChange={e => setMfaCode(e.target.value)}
                                                 placeholder={t.login.mfa.placeholder}
-                                                className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-11 text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue outline-none transition-all tracking-[0.5em] font-bold text-center placeholder:tracking-normal placeholder:font-normal"
+                                                className="w-full bg-white border border-slate-200 rounded-full py-3.5 text-center text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue outline-none transition-all tracking-[0.5em] font-bold placeholder:tracking-normal placeholder:font-normal"
                                             />
                                         </div>
                                     </div>
                                     {error && (
-                                        <div className="flex items-start gap-3 p-3.5 bg-red-50 border border-red-200 rounded-xl">
+                                        <div className="flex items-start gap-3 p-3.5 bg-red-50 border border-red-200 rounded-2xl">
                                             <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
                                             <p className="text-xs text-red-600 font-medium">{error}</p>
                                         </div>
@@ -344,7 +344,7 @@ export default function LoginPage() {
                                     <button
                                         type="submit"
                                         disabled={isLoading}
-                                        className="w-full bg-brand-gold text-white rounded-xl py-3.5 text-sm font-bold hover:bg-brand-blue transition-all shadow-lg disabled:opacity-60"
+                                        className="w-full rounded-full bg-brand-gold text-white py-4 text-sm font-bold hover:bg-brand-blue transition-all shadow-lg disabled:opacity-60 cursor-pointer"
                                     >
                                         {isLoading ? t.login.mfa.verifying : t.login.mfa.confirm}
                                     </button>
@@ -352,7 +352,7 @@ export default function LoginPage() {
                                     <button
                                         type="button"
                                         onClick={() => setIsMfaRequired(false)}
-                                        className="w-full text-xs font-semibold text-slate-400 hover:text-brand-blue transition-colors py-2"
+                                        className="w-full btn-pill-outline py-2.5 text-xs font-semibold mt-2 cursor-pointer"
                                     >
                                         ← {t.login.backToLogin}
                                     </button>

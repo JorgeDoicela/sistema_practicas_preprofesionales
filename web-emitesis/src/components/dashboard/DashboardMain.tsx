@@ -6,6 +6,7 @@ import {
   Users,
   Building2,
   FileCheck,
+  ClipboardCheck,
   Clock,
   CheckCircle2,
   FileStack,
@@ -20,6 +21,7 @@ import {
   Settings,
   Megaphone,
   X,
+  FileText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";

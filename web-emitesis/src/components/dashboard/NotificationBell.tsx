@@ -5,6 +5,7 @@ import { Bell, CheckCircle2, AlertCircle, Info, XCircle, Clock } from "lucide-re
 import { motion, AnimatePresence } from "framer-motion";
 import { notificationsService, Notification } from "@/services/notifications.service";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);

@@ -82,14 +82,14 @@ export default function Home() {
                         >
                             <Link
                                 href="/login"
-                                className="inline-flex items-center gap-2.5 bg-white text-brand-blue px-8 py-4 rounded-xl font-bold text-sm hover:bg-brand-gold hover:text-white transition-all shadow-xl group"
+                                className="inline-flex items-center gap-2.5 btn-pill-primary px-8 py-4 text-sm hover:bg-brand-gold hover:text-white transition-all shadow-xl group"
                             >
                                 {t.home.hero.cta}
                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                             </Link>
                             <Link
                                 href="#modulos"
-                                className="inline-flex items-center gap-2 border border-white/30 text-white px-8 py-4 rounded-xl font-semibold text-sm hover:bg-white/10 transition-all"
+                                className="inline-flex items-center gap-2 border border-white/30 text-white px-8 py-4 rounded-full font-semibold text-sm hover:bg-white/10 transition-all"
                             >
                                 {t.home.hero.ctaExplore}
                                 <ChevronRight className="w-4 h-4" />
@@ -238,9 +238,9 @@ export default function Home() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                         >
-                            <div className="bg-slate-900 rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+                            <div className="bg-slate-900 rounded-[2.25rem] border border-white/10 shadow-2xl overflow-hidden">
                                 {/* header */}
-                                <div className="flex items-center gap-3 px-5 py-4 border-b border-white/8 bg-slate-800/60">
+                                <div className="flex items-center gap-3 px-6 py-4 border-b border-white/8 bg-slate-800/60">
                                     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-gold to-amber-600 flex items-center justify-center">
                                         <Bot className="w-4 h-4 text-white" />
                                     </div>
@@ -255,10 +255,10 @@ export default function Home() {
                                 </div>
 
                                 {/* messages */}
-                                <div className="p-5 space-y-4">
+                                <div className="p-6 space-y-4">
                                     {/* user */}
                                     <div className="flex justify-end">
-                                        <div className="max-w-[80%] bg-brand-blue px-4 py-3 rounded-2xl rounded-br-sm">
+                                        <div className="max-w-[80%] bg-brand-blue px-4 py-3 rounded-3xl rounded-br-md">
                                             <p className="text-sm text-white/90">{t.home.ai.chatQuestion}</p>
                                         </div>
                                     </div>
@@ -267,7 +267,7 @@ export default function Home() {
                                         <div className="w-7 h-7 rounded-full bg-brand-gold/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                                             <Bot className="w-3.5 h-3.5 text-brand-gold" />
                                         </div>
-                                        <div className="max-w-[85%] bg-white/8 border border-white/10 px-4 py-3 rounded-2xl rounded-bl-sm">
+                                        <div className="max-w-[85%] bg-white/8 border border-white/10 px-4 py-3 rounded-3xl rounded-bl-md">
                                             <p className="text-sm text-white/85 leading-relaxed">
                                                 {t.home.ai.chatAnswer
                                                     .replace('{reported}', '(142 h)')
@@ -276,7 +276,7 @@ export default function Home() {
                                         </div>
                                     </div>
                                     {/* risk card */}
-                                    <div className="flex items-start gap-2.5 bg-amber-500/10 border border-amber-500/25 rounded-xl p-3.5">
+                                    <div className="flex items-start gap-2.5 bg-amber-500/10 border border-amber-500/25 rounded-2xl p-4">
                                         <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                                         <div>
                                             <p className="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-1">{t.home.ai.riskTitle}</p>
@@ -288,11 +288,11 @@ export default function Home() {
                                 </div>
 
                                 {/* input bar */}
-                                <div className="px-5 py-4 border-t border-white/8 flex items-center gap-3">
-                                    <div className="flex-1 bg-white/8 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white/35">
+                                <div className="px-6 py-4 border-t border-white/8 flex items-center gap-3">
+                                    <div className="flex-1 bg-white/8 border border-white/10 rounded-full px-5 py-2.5 text-xs text-white/35">
                                         {t.home.ai.chatPlaceholder}
                                     </div>
-                                    <button className="w-9 h-9 rounded-xl bg-brand-gold flex items-center justify-center">
+                                    <button className="w-9 h-9 rounded-full bg-brand-gold flex items-center justify-center hover:scale-105 active:scale-95 transition-all">
                                         <ArrowRight className="w-4 h-4 text-white" />
                                     </button>
                                 </div>
@@ -375,57 +375,57 @@ export default function Home() {
                     <div className="space-y-12">
                         {[
                             {
-                                cat: t.modules_landing.academic.title, color: "bg-blue-500", text: "text-blue-600", border: "border-blue-200", light: "bg-blue-50",
-                                modules: t.modules_landing.academic.items.map((m: any, i: number) => ({
+                                cat: t.home.modules_landing.academic.title, color: "bg-blue-500", text: "text-blue-600", border: "border-blue-200", light: "bg-blue-50",
+                                modules: t.home.modules_landing.academic.items.map((m: any, i: number) => ({
                                     icon: i === 0 ? <Users /> : i === 1 ? <FileSignature /> : i === 2 ? <Layers /> : <BookOpen />,
                                     ...m
                                 }))
                             },
                             {
-                                cat: t.modules_landing.legal.title, color: "bg-amber-500", text: "text-amber-600", border: "border-amber-200", light: "bg-amber-50",
-                                modules: t.modules_landing.legal.items.map((m: any, i: number) => ({
+                                cat: t.home.modules_landing.legal.title, color: "bg-amber-500", text: "text-amber-600", border: "border-amber-200", light: "bg-amber-50",
+                                modules: t.home.modules_landing.legal.items.map((m: any, i: number) => ({
                                     icon: i === 0 ? <FileCheck2 /> : i === 1 ? <GitBranch /> : i === 2 ? <MessageSquare /> : <Stamp />,
                                     ...m
                                 }))
                             },
                             {
-                                cat: t.modules_landing.operation.title, color: "bg-emerald-500", text: "text-emerald-600", border: "border-emerald-200", light: "bg-emerald-50",
-                                modules: t.modules_landing.operation.items.map((m: any, i: number) => ({
+                                cat: t.home.modules_landing.operation.title, color: "bg-emerald-500", text: "text-emerald-600", border: "border-emerald-200", light: "bg-emerald-50",
+                                modules: t.home.modules_landing.operation.items.map((m: any, i: number) => ({
                                     icon: i === 0 ? <MapPin /> : i === 1 ? <Camera /> : i === 2 ? <Fingerprint /> : <Eye />,
                                     ...m
                                 }))
                             },
                             {
-                                cat: t.modules_landing.ai.title, color: "bg-purple-500", text: "text-purple-600", border: "border-purple-200", light: "bg-purple-50",
-                                modules: t.modules_landing.ai.items.map((m: any, i: number) => ({
+                                cat: t.home.modules_landing.ai.title, color: "bg-purple-500", text: "text-purple-600", border: "border-purple-200", light: "bg-purple-50",
+                                modules: t.home.modules_landing.ai.items.map((m: any, i: number) => ({
                                     icon: i === 0 ? <Bot /> : i === 1 ? <Eye /> : i === 2 ? <FileText /> : <Gauge />,
                                     ...m
                                 }))
                             },
                             {
-                                cat: t.modules_landing.automation.title, color: "bg-rose-500", text: "text-rose-600", border: "border-rose-200", light: "bg-rose-50",
-                                modules: t.modules_landing.automation.items.map((m: any, i: number) => ({
+                                cat: t.home.modules_landing.automation.title, color: "bg-rose-500", text: "text-rose-600", border: "border-rose-200", light: "bg-rose-50",
+                                modules: t.home.modules_landing.automation.items.map((m: any, i: number) => ({
                                     icon: i === 0 ? <Clock /> : i === 1 ? <Bell /> : i === 2 ? <Mail /> : <History />,
                                     ...m
                                 }))
                             },
                             {
-                                cat: t.modules_landing.certification.title, color: "bg-cyan-500", text: "text-cyan-600", border: "border-cyan-200", light: "bg-cyan-50",
-                                modules: t.modules_landing.certification.items.map((m: any, i: number) => ({
+                                cat: t.home.modules_landing.certification.title, color: "bg-cyan-500", text: "text-cyan-600", border: "border-cyan-200", light: "bg-cyan-50",
+                                modules: t.home.modules_landing.certification.items.map((m: any, i: number) => ({
                                     icon: i === 0 ? <ClipboardList /> : i === 1 ? <QrCode /> : i === 2 ? <ScrollText /> : <TrendingUp />,
                                     ...m
                                 }))
                             },
                             {
-                                cat: t.modules_landing.analytics.title, color: "bg-indigo-500", text: "text-indigo-600", border: "border-indigo-200", light: "bg-indigo-50",
-                                modules: t.modules_landing.analytics.items.map((m: any, i: number) => ({
+                                cat: t.home.modules_landing.analytics.title, color: "bg-indigo-500", text: "text-indigo-600", border: "border-indigo-200", light: "bg-indigo-50",
+                                modules: t.home.modules_landing.analytics.items.map((m: any, i: number) => ({
                                     icon: i === 0 ? <BarChart3 /> : i === 1 ? <LineChart /> : i === 2 ? <Database /> : <HardDriveDownload />,
                                     ...m
                                 }))
                             },
                             {
-                                cat: t.modules_landing.governance.title, color: "bg-slate-600", text: "text-slate-600", border: "border-slate-200", light: "bg-slate-50",
-                                modules: t.modules_landing.governance.items.map((m: any, i: number) => ({
+                                cat: t.home.modules_landing.governance.title, color: "bg-slate-600", text: "text-slate-600", border: "border-slate-200", light: "bg-slate-50",
+                                modules: t.home.modules_landing.governance.items.map((m: any, i: number) => ({
                                     icon: i === 0 ? <Lock /> : i === 1 ? <ShieldAlert /> : i === 2 ? <BookOpen /> : <Network />,
                                     ...m
                                 }))
@@ -625,29 +625,56 @@ export default function Home() {
                             </div>
                         </div>
 
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            viewport={{ once: true }}
-                            className="bg-gradient-to-br from-brand-blue to-slate-900 rounded-2xl p-10 text-white shadow-xl relative overflow-hidden"
-                        >
-                            <div className="absolute top-0 right-0 w-48 h-48 bg-brand-gold/10 blur-3xl rounded-full" />
-                            <div className="relative z-10">
-                                <ShieldCheck className="w-12 h-12 text-brand-gold mb-6" />
-                                <h3 className="text-2xl font-black mb-3">{t.home.security.zeroTrust}</h3>
-                                <p className="text-white/60 text-sm leading-relaxed mb-8">
-                                    {t.home.security.zeroTrustDesc}
-                                </p>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {t.home.security.kpis.map(s => (
-                                        <div key={s.l} className="bg-white/6 border border-white/10 rounded-xl p-4">
-                                            <p className="text-2xl font-black text-brand-gold">{s.v}</p>
-                                            <p className="text-[10px] text-white/50 uppercase tracking-wider mt-1">{s.l}</p>
-                                        </div>
-                                    ))}
+                        {/* right column — Bento-style Zero-Trust cards & Circular Action Badges */}
+                        <div className="space-y-6">
+                            {/* Zero-Trust Card */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                className="card-pill-navy p-8 sm:p-10 relative overflow-hidden"
+                            >
+                                <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 blur-3xl rounded-full" />
+                                <div className="relative z-10">
+                                    <h3 className="text-2xl sm:text-3xl font-black mb-3 tracking-tight">{t.home.security.zeroTrust}</h3>
+                                    <p className="text-white/80 text-sm leading-relaxed">
+                                        {t.home.security.zeroTrustDesc}
+                                    </p>
                                 </div>
+                            </motion.div>
+
+                            {/* Bottom row: Circular Badges + Convenios Card */}
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center pt-2">
+                                {/* Circular Badges */}
+                                <div className="md:col-span-5 flex items-center justify-start gap-4">
+                                    {/* Location Badge */}
+                                    <div className="circle-badge w-14 h-14 bg-[#4A85B6] text-white flex-shrink-0">
+                                        <MapPin className="w-6 h-6" />
+                                    </div>
+                                    {/* Clock Badge */}
+                                    <div className="circle-badge w-14 h-14 bg-[#CBE0EC] text-[#132A52] flex-shrink-0">
+                                        <Clock className="w-6 h-6" />
+                                    </div>
+                                    {/* Users Badge */}
+                                    <div className="circle-badge w-14 h-14 bg-[#EDC703] text-white flex-shrink-0">
+                                        <Users className="w-6 h-6" />
+                                    </div>
+                                </div>
+
+                                {/* Convenios Card */}
+                                <motion.div
+                                    initial={{ opacity: 0, x: 20 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    viewport={{ once: true }}
+                                    className="md:col-span-7 card-pill-gray p-6"
+                                >
+                                    <h4 className="font-black text-brand-blue text-sm uppercase tracking-wider mb-2">Convenios</h4>
+                                    <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-semibold">
+                                        Registro por RUC, vigencia, archivo digital y cascada a Empresa.
+                                    </p>
+                                </motion.div>
                             </div>
-                        </motion.div>
+                        </div>
                     </div>
                 </div>
             </section>
