@@ -307,8 +307,15 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 <button
                     onClick={() => {
                         localStorage.clear();
-                        Cookies.remove("token");
-                        Cookies.remove("user");
+                        try {
+                            Cookies.remove("token", { path: '/' });
+                            Cookies.remove("user", { path: '/' });
+                            Cookies.set("token", "", { expires: -1, path: '/' });
+                            Cookies.set("user", "", { expires: -1, path: '/' });
+                        } catch (e) {
+                            document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+                            document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+                        }
                         window.location.href = "/login";
                     }}
                     className="w-full flex items-center gap-4 px-5 py-4 text-white/50 hover:text-red-400 hover:bg-red-400/5 rounded-2xl transition-all group"

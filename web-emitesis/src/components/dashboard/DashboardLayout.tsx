@@ -14,6 +14,7 @@ import { useRef } from "react";
 import { AICopilot } from "./AICopilot";
 import { internshipsService } from "@/services/internships.service";
 import { ROLES } from "@/constants/roles";
+import Cookies from "js-cookie";
 
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -49,7 +50,21 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   const handleLogout = (reason: 'inactivity' | 'absolute' | 'manual' | 'sync' = 'manual') => {
     console.warn(`[Security] Logging out due to: ${reason}`);
+    
+    // 1. Limpiar localStorage
     localStorage.clear();
+
+    // 2. Limpiar Cookies con todas las técnicas posibles para evitar que el Middleware intercepte
+    try {
+      Cookies.remove('token', { path: '/' });
+      Cookies.remove('user', { path: '/' });
+      Cookies.set('token', '', { expires: -1, path: '/' });
+      Cookies.set('user', '', { expires: -1, path: '/' });
+    } catch (e) {
+      document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
+
     if (typeof window !== 'undefined') {
       const errorParam = reason === 'inactivity' ? 'sessionExpired=true' : 
                          reason === 'absolute' ? 'sessionLimit=true' : 'logout=true';
@@ -110,6 +125,20 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    const isTokenExpired = (tok: string): boolean => {
+      try {
+        const parts = tok.split('.');
+        if (parts.length !== 3) return true;
+        const payload = JSON.parse(window.atob(parts[1]));
+        if (payload.exp && Date.now() >= payload.exp * 1000) {
+          return true; // Expirado
+        }
+        return false;
+      } catch (e) {
+        return true;
+      }
+    };
+
     const validateSession = () => {
       const token = localStorage.getItem("token");
       const userStr = localStorage.getItem("user");
@@ -124,6 +153,18 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         setIsLoading(false);
         router.replace("/login");
         return;
+      }
+
+      // Validación de expiración proactiva (JWT):
+      // Si el access token ya expiró, y no hay refresh token o el refresh token también expiró,
+      // cerramos sesión de inmediato para evitar que quede atrapado en el dashboard con datos rotos.
+      if (isTokenExpired(token)) {
+        const refreshToken = localStorage.getItem("refresh_token");
+        if (!refreshToken || isTokenExpired(refreshToken)) {
+          console.warn("[Security] Token de acceso y token de refresco expirados o no disponibles.");
+          handleLogout('inactivity');
+          return;
+        }
       }
 
       try {
