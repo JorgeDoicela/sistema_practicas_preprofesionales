@@ -674,7 +674,8 @@ function DocumentosContent() {
             </div>
           ) : (
             <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden" data-tour="documents-list">
-               <table className="w-full text-left">
+               <div className="overflow-x-auto">
+                  <table className="w-full text-left min-w-[800px]">
                   <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
                       <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">{t.documents.table.student}</th>
@@ -728,6 +729,7 @@ function DocumentosContent() {
                     ))}
                   </tbody>
                </table>
+               </div>
             </div>
           )
         ) : (

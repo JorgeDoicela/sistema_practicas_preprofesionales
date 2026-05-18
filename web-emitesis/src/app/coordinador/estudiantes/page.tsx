@@ -895,8 +895,8 @@ function StudentInternshipCard({
                      {!attendance ? (
                         <div className="py-10 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-slate-300" /></div>
                      ) : (
-                       <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden">
-                          <table className="w-full text-[10px]">
+                       <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden overflow-x-auto">
+                          <table className="w-full text-[10px] min-w-[500px]">
                              <thead className="bg-slate-50 border-b">
                                 <tr>
                                    <th className="px-4 py-3 text-left font-black uppercase text-slate-400">{t.coordinator.students.expediente.table.date}</th>

@@ -435,8 +435,8 @@ export default function TutorAsistenciaPage() {
                                 {t.asistencia.history.noRecords}
                               </p>
                             ) : (
-                              <div className="rounded-2xl border border-slate-100 overflow-hidden">
-                                <table className="w-full text-xs">
+                              <div className="rounded-2xl border border-slate-100 overflow-hidden overflow-x-auto">
+                                <table className="w-full text-xs min-w-[700px]">
                                   <thead className="bg-slate-50 border-b border-slate-100">
                                     <tr>
                                       <th className="px-5 py-3 text-left font-black uppercase tracking-widest text-slate-400 text-[9px]">{t.common.date}</th>
