@@ -747,20 +747,17 @@ export function DashboardMain() {
         <DashboardSkeleton />
       ) : (
         <>
-          {/* Dashboard Stats Bento Grid */}
+          {/* Dashboard Stats Grid */}
           <div 
-            className="grid sm:grid-cols-2 lg:grid-cols-4 grid-rows-2 gap-6 mb-12"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
             data-tour="dashboard-stats"
           >
             {stats.cards.map((card, idx) => (
               <StatCard 
                 key={idx} 
                 {...card} 
-                className={cn(
-                  idx === 0 ? "lg:col-span-2 lg:row-span-2" : "",
-                  "h-full"
-                )}
-                isMain={idx === 0}
+                className="h-full"
+                isMain={false}
               />
             ))}
           </div>
