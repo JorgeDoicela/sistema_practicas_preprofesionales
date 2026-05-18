@@ -249,7 +249,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <DashboardTour />
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
-        <Navbar onMenuToggle={() => setSidebarOpen(v => !v)} />
+        <Navbar sidebarOpen={sidebarOpen} onMenuToggle={() => setSidebarOpen(v => !v)} />
         <main data-tour="dashboard-main" className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-10 pt-4">
           <AnimatePresence mode="wait">
             <motion.div

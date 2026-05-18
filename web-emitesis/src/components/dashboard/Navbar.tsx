@@ -13,7 +13,13 @@ import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { cn } from "@/lib/utils";
 import { getProfilePathForRole } from "@/lib/profile-route";
 
-export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
+export function Navbar({ 
+  onMenuToggle,
+  sidebarOpen = false 
+}: { 
+  onMenuToggle?: () => void;
+  sidebarOpen?: boolean;
+}) {
   const [user, setUser] = useState<UserType | null>(null);
   const [scrolled, setScrolled] = useState(false);
 
@@ -48,7 +54,10 @@ export function Navbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
           {onMenuToggle && (
             <button
               onClick={onMenuToggle}
-              className="lg:hidden p-2 rounded-xl bg-slate-50 border border-slate-100 text-[#003366] hover:bg-slate-100 transition-all flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-brand-blue/10 shrink-0"
+              className={cn(
+                "p-2 rounded-xl bg-slate-50 border border-slate-100 text-[#003366] hover:bg-slate-100 transition-all flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-brand-blue/10 shrink-0",
+                sidebarOpen ? "lg:hidden" : "flex"
+              )}
               aria-label="Abrir menú"
             >
               <Menu className="w-5 h-5" />

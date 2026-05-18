@@ -918,6 +918,71 @@ async function main() {
         const isError = i % 50 === 0;
         const isWarn = i % 20 === 0;
 
+        // Generar metadatos realistas según la categoría
+        let metadata: any = null;
+        const simulatedUserAgent = pick([
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15',
+            'Mozilla/5.0 (iPhone; CPU iPhone OS 17_1_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/605.1.15',
+            'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
+        ]);
+
+        if (cat === 'AUTH') {
+            metadata = {
+                authMethod: pick(['Credentials', 'WebAuthn', 'JWT']),
+                userAgent: simulatedUserAgent,
+                loginAttempts: isWarn ? randInt(2, 4) : isError ? 5 : 1,
+                sessionTimeoutSec: 7200,
+                mfaVerified: pick([true, false])
+            };
+        } else if (cat === 'HTTP') {
+            metadata = {
+                userAgent: simulatedUserAgent,
+                acceptLanguage: pick(['es-EC,es;q=0.9', 'en-US,en;q=0.5']),
+                query: i % 3 === 0 ? { page: String(randInt(1, 5)), limit: '10' } : null,
+                body: i % 2 === 0 ? { action: 'update', targetId: 'uuid-' + i } : null
+            };
+        } else if (cat === 'SYSTEM') {
+            metadata = {
+                cpuUsagePercent: randInt(5, 45),
+                memoryUsageMB: randInt(120, 512),
+                environment: 'production',
+                uptimeSeconds: randInt(1000, 864000)
+            };
+        } else if (cat === 'PRIVACY') {
+            metadata = {
+                lopdpVersion: '1.0',
+                consentAction: pick(['Aceptado', 'Revisado', 'Otorgado']),
+                arcoType: pick(['ACCESO', 'RECTIFICACION', 'CANCELACION', 'OPOSICION', 'PORTABILIDAD']),
+                termsApproved: true
+            };
+        } else if (cat === 'GPS') {
+            metadata = {
+                coordinates: {
+                    lat: -0.1601 + (i % 20) * 0.001,
+                    lng: -78.4701 + (i % 20) * 0.001
+                },
+                allowedRadiusMeters: 250,
+                distanceDiffKm: isWarn ? 0.38 : 0.04,
+                gpsAccuracyMeters: randInt(3, 15)
+            };
+        } else if (cat === 'EMAIL') {
+            metadata = {
+                smtpHost: 'smtp.istpet.edu.ec',
+                smtpPort: 587,
+                encryption: 'STARTTLS',
+                emailProvider: 'TraversariMailServer',
+                deliveryAttempts: isError ? 3 : 1
+            };
+        } else if (cat === 'DOCUMENT') {
+            metadata = {
+                fileName: `F0${randInt(1, 8)}_documento_${i}.pdf`,
+                fileSize: `${(randInt(100, 8000) / 1024).toFixed(2)} MB`,
+                isDigitallySigned: i % 4 === 0,
+                verificationCode: i % 4 === 0 ? `VERIF-${i}-QR` : null
+            };
+        }
+
         logBatch.push({
             level: isError ? 'ERROR' : isWarn ? 'WARN' : 'INFO',
             category: cat,
@@ -937,6 +1002,7 @@ async function main() {
             durationMs: randInt(30, 2000),
             ip: `192.168.${randInt(1, 10)}.${randInt(1, 254)}`,
             createdAt: daysAgo(randInt(0, 90)),
+            metadata: metadata || undefined,
         });
 
         if (logBatch.length >= 150) {
