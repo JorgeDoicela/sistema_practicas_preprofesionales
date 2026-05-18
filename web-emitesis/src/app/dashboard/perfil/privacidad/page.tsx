@@ -98,8 +98,8 @@ export default function PrivacyCenterPage() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-8 mb-8 md:mb-12">
         <div className="flex items-center gap-4 md:gap-6 min-w-0">
-          <div className="w-14 h-14 md:w-16 md:h-16 bg-[#003366] rounded-2xl md:rounded-[2rem] flex items-center justify-center shadow-2xl shadow-blue-900/20 shrink-0">
-            <ShieldCheck className="text-[#C5A059] w-7 h-7 md:w-8 md:h-8" />
+          <div className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
+            <ShieldCheck className="text-[#C5A059] w-8 h-8 md:w-10 md:h-10" />
           </div>
           <div className="min-w-0">
             <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">{t.privacyDashboard.title}</h1>

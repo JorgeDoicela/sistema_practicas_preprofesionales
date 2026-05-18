@@ -148,14 +148,12 @@ export default function TutorAcademicoDashboardPage() {
               value={activeCount}
               icon={<Users className="w-6 h-6" />}
               color="text-blue-600"
-              bg="bg-blue-50"
             />
             <KpiCard
               title={t.tutor.dashboard.kpi.pendingReviews}
               value={pendingReviews}
               icon={<FileCheck className="w-6 h-6" />}
               color="text-amber-600"
-              bg="bg-amber-50"
               alert={pendingReviews > 0}
             />
             <KpiCard
@@ -163,14 +161,12 @@ export default function TutorAcademicoDashboardPage() {
               value={approvedCount}
               icon={<CheckCircle2 className="w-6 h-6" />}
               color="text-emerald-600"
-              bg="bg-emerald-50"
             />
             <KpiCard
               title={t.tutor.dashboard.kpi.visitsPerformed}
               value={internships.reduce((acc, i) => acc + (i.monitoringVisits?.length || 0), 0)}
               icon={<MapPin className="w-6 h-6" />}
               color="text-violet-600"
-              bg="bg-violet-50"
             />
           </div>
 
@@ -325,9 +321,9 @@ export default function TutorAcademicoDashboardPage() {
 }
 
 function KpiCard({
-  title, value, icon, color, bg, alert
+  title, value, icon, color, alert
 }: {
-  title: string; value: number; icon: React.ReactElement; color: string; bg: string; alert?: boolean;
+  title: string; value: number; icon: React.ReactElement; color: string; alert?: boolean;
 }) {
   return (
     <motion.div
@@ -340,8 +336,8 @@ function KpiCard({
       {alert && value > 0 && (
         <div className="absolute top-4 right-4 w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
       )}
-      <div className={cn("p-4 rounded-2xl inline-flex mb-8", bg)}>
-        {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: `w-6 h-6 ${color}` })}
+      <div className={cn("inline-flex mb-8", color)}>
+        {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: "w-8 h-8" })}
       </div>
       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
       <h4 className={cn("text-2xl md:text-3xl font-black tracking-tighter break-words", alert && value > 0 ? "text-red-600" : "text-[#003366]")}>

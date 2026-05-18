@@ -202,8 +202,8 @@ export default function StudentDetailPage() {
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.tutor.studentDetail.assignedCompany}</p>
               <p className="font-bold text-[#003366]">{internship?.company?.name}</p>
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-[#003366] flex items-center justify-center shadow-xl shadow-blue-900/20">
-              <Building2 className="w-6 h-6 text-[#C5A059]" />
+            <div className="w-14 h-14 flex items-center justify-center text-[#003366]">
+              <Building2 className="w-8 h-8" />
             </div>
           </div>
         </section>
@@ -380,8 +380,8 @@ export default function StudentDetailPage() {
             <section className="bg-gradient-to-br from-white to-slate-50 rounded-[3rem] border border-slate-200 shadow-sm overflow-hidden">
                <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center border border-emerald-100">
-                      <ClipboardCheck className="w-6 h-6 text-emerald-600" />
+                    <div className="w-12 h-12 flex items-center justify-center text-emerald-600">
+                      <ClipboardCheck className="w-8 h-8" />
                     </div>
                     <div>
                       <h2 className="text-xl font-black text-[#003366]">{t.tutor.studentDetail.evaluation.title}</h2>

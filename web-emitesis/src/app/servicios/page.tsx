@@ -71,10 +71,10 @@ export default function ServiciosPage() {
                                 } p-5 sm:p-8 shadow-sm hover:shadow-md transition-shadow`}
                             >
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className={`w-11 h-11 rounded-xl ${
-                                        i === 0 ? "bg-sky-500" : i === 1 ? "bg-orange-500" : "bg-teal-500"
-                                    } text-white flex items-center justify-center`}>
-                                        {i === 0 ? <GraduationCap /> : i === 1 ? <Building2 /> : <Users />}
+                                    <div className={`w-11 h-11 flex items-center justify-center ${
+                                        i === 0 ? "text-sky-500" : i === 1 ? "text-orange-500" : "text-teal-500"
+                                    }`}>
+                                        {i === 0 ? <GraduationCap className="w-8 h-8" /> : i === 1 ? <Building2 className="w-8 h-8" /> : <Users className="w-8 h-8" />}
                                     </div>
                                     <div>
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{s.role}</p>
@@ -119,8 +119,8 @@ export default function ServiciosPage() {
                                 viewport={{ once: true }}
                                 className="bg-white/6 border border-white/10 rounded-xl p-6 hover:bg-white/10 transition-colors group"
                             >
-                                <div className="w-10 h-10 rounded-lg bg-brand-gold/20 text-brand-gold flex items-center justify-center mb-4 group-hover:bg-brand-gold group-hover:text-white transition-colors">
-                                    {i === 0 ? <MapPin /> : i === 1 ? <QrCode /> : i === 2 ? <Brain /> : i === 3 ? <Fingerprint /> : i === 4 ? <FileCheck2 /> : <Bell />}
+                                <div className="w-10 h-10 text-brand-gold flex items-center justify-center mb-4 transition-colors">
+                                    {i === 0 ? <MapPin className="w-8 h-8" /> : i === 1 ? <QrCode className="w-8 h-8" /> : i === 2 ? <Brain className="w-8 h-8" /> : i === 3 ? <Fingerprint className="w-8 h-8" /> : i === 4 ? <FileCheck2 className="w-8 h-8" /> : <Bell className="w-8 h-8" />}
                                 </div>
                                 <h4 className="font-bold text-white mb-2">{t_item.title}</h4>
                                 <p className="text-white/55 text-sm leading-relaxed">{t_item.desc}</p>

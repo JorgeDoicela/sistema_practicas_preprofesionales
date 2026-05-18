@@ -407,12 +407,12 @@ function KpiCard({
     >
       <div
         className={cn(
-          "p-4 rounded-2xl inline-flex mb-6",
-          color.replace("bg-", "bg-") + "/10",
+          "inline-flex mb-6",
+          color.replace("bg-", "text-"),
         )}
       >
         {React.cloneElement(icon as React.ReactElement<{ className?: string }>, {
-          className: `w-6 h-6 ${color.replace("bg-", "text-")}`,
+          className: "w-8 h-8",
         })}
       </div>
       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>

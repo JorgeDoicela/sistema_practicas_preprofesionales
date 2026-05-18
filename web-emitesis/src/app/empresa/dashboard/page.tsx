@@ -207,9 +207,9 @@ function KpiCard({ title, value, icon, color }: { title: string; value: string |
       className="bg-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl relative overflow-hidden"
     >
       <div className="flex items-start justify-between mb-8">
-        <div className={cn("p-4 rounded-2xl bg-opacity-10", color.replace("bg-", "bg-") + "/10")}>
+        <div className={cn("inline-flex", color.replace("bg-", "text-"))}>
           {React.cloneElement(icon as React.ReactElement<{ className?: string }>, {
-            className: `w-6 h-6 ${color.replace("bg-", "text-")}`,
+            className: "w-8 h-8",
           })}
         </div>
       </div>

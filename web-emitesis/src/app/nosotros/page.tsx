@@ -98,8 +98,8 @@ export default function NosotrosPage() {
 
                             {/* location */}
                             <div className="flex gap-4 p-5 bg-slate-50 rounded-xl border border-slate-100">
-                                <div className="w-10 h-10 rounded-xl bg-brand-blue/8 text-brand-blue flex items-center justify-center flex-shrink-0">
-                                    <MapPin className="w-5 h-5" />
+                                <div className="w-10 h-10 text-brand-blue flex items-center justify-center flex-shrink-0">
+                                    <MapPin className="w-7 h-7" />
                                 </div>
                                 <div>
                                     <p className="font-bold text-brand-blue text-sm mb-1">{t.about.info.location.title}</p>
@@ -112,8 +112,8 @@ export default function NosotrosPage() {
                             <div className="grid sm:grid-cols-2 gap-4">
                                 {t.about.info.cards.map((c, i) => (
                                     <div key={i} className="p-5 bg-slate-50 rounded-xl border border-slate-100">
-                                        <div className="w-9 h-9 rounded-lg bg-brand-gold/10 text-brand-gold flex items-center justify-center mb-3">
-                                            {i === 0 ? <Users /> : <GraduationCap />}
+                                        <div className="w-9 h-9 text-brand-gold flex items-center justify-center mb-3">
+                                            {i === 0 ? <Users className="w-7 h-7" /> : <GraduationCap className="w-7 h-7" />}
                                         </div>
                                         <p className="font-bold text-brand-blue text-sm mb-1">{c.title}</p>
                                         <p className="text-slate-500 text-xs leading-relaxed">{c.desc}</p>

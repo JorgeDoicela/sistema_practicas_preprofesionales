@@ -167,10 +167,10 @@ export default function Home() {
                                 } p-5 sm:p-8 shadow-sm hover:shadow-lg transition-shadow`}
                             >
                                 <div className="flex items-start justify-between mb-6">
-                                    <div className={`w-12 h-12 rounded-xl ${
-                                        i === 0 ? "bg-blue-500" : i === 1 ? "bg-amber-500" : "bg-purple-500"
-                                    } text-white flex items-center justify-center`}>
-                                        {i === 0 ? <MapPin /> : i === 1 ? <Workflow /> : <Brain />}
+                                    <div className={`w-12 h-12 flex items-center justify-center ${
+                                        i === 0 ? "text-blue-500" : i === 1 ? "text-amber-500" : "text-purple-500"
+                                    }`}>
+                                        {i === 0 ? <MapPin className="w-8 h-8" /> : i === 1 ? <Workflow className="w-8 h-8" /> : <Brain className="w-8 h-8" />}
                                     </div>
                                     <span className="text-5xl font-black text-slate-100 leading-none select-none">{p.num}</span>
                                 </div>
@@ -648,16 +648,16 @@ export default function Home() {
                                 {/* Circular Badges */}
                                 <div className="md:col-span-5 flex items-center justify-start gap-4">
                                     {/* Location Badge */}
-                                    <div className="circle-badge w-14 h-14 bg-[#4A85B6] text-white flex-shrink-0">
-                                        <MapPin className="w-6 h-6" />
+                                    <div className="w-14 h-14 flex items-center justify-center text-[#4A85B6] flex-shrink-0">
+                                        <MapPin className="w-8 h-8" />
                                     </div>
                                     {/* Clock Badge */}
-                                    <div className="circle-badge w-14 h-14 bg-[#CBE0EC] text-[#132A52] flex-shrink-0">
-                                        <Clock className="w-6 h-6" />
+                                    <div className="w-14 h-14 flex items-center justify-center text-[#132A52] flex-shrink-0">
+                                        <Clock className="w-8 h-8" />
                                     </div>
                                     {/* Users Badge */}
-                                    <div className="circle-badge w-14 h-14 bg-[#EDC703] text-white flex-shrink-0">
-                                        <Users className="w-6 h-6" />
+                                    <div className="w-14 h-14 flex items-center justify-center text-[#EDC703] flex-shrink-0">
+                                        <Users className="w-8 h-8" />
                                     </div>
                                 </div>
 

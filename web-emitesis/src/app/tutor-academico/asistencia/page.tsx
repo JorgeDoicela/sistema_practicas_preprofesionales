@@ -752,9 +752,9 @@ export default function TutorAsistenciaPage() {
 function KpiCard({ icon, title, value, color }: { icon: React.ReactElement; title: string; value: string | number; color: string }) {
   return (
     <motion.div whileHover={{ y: -4 }} className="bg-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl">
-      <div className={cn("p-4 rounded-2xl inline-flex mb-6", color.replace("bg-", "bg-") + "/10")}>
+      <div className={cn("inline-flex mb-6", color.replace("bg-", "text-"))}>
         {React.cloneElement(icon as React.ReactElement<{ className?: string }>, {
-          className: `w-6 h-6 ${color.replace("bg-", "text-")}`,
+          className: "w-8 h-8",
         })}
       </div>
       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
