@@ -7,7 +7,7 @@ import { Navbar } from "@/components/dashboard/Navbar";
 import { Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { normalizeApiRoleToAppRole, type Role } from "@/constants/roles";
-import { canRoleAccessPath, getHomePathForRole } from "@/lib/route-access";
+import { canRoleAccessPath, getHomePathForRole, normalizePathname } from "@/lib/route-access";
 import { DashboardTour } from "@/components/tour/DashboardTour";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useRef } from "react";
@@ -132,8 +132,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         
         if (!canRoleAccessPath(role as Role, pathname)) {
           const redirectPath = getHomePathForRole(role as Role);
-          router.replace(redirectPath);
-          setIsAuthorized(false);
+          // Prevenir bucle infinito si la ruta de redirección es la misma que la actual
+          if (normalizePathname(redirectPath) === normalizePathname(pathname)) {
+            console.error("[Security] Redirect loop detected at", pathname);
+            setIsAuthorized(true); // Permitir acceso como última instancia para evitar bloqueo
+          } else {
+            router.replace(redirectPath);
+            setIsAuthorized(false);
+          }
           setIsLoading(false);
           return;
         }
@@ -186,30 +192,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [router, pathname]);
 
-  if (isLoading) {
+  if (isLoading || !isAuthorized) {
     return (
-      <div className="h-screen w-full flex items-center justify-center bg-slate-50">
+      <div className="h-screen w-full flex items-center justify-center bg-background">
         <div className="text-center">
-          <Loader2 className="w-10 h-10 text-[#003366] animate-spin mx-auto mb-4" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.common.accessingEcosystem}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthorized) {
-    return (
-      <div className="h-screen w-full flex items-center justify-center bg-slate-50">
-        <div className="text-center">
-          <Loader2 className="w-10 h-10 text-[#003366] animate-spin mx-auto mb-4" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.common.accessingEcosystem}</p>
+          <Loader2 className="w-10 h-10 text-primary dark:text-brand-gold animate-spin mx-auto mb-4" />
+          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t.common.accessingEcosystem}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-background">
       <DashboardTour />
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
