@@ -8,9 +8,9 @@ import { absencesService, Absence } from "@/services/absences.service";
 import { cn } from "@/lib/utils";
 
 const statusBadge: Record<string, string> = {
-  PENDIENTE: "bg-amber-50 text-amber-700 border-amber-200",
-  APROBADA: "bg-green-50 text-green-700 border-green-200",
-  RECHAZADA: "bg-red-50 text-red-600 border-red-200",
+  PENDIENTE: "text-amber-700",
+  APROBADA: "text-green-700",
+  RECHAZADA: "text-red-600",
 };
 
 export default function CoordinadorAusenciasPage() {
@@ -97,7 +97,7 @@ export default function CoordinadorAusenciasPage() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-black text-[#003366] text-sm">{ab.internship?.student?.fullName || "Estudiante"}</p>
-                      <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-black border", statusBadge[ab.status])}>
+                      <span className={cn("text-[10px] font-black uppercase tracking-widest", statusBadge[ab.status])}>
                         {ab.status}
                       </span>
                     </div>

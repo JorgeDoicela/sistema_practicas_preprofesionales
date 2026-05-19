@@ -21,17 +21,17 @@ const ABSENCE_TYPES = [
 const statusBadge: Record<string, { text: string; class: string; icon: React.ReactNode }> = {
   PENDIENTE: {
     text: "Pendiente",
-    class: "bg-amber-50 text-amber-700 border-amber-200",
+    class: "text-amber-700",
     icon: <Clock size={11} />,
   },
   APROBADA: {
     text: "Aprobada",
-    class: "bg-green-50 text-green-700 border-green-200",
+    class: "text-green-700",
     icon: <CheckCheck size={11} />,
   },
   RECHAZADA: {
     text: "Rechazada",
-    class: "bg-red-50 text-red-600 border-red-200",
+    class: "text-red-600",
     icon: <XCircle size={11} />,
   },
 };
@@ -159,7 +159,7 @@ export default function AusenciasPage() {
                           <p className="font-black text-[#003366]">
                             {new Date(ab.date).toLocaleDateString("es-EC", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                           </p>
-                          <span className={cn("flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border", badge.class)}>
+                          <span className={cn("flex items-center gap-1 text-[10px] font-black uppercase tracking-widest", badge.class)}>
                             {badge.icon} {badge.text}
                           </span>
                         </div>

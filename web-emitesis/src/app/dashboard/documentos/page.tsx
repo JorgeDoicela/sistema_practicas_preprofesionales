@@ -331,14 +331,14 @@ function DocumentosContent() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PENDIENTE': return 'bg-slate-100 text-slate-500';
-      case 'EN_REVISION_TUTOR': return 'bg-blue-100 text-blue-700';
+      case 'PENDIENTE': return 'text-slate-500';
+      case 'EN_REVISION_TUTOR': return 'text-blue-700';
       case 'APROBADO_TUTOR': 
-      case 'APROBADO_DEFINITIVO': return 'bg-emerald-100 text-emerald-700';
+      case 'APROBADO_DEFINITIVO': return 'text-emerald-700';
       case 'RECHAZADO_TUTOR':
-      case 'RECHAZADO_COORDINADOR': return 'bg-red-100 text-red-700';
-      case 'INCUMPLIDO': return 'bg-rose-100 text-rose-700';
-      default: return 'bg-slate-100 text-slate-500';
+      case 'RECHAZADO_COORDINADOR': return 'text-red-700';
+      case 'INCUMPLIDO': return 'text-rose-700';
+      default: return 'text-slate-500';
     }
   };
 
@@ -465,7 +465,7 @@ function DocumentosContent() {
                        isLocked ? <Lock className="w-7 h-7" /> : <FileText className="w-7 h-7" />}
                     </div>
                     <div className={cn(
-                       "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm",
+                       "text-[10px] font-black uppercase tracking-widest",
                        getStatusColor(doc.status)
                     )}>
                       {getStatusLabel(doc.status)}
@@ -475,12 +475,12 @@ function DocumentosContent() {
                   <h3 className="text-lg font-black text-[#003366] mb-2 leading-tight group-hover:text-[#C5A059] transition-colors line-clamp-2 min-h-[3rem]">{doc.name}</h3>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {isCertSlot && (
-                      <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-violet-100 text-violet-800 border border-violet-200">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-violet-800">
                         {t.documents.student.system}
                       </span>
                     )}
                     {isOptional && !isCertSlot && (
-                      <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">
                         {t.documents.student.optional}
                       </span>
                     )}
@@ -632,8 +632,8 @@ function DocumentosContent() {
                     >
                       <div className="absolute top-0 right-0 p-6">
                         <div className={cn(
-                          "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest",
-                          item.status === 'Activo' ? "bg-emerald-100 text-emerald-700" : "bg-orange-100 text-orange-700"
+                          "text-[10px] font-black uppercase tracking-widest",
+                          item.status === 'Activo' ? "text-emerald-700" : "text-orange-700"
                         )}>
                           {item.status}
                         </div>
@@ -704,8 +704,8 @@ function DocumentosContent() {
                         </td>
                         <td className="px-8 py-6">
                            <span className={cn(
-                             "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider",
-                             item.status === 'Activo' ? "bg-emerald-100 text-emerald-700" : "bg-orange-100 text-orange-700"
+                             "text-[10px] font-black uppercase tracking-wider",
+                             item.status === 'Activo' ? "text-emerald-700" : "text-orange-700"
                            )}>
                              {item.status}
                            </span>

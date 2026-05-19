@@ -29,17 +29,17 @@ import { toast } from 'sonner';
 const RoleBadge = ({ role }: { role: UserRole | string }) => {
   const { t } = useLanguage();
   const styles: Record<string, string> = {
-    ADMIN: 'bg-red-50 text-red-700 border-red-100',
-    COORDINADOR: 'bg-blue-50 text-blue-700 border-blue-100',
-    TUTOR: 'bg-green-50 text-green-700 border-green-100',
-    ESTUDIANTE: 'bg-purple-50 text-purple-700 border-purple-100',
-    EMPRESA: 'bg-indigo-50 text-indigo-700 border-indigo-100',
+    ADMIN: 'text-red-700',
+    COORDINADOR: 'text-blue-700',
+    TUTOR: 'text-green-700',
+    ESTUDIANTE: 'text-purple-700',
+    EMPRESA: 'text-indigo-700',
   };
 
   const roleLabel = t.sidebar.roles[role as keyof typeof t.sidebar.roles] || role;
 
   return (
-    <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${styles[role] || 'bg-slate-50 text-slate-700 border-slate-100'}`}>
+    <span className={`text-[10px] font-black uppercase tracking-widest ${styles[role] || 'text-slate-700'}`}>
       {roleLabel}
     </span>
   );
@@ -352,8 +352,8 @@ export default function UsuariosManagementPage() {
                   }`}
                 >
                   {t.common.all}
-                  <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold ${selectedRole === 'ALL' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                    {users.length}
+                  <span className="ml-1 opacity-60 text-[10px]">
+                    ({users.length})
                   </span>
                 </button>
                 {(['ADMIN', 'COORDINADOR', 'TUTOR', 'ESTUDIANTE', 'EMPRESA'] as UserRole[]).map((r) => {
@@ -370,8 +370,8 @@ export default function UsuariosManagementPage() {
                       }`}
                     >
                       {label}
-                      <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold ${selectedRole === r ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                        {count}
+                      <span className="ml-1 opacity-60 text-[10px]">
+                        ({count})
                       </span>
                     </button>
                   );
@@ -403,8 +403,8 @@ export default function UsuariosManagementPage() {
                 >
                   <div className={`w-1.5 h-1.5 rounded-full ${selectedStatus === 'ACTIVE' ? 'bg-white' : 'bg-emerald-500'}`} />
                   {t.common.active}
-                  <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold ${selectedStatus === 'ACTIVE' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                    {statusCounts.active}
+                  <span className="ml-1 opacity-60 text-[10px]">
+                    ({statusCounts.active})
                   </span>
                 </button>
                 <button
@@ -417,8 +417,8 @@ export default function UsuariosManagementPage() {
                 >
                   <div className={`w-1.5 h-1.5 rounded-full ${selectedStatus === 'INACTIVE' ? 'bg-white' : 'bg-red-500'}`} />
                   {t.common.inactive}
-                  <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold ${selectedStatus === 'INACTIVE' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                    {statusCounts.inactive}
+                  <span className="ml-1 opacity-60 text-[10px]">
+                    ({statusCounts.inactive})
                   </span>
                 </button>
               </div>
@@ -473,8 +473,8 @@ export default function UsuariosManagementPage() {
                         <RoleBadge role={user.role} />
                       </td>
                       <td className="px-8 py-5">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase border ${
-                          user.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'
+                        <span className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase ${
+                          user.isActive ? 'text-emerald-700' : 'text-red-700'
                         }`}>
                           <div className={`w-1.5 h-1.5 rounded-full ${user.isActive ? 'bg-emerald-500' : 'bg-red-500'}`} />
                           {user.isActive ? t.common.active : t.common.inactive}

@@ -318,17 +318,17 @@ export default function TutorAsistenciaPage() {
                           <Building2 className="w-3 h-3" />{row.companyName}
                         </span>
                         <span className={cn(
-                          "px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest",
-                          row.status === "Finalizado" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700",
+                          "text-[9px] font-black uppercase tracking-widest",
+                          row.status === "Finalizado" ? "text-emerald-700" : "text-amber-700",
                         )}>
                           {row.status}
                         </span>
                         {/* Badge de ubicaciones */}
                         <span className={cn(
-                          "flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest",
+                          "flex items-center gap-1 text-[9px] font-black uppercase tracking-widest",
                           row.allowedLocations.length > 0
-                            ? "bg-blue-50 text-blue-700"
-                            : "bg-rose-50 text-rose-600",
+                            ? "text-blue-700"
+                            : "text-rose-600",
                         )}>
                           <MapPin className="w-2.5 h-2.5" />
                           {row.allowedLocations.length > 0

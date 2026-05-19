@@ -183,8 +183,8 @@ function InternshipCard({ internship }: { internship: any }) {
                   {t.tutor.dashboard.card.start}: {new Date(internship.startDate).toLocaleDateString()}
                 </span>
                 <span className={cn(
-                  "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
-                  internship.status === "Finalizado" ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-amber-50 text-amber-700 border-amber-100"
+                  "text-[10px] font-black uppercase tracking-widest",
+                  internship.status === "Finalizado" ? "text-emerald-700" : "text-amber-700"
                 )}>
                   {internship.status}
                 </span>
@@ -256,8 +256,16 @@ function InternshipCard({ internship }: { internship: any }) {
 }
 
 function Badge({ icon, label, color }: { icon: React.ReactNode; label: string; color: string }) {
+  const textClass = color
+    .replace(/bg-\S+/g, "")
+    .replace(/border-\S+/g, "")
+    .replace(/px-\S+/g, "")
+    .replace(/py-\S+/g, "")
+    .replace(/rounded-\S+/g, "")
+    .trim();
+
   return (
-    <div className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border", color)}>
+    <div className={cn("flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest", textClass)}>
       {icon}
       {label}
     </div>

@@ -257,8 +257,8 @@ function PasanteCard({
                 {hoursWorked.toFixed(0)}h / {internship.totalHours}h
               </span>
               <span className={cn(
-                "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
-                internship.status === "Finalizado" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                "text-[10px] font-black uppercase tracking-widest",
+                internship.status === "Finalizado" ? "text-emerald-700" : "text-amber-700"
               )}>
                 {(t.tutor.internshipStatus as any)[internship.status] || internship.status}
               </span>
@@ -276,23 +276,23 @@ function PasanteCard({
         {/* Estado del test */}
         <div className="flex items-center gap-4 flex-shrink-0">
           {internship.evaluation ? (
-            <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-emerald-600">
+              <CheckCircle2 className="w-4 h-4" />
+              <span className="text-[10px] font-black uppercase tracking-widest">
                 {t.empresa.card.test.completed}
               </span>
             </div>
           ) : internship.testEnabled ? (
-            <div className="flex items-center gap-2 px-4 py-2 bg-violet-50 border border-violet-100 rounded-xl animate-pulse">
-              <ClipboardList className="w-4 h-4 text-violet-600" />
-              <span className="text-[10px] font-black text-violet-700 uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-violet-600 animate-pulse">
+              <ClipboardList className="w-4 h-4" />
+              <span className="text-[10px] font-black uppercase tracking-widest">
                 {t.empresa.card.test.active}
               </span>
             </div>
           ) : (
-            <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl">
-              <ClipboardList className="w-4 h-4 text-slate-400" />
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-slate-400">
+              <ClipboardList className="w-4 h-4" />
+              <span className="text-[10px] font-black uppercase tracking-widest">
                 {t.empresa.card.test.inactive}
               </span>
             </div>

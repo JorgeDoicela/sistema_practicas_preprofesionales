@@ -195,8 +195,8 @@ export default function EmpresaAsistenciaPage() {
                     <h3 className="text-base font-black text-[#003366] truncate">{row.studentName}</h3>
                     <div className="flex flex-wrap gap-4 mt-1">
                       <span className={cn(
-                        "px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest",
-                        row.status === "Finalizado" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700",
+                        "text-[9px] font-black uppercase tracking-widest",
+                        row.status === "Finalizado" ? "text-emerald-700" : "text-amber-700",
                       )}>
                         {row.status}
                       </span>
@@ -308,13 +308,13 @@ export default function EmpresaAsistenciaPage() {
                                         <td className="px-5 py-3">
                                           <div className="flex items-center gap-2">
                                             {h.checkInPhoto && (
-                                              <a href={h.checkInPhoto} target="_blank" className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-lg text-[9px] font-black hover:bg-emerald-100 transition-colors">
+                                              <a href={h.checkInPhoto} target="_blank" className="flex items-center gap-1 text-[9px] font-black text-emerald-700 hover:text-emerald-800 transition-colors">
                                                 <Camera className="w-3 h-3" />
                                                 {t.asistencia.actions.markIn}
                                               </a>
                                             )}
                                             {h.checkOutPhoto && (
-                                              <a href={h.checkOutPhoto} target="_blank" className="flex items-center gap-1 px-2 py-0.5 bg-rose-50 text-rose-700 rounded-lg text-[9px] font-black hover:bg-rose-100 transition-colors">
+                                              <a href={h.checkOutPhoto} target="_blank" className="flex items-center gap-1 text-[9px] font-black text-rose-700 hover:text-rose-800 transition-colors">
                                                 <Camera className="w-3 h-3" />
                                                 {t.asistencia.actions.markOut}
                                               </a>

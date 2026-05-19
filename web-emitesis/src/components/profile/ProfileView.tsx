@@ -172,7 +172,7 @@ export function ProfileView() {
               {profile.email}
             </span>
           </p>
-          <span className="inline-block mt-3 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-[#C5A059]/15 text-[#8a7038] border border-[#C5A059]/30">
+          <span className="inline-block mt-3 text-[10px] font-black uppercase tracking-widest text-[#8a7038]">
             {roleLabel}
           </span>
         </div>
@@ -211,10 +211,10 @@ export function ProfileView() {
               <dt className="text-slate-500 font-semibold">{t.profile.accountStatus}</dt>
               <dd>
                 <span className={cn(
-                  "text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg",
+                  "text-[10px] font-black uppercase tracking-widest",
                   profile.isActive
-                    ? "bg-emerald-50 text-emerald-800 border border-emerald-100"
-                    : "bg-red-50 text-red-800 border border-red-100",
+                    ? "text-emerald-800"
+                    : "text-red-800",
                 )}>
                   {profile.isActive ? t.common.active : t.common.inactive}
                 </span>
@@ -249,10 +249,10 @@ export function ProfileView() {
               </p>
             </div>
             <span className={cn(
-              "self-start sm:self-center text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border",
+              "self-start sm:self-center text-[10px] font-black uppercase tracking-widest",
               profile.isTwoFactorEnabled
-                ? "bg-emerald-50 text-emerald-800 border-emerald-100"
-                : "bg-slate-50 text-slate-600 border-slate-200",
+                ? "text-emerald-800"
+                : "text-slate-600",
             )}>
               {profile.isTwoFactorEnabled ? t.common.active : t.common.inactive}
             </span>

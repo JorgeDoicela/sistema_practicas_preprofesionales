@@ -140,7 +140,7 @@ export default function PrivacyCenterPage() {
                      <CheckCircle2 className="w-6 h-6 text-emerald-500" />
                      {t.privacyDashboard.consent.title}
                    </h3>
-                   <span className="px-4 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-black uppercase tracking-widest">
+                   <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700">
                      {t.privacyDashboard.consent.verified}
                    </span>
                 </div>
@@ -290,8 +290,8 @@ export default function PrivacyCenterPage() {
                              </div>
                           </div>
                           <div className={cn(
-                            "px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest",
-                            req.status === 'PENDIENTE' ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"
+                            "text-[9px] font-black uppercase tracking-widest",
+                            req.status === 'PENDIENTE' ? "text-amber-700" : "text-emerald-700"
                           )}>
                              {req.status === 'COMPLETADA' ? t.privacyDashboard.history.completed : t.privacyDashboard.history.pending}
                           </div>

@@ -13,9 +13,9 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const statusColor: Record<string, string> = {
-  Activo: "bg-green-50 text-green-700 border-green-100",
-  Histórico: "bg-slate-100 text-slate-500 border-slate-200",
-  Vencido: "bg-red-50 text-red-600 border-red-100",
+  Activo: "text-green-700",
+  Histórico: "text-slate-500",
+  Vencido: "text-red-600",
 };
 
 function daysUntil(dateStr?: string | null): number | null {
@@ -146,11 +146,11 @@ export default function ConveniosListPage() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-3 flex-wrap">
                           <h3 className="font-black text-[#003366] text-base">{ag.company.name}</h3>
-                          <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border", statusColor[ag.status] || "bg-slate-100 text-slate-500 border-slate-200")}>
+                          <span className={cn("text-[10px] font-black uppercase tracking-widest", statusColor[ag.status] || "text-slate-500")}>
                             {ag.status}
                           </span>
                           {isExpiringSoon && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border bg-amber-50 text-amber-700 border-amber-200 animate-pulse">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-700 animate-pulse">
                               Vence en {days} días
                             </span>
                           )}

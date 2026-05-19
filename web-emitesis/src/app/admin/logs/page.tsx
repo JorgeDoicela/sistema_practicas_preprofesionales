@@ -80,9 +80,9 @@ function AdminLogsContent() {
 
   const getLevelColor = (level: string) => {
     switch (level) {
-      case 'ERROR': return 'text-rose-500 bg-rose-50 border-rose-100';
-      case 'WARN': return 'text-amber-600 bg-amber-50 border-amber-100';
-      default: return 'text-indigo-600 bg-indigo-50 border-indigo-100';
+      case 'ERROR': return 'text-rose-500';
+      case 'WARN': return 'text-amber-600';
+      default: return 'text-indigo-600';
     }
   };
 
@@ -263,7 +263,7 @@ function AdminLogsContent() {
                                    <td className="px-8 py-6">
                                       <div className="flex items-center gap-3">
                                          <span className={cn(
-                                           "px-3 py-1 rounded-full text-[9px] font-black border",
+                                           "text-[9px] font-black uppercase tracking-widest",
                                            getLevelColor(log.level)
                                          )}>
                                             {log.level}
