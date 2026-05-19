@@ -57,7 +57,7 @@ export default function CoordinadorAusenciasPage() {
       <div className="max-w-5xl mx-auto py-8 px-4 space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
+            <div className="flex items-center gap-2 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4">
               <CalendarOff size={12} /> Coordinación
             </div>
             <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Ausencias del Sistema</h1>
@@ -91,9 +91,8 @@ export default function CoordinadorAusenciasPage() {
               <motion.div key={ab.id} layout
                 className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0",
-                    ab.status === "APROBADA" ? "bg-green-50" : ab.status === "RECHAZADA" ? "bg-red-50" : "bg-amber-50")}>
-                    <CalendarOff size={16} className={ab.status === "APROBADA" ? "text-green-600" : ab.status === "RECHAZADA" ? "text-red-500" : "text-amber-600"} />
+                  <div className="shrink-0">
+                    <CalendarOff size={18} className={ab.status === "APROBADA" ? "text-green-600" : ab.status === "RECHAZADA" ? "text-red-500" : "text-amber-600"} />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">

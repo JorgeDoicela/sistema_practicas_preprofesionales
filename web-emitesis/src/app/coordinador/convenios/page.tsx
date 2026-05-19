@@ -173,7 +173,7 @@ export default function RegistrarConvenioPage() {
         <DashboardLayout>
             <div className="max-w-4xl mx-auto py-8 px-4">
                 <div className="mb-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
+                    <div className="flex items-center gap-2 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4">
                         <FileText size={12} /> {t.coordinator.agreements.mgmt}
                     </div>
                     <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">{t.coordinator.agreements.title}</h1>

@@ -187,7 +187,7 @@ export default function AsignacionPage() {
     <DashboardLayout>
       <div className="max-w-5xl mx-auto px-4 sm:px-0 space-y-6 md:space-y-8 pb-20">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
+          <div className="flex items-center gap-2 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4">
             <UserPlus size={12} /> {t.coordinator.assignment.subtitle}
           </div>
           <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">{t.coordinator.assignment.title}</h1>

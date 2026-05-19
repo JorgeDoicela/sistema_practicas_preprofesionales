@@ -197,11 +197,11 @@ export default function AdminAnnouncementsPage() {
                 className={`bg-white rounded-3xl p-4 md:p-8 border border-slate-100 shadow-lg relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 ${!a.isActive && 'opacity-60 grayscale'}`}
               >
                 <div className="flex items-start gap-3 md:gap-6">
-                   <div className={`p-4 rounded-2xl ${
-                     a.type === 'SUCCESS' ? 'bg-emerald-50 text-emerald-600' :
-                     a.type === 'WARNING' ? 'bg-amber-50 text-amber-600' :
-                     a.type === 'DANGER' ? 'bg-rose-50 text-rose-600' :
-                     'bg-blue-50 text-blue-600'
+                   <div className={`shrink-0 ${
+                     a.type === 'SUCCESS' ? 'text-emerald-600' :
+                     a.type === 'WARNING' ? 'text-amber-600' :
+                     a.type === 'DANGER' ? 'text-rose-600' :
+                     'text-blue-600'
                    }`}>
                       <Megaphone className="w-6 h-6" />
                    </div>

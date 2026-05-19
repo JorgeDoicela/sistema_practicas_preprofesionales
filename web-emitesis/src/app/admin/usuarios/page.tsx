@@ -277,7 +277,7 @@ export default function UsuariosManagementPage() {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
+            <div className="flex items-center gap-2 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4">
               <Shield size={12} /> {t.admin.users.systemAdmin}
             </div>
             <h1 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">{t.admin.users.title}</h1>

@@ -105,7 +105,7 @@ export default function CarrerasAdminPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
+            <div className="flex items-center gap-2 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4">
               <GraduationCap size={12} /> {t.admin.careers.academicMgmt}
             </div>
             <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">{t.admin.careers.title}</h1>
@@ -136,8 +136,8 @@ export default function CarrerasAdminPage() {
               <motion.div key={career.id} layout
                 className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-[#003366] text-white rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                    <GraduationCap size={24} />
+                  <div className="text-[#003366] shrink-0 group-hover:scale-110 transition-transform">
+                    <GraduationCap size={28} />
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-lg font-black text-[#003366] truncate">{career.name}</h3>

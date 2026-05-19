@@ -64,7 +64,7 @@ export default function ConveniosListPage() {
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
+            <div className="flex items-center gap-2 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4">
               <FileText size={12} /> Gestión de Convenios
             </div>
             <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Convenios Empresariales</h1>
@@ -140,8 +140,8 @@ export default function ConveniosListPage() {
                   )}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-4 flex-1 min-w-0">
-                      <div className="w-12 h-12 rounded-2xl bg-[#003366]/5 flex items-center justify-center flex-shrink-0">
-                        <Building2 size={22} className="text-[#003366]" />
+                      <div className="text-[#003366] shrink-0 mt-1">
+                        <Building2 size={26} />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-3 flex-wrap">

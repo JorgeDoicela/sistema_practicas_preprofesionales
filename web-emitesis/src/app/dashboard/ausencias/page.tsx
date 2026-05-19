@@ -102,7 +102,7 @@ export default function AusenciasPage() {
           data-tour="absences-header"
         >
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
+            <div className="flex items-center gap-2 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4">
               <CalendarOff size={12} /> Mis Ausencias
             </div>
             <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Ausencias Justificadas</h1>
@@ -149,11 +149,8 @@ export default function AusenciasPage() {
                   className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-4">
-                      <div className={cn(
-                        "w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0",
-                        ab.status === "APROBADA" ? "bg-green-50" : ab.status === "RECHAZADA" ? "bg-red-50" : "bg-amber-50"
-                      )}>
-                        <CalendarOff size={18} className={
+                      <div className="shrink-0 mt-0.5">
+                        <CalendarOff size={22} className={
                           ab.status === "APROBADA" ? "text-green-600" : ab.status === "RECHAZADA" ? "text-red-500" : "text-amber-600"
                         } />
                       </div>

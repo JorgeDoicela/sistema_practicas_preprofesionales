@@ -57,7 +57,7 @@ export default function TutorAusenciasPage() {
     <DashboardLayout>
       <div className="max-w-3xl mx-auto py-8 px-4 space-y-8">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
+          <div className="flex items-center gap-2 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4">
             <CalendarOff size={12} /> Revisión de Ausencias
           </div>
           <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Ausencias Pendientes</h1>
@@ -90,8 +90,8 @@ export default function TutorAusenciasPage() {
                 className="bg-white rounded-3xl border border-amber-200 p-6 shadow-sm">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                   <div className="flex items-start gap-4 min-w-0">
-                    <div className="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center flex-shrink-0">
-                      <Clock size={18} className="text-amber-600" />
+                    <div className="text-amber-600 shrink-0 mt-0.5">
+                      <Clock size={20} />
                     </div>
                     <div>
                       <p className="font-black text-[#003366]">
