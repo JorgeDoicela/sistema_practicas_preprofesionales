@@ -55,8 +55,12 @@ export class UsersController {
   findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('role') role?: Role,
+    @Query('search') search?: string,
+    @Query('isActive') isActive?: string,
   ) {
-    return this.usersService.findAll(page, limit);
+    const activeBool = isActive === 'true' ? true : isActive === 'false' ? false : undefined;
+    return this.usersService.findAll(page, limit, role, search, activeBool);
   }
 
   @Get('me')

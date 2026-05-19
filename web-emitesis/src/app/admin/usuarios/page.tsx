@@ -55,6 +55,18 @@ export default function UsuariosManagementPage() {
   const [selectedRole, setSelectedRole] = useState<string>('ALL');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
 
+  const [roleCountsState, setRoleCountsState] = useState<Record<string, number>>({
+    ADMIN: 0,
+    COORDINADOR: 0,
+    TUTOR: 0,
+    ESTUDIANTE: 0,
+    EMPRESA: 0,
+  });
+  const [statusCountsState, setStatusCountsState] = useState<{ active: number; inactive: number }>({
+    active: 0,
+    inactive: 0,
+  });
+
   // Pagination & limits
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(25); // Defaults to 25 to show a rich dataset initially
@@ -111,10 +123,16 @@ export default function UsuariosManagementPage() {
     }
   };
 
-  const fetchData = async (page = currentPage, currentLimit = limit) => {
+  const fetchData = async (
+    page = currentPage,
+    currentLimit = limit,
+    search = searchTerm,
+    role = selectedRole,
+    status = selectedStatus
+  ) => {
     try {
       setLoading(true);
-      const res: any = await usersService.findAll(page, currentLimit);
+      const res: any = await usersService.findAll(page, currentLimit, search, role, status);
       const userList = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : []);
       const total = res?.meta?.total ?? userList.length;
       const lastPage = res?.meta?.lastPage ?? 1;
@@ -122,6 +140,13 @@ export default function UsuariosManagementPage() {
       setUsers(userList);
       setTotalItems(total);
       setTotalPages(lastPage);
+
+      if (res?.meta?.roleCounts) {
+        setRoleCountsState(res.meta.roleCounts);
+      }
+      if (res?.meta?.statusCounts) {
+        setStatusCountsState(res.meta.statusCounts);
+      }
 
       if (page > lastPage && lastPage > 0) {
         setCurrentPage(lastPage);
@@ -134,8 +159,17 @@ export default function UsuariosManagementPage() {
   };
 
   useEffect(() => {
-    fetchData(currentPage, limit);
-  }, [currentPage, limit]);
+    fetchData(currentPage, limit, searchTerm, selectedRole, selectedStatus);
+  }, [currentPage, limit, selectedRole, selectedStatus]);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchData(1, limit, searchTerm, selectedRole, selectedStatus);
+      setCurrentPage(1);
+    }, 400);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -244,32 +278,12 @@ export default function UsuariosManagementPage() {
   };
 
   // Reducer stats based on loaded users
-  const roleCounts = users.reduce((acc, user) => {
-    acc[user.role] = (acc[user.role] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const roleCounts = roleCountsState;
 
-  const statusCounts = users.reduce((acc, user) => {
-    if (user.isActive) acc.active = (acc.active || 0) + 1;
-    else acc.inactive = (acc.inactive || 0) + 1;
-    return acc;
-  }, { active: 0, inactive: 0 } as { active: number; inactive: number });
+  const statusCounts = statusCountsState;
 
-  // Combined advanced filtering
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = 
-      user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
-      
-    const matchesRole = selectedRole === 'ALL' || user.role === selectedRole;
-    
-    const matchesStatus = 
-      selectedStatus === 'ALL' || 
-      (selectedStatus === 'ACTIVE' && user.isActive) || 
-      (selectedStatus === 'INACTIVE' && !user.isActive);
-      
-    return matchesSearch && matchesRole && matchesStatus;
-  });
+  // Combined advanced filtering (done server-side now)
+  const filteredUsers = users;
 
   return (
     <DashboardLayout>
@@ -329,6 +343,7 @@ export default function UsuariosManagementPage() {
                   setSearchTerm('');
                   setSelectedRole('ALL');
                   setSelectedStatus('ALL');
+                  setCurrentPage(1);
                 }}
                 className="flex items-center gap-2 bg-red-50 text-red-700 border border-red-100 px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all self-start md:self-auto"
               >
@@ -344,7 +359,7 @@ export default function UsuariosManagementPage() {
               <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{t.admin.users.roleLabel}</span>
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => setSelectedRole('ALL')}
+                  onClick={() => { setSelectedRole('ALL'); setCurrentPage(1); }}
                   className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all border flex items-center gap-2 ${
                     selectedRole === 'ALL'
                       ? 'bg-[#003366] text-white border-[#003366] shadow-md shadow-blue-900/10'
@@ -353,7 +368,7 @@ export default function UsuariosManagementPage() {
                 >
                   {t.common.all}
                   <span className="ml-1 opacity-60 text-[10px]">
-                    ({users.length})
+                    ({totalItems})
                   </span>
                 </button>
                 {(['ADMIN', 'COORDINADOR', 'TUTOR', 'ESTUDIANTE', 'EMPRESA'] as UserRole[]).map((r) => {
@@ -362,7 +377,7 @@ export default function UsuariosManagementPage() {
                   return (
                     <button
                       key={r}
-                      onClick={() => setSelectedRole(r)}
+                      onClick={() => { setSelectedRole(r); setCurrentPage(1); }}
                       className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all border flex items-center gap-2 ${
                         selectedRole === r
                           ? 'bg-[#003366] text-white border-[#003366] shadow-md shadow-blue-900/10'
@@ -384,7 +399,7 @@ export default function UsuariosManagementPage() {
               <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{t.admin.users.table.status}</span>
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => setSelectedStatus('ALL')}
+                  onClick={() => { setSelectedStatus('ALL'); setCurrentPage(1); }}
                   className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all border flex items-center gap-2 ${
                     selectedStatus === 'ALL'
                       ? 'bg-[#C5A059] text-white border-[#C5A059] shadow-md shadow-amber-900/10'
@@ -394,7 +409,7 @@ export default function UsuariosManagementPage() {
                   {t.common.all}
                 </button>
                 <button
-                  onClick={() => setSelectedStatus('ACTIVE')}
+                  onClick={() => { setSelectedStatus('ACTIVE'); setCurrentPage(1); }}
                   className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all border flex items-center gap-2 ${
                     selectedStatus === 'ACTIVE'
                       ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-900/10'
@@ -408,7 +423,7 @@ export default function UsuariosManagementPage() {
                   </span>
                 </button>
                 <button
-                  onClick={() => setSelectedStatus('INACTIVE')}
+                  onClick={() => { setSelectedStatus('INACTIVE'); setCurrentPage(1); }}
                   className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all border flex items-center gap-2 ${
                     selectedStatus === 'INACTIVE'
                       ? 'bg-red-600 text-white border-red-600 shadow-md shadow-red-900/10'
