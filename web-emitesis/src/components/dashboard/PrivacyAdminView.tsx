@@ -6,19 +6,13 @@ import {
   Search,
   Filter,
   MoreHorizontal,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  XCircle,
-  User,
-  Mail,
-  Calendar,
   ExternalLink,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { privacyService } from "@/services/privacy.service";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface ArcoRequest {
   id: string;
@@ -36,6 +30,7 @@ interface ArcoRequest {
 }
 
 export function PrivacyAdminView() {
+  const { t } = useLanguage();
   const [requests, setRequests] = useState<ArcoRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
@@ -50,7 +45,7 @@ export function PrivacyAdminView() {
       const data = await privacyService.findAllAdmin();
       setRequests(Array.isArray(data) ? data : []);
     } catch (error) {
-      toast.error("Error al cargar solicitudes LOPDP");
+      toast.error(t.admin.privacy.toastLoadError);
     } finally {
       setLoading(false);
     }
@@ -62,19 +57,19 @@ export function PrivacyAdminView() {
 
   const handleRespond = async (status: string) => {
     if (!selectedRequest || !responseMsg.trim()) {
-      toast.warning("Debe proporcionar una respuesta oficial");
+      toast.warning(t.admin.privacy.toastWarning);
       return;
     }
 
     setIsSubmitting(true);
     try {
       await privacyService.respondAdmin(selectedRequest.id, responseMsg, status);
-      toast.success("Solicitud actualizada correctamente");
+      toast.success(t.admin.privacy.toastSuccess);
       setSelectedRequest(null);
       setResponseMsg("");
       loadRequests();
     } catch (error) {
-      toast.error("Error al actualizar la solicitud");
+      toast.error(t.admin.privacy.toastError);
     } finally {
       setIsSubmitting(false);
     }
@@ -94,25 +89,25 @@ export function PrivacyAdminView() {
       case "PENDIENTE":
         return (
           <span className="flex items-center gap-1.5 text-amber-600 text-[10px] font-black uppercase tracking-[0.2em]">
-            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" /> Pendiente
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" /> {t.admin.privacy.badgePending}
           </span>
         );
       case "EN_REVISION":
         return (
           <span className="flex items-center gap-1.5 text-blue-600 text-[10px] font-black uppercase tracking-[0.2em]">
-            <div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> En Revisión
+            <div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> {t.admin.privacy.badgeReview}
           </span>
         );
       case "COMPLETADA":
         return (
           <span className="flex items-center gap-1.5 text-emerald-600 text-[10px] font-black uppercase tracking-[0.2em]">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Completada
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> {t.admin.privacy.badgeCompleted}
           </span>
         );
       case "RECHAZADA":
         return (
           <span className="flex items-center gap-1.5 text-rose-600 text-[10px] font-black uppercase tracking-[0.2em]">
-            <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Rechazada
+            <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> {t.admin.privacy.badgeRejected}
           </span>
         );
       default:
@@ -125,14 +120,14 @@ export function PrivacyAdminView() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <span className="text-[10px] font-black text-brand-gold uppercase tracking-[0.4em] mb-2 block">
-            Gobernanza y Privacidad
+          <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block">
+            {t.admin.privacy.sub}
           </span>
-          <h2 className="text-2xl md:text-4xl font-black text-brand-blue tracking-tight">
-            Gestión de Derechos <span className="text-slate-400">ARCO</span>
+          <h2 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">
+            {t.admin.privacy.title.split("ARCO")[0]}<span className="text-slate-400">ARCO</span>{t.admin.privacy.title.split("ARCO")[1] || ""}
           </h2>
           <p className="text-slate-500 font-medium mt-2">
-            Administración institucional de solicitudes bajo la Ley Orgánica de Protección de Datos (LOPDP).
+            {t.admin.privacy.desc}
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -141,28 +136,28 @@ export function PrivacyAdminView() {
             className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-all text-[10px] font-black uppercase tracking-widest text-[#003366]"
           >
             <ShieldAlert className="w-4 h-4 text-[#C5A059]" />
-            Ver Logs de Aceptación
+            {t.admin.privacy.viewLogsBtn}
           </Link>
           <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-2">
             <div className="p-2 text-indigo-600">
                <ShieldAlert className="w-6 h-6" />
             </div>
             <div className="pr-4">
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Estado LOPDP</p>
-              <p className="text-sm font-black text-slate-800">Gobernanza Activa</p>
+              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">{t.admin.privacy.statusLabel}</p>
+              <p className="text-sm font-black text-slate-800">{t.admin.privacy.statusVal}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters & Search */}
-      <div className="bg-white/60 backdrop-blur-md p-6 rounded-[2rem] border border-white/40 shadow-xl shadow-slate-200/50 flex flex-col lg:flex-row gap-4">
+      <div className="bg-white/60 backdrop-blur-md p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 flex flex-col lg:flex-row gap-4">
         <div className="flex-1 relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Buscar por usuario, correo o detalles..."
-            className="w-full pl-12 pr-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 transition-all font-medium"
+            placeholder={t.admin.privacy.searchPlaceholder}
+            className="w-full pl-12 pr-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#003366]/20 transition-all font-medium"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -171,15 +166,15 @@ export function PrivacyAdminView() {
           <div className="relative">
             <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <select
-              className="pl-12 pr-10 py-3 bg-white border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest appearance-none focus:outline-none focus:ring-2 focus:ring-brand-blue/20 cursor-pointer"
+              className="pl-12 pr-10 py-3 bg-white border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest appearance-none focus:outline-none focus:ring-2 focus:ring-[#003366]/20 cursor-pointer"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
             >
-              <option value="ALL">TODOS LOS ESTADOS</option>
-              <option value="PENDIENTE">PENDIENTES</option>
-              <option value="EN_REVISION">EN REVISIÓN</option>
-              <option value="COMPLETADA">COMPLETADAS</option>
-              <option value="RECHAZADA">RECHAZADAS</option>
+              <option value="ALL">{t.admin.privacy.filterAll.toUpperCase()}</option>
+              <option value="PENDIENTE">{t.admin.privacy.filterPending.toUpperCase()}</option>
+              <option value="EN_REVISION">{t.admin.privacy.filterReview.toUpperCase()}</option>
+              <option value="COMPLETADA">{t.admin.privacy.filterCompleted.toUpperCase()}</option>
+              <option value="RECHAZADA">{t.admin.privacy.filterRejected.toUpperCase()}</option>
             </select>
           </div>
         </div>
@@ -191,11 +186,11 @@ export function PrivacyAdminView() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/50">
-                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Usuario / Solicitante</th>
-                <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tipo de Derecho</th>
-                <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado Legal</th>
-                <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Fecha</th>
-                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Acciones</th>
+                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.admin.privacy.thUser}</th>
+                <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.admin.privacy.thType}</th>
+                <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.admin.privacy.thStatus}</th>
+                <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">{t.admin.privacy.thDate}</th>
+                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">{t.admin.privacy.thActions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -205,16 +200,16 @@ export function PrivacyAdminView() {
                     <td colSpan={5} className="px-8 py-20 text-center">
                       <div className="flex flex-col items-center gap-4 text-slate-400">
                         <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
-                          <ShieldAlert className="w-8 h-8" />
+                          <ShieldAlert className="w-8 h-8 text-[#C5A059]" />
                         </motion.div>
-                        <p className="text-[10px] font-black uppercase tracking-widest">Sincronizando expedientes legales...</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest">{t.admin.privacy.loadingText}</p>
                       </div>
                     </td>
                   </tr>
                 ) : filteredRequests.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-8 py-20 text-center">
-                      <p className="text-sm font-medium text-slate-500">No se encontraron solicitudes con los criterios seleccionados.</p>
+                      <p className="text-sm font-medium text-slate-500">{t.admin.privacy.emptyText}</p>
                     </td>
                   </tr>
                 ) : (
@@ -228,7 +223,7 @@ export function PrivacyAdminView() {
                     >
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 flex items-center justify-center text-indigo-600 font-black text-lg">
+                          <div className="w-10 h-10 flex items-center justify-center bg-slate-100 text-[#003366] font-black text-lg rounded-xl">
                             {req.user.fullName.charAt(0)}
                           </div>
                           <div>
@@ -253,7 +248,7 @@ export function PrivacyAdminView() {
                       <td className="px-8 py-6 text-right">
                         <button
                           onClick={() => setSelectedRequest(req)}
-                          className="p-2 hover:bg-white hover:shadow-md rounded-xl text-slate-400 hover:text-brand-blue transition-all"
+                          className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-brand-blue transition-all"
                         >
                           <ExternalLink className="w-5 h-5" />
                         </button>
@@ -288,11 +283,11 @@ export function PrivacyAdminView() {
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-4">
                     <div className="p-3 text-brand-blue shrink-0">
-                      <ShieldAlert className="w-10 h-10" />
+                      <ShieldAlert className="w-10 h-10 text-[#003366]" />
                     </div>
                     <div>
-                      <h3 className="text-2xl font-black text-brand-blue tracking-tight">Resolver Solicitud ARCO</h3>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ID: {selectedRequest.id}</p>
+                      <h3 className="text-2xl font-black text-[#003366] tracking-tight">{t.admin.privacy.modalTitle}</h3>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.admin.privacy.modalId} {selectedRequest.id}</p>
                     </div>
                   </div>
                   <button onClick={() => setSelectedRequest(null)} className="p-2 hover:bg-slate-50 rounded-xl text-slate-400">
@@ -304,27 +299,27 @@ export function PrivacyAdminView() {
                   <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
                     <div className="grid grid-cols-2 gap-6 mb-4">
                       <div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Solicitante</p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.admin.privacy.modalUserLabel}</p>
                         <p className="text-sm font-bold text-slate-700">{selectedRequest.user.fullName}</p>
                       </div>
                       <div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Tipo Doc.</p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.admin.privacy.modalTypeLabel}</p>
                         <p className="text-sm font-bold text-slate-700">{selectedRequest.type}</p>
                       </div>
                     </div>
                     <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Detalles de la Solicitud</p>
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.admin.privacy.modalDetailsLabel}</p>
                       <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                        {selectedRequest.details || "El usuario no proporcionó detalles adicionales."}
+                        {selectedRequest.details || t.admin.privacy.modalNoDetails}
                       </p>
                     </div>
                   </div>
 
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Respuesta Institucional Oficial</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">{t.admin.privacy.modalResponseLabel}</label>
                     <textarea
-                      placeholder="Escriba la respuesta técnica o legal para el usuario..."
-                      className="w-full h-32 p-6 bg-slate-50 border border-slate-100 rounded-[2rem] text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/10 transition-all font-medium resize-none"
+                      placeholder={t.admin.privacy.modalResponsePlaceholder}
+                      className="w-full h-32 p-6 bg-slate-50 border border-slate-100 rounded-[2rem] text-sm focus:outline-none focus:ring-2 focus:ring-[#003366]/10 transition-all font-medium resize-none"
                       value={responseMsg}
                       onChange={(e) => setResponseMsg(e.target.value)}
                     />
@@ -336,14 +331,14 @@ export function PrivacyAdminView() {
                       onClick={() => handleRespond("COMPLETADA")}
                       className="py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-emerald-600/20 disabled:opacity-50"
                     >
-                      {isSubmitting ? "Enviando..." : "Marcar como Completada"}
+                      {isSubmitting ? "..." : t.admin.privacy.btnComplete}
                     </button>
                     <button
                       disabled={isSubmitting}
                       onClick={() => handleRespond("RECHAZADA")}
                       className="py-4 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-rose-600/20 disabled:opacity-50"
                     >
-                      {isSubmitting ? "Confirmando..." : "Rechazar Solicitud"}
+                      {isSubmitting ? "..." : t.admin.privacy.btnReject}
                     </button>
                   </div>
                   
@@ -352,7 +347,7 @@ export function PrivacyAdminView() {
                     onClick={() => handleRespond("EN_REVISION")}
                     className="w-full py-4 bg-slate-800 hover:bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-slate-900/10"
                   >
-                    Mantener en Revisión
+                    {t.admin.privacy.btnKeepReview}
                   </button>
                 </div>
               </div>

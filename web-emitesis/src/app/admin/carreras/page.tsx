@@ -10,7 +10,7 @@ import {
 import { careersService, Career } from "@/services/careers.service";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/providers/LanguageProvider";
-
+import { toast } from "sonner";
 
 export default function CarrerasAdminPage() {
   const { t } = useLanguage();
@@ -21,8 +21,7 @@ export default function CarrerasAdminPage() {
     { value: "EN_LINEA", label: t.common.modalities.EN_LINEA },
     { value: "HIBRIDA", label: t.common.modalities.HIBRIDA },
   ];
-  // Wait, MODALIDADES was outside. I'll move it inside or use a function.
-  // Actually, I should probably add modalities to translation files too.
+
   const [careers, setCareers] = useState<Career[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,7 +29,6 @@ export default function CarrerasAdminPage() {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -46,7 +44,7 @@ export default function CarrerasAdminPage() {
       const list = Array.isArray(res) ? res : (res?.data || []);
       setCareers(list);
     } catch {
-      setError(t.admin.careers.loadError);
+      toast.error(t.admin.careers.loadError);
     } finally {
       setLoading(false);
     }
@@ -73,14 +71,13 @@ export default function CarrerasAdminPage() {
     try {
       if (editingCareer) {
         await careersService.update(editingCareer.id, form);
-        setSuccess(t.admin.careers.updateSuccess);
+        toast.success(t.admin.careers.updateSuccess);
       } else {
         await careersService.create(form);
-        setSuccess(t.admin.careers.createSuccess);
+        toast.success(t.admin.careers.createSuccess);
       }
       setIsModalOpen(false);
       loadCareers();
-      setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
       setError(err.message || t.common.error);
     } finally {
@@ -93,11 +90,10 @@ export default function CarrerasAdminPage() {
     setDeleting(id);
     try {
       await careersService.remove(id);
-      setSuccess(t.admin.careers.deleteSuccess);
+      toast.success(t.admin.careers.deleteSuccess);
       loadCareers();
-      setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
-      setError(err.message || t.common.error);
+      toast.error(err.message || t.common.error);
     } finally {
       setDeleting(null);
     }
@@ -122,22 +118,6 @@ export default function CarrerasAdminPage() {
             <Plus size={16} /> {t.admin.careers.newCareer}
           </button>
         </div>
-
-        {/* Alerts */}
-        <AnimatePresence>
-          {success && (
-            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              className="flex items-center gap-3 p-4 bg-green-50 border border-green-100 rounded-2xl text-green-700 text-sm font-bold">
-              <CheckCircle2 size={18} /> {success}
-            </motion.div>
-          )}
-          {error && !isModalOpen && (
-            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              className="flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm font-bold">
-              <AlertCircle size={18} /> {error}
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* Careers Grid */}
         {loading ? (
@@ -231,14 +211,14 @@ export default function CarrerasAdminPage() {
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.admin.careers.name}</label>
                     <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                      placeholder="Ej: Desarrollo de Software"
+                      placeholder={t.admin.careers.namePlaceholder}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:border-[#003366]" />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.admin.careers.faculty}</label>
                     <input value={form.faculty} onChange={e => setForm({ ...form, faculty: e.target.value })}
-                      placeholder="Ej: TIC, Administración"
+                      placeholder={t.admin.careers.facultyPlaceholder}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:border-[#003366]" />
                   </div>
 

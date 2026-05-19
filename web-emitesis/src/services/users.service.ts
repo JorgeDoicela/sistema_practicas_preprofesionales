@@ -10,8 +10,8 @@ export const usersService = {
     return api.patch('/users/me', data);
   },
 
-  async findAll() {
-    return api.get('/users');
+  async findAll(page = 1, limit = 10) {
+    return api.get(`/users?page=${page}&limit=${limit}`);
   },
 
   async create(userData: Partial<User & { password?: string }>) {

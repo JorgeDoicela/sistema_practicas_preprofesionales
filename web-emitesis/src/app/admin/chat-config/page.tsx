@@ -326,10 +326,10 @@ export default function ChatConfigPage() {
     }
     setSavingRetention(true);
     try {
-      const res = await fetch(`${API_URL}/settings`, {
+      const res = await fetch(`${API_URL}/settings/chat_message_retention_days`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ key: "chat_message_retention_days", value: String(days) }),
+        body: JSON.stringify({ value: String(days) }),
       });
       if (!res.ok) throw new Error();
       setRetentionDays(days);
