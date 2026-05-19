@@ -26,15 +26,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
 
-const DOC_STATUS_COLOR: Record<string, string> = {
-  PENDIENTE: "bg-slate-100 text-slate-500",
-  EN_REVISION_TUTOR: "bg-blue-100 text-blue-700",
-  APROBADO_TUTOR: "bg-amber-100 text-amber-700",
-  RECHAZADO_TUTOR: "bg-rose-100 text-rose-700",
-  APROBADO_DEFINITIVO: "bg-emerald-100 text-emerald-700",
-  RECHAZADO_COORDINADOR: "bg-orange-100 text-orange-700",
-  INCUMPLIDO: "bg-red-100 text-red-700",
-};
+
 
 export default function TutorEstudiantesPage() {
   const { t } = useLanguage();
@@ -195,19 +187,19 @@ function InternshipCard({ internship }: { internship: any }) {
           {/* Document badges */}
           <div className="flex flex-wrap items-center gap-3 md:justify-end">
             {visitRequired && (
-              <Badge icon={<MapPin className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.visitRequired} color="bg-violet-50 text-violet-700 border-violet-100" />
+              <Badge icon={<MapPin className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.visitRequired} color="text-violet-700" />
             )}
             {withoutDates > 0 && (
-              <Badge icon={<Clock className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.noDate.replace("{count}", String(withoutDates))} color="bg-slate-100 text-slate-500" />
+              <Badge icon={<Clock className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.noDate.replace("{count}", String(withoutDates))} color="text-slate-500" />
             )}
             {soon > 0 && (
-              <Badge icon={<AlertTriangle className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.soon.replace("{count}", String(soon))} color="bg-orange-50 text-orange-600 animate-pulse border-orange-100" />
+              <Badge icon={<AlertTriangle className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.soon.replace("{count}", String(soon))} color="text-orange-600 animate-pulse" />
             )}
             {pendingReview > 0 && (
-              <Badge icon={<FileCheck className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.toReview.replace("{count}", String(pendingReview))} color="bg-amber-50 text-amber-700 animate-pulse border-amber-100" />
+              <Badge icon={<FileCheck className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.toReview.replace("{count}", String(pendingReview))} color="text-amber-700 animate-pulse" />
             )}
             {incumplidos > 0 && (
-              <Badge icon={<XCircle className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.incumplido.replace("{count}", String(incumplidos))} color="bg-red-50 text-red-700 animate-pulse border-red-100" />
+              <Badge icon={<XCircle className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.incumplido.replace("{count}", String(incumplidos))} color="text-red-700 animate-pulse" />
             )}
             
             <div className="flex items-center gap-2 ml-2">
@@ -256,16 +248,8 @@ function InternshipCard({ internship }: { internship: any }) {
 }
 
 function Badge({ icon, label, color }: { icon: React.ReactNode; label: string; color: string }) {
-  const textClass = color
-    .replace(/bg-\S+/g, "")
-    .replace(/border-\S+/g, "")
-    .replace(/px-\S+/g, "")
-    .replace(/py-\S+/g, "")
-    .replace(/rounded-\S+/g, "")
-    .trim();
-
   return (
-    <div className={cn("flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest", textClass)}>
+    <div className={cn("flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest", color)}>
       {icon}
       {label}
     </div>

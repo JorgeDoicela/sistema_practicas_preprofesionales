@@ -219,11 +219,11 @@ export default function AdminAnnouncementsPage() {
                                {t.admin.announcements.expires} {new Date(a.endDate).toLocaleDateString()}
                             </span>
                           )}
-                          <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-md ${
-                            a.type === 'SUCCESS' ? 'bg-emerald-100 text-emerald-700' :
-                            a.type === 'WARNING' ? 'bg-amber-100 text-amber-700' :
-                            a.type === 'DANGER' ? 'bg-rose-100 text-rose-700' :
-                            'bg-blue-100 text-blue-700'
+                          <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${
+                            a.type === 'SUCCESS' ? 'text-emerald-700' :
+                            a.type === 'WARNING' ? 'text-amber-700' :
+                            a.type === 'DANGER' ? 'text-rose-700' :
+                            'text-blue-700'
                          }`}>
                             {a.type}
                          </span>

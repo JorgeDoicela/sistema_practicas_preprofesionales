@@ -111,12 +111,10 @@ export default function EmpresaDashboardPage() {
               {t.empresa.dashboard.descCompany}
             </p>
           </div>
-          <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
-            <div className="px-4 py-2 bg-emerald-50 rounded-xl">
+          <div className="flex items-center gap-3">
               <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
                 RF-06 · RF-07
               </span>
-            </div>
           </div>
         </section>
 
