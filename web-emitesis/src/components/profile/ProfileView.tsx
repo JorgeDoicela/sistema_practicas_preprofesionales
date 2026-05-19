@@ -113,6 +113,9 @@ export function ProfileView() {
         localStorage.setItem("user", JSON.stringify({ ...parsed, fullName: updated.fullName ?? parsed.fullName }));
       }
 
+      // Dispatch custom event to notify other components (like Sidebar/Navbar)
+      window.dispatchEvent(new Event("user-updated"));
+
       setSaveSuccess(true);
       setTimeout(() => { setSaveSuccess(false); setEditing(false); }, 1800);
     } catch (e: any) {

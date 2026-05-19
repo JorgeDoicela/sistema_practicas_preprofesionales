@@ -112,12 +112,19 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     const [isResizing, setIsResizing] = useState(false);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem("user");
+        const loadUser = () => {
+            const storedUser = localStorage.getItem("user");
+            if (storedUser) {
+                setUser(JSON.parse(storedUser));
+            }
+        };
+        loadUser();
+        window.addEventListener("user-updated", loadUser);
+
         const storedWidth = localStorage.getItem("sidebarWidth");
-        if (storedUser) {
-            setTimeout(() => setUser(JSON.parse(storedUser)), 0);
-        }
         if (storedWidth) setWidth(parseInt(storedWidth));
+
+        return () => window.removeEventListener("user-updated", loadUser);
     }, []);
 
     useEffect(() => {
