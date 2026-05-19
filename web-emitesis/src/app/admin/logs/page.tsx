@@ -113,8 +113,8 @@ function AdminLogsContent() {
           
           <div className="flex items-center gap-3">
              <div className={cn(
-               "flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-               connected ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"
+               "flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all",
+               connected ? "text-emerald-600" : "text-rose-600"
              )}>
                 <Zap className={cn("w-3 h-3", connected && "animate-pulse")} />
                 {connected ? "Conexión Activa" : "Desconectado"}

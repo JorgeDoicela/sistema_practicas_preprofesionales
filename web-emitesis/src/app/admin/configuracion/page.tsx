@@ -566,7 +566,7 @@ export default function AdminSettingsPage() {
                         </p>
                       </div>
                     </div>
-                    <span className="self-start sm:self-center px-4 py-1.5 bg-brand-gold/10 border border-brand-gold/25 text-brand-gold rounded-full text-[10px] font-black tracking-widest uppercase">
+                    <span className="self-start sm:self-center text-brand-gold text-[10px] font-black tracking-widest uppercase">
                       {sectionSettings.length} {sectionSettings.length === 1 ? (locale === "es" ? "Parámetro" : "Parameter") : (locale === "es" ? "Parámetros" : "Parameters")}
                     </span>
                   </div>
@@ -598,7 +598,7 @@ export default function AdminSettingsPage() {
                                 {setting.key}
                               </span>
                               {hasDraft && (
-                                <span className="text-[9px] font-black text-brand-gold bg-brand-gold/15 border border-brand-gold/25 px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1 animate-pulse">
+                                <span className="text-[9px] font-black text-brand-gold uppercase tracking-wider flex items-center gap-1 animate-pulse">
                                   <Sliders className="w-2.5 h-2.5" />
                                   {locale === "es" ? "Editado" : "Modified"}
                                 </span>

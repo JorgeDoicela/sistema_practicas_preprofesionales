@@ -332,7 +332,7 @@ export default function DocumentDetailPage() {
 
           <div className="flex items-center gap-3 shrink-0">
             {internship?.status != null && internship?.status !== "" && (
-              <span className="text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-2xl bg-white text-[#003366] border border-slate-200 shadow-sm">
+              <span className="text-[9px] font-black uppercase tracking-widest text-[#003366]">
                 {String(internship.status)}
               </span>
             )}
@@ -491,10 +491,10 @@ export default function DocumentDetailPage() {
                                <h4 className="font-black text-[#003366] mb-1 group-hover:text-[#C5A059] transition-colors flex flex-wrap items-center gap-2">
                                  {doc.name}
                                  {doc.isCertificateSlot && (
-                                   <span className="text-[8px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 font-black tracking-wider">{t.documents.detail.certificate}</span>
+                                   <span className="text-[8px] text-violet-800 font-black tracking-wider">{t.documents.detail.certificate}</span>
                                  )}
                                  {doc.isRequired === false && !doc.isCertificateSlot && (
-                                   <span className="text-[8px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-black tracking-wider">{t.documents.detail.optional}</span>
+                                   <span className="text-[8px] text-slate-600 font-black tracking-wider">{t.documents.detail.optional}</span>
                                  )}
                                </h4>
                                <div className="flex flex-wrap gap-4 items-center">
@@ -508,7 +508,7 @@ export default function DocumentDetailPage() {
                                   </div>
                                   </div>
                                   {doc.isDigitallySigned && (
-                                    <div className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.15em] bg-emerald-600 text-white shadow-lg flex items-center gap-1.5 animate-pulse">
+                                    <div className="text-[9px] font-black uppercase tracking-[0.15em] text-emerald-600 flex items-center gap-1.5 animate-pulse">
                                        <Stamp size={10} /> {t.documents.detail.veracitySeal}
                                     </div>
                                   )}

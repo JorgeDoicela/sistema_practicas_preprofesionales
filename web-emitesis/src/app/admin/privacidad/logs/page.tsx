@@ -176,17 +176,17 @@ export default function LopdpLogsPage() {
                         <Calendar className="w-3 h-3" />
                         {format(new Date(log.acceptedAt), "d MMM, yyyy HH:mm", { locale: dateLocale })}
                       </div>
-                      <span className="inline-block px-2 py-0.5 rounded-full bg-[#C5A059]/10 text-[#C5A059] text-[9px] font-black uppercase">
+                      <span className="inline-block text-[#C5A059] text-[9px] font-black uppercase">
                         v{log.version}
                       </span>
                     </div>
                   </td>
                   <td className="px-8 py-6 text-right">
                     <span className={cn(
-                      "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest",
-                      log.user.role === 'ADMIN' ? "bg-purple-100 text-purple-600" :
-                      log.user.role === 'COORDINADOR' ? "bg-blue-100 text-blue-600" :
-                      "bg-slate-100 text-slate-600"
+                      "text-[9px] font-black uppercase tracking-widest",
+                      log.user.role === 'ADMIN' ? "text-purple-600" :
+                      log.user.role === 'COORDINADOR' ? "text-blue-600" :
+                      "text-slate-600"
                     )}>
                       {log.user.role}
                     </span>

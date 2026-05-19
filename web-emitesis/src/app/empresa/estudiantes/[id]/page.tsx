@@ -274,7 +274,7 @@ export default function EvaluarEstudiantePage() {
               </p>
             </div>
             {existingEval && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl">
+              <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">
                   {t.empresa.evaluation.saved}

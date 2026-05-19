@@ -138,7 +138,7 @@ export default function ReportesPage() {
                  <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden" data-tour="reportes-efficiency-metrics">
                     <div className="p-4 sm:p-6 md:p-8 border-b border-slate-50 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                        <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">{t.coordinator.reports.summary.title}</h3>
-                       <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-xl">
+                       <div className="flex items-center gap-2">
                           <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">{t.coordinator.reports.summary.status}</span>
                        </div>
                     </div>

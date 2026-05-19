@@ -494,7 +494,7 @@ export default function AsistenciaPage() {
                   ? [{ label: "Sede principal", lat: (internship as any).lat, lng: (internship as any).lng, radiusM: 200 }]
                   : [];
               if (locs.length === 0) return (
-                <div className="flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-600 rounded-xl">
+                <div className="flex items-center gap-2 text-rose-600">
                   <AlertCircle className="w-4 h-4" />
                   <span className="text-[10px] font-black uppercase tracking-widest">{t.asistencia.requirements.noLocations}</span>
                 </div>
@@ -502,7 +502,7 @@ export default function AsistenciaPage() {
               return (
                 <div className="flex flex-col gap-1 items-end">
                   {locs.map((loc, i) => (
-                    <div key={i} className="flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-700 rounded-xl">
+                    <div key={i} className="flex items-center gap-2 text-emerald-700">
                       <MapPin className="w-3.5 h-3.5" />
                       <span className="text-[9px] font-black uppercase tracking-widest">{loc.label} · {loc.radiusM ?? 200}m</span>
                     </div>
@@ -510,11 +510,11 @@ export default function AsistenciaPage() {
                 </div>
               );
             })()}
-            <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-xl">
+            <div className="flex items-center gap-2 text-blue-700">
               <ShieldCheck className="w-4 h-4" />
               <span className="text-[10px] font-black uppercase tracking-widest">{t.asistencia.requirements.biometrics}</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-700 rounded-xl">
+            <div className="flex items-center gap-2 text-purple-700">
               <Camera className="w-4 h-4" />
               <span className="text-[10px] font-black uppercase tracking-widest">{t.asistencia.requirements.photoRequired}</span>
             </div>

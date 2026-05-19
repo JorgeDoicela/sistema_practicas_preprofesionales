@@ -43,32 +43,32 @@ interface ChatPermission {
 const ROLE_META: Record<Role, { label: string; color: string; Icon: React.ElementType; desc: string }> = {
   ADMIN: {
     label: "Administrador",
-    color: "bg-red-100 text-red-700 border-red-200",
+    color: "text-red-700",
     Icon: ShieldCheck,
     desc: "Gestiona el sistema completo",
   },
   COORDINADOR: {
     label: "Coordinador",
-    color: "bg-blue-100 text-blue-700 border-blue-200",
+    color: "text-blue-700",
     Icon: BookOpen,
     desc: "Supervisa prácticas y tutores académicos",
   },
   TUTOR: {
     label: "Tutor Académico",
-    color: "bg-green-100 text-green-700 border-green-200",
+    color: "text-green-700",
     Icon: GraduationCap,
     desc: "Guía académica de los estudiantes asignados",
   },
 
   ESTUDIANTE: {
     label: "Estudiante",
-    color: "bg-violet-100 text-violet-700 border-violet-200",
+    color: "text-violet-700",
     Icon: Users,
     desc: "Realiza las prácticas preprofesionales",
   },
   EMPRESA: {
     label: "Empresa",
-    color: "bg-amber-100 text-amber-700 border-amber-200",
+    color: "text-amber-700",
     Icon: Building2,
     desc: "Institución receptora de pasantes",
   },
@@ -162,32 +162,32 @@ export default function ChatConfigPage() {
   const ROLE_META: Record<Role, { label: string; color: string; Icon: React.ElementType; desc: string }> = {
     ADMIN: {
       label: t.common.roles.ADMIN,
-      color: "bg-red-100 text-red-700 border-red-200",
+      color: "text-red-700",
       Icon: ShieldCheck,
       desc: t.common.language === "es" ? "Gestiona el sistema completo" : "Manages the entire system",
     },
     COORDINADOR: {
       label: t.common.roles.COORDINADOR,
-      color: "bg-blue-100 text-blue-700 border-blue-200",
+      color: "text-blue-700",
       Icon: BookOpen,
       desc: t.common.language === "es" ? "Supervisa prácticas y tutores académicos" : "Supervises internships and academic tutors",
     },
     TUTOR: {
       label: t.common.roles.TUTOR,
-      color: "bg-green-100 text-green-700 border-green-200",
+      color: "text-green-700",
       Icon: GraduationCap,
       desc: t.common.language === "es" ? "Guía académica de los estudiantes asignados" : "Academic guide for assigned students",
     },
 
     ESTUDIANTE: {
       label: t.common.roles.ESTUDIANTE,
-      color: "bg-violet-100 text-violet-700 border-violet-200",
+      color: "text-violet-700",
       Icon: Users,
       desc: t.common.language === "es" ? "Realiza las prácticas preprofesionales" : "Performs pre-professional internships",
     },
     EMPRESA: {
       label: t.common.roles.EMPRESA,
-      color: "bg-amber-100 text-amber-700 border-amber-200",
+      color: "text-amber-700",
       Icon: Building2,
       desc: t.common.language === "es" ? "Institución receptora de pasantes" : "Host institution for interns",
     },
@@ -430,7 +430,7 @@ export default function ChatConfigPage() {
                     {/* Cabecera de grupo */}
                     <div className="flex items-center gap-3 px-6 py-3 bg-slate-50/70">
                       <meta.Icon className="h-4 w-4 text-slate-500 shrink-0" />
-                      <span className={`inline-flex items-center rounded-full border px-3 py-0.5 text-xs font-medium ${meta.color}`}>
+                      <span className={`text-xs font-black uppercase tracking-widest ${meta.color}`}>
                         {meta.label}
                       </span>
                       <span className="text-xs text-slate-400">{meta.desc}</span>
@@ -452,7 +452,7 @@ export default function ChatConfigPage() {
                         >
                           <div className="flex flex-col gap-0.5 min-w-0 mr-4">
                             <div className="flex items-center gap-2">
-                              <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium shrink-0 ${otherMeta.color}`}>
+                              <span className={`text-[11px] font-black uppercase tracking-widest shrink-0 ${otherMeta.color}`}>
                                 {otherMeta.label}
                               </span>
                               <span className="text-xs text-slate-400">↔ {meta.label}</span>
