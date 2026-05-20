@@ -218,7 +218,7 @@ export default function TutorAsistenciaPage() {
       setLocationSaved(true);
       setTimeout(() => { setLocationSaved(false); closeLocationModal(); }, 1200);
     } catch (err: any) {
-      setAddLocError(err.message || "Error al guardar");
+      setAddLocError(err.response?.data?.message || err.message || "Error al guardar");
     } finally {
       setSavingLocations(false);
     }
