@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { CalendarOff, CheckCheck, XCircle, Loader2, AlertCircle, Clock, X, FileText, ExternalLink } from "lucide-react";
 import { absencesService, Absence } from "@/services/absences.service";
 import { cn } from "@/lib/utils";
@@ -40,12 +40,16 @@ export default function CoordinadorAusenciasPage() {
   const [reviewNotes, setReviewNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pageError, setPageError] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
+    setPageError(null);
     try {
       const res: any = await absencesService.findAll();
       setAbsences(Array.isArray(res) ? res : []);
+    } catch (err: any) {
+      setPageError(err.message || "Error al cargar las ausencias generales. Por favor, intente de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -63,7 +67,7 @@ export default function CoordinadorAusenciasPage() {
       setReviewNotes("");
       load();
     } catch (err: any) {
-      setError(err.message || "Error al procesar");
+      setError(err.message || "Error al procesar la revisión");
     } finally {
       setSaving(false);
     }
@@ -83,6 +87,16 @@ export default function CoordinadorAusenciasPage() {
             <p className="text-slate-500 font-medium mt-2">Visión global e historial completo de las ausencias registradas.</p>
           </div>
         </div>
+
+        {pageError && (
+          <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-700 text-sm font-bold shadow-sm animate-fade-in">
+            <AlertCircle size={18} className="text-red-600 animate-bounce" />
+            <span>{pageError}</span>
+            <button onClick={load} className="ml-auto underline hover:text-red-900 transition-colors uppercase tracking-widest text-[10px] font-black">
+              Reintentar
+            </button>
+          </div>
+        )}
 
         {/* Filtros */}
         <div className="flex gap-2 flex-wrap" data-tour="ausencias-filters">
@@ -131,7 +145,7 @@ export default function CoordinadorAusenciasPage() {
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-500 font-medium">
                           <span className="flex items-center gap-1">
                             <span className="font-bold text-[#003366]">Fecha:</span>
-                            {new Date(ab.date).toLocaleDateString("es-EC", { day: "numeric", month: "long", year: "numeric" })}
+                            {new Date(ab.date).toLocaleDateString("es-EC", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" })}
                           </span>
                           <span className="w-1.5 h-1.5 rounded-full bg-slate-200 hidden sm:inline" />
                           <span className="flex items-center gap-1">
@@ -196,69 +210,73 @@ export default function CoordinadorAusenciasPage() {
       </div>
 
       {/* Review Modal */}
-      {reviewModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setReviewModal(null)} />
-          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-black text-[#003366]">Revisar Ausencia</h2>
-              <button onClick={() => setReviewModal(null)} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400"><X size={18} /></button>
-            </div>
-            
-            <div className="p-4 bg-slate-50 rounded-2xl mb-4 space-y-2">
-              <div>
-                <p className="font-black text-[#003366] text-sm">{reviewModal.internship?.student?.fullName}</p>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Estudiante</p>
+      <AnimatePresence>
+        {reviewModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setReviewModal(null)} />
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+              className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-xl font-black text-[#003366]">Revisar Ausencia</h2>
+                <button onClick={() => setReviewModal(null)} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400"><X size={18} /></button>
               </div>
               
-              <div className="flex justify-between items-center text-xs font-semibold pt-1 border-t border-slate-100">
-                <span className="text-slate-500">Fecha de Ausencia:</span>
-                <span className="text-[#003366]">{new Date(reviewModal.date).toLocaleDateString("es-EC", { day: "numeric", month: "long", year: "numeric" })}</span>
+              <div className="p-4 bg-slate-50 rounded-2xl mb-4 space-y-2">
+                <div>
+                  <p className="font-black text-[#003366] text-sm">{reviewModal.internship?.student?.fullName}</p>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Estudiante</p>
+                </div>
+                
+                <div className="flex justify-between items-center text-xs font-semibold pt-1 border-t border-slate-100">
+                  <span className="text-slate-500">Fecha de Ausencia:</span>
+                  <span className="text-[#003366]">{new Date(reviewModal.date).toLocaleDateString("es-EC", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" })}</span>
+                </div>
+
+                <div className="flex justify-between items-center text-xs font-semibold">
+                  <span className="text-slate-500">Categoría:</span>
+                  <span className="text-[#003366]">{ABSENCE_TYPES[reviewModal.type] || reviewModal.type}</span>
+                </div>
+
+                <div className="pt-2 border-t border-slate-100">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Motivo Reportado</p>
+                  <p className="text-sm text-slate-600 leading-relaxed">{reviewModal.reason}</p>
+                </div>
               </div>
 
-              <div className="flex justify-between items-center text-xs font-semibold">
-                <span className="text-slate-500">Categoría:</span>
-                <span className="text-[#003366]">{ABSENCE_TYPES[reviewModal.type] || reviewModal.type}</span>
+              {/* Document link inside modal */}
+              {reviewModal.filePath && (
+                <div className="mb-4">
+                  <a href={reviewModal.filePath} target="_blank" rel="noopener noreferrer"
+                    className="w-full py-3 border border-[#003366]/20 text-[#003366] hover:bg-slate-50 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all">
+                    <FileText size={14} /> Ver Documento Justificativo
+                  </a>
+                </div>
+              )}
+
+              {error && <div className="flex items-center gap-2 p-3 bg-red-50 rounded-2xl text-red-600 text-xs font-bold mb-4"><AlertCircle size={14} /> {error}</div>}
+              
+              <div className="space-y-1.5 mb-5">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nota / Observación (Opcional)</label>
+                <textarea rows={3} value={reviewNotes} onChange={e => setReviewNotes(e.target.value)}
+                  placeholder="Añade un comentario sobre tu decisión para el estudiante..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:border-[#003366] resize-none" />
               </div>
 
-              <div className="pt-2 border-t border-slate-100">
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Motivo Reportado</p>
-                <p className="text-sm text-slate-600 leading-relaxed">{reviewModal.reason}</p>
+              <div className="flex gap-3">
+                <button onClick={() => handleReview("APROBADA")} disabled={saving}
+                  className="flex-1 bg-emerald-600 text-white rounded-2xl py-3.5 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-emerald-700 transition-all shadow-sm">
+                  {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCheck size={14} />} Aprobar
+                </button>
+                <button onClick={() => handleReview("RECHAZADA")} disabled={saving}
+                  className="flex-1 bg-rose-50 text-rose-600 border border-rose-100 rounded-2xl py-3.5 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-rose-100 transition-all shadow-sm">
+                  <XCircle size={14} /> Rechazar
+                </button>
               </div>
-            </div>
-
-            {/* Document link inside modal */}
-            {reviewModal.filePath && (
-              <div className="mb-4">
-                <a href={reviewModal.filePath} target="_blank" rel="noopener noreferrer"
-                  className="w-full py-3 border border-[#003366]/20 text-[#003366] hover:bg-slate-50 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all">
-                  <FileText size={14} /> Ver Documento Justificativo
-                </a>
-              </div>
-            )}
-
-            {error && <div className="flex items-center gap-2 p-3 bg-red-50 rounded-2xl text-red-600 text-xs font-bold mb-4"><AlertCircle size={14} /> {error}</div>}
-            
-            <div className="space-y-1.5 mb-5">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nota / Observación (Opcional)</label>
-              <textarea rows={3} value={reviewNotes} onChange={e => setReviewNotes(e.target.value)}
-                placeholder="Añade un comentario sobre tu decisión para el estudiante..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:border-[#003366] resize-none" />
-            </div>
-
-            <div className="flex gap-3">
-              <button onClick={() => handleReview("APROBADA")} disabled={saving}
-                className="flex-1 bg-emerald-600 text-white rounded-2xl py-3.5 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-emerald-700 transition-all shadow-sm">
-                {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCheck size={14} />} Aprobar
-              </button>
-              <button onClick={() => handleReview("RECHAZADA")} disabled={saving}
-                className="flex-1 bg-rose-50 text-rose-600 border border-rose-100 rounded-2xl py-3.5 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-rose-100 transition-all shadow-sm">
-                <XCircle size={14} /> Rechazar
-              </button>
-            </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </DashboardLayout>
   );
 }

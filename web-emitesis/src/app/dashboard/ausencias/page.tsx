@@ -43,6 +43,7 @@ export default function AusenciasPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pageError, setPageError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
 
@@ -54,6 +55,7 @@ export default function AusenciasPage() {
 
   const load = async () => {
     setLoading(true);
+    setPageError(null);
     try {
       const userStr = localStorage.getItem("user");
       if (!userStr) return;
@@ -66,6 +68,8 @@ export default function AusenciasPage() {
         const abs: any = await absencesService.findByInternship(active.id);
         setAbsences(Array.isArray(abs) ? abs : []);
       }
+    } catch (err: any) {
+      setPageError(err.message || "Error al cargar el historial de ausencias. Por favor, intente de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -116,6 +120,16 @@ export default function AusenciasPage() {
           )}
         </div>
 
+        {pageError && (
+          <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-700 text-sm font-bold shadow-sm animate-fade-in">
+            <AlertCircle size={18} className="text-red-600 animate-bounce" />
+            <span>{pageError}</span>
+            <button onClick={load} className="ml-auto underline hover:text-red-900 transition-colors uppercase tracking-widest text-[10px] font-black">
+              Reintentar
+            </button>
+          </div>
+        )}
+
         <AnimatePresence>
           {success && (
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
@@ -157,7 +171,7 @@ export default function AusenciasPage() {
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <p className="font-black text-[#003366]">
-                            {new Date(ab.date).toLocaleDateString("es-EC", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                            {new Date(ab.date).toLocaleDateString("es-EC", { timeZone: "UTC", weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                           </p>
                           <span className={cn("flex items-center gap-1 text-[10px] font-black uppercase tracking-widest", badge.class)}>
                             {badge.icon} {badge.text}

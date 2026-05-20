@@ -23,13 +23,17 @@ export default function TutorAusenciasPage() {
   const [reviewNotes, setReviewNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pageError, setPageError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
+    setPageError(null);
     try {
       const res: any = await absencesService.findPendingForTutor();
       setAbsences(Array.isArray(res) ? res : []);
+    } catch (err: any) {
+      setPageError(err.message || "Error al cargar las ausencias pendientes. Por favor, intente de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -49,7 +53,7 @@ export default function TutorAusenciasPage() {
       load();
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
-      setError(err.message || "Error al procesar");
+      setError(err.message || "Error al procesar la revisión");
     } finally {
       setSaving(false);
     }
@@ -65,6 +69,16 @@ export default function TutorAusenciasPage() {
           <h1 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">Ausencias Pendientes</h1>
           <p className="text-slate-500 font-medium mt-2">Revisa, aprueba o rechaza de forma oficial las justificaciones de tus estudiantes.</p>
         </div>
+
+        {pageError && (
+          <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-700 text-sm font-bold shadow-sm animate-fade-in">
+            <AlertCircle size={18} className="text-red-600 animate-bounce" />
+            <span>{pageError}</span>
+            <button onClick={load} className="ml-auto underline hover:text-red-900 transition-colors uppercase tracking-widest text-[10px] font-black">
+              Reintentar
+            </button>
+          </div>
+        )}
 
         <AnimatePresence>
           {success && (
@@ -112,7 +126,7 @@ export default function TutorAusenciasPage() {
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-500 font-medium">
                         <span className="flex items-center gap-1">
                           <span className="font-bold text-[#003366]">Fecha:</span>
-                          {new Date(ab.date).toLocaleDateString("es-EC", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                          {new Date(ab.date).toLocaleDateString("es-EC", { timeZone: "UTC", weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                         </span>
                         <span className="w-1.5 h-1.5 rounded-full bg-slate-200 hidden sm:inline" />
                         <span className="flex items-center gap-1">
@@ -165,7 +179,7 @@ export default function TutorAusenciasPage() {
 
                   <div className="flex justify-between items-center text-xs font-semibold pt-1 border-t border-slate-100">
                     <span className="text-slate-500">Fecha:</span>
-                    <span className="text-[#003366]">{new Date(reviewModal.date).toLocaleDateString("es-EC", { day: "numeric", month: "long", year: "numeric" })}</span>
+                    <span className="text-[#003366]">{new Date(reviewModal.date).toLocaleDateString("es-EC", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" })}</span>
                   </div>
 
                   <div className="flex justify-between items-center text-xs font-semibold">
