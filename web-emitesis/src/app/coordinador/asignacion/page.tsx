@@ -138,8 +138,17 @@ export default function AsignacionPage() {
     setError(null);
 
     try {
+      // Clean form parameters: remove empty strings to satisfy backend class-validator @IsOptional() decorators
+      const cleanedForm = { ...form };
+      Object.keys(cleanedForm).forEach((key) => {
+        const k = key as keyof typeof cleanedForm;
+        if (cleanedForm[k] === '') {
+          delete cleanedForm[k];
+        }
+      });
+
       const payload = {
-        ...form,
+        ...cleanedForm,
         allowedLocations,
         // Mantener retrocompatibilidad
         initialLat: allowedLocations[0].lat,
