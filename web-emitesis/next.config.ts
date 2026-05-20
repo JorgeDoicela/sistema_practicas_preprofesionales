@@ -36,6 +36,14 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
+  async rewrites() {
+    return [
+      {
+        source: '/uploads/:path*',
+        destination: `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://127.0.0.1:5000'}/uploads/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

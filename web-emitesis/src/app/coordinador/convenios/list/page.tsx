@@ -11,6 +11,7 @@ import { agreementsService } from "@/services/agreements.service";
 import { Agreement } from "@/types/agreement";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { API_URL } from "@/lib/api-base";
 
 const statusColor: Record<string, string> = {
   Activo: "text-green-700",
@@ -187,8 +188,12 @@ export default function ConveniosListPage() {
                     </div>
 
                     {ag.filePath && (
-                      <a href={ag.filePath} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 text-[#003366] text-[10px] font-black uppercase tracking-widest hover:bg-[#003366] hover:text-white transition-all border border-slate-200 flex-shrink-0">
+                      <a 
+                        href={ag.filePath.startsWith('http') ? ag.filePath : `${API_URL.replace('/api', '')}${ag.filePath}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 text-[#003366] text-[10px] font-black uppercase tracking-widest hover:bg-[#003366] hover:text-white transition-all border border-slate-200 flex-shrink-0"
+                      >
                         <ExternalLink size={13} /> Ver PDF
                       </a>
                     )}

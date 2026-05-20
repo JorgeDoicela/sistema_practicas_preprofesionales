@@ -9,6 +9,8 @@ import { SanitizationPipe } from './common/security/sanitization.pipe';
 import helmet from 'helmet';
 
 import { json, urlencoded } from 'express';
+import * as express from 'express';
+import { join } from 'path';
 
 /** En Vercel no se debe crear Nest en cada petición (agota tiempo/memoria y provoca FUNCTION_INVOCATION_FAILED). */
 let vercelExpressApp: unknown = null;
@@ -23,6 +25,9 @@ async function createConfiguredApp(): Promise<INestApplication> {
   // Aumentar límites para el envío de imágenes base64 (RF-AI-01)
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true, limit: '10mb' }));
+
+  // Servir archivos estáticos locales de la carpeta /uploads (convenios, ausencias, documentos, etc.)
+  app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
 
   // Debug Logger: Ver qué peticiones llegan realmente
   app.use((req: any, res: any, next: any) => {

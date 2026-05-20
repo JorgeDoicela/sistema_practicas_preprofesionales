@@ -21,6 +21,22 @@ export class AgreementsService {
       throw new BadRequestException('El RUC proporcionado no es válido para los estándares de Ecuador.');
     }
 
+    // Validación de Fechas
+    const start = new Date(startDate);
+    if (isNaN(start.getTime())) {
+      throw new BadRequestException('La fecha de inicio proporcionada no es válida.');
+    }
+
+    if (endDate && endDate.trim() !== '') {
+      const end = new Date(endDate);
+      if (isNaN(end.getTime())) {
+        throw new BadRequestException('La fecha de vencimiento proporcionada no es válida.');
+      }
+      if (end <= start) {
+        throw new BadRequestException('La fecha de vencimiento del convenio debe ser posterior a la fecha de inicio.');
+      }
+    }
+
     try {
       return await this.prisma.$transaction(async (tx) => {
         // RF-CON-001: Buscar o actualizar empresa
@@ -59,7 +75,7 @@ export class AgreementsService {
           data: {
             companyId: company.id,
             startDate: new Date(startDate),
-            endDate: endDate ? new Date(endDate) : null,
+            endDate: (endDate && endDate.trim() !== '') ? new Date(endDate) : null,
             type: type ?? 'GENERAL',
             maxInterns: maxInterns ?? 1,
             filePath: filePath,
