@@ -72,8 +72,8 @@ export default function LoginPage() {
             localStorage.setItem("user", JSON.stringify(user));
 
             // GUARDAR EN COOKIES (Nivel Bancario - Permite que el Middleware lo vea en el Servidor)
-            Cookies.set("token", data.access_token, { expires: 1, secure: true, sameSite: 'strict' });
-            Cookies.set("user", JSON.stringify(user), { expires: 1, secure: true, sameSite: 'strict' });
+            Cookies.set("token", data.access_token, { expires: 1, secure: true, sameSite: 'strict', path: '/' });
+            Cookies.set("user", JSON.stringify(user), { expires: 1, secure: true, sameSite: 'strict', path: '/' });
 
             const role = user.role as Role;
             router.push(ROLE_REDIRECTS[role] || "/dashboard");
@@ -100,8 +100,8 @@ export default function LoginPage() {
             localStorage.setItem("user", JSON.stringify(user));
 
             // Cookies para Middleware
-            Cookies.set("token", data.access_token, { expires: 1, secure: true, sameSite: 'strict' });
-            Cookies.set("user", JSON.stringify(user), { expires: 1, secure: true, sameSite: 'strict' });
+            Cookies.set("token", data.access_token, { expires: 1, secure: true, sameSite: 'strict', path: '/' });
+            Cookies.set("user", JSON.stringify(user), { expires: 1, secure: true, sameSite: 'strict', path: '/' });
 
             const role = user.role as Role;
             router.push(ROLE_REDIRECTS[role] || "/dashboard");
