@@ -22,6 +22,7 @@ import { motion } from "framer-motion";
 import { reportsService, GlobalStats } from "@/services/reports.service";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { toast } from "sonner";
 
 export default function ReportesPage() {
   const { t } = useLanguage();
@@ -36,11 +37,22 @@ export default function ReportesPage() {
   const loadStats = async () => {
     try {
       setLoading(true);
-      const res: any = await reportsService.getGlobalStats();
+      const userStr = localStorage.getItem("user");
+      let careerId = undefined;
+      if (userStr) {
+        try {
+          const userObj = JSON.parse(userStr);
+          careerId = userObj.careerId;
+        } catch (e) {
+          console.error("Error parsing user from localStorage", e);
+        }
+      }
+      const res: any = await reportsService.getGlobalStats(careerId);
       const data = res?.data || res || null;
       setStats(data);
     } catch (error) {
       console.error("Error loading stats:", error);
+      toast.error(t.common.error || "Error al cargar los datos");
     } finally {
       setLoading(false);
     }
@@ -51,8 +63,9 @@ export default function ReportesPage() {
       setExporting(type);
       if (type === "excel") await reportsService.exportGlobalExcel();
       else await reportsService.exportGlobalPdf();
+      toast.success(t.common.success.generic);
     } catch (error) {
-      alert(t.coordinator.reports.errorExport);
+      toast.error(t.coordinator.reports.errorExport);
     } finally {
       setExporting(null);
     }
