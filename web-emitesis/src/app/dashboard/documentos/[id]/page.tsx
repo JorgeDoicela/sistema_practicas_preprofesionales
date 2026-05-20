@@ -36,6 +36,7 @@ import { TwoFactorModal } from "@/components/auth/TwoFactorModal";
 import type { PdfReviewAnnotationsPayload } from "@/lib/pdf-review-annotations";
 import { parseReviewAnnotations } from "@/lib/pdf-review-annotations";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { toast } from "sonner";
 
 const PdfLoading = () => {
   const { t } = useLanguage();
@@ -129,7 +130,7 @@ export default function DocumentDetailPage() {
 
   const handleEditClick = (doc: any) => {
     if (doc.status === 'APROBADO_DEFINITIVO') {
-      alert(t.documents.detail.errors.modifiedApproved);
+      toast.error(t.documents.detail.errors.modifiedApproved);
       return;
     }
     setSelectedDoc(doc);
@@ -145,7 +146,7 @@ export default function DocumentDetailPage() {
   const handleSaveDates = async () => {
     if (!startDate || !dueDate) return;
     if (new Date(startDate) > new Date(dueDate)) {
-      alert(t.documents.detail.errors.invalidDateRange);
+      toast.error(t.documents.detail.errors.invalidDateRange);
       return;
     }
 
@@ -162,8 +163,9 @@ export default function DocumentDetailPage() {
       await documentsService.updateDates(selectedDoc.id, startDate, dueDate);
       await loadData();
       setIsDrawerOpen(false);
+      toast.success(t.common.success.generic);
     } catch (error: any) {
-      alert(error.message);
+      toast.error(error.message || t.common.errors.generic);
     } finally {
       setSaving(false);
     }
@@ -194,7 +196,7 @@ export default function DocumentDetailPage() {
       setComments([...comments, comment]);
       setNewComment("");
     } catch (e: any) {
-      alert(e.message);
+      toast.error(e.message || t.common.errors.generic);
     }
   };
 
@@ -211,11 +213,11 @@ export default function DocumentDetailPage() {
           return;
       }
       await documentsService.signDocument(selectedDoc.id, "Aprobación institucional");
-      alert(t.common.success.signed);
+      toast.success(t.common.success.signed);
       await loadData();
       setIsReviewDrawerOpen(false);
     } catch (e: any) {
-      alert(e.message);
+      toast.error(e.message || t.common.errors.generic);
     } finally {
       setIsSigning(false);
     }
@@ -236,7 +238,7 @@ export default function DocumentDetailPage() {
       : (type === 'APPROVE' ? 'APROBADO_TUTOR' : 'RECHAZADO_TUTOR');
 
     if (type === 'REJECT' && !observations.trim()) {
-      alert(t.documents.detail.errors.observationsRequired);
+      toast.error(t.documents.detail.errors.observationsRequired);
       return;
     }
 
@@ -269,11 +271,11 @@ export default function DocumentDetailPage() {
         await documentsService.reviewDocument(selectedDoc.id, reviewPayload);
       }
       
-      alert(t.common.success.generic);
+      toast.success(t.common.success.generic);
       await loadData();
       setIsReviewDrawerOpen(false);
     } catch (error: any) {
-      alert(error.message);
+      toast.error(error.message || t.common.errors.generic);
     } finally {
       setSaving(false);
     }
@@ -284,13 +286,14 @@ export default function DocumentDetailPage() {
       try {
           const action = (pendingAction as any);
           await action(code);
-          alert(t.common.success.generic);
+          toast.success(t.common.success.generic);
           setIs2faModalOpen(false);
           setPendingAction(null);
           setIsDrawerOpen(false);
           setIsReviewDrawerOpen(false);
           await loadData();
-      } catch (error) {
+      } catch (error: any) {
+          toast.error(error.message || t.common.errors.generic);
           throw error;
       }
   };
@@ -342,9 +345,9 @@ export default function DocumentDetailPage() {
                   setIsSyncingSigafi(true);
                   try {
                     const res = await internshipsService.syncSigafi(id as string);
-                    alert(`${t.documents.detail.syncSigafi}: ${res.externalData.isEnrolled ? 'Estudiante MATRICULADO' : 'No matriculado'} en ${res.externalData.lastSemester}`);
+                    toast.success(`${t.documents.detail.syncSigafi}: ${res.externalData.isEnrolled ? 'Estudiante MATRICULADO' : 'No matriculado'} en ${res.externalData.lastSemester}`);
                   } catch (e: any) {
-                    alert(e.message);
+                    toast.error(e.message || t.common.errors.generic);
                   } finally {
                     setIsSyncingSigafi(false);
                   }

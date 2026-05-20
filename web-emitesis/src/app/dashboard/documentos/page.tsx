@@ -38,6 +38,7 @@ import { useLanguage } from "@/providers/LanguageProvider";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { parseReviewAnnotations } from "@/lib/pdf-review-annotations";
+import { toast } from "sonner";
 
 const DocumentPdfReviewViewer = dynamic(
   () =>
@@ -109,7 +110,8 @@ function DocumentosContent() {
       } else if (user.role === ROLES.ESTUDIANTE) {
         res = await internshipsService.findByStudent(user.id);
       } else {
-        res = await internshipsService.findAll();
+        const careerId = user.role === 'COORDINADOR' ? user.careerId : undefined;
+        res = await internshipsService.findAll(1, 200, careerId);
       }
 
       const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
@@ -140,7 +142,7 @@ function DocumentosContent() {
     try {
       await documentsService.downloadTemplate(doc.id, doc.name);
     } catch (error: any) {
-      alert(error.message);
+      toast.error(error.message || t.common.errors.generic);
     } finally {
       setDownloadingId(null);
     }
@@ -148,7 +150,7 @@ function DocumentosContent() {
 
   const handleViewDocument = (doc: any) => {
     if (!doc.filePath) {
-      alert("El archivo no está disponible.");
+      toast.error("El archivo no está disponible.");
       return;
     }
     setViewingDoc(doc);
@@ -163,13 +165,13 @@ function DocumentosContent() {
 
     // Regla de Negocio: Solo PDF
     if (file.type !== "application/pdf") {
-      alert(t.common.errors.invalidFormat || "Solo se permiten archivos en formato PDF");
+      toast.error(t.common.errors.invalidFormat || "Solo se permiten archivos en formato PDF");
       return;
     }
 
     // Regla de Negocio: Máximo 10MB
     if (file.size > 10 * 1024 * 1024) {
-      alert(t.common.errors.maxSize);
+      toast.error(t.common.errors.maxSize);
       return;
     }
 
@@ -210,10 +212,10 @@ function DocumentosContent() {
       }
 
       await documentsService.uploadDocument(docId, file);
-      alert(t.common.success.generic);
+      toast.success(t.common.success.generic);
       loadInternships();
     } catch (error: any) {
-      alert(error.message);
+      toast.error(error.message || t.common.errors.generic);
     } finally {
       setUploadingId(null);
       setAiFeedback(null);
@@ -225,7 +227,7 @@ function DocumentosContent() {
     setUploadingId(pendingUpload.id);
     try {
       await documentsService.uploadDocument(pendingUpload.id, pendingUpload.file, code);
-      alert(t.common.success.generic);
+      toast.success(t.common.success.generic);
       setIs2faModalOpen(false);
       setPendingUpload(null);
       loadInternships();
@@ -269,10 +271,10 @@ function DocumentosContent() {
           return;
         }
         await documentsService.uploadDocument(id, file);
-        alert(t.common.success.generic);
+        toast.success(t.common.success.generic);
         loadInternships();
       } catch (error: any) {
-        alert(error.message);
+        toast.error(error.message || t.common.errors.generic);
       } finally {
         setUploadingId(null);
         setPendingUpload(null);
@@ -297,10 +299,10 @@ function DocumentosContent() {
           return;
       }
       await documentsService.deleteDocumentFile(deletingId);
-      alert(t.common.success.deleted);
+      toast.success(t.common.success.deleted || t.common.success.generic);
       loadInternships();
     } catch (error: any) {
-      alert(error.message);
+      toast.error(error.message || t.common.errors.generic);
     }
   };
 
@@ -309,11 +311,12 @@ function DocumentosContent() {
       try {
           const action = pendingAction();
           await action(code);
-          alert(t.common.success.generic);
+          toast.success(t.common.success.generic);
           setIs2faModalOpen(false);
           setPendingAction(null);
           loadInternships();
-      } catch (error) {
+      } catch (error: any) {
+          toast.error(error.message || t.common.errors.generic);
           throw error;
       }
   };
