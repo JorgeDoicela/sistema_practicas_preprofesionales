@@ -302,10 +302,10 @@ function ReportStatCard({ title, value, hint, icon, color, href }: ReportStatCar
         </div>
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
         <h4 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tighter">{value}</h4>
-        <p className="text-[11px] font-semibold text-slate-500 mt-3 flex items-center gap-2">
+        <div className="text-[11px] font-semibold text-slate-500 mt-3 flex items-center gap-2">
            <div className={cn("w-1.5 h-1.5 rounded-full", colorMap[color].split(" ")[0].replace('from-', 'bg-'))} />
            {hint}
-        </p>
+        </div>
       </motion.div>
     </CardWrapper>
   );
