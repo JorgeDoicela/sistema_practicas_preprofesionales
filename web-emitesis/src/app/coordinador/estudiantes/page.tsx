@@ -36,6 +36,7 @@ import type { PdfReviewAnnotationsPayload } from "@/lib/pdf-review-annotations";
 import { parseReviewAnnotations } from "@/lib/pdf-review-annotations";
 import { aiService } from "@/services/ai.service";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { toast } from "sonner";
 
 const DocumentPdfReviewEditor = dynamic(
   () =>
@@ -150,7 +151,7 @@ export default function GestionEstudiantesPage() {
 
   const handleReviewSubmit = async (status: 'APROBADO_DEFINITIVO' | 'RECHAZADO_COORDINADOR') => {
     if (status === 'RECHAZADO_COORDINADOR' && !observations.trim()) {
-      alert(t.coordinator.students.drawerReview.errorObs);
+      toast.error(t.coordinator.students.drawerReview.errorObs);
       return;
     }
 
@@ -161,7 +162,7 @@ export default function GestionEstudiantesPage() {
         observations,
         annotations: reviewAnnotationsRef.current,
       });
-      alert(status === 'APROBADO_DEFINITIVO' ? t.common.success.generic : t.common.success.generic); // Or specific ones if added
+      toast.success(status === 'APROBADO_DEFINITIVO' ? t.common.success.generic : t.common.success.generic); // Or specific ones if added
       
       // Recargar datos para actualizar elegibilidad
       await loadData();
@@ -172,7 +173,7 @@ export default function GestionEstudiantesPage() {
       
       setIsReviewDrawerOpen(false);
     } catch (error: any) {
-      alert(error.message);
+      toast.error(error.message || t.common.errors.generic);
     } finally {
       setSaving(false);
     }
@@ -186,11 +187,11 @@ export default function GestionEstudiantesPage() {
     setGeneratingCertId(internshipId);
     try {
       const result = await certificationService.generateCertificate(internshipId);
-      alert(t.common.success.generic);
+      toast.success(t.common.success.generic);
       window.open(result.url, '_blank');
       await loadData();
     } catch (error: any) {
-      alert(error.response?.data?.message || t.coordinator.students.errors.cert);
+      toast.error(error.response?.data?.message || t.coordinator.students.errors.cert);
     } finally {
       setGeneratingCertId(null);
     }
@@ -200,7 +201,7 @@ export default function GestionEstudiantesPage() {
     try {
       await reportsService.exportAttendanceExcel(internshipId);
     } catch (error) {
-      alert(t.coordinator.students.errors.exportAttendance);
+      toast.error(t.coordinator.students.errors.exportAttendance);
     }
   };
 
@@ -213,7 +214,7 @@ export default function GestionEstudiantesPage() {
       setStatusModal(null);
       setStatusReason("");
     } catch (error: any) {
-      alert(error.message || t.coordinator.students.errors.changeStatus);
+      toast.error(error.message || t.coordinator.students.errors.changeStatus);
     } finally {
       setChangingStatus(false);
     }
@@ -236,7 +237,7 @@ export default function GestionEstudiantesPage() {
       setAiAnalysis(prev => ({ ...prev, [i.id]: res }));
     } catch (e) {
       console.error("AI Analysis error:", e);
-      alert(t.coordinator.students.errors.aiAnalysis);
+      toast.error(t.coordinator.students.errors.aiAnalysis);
     } finally {
       setAnalyzingId(null);
     }
@@ -726,7 +727,7 @@ function StudentInternshipCard({
                        </div>
                        <p className="text-[11px] font-medium text-slate-500 leading-tight">
                           {eligibility.details.missingDocs.length > 0 
-                            ? t.coordinator.students.kpi.pending.replace("{missing}", eligibility.details.missingDocs.join(', '))
+                            ? t.coordinator.students.kpi.pending.replace("{list}", eligibility.details.missingDocs.join(', '))
                             : t.coordinator.students.kpi.allApproved}
                        </p>
                     </div>
