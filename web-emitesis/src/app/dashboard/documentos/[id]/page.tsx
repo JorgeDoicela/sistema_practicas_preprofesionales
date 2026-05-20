@@ -73,7 +73,7 @@ export default function DocumentDetailPage() {
   const [startDate, setStartDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [is2faModalOpen, setIs2faModalOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<((code: string) => Promise<void>) | null>(null);
+  const pendingActionRef = useRef<((code: string) => Promise<void>) | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Review states
@@ -154,9 +154,9 @@ export default function DocumentDetailPage() {
     setSaving(true);
     try {
       if (currentUser?.isTwoFactorEnabled) {
-          setPendingAction(async (code: string) => {
+          pendingActionRef.current = async (code: string) => {
             await documentsService.updateDates(selectedDoc.id, startDate, dueDate, code);
-          });
+          };
           setIs2faModalOpen(true);
           setSaving(false);
           return;
@@ -207,9 +207,9 @@ export default function DocumentDetailPage() {
     setIsSigning(true);
     try {
       if (currentUser?.isTwoFactorEnabled) {
-          setPendingAction(async (code: string) => {
+          pendingActionRef.current = async (code: string) => {
             await documentsService.signDocument(selectedDoc.id, "Aprobación institucional", code);
-          });
+          };
           setIs2faModalOpen(true);
           return;
       }
@@ -254,13 +254,13 @@ export default function DocumentDetailPage() {
       const reviewPayload = { status, observations, annotations: reviewAnnotationsRef.current };
       
       if (currentUser?.isTwoFactorEnabled) {
-          setPendingAction(async (code: string) => {
+          pendingActionRef.current = async (code: string) => {
             if (isCoord) {
               await documentsService.coordinatorReviewDocument(selectedDoc.id, reviewPayload, code);
             } else {
               await documentsService.reviewDocument(selectedDoc.id, reviewPayload, code);
             }
-          });
+          };
           setIs2faModalOpen(true);
           setSaving(false);
           return;
@@ -283,13 +283,12 @@ export default function DocumentDetailPage() {
   };
 
   const handle2faConfirm = async (code: string) => {
-      if (!pendingAction) return;
+      if (!pendingActionRef.current) return;
       try {
-          const action = (pendingAction as any);
-          await action(code);
+          await pendingActionRef.current(code);
           toast.success(t.common.success.generic);
           setIs2faModalOpen(false);
-          setPendingAction(null);
+          pendingActionRef.current = null;
           setIsDrawerOpen(false);
           setIsReviewDrawerOpen(false);
           await loadData();
@@ -860,7 +859,7 @@ export default function DocumentDetailPage() {
         isOpen={is2faModalOpen}
         onClose={() => {
             setIs2faModalOpen(false);
-            setPendingAction(null);
+            pendingActionRef.current = null;
         }}
         onConfirm={handle2faConfirm}
       />

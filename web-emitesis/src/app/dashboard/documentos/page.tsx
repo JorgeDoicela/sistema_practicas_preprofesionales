@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useRef } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { 
   FileStack, 
@@ -243,6 +243,9 @@ function DocumentosContent() {
   };
 
   const getFirstPageAsBase64 = async (file: File): Promise<string> => {
+    // Configurar worker de pdfjs para evitar errores de inicialización
+    pdfjs.GlobalWorkerOptions.workerSrc = "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+    
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
     const page = await pdf.getPage(1);
@@ -291,9 +294,9 @@ function DocumentosContent() {
     if (!deletingId) return;
     try {
       if (currentUser?.isTwoFactorEnabled) {
-          setPendingAction(() => async (code: string) => {
+          pendingActionRef.current = async (code: string) => {
               await documentsService.deleteDocumentFile(deletingId, code);
-          });
+          };
           setIsConfirmModalOpen(false);
           setIs2faModalOpen(true);
           return;
@@ -307,13 +310,12 @@ function DocumentosContent() {
   };
 
   const handle2faConfirmAction = async (code: string) => {
-      if (!pendingAction) return;
+      if (!pendingActionRef.current) return;
       try {
-          const action = pendingAction();
-          await action(code);
+          await pendingActionRef.current(code);
           toast.success(t.common.success.generic);
           setIs2faModalOpen(false);
-          setPendingAction(null);
+          pendingActionRef.current = null;
           loadInternships();
       } catch (error: any) {
           toast.error(error.message || t.common.errors.generic);
@@ -321,7 +323,7 @@ function DocumentosContent() {
       }
   };
 
-  const [pendingAction, setPendingAction] = useState<(() => (code: string) => Promise<void>) | null>(null);
+  const pendingActionRef = useRef<((code: string) => Promise<void>) | null>(null);
 
   const filteredInternships = internships.filter(item => {
     const matchesSearch = 
@@ -753,7 +755,7 @@ function DocumentosContent() {
         onClose={() => {
             setIs2faModalOpen(false);
             setPendingUpload(null);
-            setPendingAction(null);
+            pendingActionRef.current = null;
         }}
         onConfirm={pendingUpload ? confirmUploadWith2fa : handle2faConfirmAction}
         title={pendingUpload ? t.documents.modal2fa.titleUpload : t.documents.modal2fa.titleDefault}
