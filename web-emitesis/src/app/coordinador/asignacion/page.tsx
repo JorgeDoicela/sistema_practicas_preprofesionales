@@ -83,8 +83,8 @@ export default function AsignacionPage() {
     const fetchData = async () => {
       try {
         const [usersRes, agreementsRes]: [any, any] = await Promise.all([
-          usersService.findAll(),
-          agreementsService.findAll()
+          usersService.findAll(1, 1000),
+          agreementsService.findAll(1, 1000)
         ]);
 
         const allUsers = Array.isArray(usersRes) ? usersRes : (Array.isArray(usersRes?.data) ? usersRes.data : []);

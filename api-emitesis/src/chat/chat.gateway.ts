@@ -73,7 +73,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       this.logger.log(`Chat connected: userId=${client.userId} role=${client.userRole}`);
-    } catch {
+    } catch (err: any) {
+      this.logger.error(`Connection auth failed: ${err.message || err}`);
       client.disconnect();
     }
   }
