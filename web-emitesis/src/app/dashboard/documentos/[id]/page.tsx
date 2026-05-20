@@ -117,10 +117,11 @@ export default function DocumentDetailPage() {
       if (userStr) setCurrentUser(JSON.parse(userStr));
     } catch (error) {
       console.error("Error loading data:", error);
+      toast.error(t.common.error || "Error al cargar los datos");
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t.common.error]);
 
   useEffect(() => {
     if (id) {
@@ -304,6 +305,33 @@ export default function DocumentDetailPage() {
         <div className="w-12 h-12 border-4 border-slate-200 border-t-[#003366] rounded-full animate-spin"></div>
         <p className="text-slate-500 font-bold">{t.documents.detail.loading}</p>
       </div>
+    );
+  }
+
+  if (!internship) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 text-center px-4">
+          <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center text-rose-500 shadow-inner">
+            <AlertCircle className="w-10 h-10" />
+          </div>
+          <div className="max-w-md">
+            <h2 className="text-2xl font-black text-[#003366] tracking-tight mb-2">
+              Asignación no encontrada
+            </h2>
+            <p className="text-slate-500 text-sm font-medium leading-relaxed">
+              La práctica o asignación solicitada no existe, ha sido eliminada o no tienes permisos suficientes para visualizarla.
+            </p>
+          </div>
+          <button 
+            onClick={() => router.push('/dashboard/documentos')}
+            className="px-8 py-4 bg-[#003366] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#003366]/90 transition-all shadow-lg shadow-blue-900/10 flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Volver a Documentos
+          </button>
+        </div>
+      </DashboardLayout>
     );
   }
 
