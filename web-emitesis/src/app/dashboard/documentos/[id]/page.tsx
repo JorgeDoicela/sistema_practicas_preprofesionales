@@ -412,7 +412,7 @@ export default function DocumentDetailPage() {
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t.documents.detail.startDate}</p>
                     <p className="font-black text-[#003366] flex items-center gap-2">
                        <CalendarDays className="w-4 h-4 text-slate-300" />
-                       {new Date(internship?.startDate).toLocaleDateString()}
+                       {internship?.startDate ? new Date(internship.startDate).toLocaleDateString() : "N/A"}
                     </p>
                   </div>
                   <div>
@@ -456,9 +456,9 @@ export default function DocumentDetailPage() {
                     <div className="space-y-3">
                       {attendanceHistory.slice(0, 3).map((h: any) => (
                         <div key={h.id} className="flex items-center justify-between text-[11px] font-bold text-[#003366]">
-                          <span>{new Date(h.checkIn).toLocaleDateString()}</span>
+                          <span>{h.checkIn ? new Date(h.checkIn).toLocaleDateString() : "N/A"}</span>
                           <span className="text-emerald-600">
-                            {new Date(h.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {h.checkIn ? new Date(h.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A"}
                           </span>
                         </div>
                       ))}

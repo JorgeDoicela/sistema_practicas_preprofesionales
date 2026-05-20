@@ -384,18 +384,18 @@ function InternshipCard({ internship }: { internship: any }) {
               "w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-xl font-black flex-shrink-0",
               incumplidos > 0 ? "bg-red-50 text-red-600" : pendingReview > 0 ? "bg-amber-50 text-amber-700" : "bg-[#003366]/5 text-[#003366]"
             )}>
-              {internship.student.fullName.charAt(0)}
+              {internship.student?.fullName?.charAt(0) || "U"}
             </div>
             <div className="min-w-0">
-              <h3 className="text-lg font-black text-[#003366] truncate">{internship.student.fullName}</h3>
+              <h3 className="text-lg font-black text-[#003366] truncate">{internship.student?.fullName || t.dashboard.defaultUser}</h3>
               <div className="flex flex-wrap gap-4 mt-1">
                 <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   <Building2 className="w-3 h-3" />
-                  {internship.company.name}
+                  {internship.company?.name || "N/A"}
                 </span>
                 <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   <Calendar className="w-3 h-3" />
-                  {t.tutor.dashboard.card.start}: {new Date(internship.startDate).toLocaleDateString()}
+                  {t.tutor.dashboard.card.start}: {internship.startDate ? new Date(internship.startDate).toLocaleDateString() : "N/A"}
                 </span>
                 <span className={cn(
                   "text-[10px] font-black uppercase tracking-widest",
