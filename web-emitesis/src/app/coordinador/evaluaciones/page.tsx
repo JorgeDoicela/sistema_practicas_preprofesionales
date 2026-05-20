@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
 import { evaluationsService } from "@/services/evaluations.service";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { toast } from "sonner";
 
 interface EvalResult {
   internshipId: string;
@@ -83,7 +84,18 @@ export default function EvaluacionesPage() {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const res: any = await internshipsService.findAll();
+      const userStr = localStorage.getItem("user");
+      let careerId = undefined;
+      if (userStr) {
+        try {
+          const userObj = JSON.parse(userStr);
+          careerId = userObj.careerId;
+        } catch (e) {
+          console.error("Error parsing user from localStorage", e);
+        }
+      }
+
+      const res: any = await internshipsService.findAll(1, 200, careerId);
       const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
       const rows: EvalResult[] = await Promise.all(
         list.map(async (i: any) => {
@@ -128,10 +140,11 @@ export default function EvaluacionesPage() {
       setResults(rows);
     } catch (error) {
       console.error("Error cargando evaluaciones:", error);
+      toast.error(t.common.error || "Error al cargar los datos");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t.common.error]);
 
   useEffect(() => {
     loadData();
