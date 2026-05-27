@@ -167,7 +167,7 @@ export class CertificationService {
     let pdfBuffer: Buffer;
     try {
       const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: 'networkidle0' });
+      await page.setContent(html, { waitUntil: 'networkidle0' as any });
       pdfBuffer = Buffer.from(await page.pdf({
         format: 'A4',
         landscape: true,
