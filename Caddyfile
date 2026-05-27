@@ -1,0 +1,13 @@
+# Configuración de Caddy para producción
+# Gestiona la emisión y renovación automática de certificados SSL (HTTPS) con Let's Encrypt
+
+{$DOMAIN} {
+    # Habilitar compresión para optimizar la transferencia de datos
+    encode gzip zstd
+
+    # Enrutar peticiones dirigidas al backend (NestJS)
+    reverse_proxy /api/* api:5000
+
+    # Enrutar todo el resto de peticiones al frontend (Next.js)
+    reverse_proxy * web:3005
+}

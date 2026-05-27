@@ -143,3 +143,71 @@ jobs:
           push: true
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
+
+  deploy:
+    name: Deploy to AWS VPS
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Create app directory and copy config files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          source: "docker-compose.prod.yml,Caddyfile,backup-db.sh,manage-db.sh"
+          target: "~/emitesis"
+
+      - name: Execute remote deployment commands via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          ENV_PROD: ${{ secrets.ENV_PROD }}
+          DOMAIN: ${{ secrets.DOMAIN }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          envs: GITHUB_TOKEN,GITHUB_ACTOR,ENV_PROD,DOMAIN
+          script: |
+            # Crear directorio si no existe y asegurar ubicacion
+            mkdir -p ~/emitesis
+            cd ~/emitesis
+
+            # Escribir el archivo .env de produccion a partir del secret
+            echo "$ENV_PROD" > .env
+
+            # Asegurar que la variable DOMAIN este presente en el archivo .env para Caddy
+            if ! grep -q "DOMAIN=" .env; then
+              echo "DOMAIN=$DOMAIN" >> .env
+            else
+              sed -i "s/DOMAIN=.*/DOMAIN=$DOMAIN/" .env
+            fi
+
+            # Asegurar permisos de ejecucion para el script de respaldo automatizado
+            chmod +x backup-db.sh
+
+            # Asegurar permisos de ejecucion para el script gestor unificado de base de datos
+            chmod +x manage-db.sh
+
+
+            # Iniciar sesion en GitHub Container Registry para poder descargar las imagenes
+            echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+
+            # Descargar las imagenes mas recientes desde GHCR
+            docker compose -f docker-compose.prod.yml pull
+
+            # Levantar/Actualizar los servicios en segundo plano con eliminacion de contenedores huerfanos
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+
+            # Limpiar imagenes obsoletas o sin etiqueta para evitar consumo innecesario de almacenamiento en el VPS
+            docker image prune -f
+
+

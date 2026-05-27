@@ -1,0 +1,95 @@
+# Orquestación de producción para el sistema EmiTesis
+# Utiliza imágenes precompiladas de GitHub Container Registry (GHCR)
+# Administra SSL y enrutamiento automáticamente a través de Caddy Proxy
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: emitesis-db-prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-emitesis_db}
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-emitesis_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - emitesis-network-prod
+
+  api:
+    image: ghcr.io/jorgedoicela/sistema_practicas_preprofesionales-api:latest
+    container_name: emitesis-api-prod
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: ${API_PORT:-5000}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:password@db:5432/emitesis_db?schema=public}
+      JWT_SECRET: ${JWT_SECRET:-EmitesisSecretKey2026!}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:3005}
+      MAIL_USER: ${MAIL_USER:-}
+      MAIL_PASS: ${MAIL_PASS:-}
+      SKIP_PRISMA_SEED: ${SKIP_PRISMA_SEED:-}
+      RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY:-}
+      BLOB_READ_WRITE_TOKEN: ${BLOB_READ_WRITE_TOKEN:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    volumes:
+      - api_uploads_agreements_prod:/app/uploads/agreements
+      - api_uploads_documents_prod:/app/uploads/documents
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:'+(process.env.PORT||5000)+'/api/health').then(r=>process.exit(r.status===200?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+      start_period: 180s
+    networks:
+      - emitesis-network-prod
+
+  web:
+    image: ghcr.io/jorgedoicela/sistema_practicas_preprofesionales-web:latest
+    container_name: emitesis-web-prod
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: ${WEB_PORT:-3005}
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - emitesis-network-prod
+
+  caddy:
+    image: caddy:2.7-alpine
+    container_name: emitesis-proxy-prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+      - api
+    networks:
+      - emitesis-network-prod
+
+networks:
+  emitesis-network-prod:
+    driver: bridge
+
+volumes:
+  postgres_data_prod:
+  api_uploads_agreements_prod:
+  api_uploads_documents_prod:
+  caddy_data:
+  caddy_config:
