@@ -40,7 +40,7 @@ export class EmailService {
         const raw = this.configService.get<string>('PUBLIC_APP_URL');
         const trimmed = (raw ?? '').trim().replace(/\/$/, '');
         if (trimmed) return trimmed;
-        return 'https://sistema-practicas-preprofesionales.vercel.app';
+        return 'http://localhost:3005';
     }
 
     /**

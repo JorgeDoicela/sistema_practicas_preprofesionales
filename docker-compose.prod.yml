@@ -1,6 +1,5 @@
 # Orquestación de producción para el sistema EmiTesis
-# Utiliza imágenes precompiladas de GitHub Container Registry (GHCR)
-# Administra SSL y enrutamiento automáticamente a través de Caddy Proxy
+# Incluye Caddy Proxy para SSL/HTTPS (usar cuando se active Cloudflare)
 
 services:
   db:
@@ -35,15 +34,15 @@ services:
       JWT_SECRET: ${JWT_SECRET:-EmitesisSecretKey2026!}
       CORS_ORIGINS: ${CORS_ORIGINS:-}
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:3005}
+      WEBAUTHN_RP_ID: ${WEBAUTHN_RP_ID:-localhost}
+      WEBAUTHN_ORIGIN: ${WEBAUTHN_ORIGIN:-http://localhost:3005}
       MAIL_USER: ${MAIL_USER:-}
       MAIL_PASS: ${MAIL_PASS:-}
       SKIP_PRISMA_SEED: ${SKIP_PRISMA_SEED:-}
       RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY:-}
-      BLOB_READ_WRITE_TOKEN: ${BLOB_READ_WRITE_TOKEN:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     volumes:
-      - api_uploads_agreements_prod:/app/uploads/agreements
-      - api_uploads_documents_prod:/app/uploads/documents
+      - api_uploads:/app/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -99,7 +98,6 @@ networks:
 
 volumes:
   postgres_data_prod:
-  api_uploads_agreements_prod:
-  api_uploads_documents_prod:
+  api_uploads_prod:
   caddy_data:
   caddy_config:

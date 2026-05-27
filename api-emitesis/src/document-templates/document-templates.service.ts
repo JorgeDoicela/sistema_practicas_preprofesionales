@@ -61,7 +61,7 @@ export class DocumentTemplatesService {
 
   /**
    * Lista de archivos .docx disponibles como formato en blanco: plantillas por defecto,
-   * más los que existan en disco (uploads/templates) y en el almacenamiento (Blob).
+   * más los que existan en disco (uploads/templates) y en el almacenamiento local.
    */
   async resolveBlankFormatKeys(): Promise<string[]> {
     const set = new Set(this.defaultBlankFormatKeys());
@@ -110,7 +110,7 @@ export class DocumentTemplatesService {
 
   /**
    * Sube un .docx de formato en blanco para poder asignarlo a plantillas del catálogo.
-   * En entorno local/Docker se guarda en uploads/templates; en Vercel, en Blob.
+   * Se guarda en uploads/templates y se registra en el almacenamiento local.
    */
   async uploadBlankTemplate(file: MulterFile): Promise<{ key: string }> {
     if (!file?.buffer?.length) {
@@ -123,12 +123,6 @@ export class DocumentTemplatesService {
     const key = this.toSafeDocxKey(file.originalname);
     const contentType =
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-
-    if (!process.env.VERCEL) {
-      const diskDir = path.join(process.cwd(), 'uploads', 'templates');
-      await fs.mkdir(diskDir, { recursive: true });
-      await fs.writeFile(path.join(diskDir, key), file.buffer);
-    }
 
     await this.storageService.upload(`templates/${key}`, file.buffer, {
       contentType,
@@ -165,18 +159,7 @@ export class DocumentTemplatesService {
       /* archivo ausente en disco */
     }
 
-    try {
-      const listResult = await this.storageService.listFiles();
-      const blob = (listResult.blobs ?? []).find((b) => {
-        const p = (b.pathname || '').replace(/\\/g, '/');
-        return p === `templates/${key}` || p.endsWith(`/templates/${key}`);
-      });
-      if (blob?.url) {
-        await this.storageService.delete(blob.url);
-      }
-    } catch {
-      /* listado o borrado en blob no disponible */
-    }
+    await this.storageService.delete(`templates/${key}`);
 
     return { ok: true };
   }

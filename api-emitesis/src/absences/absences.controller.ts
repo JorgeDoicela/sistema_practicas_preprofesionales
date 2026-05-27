@@ -6,7 +6,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { existsSync, mkdirSync } from 'fs';
-import { tmpdir } from 'os';
 import { AbsencesService } from './absences.service';
 import { CreateAbsenceDto, ReviewAbsenceDto } from './dto/absence.dto';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
@@ -27,8 +26,8 @@ export class AbsencesController {
     FileInterceptor('file', {
       storage: diskStorage({
         destination: (req, file, cb) => {
-          const p = process.env.VERCEL ? tmpdir() : './uploads/absences';
-          if (!process.env.VERCEL && !existsSync(p)) mkdirSync(p, { recursive: true });
+          const p = './uploads/absences';
+          if (!existsSync(p)) mkdirSync(p, { recursive: true });
           cb(null, p);
         },
         filename: (req, file, cb) => {

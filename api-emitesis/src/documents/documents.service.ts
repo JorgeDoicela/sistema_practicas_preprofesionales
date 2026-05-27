@@ -70,7 +70,6 @@ export class DocumentsService {
       );
     }
 
-    // Regla de Negocio: Solo descargar si está dentro del periodo
     const now = new Date();
     if (!document.startDate) {
         throw new BadRequestException('El tutor aún no ha configurado las fechas para este documento');
@@ -80,7 +79,6 @@ export class DocumentsService {
       throw new BadRequestException(`El formato estará disponible a partir del ${document.startDate.toLocaleDateString()}`);
     }
 
-    // Regla de Negocio: Si está aprobado definitivo, no se descarga formato para editar (aunque la regla dice "solo visualización")
     if (document.status === 'APROBADO_DEFINITIVO') {
       throw new BadRequestException('Este documento ya ha sido aprobado definitivamente');
     }
@@ -93,13 +91,12 @@ export class DocumentsService {
       );
     }
 
-    // Si estamos en Vercel Blob (Producción), intentamos buscar la URL del archivo
     const listResult = await this.storageService.listFiles();
-    const blob = listResult.blobs?.find(b => b.pathname.includes(fileName));
+    const file = listResult.blobs?.find(b => b.pathname.includes(fileName));
 
     return { 
       fileName, 
-      url: blob?.url 
+      url: file?.url
     };
   }
 

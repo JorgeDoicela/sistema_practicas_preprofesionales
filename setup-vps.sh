@@ -38,8 +38,10 @@ sudo apt-get install -y ufw
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw allow 22/tcp     # SSH (Pipeline de despliegue y administración)
-sudo ufw allow 80/tcp     # HTTP (Caddy y Let's Encrypt)
-sudo ufw allow 443/tcp    # HTTPS (Acceso seguro)
+sudo ufw allow 80/tcp     # HTTP (futuro Cloudflare + SSL)
+sudo ufw allow 443/tcp    # HTTPS (futuro Cloudflare + SSL)
+sudo ufw allow 3005/tcp    # Frontend Next.js
+sudo ufw allow 5000/tcp    # API NestJS
 sudo ufw --force enable
 sudo ufw status verbose
 
@@ -60,6 +62,6 @@ CRON_JOB="0 3 * * * $HOME/emitesis/backup-db.sh >> $HOME/emitesis/backups/backup
 echo "====================================================================="
 echo "   APROVISIONAMIENTO COMPLETADO CON ÉXITO"
 echo "   - Docker instalado y activo."
-echo "   - Firewall estrictamente bloqueado (solo puertos 22, 80 y 443 abiertos)."
+echo "   - Firewall estrictamente bloqueado (solo puertos 22, 80, 443, 3005 y 5000 abiertos)."
 echo "   - Respaldos diarios automáticos configurados a las 03:00 AM."
 echo "====================================================================="
