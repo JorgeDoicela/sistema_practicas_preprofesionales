@@ -21,17 +21,17 @@ const ABSENCE_TYPES = [
 const statusBadge: Record<string, { text: string; class: string; icon: React.ReactNode }> = {
   PENDIENTE: {
     text: "Pendiente",
-    class: "bg-amber-50 text-amber-700 border-amber-200",
+    class: "text-amber-700",
     icon: <Clock size={11} />,
   },
   APROBADA: {
     text: "Aprobada",
-    class: "bg-green-50 text-green-700 border-green-200",
+    class: "text-green-700",
     icon: <CheckCheck size={11} />,
   },
   RECHAZADA: {
     text: "Rechazada",
-    class: "bg-red-50 text-red-600 border-red-200",
+    class: "text-red-600",
     icon: <XCircle size={11} />,
   },
 };
@@ -43,6 +43,7 @@ export default function AusenciasPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pageError, setPageError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
 
@@ -54,6 +55,7 @@ export default function AusenciasPage() {
 
   const load = async () => {
     setLoading(true);
+    setPageError(null);
     try {
       const userStr = localStorage.getItem("user");
       if (!userStr) return;
@@ -66,6 +68,8 @@ export default function AusenciasPage() {
         const abs: any = await absencesService.findByInternship(active.id);
         setAbsences(Array.isArray(abs) ? abs : []);
       }
+    } catch (err: any) {
+      setPageError(err.message || "Error al cargar el historial de ausencias. Por favor, intente de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -102,7 +106,7 @@ export default function AusenciasPage() {
           data-tour="absences-header"
         >
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
+            <div className="flex items-center gap-2 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4">
               <CalendarOff size={12} /> Mis Ausencias
             </div>
             <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Ausencias Justificadas</h1>
@@ -115,6 +119,16 @@ export default function AusenciasPage() {
             </button>
           )}
         </div>
+
+        {pageError && (
+          <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-700 text-sm font-bold shadow-sm animate-fade-in">
+            <AlertCircle size={18} className="text-red-600 animate-bounce" />
+            <span>{pageError}</span>
+            <button onClick={load} className="ml-auto underline hover:text-red-900 transition-colors uppercase tracking-widest text-[10px] font-black">
+              Reintentar
+            </button>
+          </div>
+        )}
 
         <AnimatePresence>
           {success && (
@@ -149,20 +163,17 @@ export default function AusenciasPage() {
                   className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-4">
-                      <div className={cn(
-                        "w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0",
-                        ab.status === "APROBADA" ? "bg-green-50" : ab.status === "RECHAZADA" ? "bg-red-50" : "bg-amber-50"
-                      )}>
-                        <CalendarOff size={18} className={
+                      <div className="shrink-0 mt-0.5">
+                        <CalendarOff size={22} className={
                           ab.status === "APROBADA" ? "text-green-600" : ab.status === "RECHAZADA" ? "text-red-500" : "text-amber-600"
                         } />
                       </div>
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <p className="font-black text-[#003366]">
-                            {new Date(ab.date).toLocaleDateString("es-EC", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                            {new Date(ab.date).toLocaleDateString("es-EC", { timeZone: "UTC", weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                           </p>
-                          <span className={cn("flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border", badge.class)}>
+                          <span className={cn("flex items-center gap-1 text-[10px] font-black uppercase tracking-widest", badge.class)}>
                             {badge.icon} {badge.text}
                           </span>
                         </div>

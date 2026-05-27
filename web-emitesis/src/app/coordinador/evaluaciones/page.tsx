@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
 import { evaluationsService } from "@/services/evaluations.service";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { toast } from "sonner";
 
 interface EvalResult {
   internshipId: string;
@@ -63,11 +64,11 @@ function StarRow({ score }: { score: number }) {
 
 function PercentageBadge({ pct }: { pct: number }) {
   const color =
-    pct >= 80 ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
-    pct >= 60 ? "bg-amber-50 text-amber-700 border-amber-100" :
-    "bg-rose-50 text-rose-700 border-rose-100";
+    pct >= 80 ? "text-emerald-700" :
+    pct >= 60 ? "text-amber-700" :
+    "text-rose-700";
   return (
-    <span className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border", color)}>
+    <span className={cn("text-[10px] font-black uppercase tracking-widest", color)}>
       {pct}%
     </span>
   );
@@ -83,7 +84,18 @@ export default function EvaluacionesPage() {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const res: any = await internshipsService.findAll();
+      const userStr = localStorage.getItem("user");
+      let careerId = undefined;
+      if (userStr) {
+        try {
+          const userObj = JSON.parse(userStr);
+          careerId = userObj.careerId;
+        } catch (e) {
+          console.error("Error parsing user from localStorage", e);
+        }
+      }
+
+      const res: any = await internshipsService.findAll(1, 200, careerId);
       const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
       const rows: EvalResult[] = await Promise.all(
         list.map(async (i: any) => {
@@ -128,10 +140,11 @@ export default function EvaluacionesPage() {
       setResults(rows);
     } catch (error) {
       console.error("Error cargando evaluaciones:", error);
+      toast.error(t.common.error || "Error al cargar los datos");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t.common.error]);
 
   useEffect(() => {
     loadData();
@@ -258,10 +271,10 @@ export default function EvaluacionesPage() {
                         </span>
                         <span
                           className={cn(
-                            "px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest",
+                            "text-[9px] font-black uppercase tracking-widest",
                             r.status === "Finalizado"
-                              ? "bg-emerald-50 text-emerald-700"
-                              : "bg-amber-50 text-amber-700",
+                              ? "text-emerald-700"
+                              : "text-amber-700",
                           )}
                         >
                           {(t.tutor.internshipStatus as any)[r.status] || r.status}
@@ -274,13 +287,13 @@ export default function EvaluacionesPage() {
                       {r.evaluation ? (
                         <>
                           <PercentageBadge pct={r.evaluation.percentage} />
-                          <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100">
+                          <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             {t.coordinator.evaluations.status.evaluated}
                           </div>
                         </>
                       ) : (
-                        <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+                        <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
                           <Clock className="w-3.5 h-3.5" />
                           {t.coordinator.evaluations.status.notEvaluated}
                         </div>

@@ -185,8 +185,8 @@ export default function StudentDetailPage() {
                 <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em]">{t.tutor.studentDetail.title}</span>
                 <div className="h-1 w-1 rounded-full bg-slate-300" />
                 <span className={cn(
-                   "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full",
-                   internship?.status === 'Finalizado' ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
+                   "text-[10px] font-black uppercase tracking-widest",
+                   internship?.status === 'Finalizado' ? "text-emerald-600" : "text-blue-600"
                 )}>
                   {(t.tutor.internshipStatus as any)[internship?.status] || internship?.status}
                 </span>
@@ -362,8 +362,8 @@ export default function StudentDetailPage() {
                           )}
                           <div className="mt-4 flex items-center gap-2">
                             <span className={cn(
-                              "text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter",
-                              visit.type === 'PRESENCIAL' ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700"
+                              "text-[8px] font-black uppercase tracking-tighter",
+                              visit.type === 'PRESENCIAL' ? "text-emerald-700" : "text-blue-700"
                             )}>
                               {visit.type === 'PRESENCIAL' ? t.tutor.studentDetail.visits.presencial : t.tutor.studentDetail.visits.virtual}
                             </span>

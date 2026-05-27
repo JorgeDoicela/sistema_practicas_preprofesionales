@@ -15,8 +15,9 @@ import {
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { es, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface LopdpLog {
   id: string;
@@ -32,6 +33,9 @@ interface LopdpLog {
 }
 
 export default function LopdpLogsPage() {
+  const { locale, t } = useLanguage();
+  const dateLocale = locale === "es" ? es : enUS;
+
   const [logs, setLogs] = useState<LopdpLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -59,7 +63,7 @@ export default function LopdpLogsPage() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <Loader2 className="w-10 h-10 text-[#003366] animate-spin" />
       </div>
     );
@@ -75,15 +79,15 @@ export default function LopdpLogsPage() {
             className="flex items-center gap-2 text-slate-400 hover:text-[#003366] transition-colors text-xs font-black uppercase tracking-widest mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
-            Volver a Privacidad
+            {t.admin.privacy.logs.backBtn}
           </Link>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-[#003366] rounded-2xl flex items-center justify-center shadow-lg shadow-blue-900/20">
               <ShieldCheck className="text-[#C5A059] w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-[#003366] tracking-tight">Registro de Consentimientos LOPDP</h1>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Auditoría de Aceptación — Ley de Protección de Datos</p>
+              <h1 className="text-2xl font-black text-[#003366] tracking-tight">{t.admin.privacy.logs.title}</h1>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{t.admin.privacy.logs.subtitle}</p>
             </div>
           </div>
         </div>
@@ -95,7 +99,7 @@ export default function LopdpLogsPage() {
           </div>
           <input
             type="text"
-            placeholder="Buscar por nombre, email o IP..."
+            placeholder={t.admin.privacy.logs.searchPlaceholder}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="bg-white border border-slate-200 rounded-2xl py-3 pl-12 pr-6 text-xs font-semibold focus:ring-2 focus:ring-[#003366]/10 w-full md:w-80 transition-all outline-none"
@@ -106,19 +110,19 @@ export default function LopdpLogsPage() {
       {/* Stats Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Aceptaciones</p>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{t.admin.privacy.logs.statTotal}</p>
           <p className="text-3xl font-black text-[#003366]">{logs.length}</p>
         </div>
         <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Versión Actual</p>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{t.admin.privacy.logs.statVersion}</p>
           <p className="text-3xl font-black text-[#C5A059]">2026 (v1.0)</p>
         </div>
         <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Última Actividad</p>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{t.admin.privacy.logs.statLast}</p>
           <p className="text-sm font-bold text-[#003366]">
             {logs.length > 0 
-              ? format(new Date(logs[0].acceptedAt), "PPP", { locale: es }) 
-              : "Sin registros"}
+              ? format(new Date(logs[0].acceptedAt), "PPP", { locale: dateLocale }) 
+              : t.admin.privacy.logs.noActivity}
           </p>
         </div>
       </div>
@@ -129,10 +133,10 @@ export default function LopdpLogsPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50/50 border-b border-slate-100">
-                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Usuario</th>
-                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Información Técnica</th>
-                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha y Versión</th>
-                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Rol</th>
+                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.admin.privacy.logs.thUser}</th>
+                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.admin.privacy.logs.thTech}</th>
+                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.admin.privacy.logs.thDateVersion}</th>
+                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">{t.admin.privacy.logs.thRole}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -170,19 +174,19 @@ export default function LopdpLogsPage() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 text-[10px] font-black text-[#003366] uppercase">
                         <Calendar className="w-3 h-3" />
-                        {format(new Date(log.acceptedAt), "d MMM, yyyy HH:mm", { locale: es })}
+                        {format(new Date(log.acceptedAt), "d MMM, yyyy HH:mm", { locale: dateLocale })}
                       </div>
-                      <span className="inline-block px-2 py-0.5 rounded-full bg-[#C5A059]/10 text-[#C5A059] text-[9px] font-black uppercase">
+                      <span className="inline-block text-[#C5A059] text-[9px] font-black uppercase">
                         v{log.version}
                       </span>
                     </div>
                   </td>
                   <td className="px-8 py-6 text-right">
                     <span className={cn(
-                      "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest",
-                      log.user.role === 'ADMIN' ? "bg-purple-100 text-purple-600" :
-                      log.user.role === 'COORDINADOR' ? "bg-blue-100 text-blue-600" :
-                      "bg-slate-100 text-slate-600"
+                      "text-[9px] font-black uppercase tracking-widest",
+                      log.user.role === 'ADMIN' ? "text-purple-600" :
+                      log.user.role === 'COORDINADOR' ? "text-blue-600" :
+                      "text-slate-600"
                     )}>
                       {log.user.role}
                     </span>
@@ -195,14 +199,14 @@ export default function LopdpLogsPage() {
         {filteredLogs.length === 0 && (
           <div className="p-20 text-center">
             <User className="w-12 h-12 text-slate-200 mx-auto mb-4" />
-            <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No se encontraron registros de consentimiento</p>
+            <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{t.admin.privacy.logs.emptyText}</p>
           </div>
         )}
       </div>
 
       <footer className="text-center pb-10">
         <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">
-          Praxis Hub LOPDP Auditor — v2.0
+          {t.admin.privacy.logs.auditorFooter}
         </p>
       </footer>
     </div>

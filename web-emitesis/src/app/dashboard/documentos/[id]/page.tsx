@@ -36,6 +36,7 @@ import { TwoFactorModal } from "@/components/auth/TwoFactorModal";
 import type { PdfReviewAnnotationsPayload } from "@/lib/pdf-review-annotations";
 import { parseReviewAnnotations } from "@/lib/pdf-review-annotations";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { toast } from "sonner";
 
 const PdfLoading = () => {
   const { t } = useLanguage();
@@ -72,7 +73,7 @@ export default function DocumentDetailPage() {
   const [startDate, setStartDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [is2faModalOpen, setIs2faModalOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<((code: string) => Promise<void>) | null>(null);
+  const pendingActionRef = useRef<((code: string) => Promise<void>) | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Review states
@@ -116,10 +117,11 @@ export default function DocumentDetailPage() {
       if (userStr) setCurrentUser(JSON.parse(userStr));
     } catch (error) {
       console.error("Error loading data:", error);
+      toast.error(t.common.error || "Error al cargar los datos");
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t.common.error]);
 
   useEffect(() => {
     if (id) {
@@ -129,7 +131,7 @@ export default function DocumentDetailPage() {
 
   const handleEditClick = (doc: any) => {
     if (doc.status === 'APROBADO_DEFINITIVO') {
-      alert(t.documents.detail.errors.modifiedApproved);
+      toast.error(t.documents.detail.errors.modifiedApproved);
       return;
     }
     setSelectedDoc(doc);
@@ -145,16 +147,16 @@ export default function DocumentDetailPage() {
   const handleSaveDates = async () => {
     if (!startDate || !dueDate) return;
     if (new Date(startDate) > new Date(dueDate)) {
-      alert(t.documents.detail.errors.invalidDateRange);
+      toast.error(t.documents.detail.errors.invalidDateRange);
       return;
     }
 
     setSaving(true);
     try {
       if (currentUser?.isTwoFactorEnabled) {
-          setPendingAction(async (code: string) => {
+          pendingActionRef.current = async (code: string) => {
             await documentsService.updateDates(selectedDoc.id, startDate, dueDate, code);
-          });
+          };
           setIs2faModalOpen(true);
           setSaving(false);
           return;
@@ -162,8 +164,9 @@ export default function DocumentDetailPage() {
       await documentsService.updateDates(selectedDoc.id, startDate, dueDate);
       await loadData();
       setIsDrawerOpen(false);
+      toast.success(t.common.success.generic);
     } catch (error: any) {
-      alert(error.message);
+      toast.error(error.message || t.common.errors.generic);
     } finally {
       setSaving(false);
     }
@@ -194,7 +197,7 @@ export default function DocumentDetailPage() {
       setComments([...comments, comment]);
       setNewComment("");
     } catch (e: any) {
-      alert(e.message);
+      toast.error(e.message || t.common.errors.generic);
     }
   };
 
@@ -204,18 +207,18 @@ export default function DocumentDetailPage() {
     setIsSigning(true);
     try {
       if (currentUser?.isTwoFactorEnabled) {
-          setPendingAction(async (code: string) => {
+          pendingActionRef.current = async (code: string) => {
             await documentsService.signDocument(selectedDoc.id, "Aprobación institucional", code);
-          });
+          };
           setIs2faModalOpen(true);
           return;
       }
       await documentsService.signDocument(selectedDoc.id, "Aprobación institucional");
-      alert(t.common.success.signed);
+      toast.success(t.common.success.signed);
       await loadData();
       setIsReviewDrawerOpen(false);
     } catch (e: any) {
-      alert(e.message);
+      toast.error(e.message || t.common.errors.generic);
     } finally {
       setIsSigning(false);
     }
@@ -236,7 +239,7 @@ export default function DocumentDetailPage() {
       : (type === 'APPROVE' ? 'APROBADO_TUTOR' : 'RECHAZADO_TUTOR');
 
     if (type === 'REJECT' && !observations.trim()) {
-      alert(t.documents.detail.errors.observationsRequired);
+      toast.error(t.documents.detail.errors.observationsRequired);
       return;
     }
 
@@ -251,13 +254,13 @@ export default function DocumentDetailPage() {
       const reviewPayload = { status, observations, annotations: reviewAnnotationsRef.current };
       
       if (currentUser?.isTwoFactorEnabled) {
-          setPendingAction(async (code: string) => {
+          pendingActionRef.current = async (code: string) => {
             if (isCoord) {
               await documentsService.coordinatorReviewDocument(selectedDoc.id, reviewPayload, code);
             } else {
               await documentsService.reviewDocument(selectedDoc.id, reviewPayload, code);
             }
-          });
+          };
           setIs2faModalOpen(true);
           setSaving(false);
           return;
@@ -269,28 +272,28 @@ export default function DocumentDetailPage() {
         await documentsService.reviewDocument(selectedDoc.id, reviewPayload);
       }
       
-      alert(t.common.success.generic);
+      toast.success(t.common.success.generic);
       await loadData();
       setIsReviewDrawerOpen(false);
     } catch (error: any) {
-      alert(error.message);
+      toast.error(error.message || t.common.errors.generic);
     } finally {
       setSaving(false);
     }
   };
 
   const handle2faConfirm = async (code: string) => {
-      if (!pendingAction) return;
+      if (!pendingActionRef.current) return;
       try {
-          const action = (pendingAction as any);
-          await action(code);
-          alert(t.common.success.generic);
+          await pendingActionRef.current(code);
+          toast.success(t.common.success.generic);
           setIs2faModalOpen(false);
-          setPendingAction(null);
+          pendingActionRef.current = null;
           setIsDrawerOpen(false);
           setIsReviewDrawerOpen(false);
           await loadData();
-      } catch (error) {
+      } catch (error: any) {
+          toast.error(error.message || t.common.errors.generic);
           throw error;
       }
   };
@@ -301,6 +304,33 @@ export default function DocumentDetailPage() {
         <div className="w-12 h-12 border-4 border-slate-200 border-t-[#003366] rounded-full animate-spin"></div>
         <p className="text-slate-500 font-bold">{t.documents.detail.loading}</p>
       </div>
+    );
+  }
+
+  if (!internship) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 text-center px-4">
+          <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center text-rose-500 shadow-inner">
+            <AlertCircle className="w-10 h-10" />
+          </div>
+          <div className="max-w-md">
+            <h2 className="text-2xl font-black text-[#003366] tracking-tight mb-2">
+              Asignación no encontrada
+            </h2>
+            <p className="text-slate-500 text-sm font-medium leading-relaxed">
+              La práctica o asignación solicitada no existe, ha sido eliminada o no tienes permisos suficientes para visualizarla.
+            </p>
+          </div>
+          <button 
+            onClick={() => router.push('/dashboard/documentos')}
+            className="px-8 py-4 bg-[#003366] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#003366]/90 transition-all shadow-lg shadow-blue-900/10 flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Volver a Documentos
+          </button>
+        </div>
+      </DashboardLayout>
     );
   }
 
@@ -332,7 +362,7 @@ export default function DocumentDetailPage() {
 
           <div className="flex items-center gap-3 shrink-0">
             {internship?.status != null && internship?.status !== "" && (
-              <span className="text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-2xl bg-white text-[#003366] border border-slate-200 shadow-sm">
+              <span className="text-[9px] font-black uppercase tracking-widest text-[#003366]">
                 {String(internship.status)}
               </span>
             )}
@@ -342,9 +372,9 @@ export default function DocumentDetailPage() {
                   setIsSyncingSigafi(true);
                   try {
                     const res = await internshipsService.syncSigafi(id as string);
-                    alert(`${t.documents.detail.syncSigafi}: ${res.externalData.isEnrolled ? 'Estudiante MATRICULADO' : 'No matriculado'} en ${res.externalData.lastSemester}`);
+                    toast.success(`${t.documents.detail.syncSigafi}: ${res.externalData.isEnrolled ? 'Estudiante MATRICULADO' : 'No matriculado'} en ${res.externalData.lastSemester}`);
                   } catch (e: any) {
-                    alert(e.message);
+                    toast.error(e.message || t.common.errors.generic);
                   } finally {
                     setIsSyncingSigafi(false);
                   }
@@ -381,7 +411,7 @@ export default function DocumentDetailPage() {
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t.documents.detail.startDate}</p>
                     <p className="font-black text-[#003366] flex items-center gap-2">
                        <CalendarDays className="w-4 h-4 text-slate-300" />
-                       {new Date(internship?.startDate).toLocaleDateString()}
+                       {internship?.startDate ? new Date(internship.startDate).toLocaleDateString() : "N/A"}
                     </p>
                   </div>
                   <div>
@@ -425,9 +455,9 @@ export default function DocumentDetailPage() {
                     <div className="space-y-3">
                       {attendanceHistory.slice(0, 3).map((h: any) => (
                         <div key={h.id} className="flex items-center justify-between text-[11px] font-bold text-[#003366]">
-                          <span>{new Date(h.checkIn).toLocaleDateString()}</span>
+                          <span>{h.checkIn ? new Date(h.checkIn).toLocaleDateString() : "N/A"}</span>
                           <span className="text-emerald-600">
-                            {new Date(h.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {h.checkIn ? new Date(h.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A"}
                           </span>
                         </div>
                       ))}
@@ -491,10 +521,10 @@ export default function DocumentDetailPage() {
                                <h4 className="font-black text-[#003366] mb-1 group-hover:text-[#C5A059] transition-colors flex flex-wrap items-center gap-2">
                                  {doc.name}
                                  {doc.isCertificateSlot && (
-                                   <span className="text-[8px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 font-black tracking-wider">{t.documents.detail.certificate}</span>
+                                   <span className="text-[8px] text-violet-800 font-black tracking-wider">{t.documents.detail.certificate}</span>
                                  )}
                                  {doc.isRequired === false && !doc.isCertificateSlot && (
-                                   <span className="text-[8px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-black tracking-wider">{t.documents.detail.optional}</span>
+                                   <span className="text-[8px] text-slate-600 font-black tracking-wider">{t.documents.detail.optional}</span>
                                  )}
                                </h4>
                                <div className="flex flex-wrap gap-4 items-center">
@@ -508,7 +538,7 @@ export default function DocumentDetailPage() {
                                   </div>
                                   </div>
                                   {doc.isDigitallySigned && (
-                                    <div className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.15em] bg-emerald-600 text-white shadow-lg flex items-center gap-1.5 animate-pulse">
+                                    <div className="text-[9px] font-black uppercase tracking-[0.15em] text-emerald-600 flex items-center gap-1.5 animate-pulse">
                                        <Stamp size={10} /> {t.documents.detail.veracitySeal}
                                     </div>
                                   )}
@@ -829,7 +859,7 @@ export default function DocumentDetailPage() {
         isOpen={is2faModalOpen}
         onClose={() => {
             setIs2faModalOpen(false);
-            setPendingAction(null);
+            pendingActionRef.current = null;
         }}
         onConfirm={handle2faConfirm}
       />

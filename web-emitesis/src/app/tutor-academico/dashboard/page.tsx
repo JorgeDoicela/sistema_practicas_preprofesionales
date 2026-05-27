@@ -40,13 +40,13 @@ import {
 } from "recharts";
 
 const DOC_STATUS_COLOR: Record<string, string> = {
-  PENDIENTE: "bg-slate-100 text-slate-500",
-  EN_REVISION_TUTOR: "bg-blue-100 text-blue-700",
-  APROBADO_TUTOR: "bg-amber-100 text-amber-700",
-  RECHAZADO_TUTOR: "bg-rose-100 text-rose-700",
-  APROBADO_DEFINITIVO: "bg-emerald-100 text-emerald-700",
-  RECHAZADO_COORDINADOR: "bg-orange-100 text-orange-700",
-  INCUMPLIDO: "bg-red-100 text-red-700",
+  PENDIENTE: "text-slate-500",
+  EN_REVISION_TUTOR: "text-blue-700",
+  APROBADO_TUTOR: "text-amber-700",
+  RECHAZADO_TUTOR: "text-rose-700",
+  APROBADO_DEFINITIVO: "text-emerald-700",
+  RECHAZADO_COORDINADOR: "text-orange-700",
+  INCUMPLIDO: "text-red-700",
 };
 
 export default function TutorAcademicoDashboardPage() {
@@ -384,22 +384,22 @@ function InternshipCard({ internship }: { internship: any }) {
               "w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-xl font-black flex-shrink-0",
               incumplidos > 0 ? "bg-red-50 text-red-600" : pendingReview > 0 ? "bg-amber-50 text-amber-700" : "bg-[#003366]/5 text-[#003366]"
             )}>
-              {internship.student.fullName.charAt(0)}
+              {internship.student?.fullName?.charAt(0) || "U"}
             </div>
             <div className="min-w-0">
-              <h3 className="text-lg font-black text-[#003366] truncate">{internship.student.fullName}</h3>
+              <h3 className="text-lg font-black text-[#003366] truncate">{internship.student?.fullName || t.dashboard.defaultUser}</h3>
               <div className="flex flex-wrap gap-4 mt-1">
                 <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   <Building2 className="w-3 h-3" />
-                  {internship.company.name}
+                  {internship.company?.name || "N/A"}
                 </span>
                 <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   <Calendar className="w-3 h-3" />
-                  {t.tutor.dashboard.card.start}: {new Date(internship.startDate).toLocaleDateString()}
+                  {t.tutor.dashboard.card.start}: {internship.startDate ? new Date(internship.startDate).toLocaleDateString() : "N/A"}
                 </span>
                 <span className={cn(
-                  "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
-                  internship.status === "Finalizado" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                  "text-[10px] font-black uppercase tracking-widest",
+                  internship.status === "Finalizado" ? "text-emerald-700" : "text-amber-700"
                 )}>
                   {internship.status}
                 </span>
@@ -410,22 +410,22 @@ function InternshipCard({ internship }: { internship: any }) {
           {/* Document badges */}
           <div className="flex flex-wrap items-center gap-3">
             {visitRequired && (
-              <Badge icon={<MapPin className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.visitRequired} color="bg-violet-50 text-violet-700 border-violet-100" />
+              <Badge icon={<MapPin className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.visitRequired} color="text-violet-700" />
             )}
             {withoutDates > 0 && (
-              <Badge icon={<Clock className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.noDate.replace("{count}", String(withoutDates))} color="bg-slate-100 text-slate-500" />
+              <Badge icon={<Clock className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.noDate.replace("{count}", String(withoutDates))} color="text-slate-500" />
             )}
             {soon > 0 && (
-              <Badge icon={<AlertTriangle className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.soon.replace("{count}", String(soon))} color="bg-orange-50 text-orange-600 animate-pulse" />
+              <Badge icon={<AlertTriangle className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.soon.replace("{count}", String(soon))} color="text-orange-600 animate-pulse" />
             )}
             {pendingReview > 0 && (
-              <Badge icon={<FileCheck className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.toReview.replace("{count}", String(pendingReview))} color="bg-amber-50 text-amber-700 animate-pulse" />
+              <Badge icon={<FileCheck className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.toReview.replace("{count}", String(pendingReview))} color="text-amber-700 animate-pulse" />
             )}
             {incumplidos > 0 && (
-              <Badge icon={<XCircle className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.incumplido.replace("{count}", String(incumplidos))} color="bg-red-50 text-red-700 animate-pulse" />
+              <Badge icon={<XCircle className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.incumplido.replace("{count}", String(incumplidos))} color="text-red-700 animate-pulse" />
             )}
             {approved > 0 && (
-              <Badge icon={<CheckCircle2 className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.approved.replace("{count}", String(approved)).replace("{total}", "7")} color="bg-emerald-50 text-emerald-700" />
+              <Badge icon={<CheckCircle2 className="w-3.5 h-3.5" />} label={t.tutor.dashboard.card.approved.replace("{count}", String(approved)).replace("{total}", "7")} color="text-emerald-700" />
             )}
 
             <Link
@@ -496,8 +496,8 @@ function InternshipCard({ internship }: { internship: any }) {
                     </span>
                   </div>
                   <span className={cn(
-                    "px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest",
-                    DOC_STATUS_COLOR[doc.status] ?? "bg-slate-100 text-slate-500"
+                    "text-[9px] font-black uppercase tracking-widest",
+                    DOC_STATUS_COLOR[doc.status] ?? "text-slate-500"
                   )}>
                     {(t.tutor.documentStatus as any)[doc.status] ?? doc.status}
                   </span>
@@ -512,7 +512,7 @@ function InternshipCard({ internship }: { internship: any }) {
 
 function Badge({ icon, label, color }: { icon: React.ReactNode; label: string; color: string }) {
   return (
-    <div className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-transparent", color)}>
+    <div className={cn("flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest", color)}>
       {icon}
       {label}
     </div>

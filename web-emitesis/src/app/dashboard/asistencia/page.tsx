@@ -494,7 +494,7 @@ export default function AsistenciaPage() {
                   ? [{ label: "Sede principal", lat: (internship as any).lat, lng: (internship as any).lng, radiusM: 200 }]
                   : [];
               if (locs.length === 0) return (
-                <div className="flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-600 rounded-xl">
+                <div className="flex items-center gap-2 text-rose-600">
                   <AlertCircle className="w-4 h-4" />
                   <span className="text-[10px] font-black uppercase tracking-widest">{t.asistencia.requirements.noLocations}</span>
                 </div>
@@ -502,7 +502,7 @@ export default function AsistenciaPage() {
               return (
                 <div className="flex flex-col gap-1 items-end">
                   {locs.map((loc, i) => (
-                    <div key={i} className="flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-700 rounded-xl">
+                    <div key={i} className="flex items-center gap-2 text-emerald-700">
                       <MapPin className="w-3.5 h-3.5" />
                       <span className="text-[9px] font-black uppercase tracking-widest">{loc.label} · {loc.radiusM ?? 200}m</span>
                     </div>
@@ -510,11 +510,11 @@ export default function AsistenciaPage() {
                 </div>
               );
             })()}
-            <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-xl">
+            <div className="flex items-center gap-2 text-blue-700">
               <ShieldCheck className="w-4 h-4" />
               <span className="text-[10px] font-black uppercase tracking-widest">{t.asistencia.requirements.biometrics}</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-700 rounded-xl">
+            <div className="flex items-center gap-2 text-purple-700">
               <Camera className="w-4 h-4" />
               <span className="text-[10px] font-black uppercase tracking-widest">{t.asistencia.requirements.photoRequired}</span>
             </div>
@@ -1144,13 +1144,12 @@ export default function AsistenciaPage() {
                       />
                     )}
 
-                    {/* Badge de precisión GPS */}
                     {lastGpsAccuracy !== null && (
                       <div className={cn(
-                        "flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-bold",
-                        getAccuracyLevel(lastGpsAccuracy) === "alta"  ? "bg-emerald-50 text-emerald-700 border border-emerald-100" :
-                        getAccuracyLevel(lastGpsAccuracy) === "media" ? "bg-amber-50 text-amber-700 border border-amber-100" :
-                        "bg-rose-50 text-rose-700 border border-rose-100"
+                        "flex items-center gap-2 text-[10px] font-bold",
+                        getAccuracyLevel(lastGpsAccuracy) === "alta"  ? "text-emerald-700" :
+                        getAccuracyLevel(lastGpsAccuracy) === "media" ? "text-amber-700" :
+                        "text-rose-700"
                       )}>
                         {getAccuracyLevel(lastGpsAccuracy) !== "baja"
                           ? <Wifi className="w-3.5 h-3.5" />
@@ -1329,7 +1328,7 @@ export default function AsistenciaPage() {
 // ── Sub-componentes ────────────────────────────────────────────────────────
 function StepBadge({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
   return (
-    <span className="flex items-center gap-1 px-2 py-0.5 bg-slate-100 rounded-lg text-[8px] font-black text-slate-500 uppercase tracking-tight">
+    <span className="flex items-center gap-1 text-[8px] font-black text-slate-500 uppercase tracking-tight">
       <Icon className="w-2.5 h-2.5" />
       {label}
     </span>
@@ -1373,7 +1372,7 @@ function HistoryRow({ record, expanded, onToggle }: {
                   </span>
                 </div>
               ) : (
-                <span className="px-2 py-0.5 bg-amber-50 rounded text-[9px] font-black text-amber-600 uppercase">{t.common.pending}</span>
+                <span className="text-[9px] font-black text-amber-600 uppercase">{t.common.pending}</span>
               )}
             </div>
           </div>

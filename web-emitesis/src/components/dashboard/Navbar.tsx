@@ -28,14 +28,22 @@ export function Navbar({
     const { t } = useLanguage();
 
     useEffect(() => {
-        const savedUser = localStorage.getItem("user");
-        if (savedUser) {
-            setTimeout(() => setUser(JSON.parse(savedUser)), 0);
-        }
+        const loadUser = () => {
+            const savedUser = localStorage.getItem("user");
+            if (savedUser) {
+                setUser(JSON.parse(savedUser));
+            }
+        };
+        loadUser();
+        window.addEventListener("user-updated", loadUser);
 
         const handleScroll = () => setScrolled(window.scrollY > 20);
         window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
+
+        return () => {
+            window.removeEventListener("user-updated", loadUser);
+            window.removeEventListener("scroll", handleScroll);
+        };
     }, []);
 
     const handleLogout = () => {

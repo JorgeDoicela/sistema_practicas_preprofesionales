@@ -129,15 +129,37 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       try {
         const parts = tok.split('.');
         if (parts.length !== 3) return true;
-        const payload = JSON.parse(window.atob(parts[1]));
+        
+        // Base64URL to standard Base64 conversion
+        let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+        
+        // Add required padding characters if missing
+        const pad = base64.length % 4;
+        if (pad) {
+          base64 += '='.repeat(4 - pad);
+        }
+        
+        // Decode using atob with safe UTF-8 decoding support
+        const decoded = window.atob(base64);
+        const payload = JSON.parse(
+          decodeURIComponent(
+            decoded
+              .split('')
+              .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+              .join('')
+          )
+        );
+        
         if (payload.exp && Date.now() >= payload.exp * 1000) {
           return true; // Expirado
         }
         return false;
       } catch (e) {
+        console.error("[isTokenExpired] Failed to decode token:", e);
         return true;
       }
     };
+
 
     const validateSession = () => {
       const token = localStorage.getItem("token");

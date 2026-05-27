@@ -178,7 +178,6 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
 
     const socketUrl = API_URL.replace("/api", "");
     const newSocket = io(`${socketUrl}/chat`, {
-      query: { token: savedToken },
       auth: { token: savedToken },
       transports: ["polling", "websocket"],
       reconnectionAttempts: 5,

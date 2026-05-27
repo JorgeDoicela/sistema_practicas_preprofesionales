@@ -36,6 +36,7 @@ import type { PdfReviewAnnotationsPayload } from "@/lib/pdf-review-annotations";
 import { parseReviewAnnotations } from "@/lib/pdf-review-annotations";
 import { aiService } from "@/services/ai.service";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { toast } from "sonner";
 
 const DocumentPdfReviewEditor = dynamic(
   () =>
@@ -150,7 +151,7 @@ export default function GestionEstudiantesPage() {
 
   const handleReviewSubmit = async (status: 'APROBADO_DEFINITIVO' | 'RECHAZADO_COORDINADOR') => {
     if (status === 'RECHAZADO_COORDINADOR' && !observations.trim()) {
-      alert(t.coordinator.students.drawerReview.errorObs);
+      toast.error(t.coordinator.students.drawerReview.errorObs);
       return;
     }
 
@@ -161,7 +162,7 @@ export default function GestionEstudiantesPage() {
         observations,
         annotations: reviewAnnotationsRef.current,
       });
-      alert(status === 'APROBADO_DEFINITIVO' ? t.common.success.generic : t.common.success.generic); // Or specific ones if added
+      toast.success(status === 'APROBADO_DEFINITIVO' ? t.common.success.generic : t.common.success.generic); // Or specific ones if added
       
       // Recargar datos para actualizar elegibilidad
       await loadData();
@@ -172,7 +173,7 @@ export default function GestionEstudiantesPage() {
       
       setIsReviewDrawerOpen(false);
     } catch (error: any) {
-      alert(error.message);
+      toast.error(error.message || t.common.errors.generic);
     } finally {
       setSaving(false);
     }
@@ -186,11 +187,11 @@ export default function GestionEstudiantesPage() {
     setGeneratingCertId(internshipId);
     try {
       const result = await certificationService.generateCertificate(internshipId);
-      alert(t.common.success.generic);
+      toast.success(t.common.success.generic);
       window.open(result.url, '_blank');
       await loadData();
     } catch (error: any) {
-      alert(error.response?.data?.message || t.coordinator.students.errors.cert);
+      toast.error(error.response?.data?.message || t.coordinator.students.errors.cert);
     } finally {
       setGeneratingCertId(null);
     }
@@ -200,7 +201,7 @@ export default function GestionEstudiantesPage() {
     try {
       await reportsService.exportAttendanceExcel(internshipId);
     } catch (error) {
-      alert(t.coordinator.students.errors.exportAttendance);
+      toast.error(t.coordinator.students.errors.exportAttendance);
     }
   };
 
@@ -213,7 +214,7 @@ export default function GestionEstudiantesPage() {
       setStatusModal(null);
       setStatusReason("");
     } catch (error: any) {
-      alert(error.message || t.coordinator.students.errors.changeStatus);
+      toast.error(error.message || t.coordinator.students.errors.changeStatus);
     } finally {
       setChangingStatus(false);
     }
@@ -236,7 +237,7 @@ export default function GestionEstudiantesPage() {
       setAiAnalysis(prev => ({ ...prev, [i.id]: res }));
     } catch (e) {
       console.error("AI Analysis error:", e);
-      alert(t.coordinator.students.errors.aiAnalysis);
+      toast.error(t.coordinator.students.errors.aiAnalysis);
     } finally {
       setAnalyzingId(null);
     }
@@ -568,35 +569,35 @@ function StudentInternshipCard({
                     {t.coordinator.students.card.tutor}: <span className="text-[#003366]">{internship.tutor.fullName}</span>
                  </div>
                  {internship.career && (
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#003366] bg-slate-100 px-3 py-1 rounded-full">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#003366]">
                        <Building2 className="w-3.5 h-3.5 text-[#C5A059]" />
                        {t.coordinator.students.card.career}: {internship.career.name}
                     </div>
                   )}
                   {internship.finalGrade > 0 && (
-                     <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white bg-[#003366] px-3 py-1 rounded-full shadow-sm">
+                     <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#003366]">
                         <FileBadge className="w-3.5 h-3.5 text-[#C5A059]" />
                         {t.coordinator.students.card.finalGrade}: {internship.finalGrade.toFixed(2)}
                      </div>
                   )}
-                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
+                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-600">
                     <Clock className="w-3.5 h-3.5" />
                     {t.coordinator.students.card.progress}: {attendance?.summary?.progressPercentage || 0}%
                  </div>
                  {internship.status === 'Finalizado' && (
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-600">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         {t.coordinator.students.card.completed}
                     </div>
                  )}
                  {internship.status === 'Suspendida' && (
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-700">
                         <PauseCircle className="w-3.5 h-3.5" />
                         {t.coordinator.students.card.suspended}
                     </div>
                  )}
                  {internship.status === 'Retirada' && (
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-rose-700 bg-rose-50 px-3 py-1 rounded-full border border-rose-200">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-rose-700">
                         <LogOut className="w-3.5 h-3.5" />
                         {t.coordinator.students.card.withdrawn}
                     </div>
@@ -607,7 +608,7 @@ function StudentInternshipCard({
 
         <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-end shrink-0">
            {pendingDocs > 0 && internship.status !== 'Finalizado' && (
-             <div className="px-4 py-2 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-3 animate-pulse">
+             <div className="flex items-center gap-3 animate-pulse">
                 <div className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-900/20" />
                 <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest">
                   {t.coordinator.students.card.pendingReview.replace("{count}", pendingDocs.toString())}
@@ -726,7 +727,7 @@ function StudentInternshipCard({
                        </div>
                        <p className="text-[11px] font-medium text-slate-500 leading-tight">
                           {eligibility.details.missingDocs.length > 0 
-                            ? t.coordinator.students.kpi.pending.replace("{missing}", eligibility.details.missingDocs.join(', '))
+                            ? t.coordinator.students.kpi.pending.replace("{list}", eligibility.details.missingDocs.join(', '))
                             : t.coordinator.students.kpi.allApproved}
                        </p>
                     </div>
@@ -806,9 +807,9 @@ function StudentInternshipCard({
                           >
                              <div className="flex items-center gap-4">
                                 <div className={cn(
-                                  "w-10 h-10 rounded-xl flex items-center justify-center",
-                                  doc.status === 'APROBADO_DEFINITIVO' ? "bg-emerald-50 text-emerald-600" :
-                                  doc.status === 'APROBADO_TUTOR' ? "bg-blue-50 text-blue-600" : "bg-slate-50 text-slate-400"
+                                  "flex items-center justify-center",
+                                  doc.status === 'APROBADO_DEFINITIVO' ? "text-emerald-600" :
+                                  doc.status === 'APROBADO_TUTOR' ? "text-blue-600" : "text-slate-400"
                                 )}>
                                    {doc.status === 'APROBADO_DEFINITIVO' ? <CheckCircle2 className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
                                 </div>

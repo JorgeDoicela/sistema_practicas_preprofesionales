@@ -10,8 +10,14 @@ export const usersService = {
     return api.patch('/users/me', data);
   },
 
-  async findAll() {
-    return api.get('/users');
+  async findAll(page = 1, limit = 10, search = '', role = '', status = '') {
+    let url = `/users?page=${page}&limit=${limit}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (role && role !== 'ALL') url += `&role=${role}`;
+    if (status && status !== 'ALL') {
+      url += `&isActive=${status === 'ACTIVE' ? 'true' : 'false'}`;
+    }
+    return api.get(url);
   },
 
   async create(userData: Partial<User & { password?: string }>) {

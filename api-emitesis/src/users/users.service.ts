@@ -61,11 +61,29 @@ export class UsersService {
     return user;
   }
 
-  async findAll(page = 1, limit = 10) {
+  async findAll(page = 1, limit = 10, role?: Role, search?: string, isActive?: boolean) {
     const skip = (page - 1) * limit;
     
-    const [data, total] = await Promise.all([
+    const where: any = {};
+    if (role) {
+      where.role = role;
+    }
+    if (isActive !== undefined) {
+      where.isActive = isActive;
+    }
+    if (search) {
+      const searchClean = search.trim();
+      if (searchClean) {
+        where.OR = [
+          { fullName: { contains: searchClean, mode: 'insensitive' } },
+          { email: { contains: searchClean, mode: 'insensitive' } },
+        ];
+      }
+    }
+
+    const [data, total, roleCounts, activeCount, inactiveCount] = await Promise.all([
       this.prisma.user.findMany({
+        where,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
@@ -82,8 +100,27 @@ export class UsersService {
           createdAt: true,
         },
       }),
-      this.prisma.user.count(),
+      this.prisma.user.count({ where }),
+      this.prisma.user.groupBy({
+        by: ['role'],
+        _count: true,
+      }),
+      this.prisma.user.count({ where: { isActive: true } }),
+      this.prisma.user.count({ where: { isActive: false } }),
     ]);
+
+    const rolesSummary = {
+      ADMIN: 0,
+      COORDINADOR: 0,
+      TUTOR: 0,
+      ESTUDIANTE: 0,
+      EMPRESA: 0,
+    };
+    roleCounts.forEach((item) => {
+      if (item.role in rolesSummary) {
+        rolesSummary[item.role] = item._count;
+      }
+    });
 
     return {
       data,
@@ -91,6 +128,11 @@ export class UsersService {
         total,
         page,
         lastPage: Math.ceil(total / limit),
+        roleCounts: rolesSummary,
+        statusCounts: {
+          active: activeCount,
+          inactive: inactiveCount,
+        },
       },
     };
   }

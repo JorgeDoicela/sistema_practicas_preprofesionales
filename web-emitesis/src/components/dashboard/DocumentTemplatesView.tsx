@@ -31,7 +31,9 @@ export function DocumentTemplatesView() {
   const [showForm, setShowForm] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<DocumentTemplate | null>(null);
   const [blankFormats, setBlankFormats] = useState<string[]>([]);
+  const [protectedFormats, setProtectedFormats] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form states
   const [name, setName] = useState("");
@@ -44,14 +46,15 @@ export function DocumentTemplatesView() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [list, formats, careerList] = await Promise.all([
+      const [list, formatsMeta, careerList] = await Promise.all([
         documentTemplatesService.findAll(true),
-        documentTemplatesService.knownFormatKeys(),
+        documentTemplatesService.blankFormatsMeta(),
         settingsService.findAllCareers(),
       ]);
       setTemplates(Array.isArray(list) ? list : []);
-      setBlankFormats(formats);
-      setCareers(careerList);
+      setBlankFormats(formatsMeta && Array.isArray(formatsMeta.keys) ? formatsMeta.keys : []);
+      setProtectedFormats(formatsMeta && Array.isArray(formatsMeta.protectedKeys) ? formatsMeta.protectedKeys : []);
+      setCareers(Array.isArray(careerList) ? careerList : []);
     } catch (error) {
       toast.error("Error al sincronizar plantillas");
     } finally {
@@ -87,6 +90,7 @@ export function DocumentTemplatesView() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     const payload = {
       name,
       sortOrder: Number(sortOrder),
@@ -108,11 +112,12 @@ export function DocumentTemplatesView() {
       resetForm();
       loadData();
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message || "Error al procesar plantilla");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // ... (toggleActive y handleDelete se mantienen igual)
   const toggleActive = async (t: DocumentTemplate) => {
     try {
       await documentTemplatesService.update(t.id, { isActive: !t.isActive });
@@ -143,12 +148,29 @@ export function DocumentTemplatesView() {
       const { key } = await documentTemplatesService.uploadBlankDocx(file);
       toast.success("Formato subido: " + key);
       setBlankFileKey(key);
-      const updatedFormats = await documentTemplatesService.knownFormatKeys();
-      setBlankFormats(updatedFormats);
+      const formatsMeta = await documentTemplatesService.blankFormatsMeta();
+      setBlankFormats(formatsMeta && Array.isArray(formatsMeta.keys) ? formatsMeta.keys : []);
+      setProtectedFormats(formatsMeta && Array.isArray(formatsMeta.protectedKeys) ? formatsMeta.protectedKeys : []);
     } catch (error: any) {
       toast.error(error.message);
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleDeleteFormat = async () => {
+    if (!blankFileKey) return;
+    if (!confirm(`¿Está seguro de eliminar el formato "${blankFileKey}"? Esta acción no se puede deshacer.`)) return;
+    
+    try {
+      await documentTemplatesService.deleteBlankDocx(blankFileKey);
+      toast.success("Formato de plantilla eliminado");
+      setBlankFileKey("");
+      const formatsMeta = await documentTemplatesService.blankFormatsMeta();
+      setBlankFormats(formatsMeta && Array.isArray(formatsMeta.keys) ? formatsMeta.keys : []);
+      setProtectedFormats(formatsMeta && Array.isArray(formatsMeta.protectedKeys) ? formatsMeta.protectedKeys : []);
+    } catch (error: any) {
+      toast.error(error.message || "Error al eliminar formato");
     }
   };
 
@@ -170,7 +192,7 @@ export function DocumentTemplatesView() {
         <button
           onClick={() => { resetForm(); setShowForm(true); }}
           data-tour="templates-new"
-          className="flex items-center gap-3 px-8 py-4 bg-brand-blue text-white rounded-2xl shadow-xl shadow-blue-900/20 hover:bg-brand-blue/90 transition-all text-[11px] font-black uppercase tracking-widest"
+          className="flex items-center gap-3 px-8 py-4 bg-brand-blue text-white rounded-2xl shadow-xl shadow-blue-900/20 hover:bg-brand-blue/90 transition-all text-[11px] font-black uppercase tracking-widest active:scale-95"
         >
           <Plus className="w-5 h-5" /> Nueva Plantilla
         </button>
@@ -178,18 +200,30 @@ export function DocumentTemplatesView() {
 
       <div className="grid lg:grid-cols-3 gap-10">
         {/* Main List */}
-        <div className="lg:col-span-2 space-y-6" data-tour="templates-list">
+        <div className={cn("space-y-6 transition-all duration-500 ease-in-out", showForm ? "lg:col-span-2" : "lg:col-span-3")} data-tour="templates-list">
           <AnimatePresence mode="popLayout">
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-4">
+              <motion.div
+                key="loading-catalog"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex flex-col items-center justify-center py-20 text-slate-400 gap-4"
+              >
                 <Loader2 className="w-10 h-10 animate-spin text-brand-blue" />
                 <p className="text-[10px] font-black uppercase tracking-widest">Sincronizando catálogo...</p>
-              </div>
+              </motion.div>
             ) : templates.length === 0 ? (
-              <div className="bg-white rounded-[2.5rem] p-12 text-center border border-slate-100 shadow-xl">
+              <motion.div
+                key="empty-catalog"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white rounded-[2.5rem] p-12 text-center border border-slate-100 shadow-xl"
+              >
                  <FileText className="w-16 h-16 text-slate-200 mx-auto mb-4" />
                  <p className="text-slate-500 font-medium">No hay plantillas configuradas aún.</p>
-              </div>
+              </motion.div>
             ) : (
               templates.map((t) => (
                 <motion.div
@@ -197,9 +231,10 @@ export function DocumentTemplatesView() {
                   layout
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
                   className={`group relative bg-white p-8 rounded-[2.5rem] border ${t.isActive ? 'border-slate-100 shadow-xl shadow-slate-200/50' : 'border-slate-100 opacity-60 grayscale shadow-none'} transition-all`}
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between animate-fadeIn">
                     <div className="flex items-center gap-5">
                       <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${t.isCertificateSlot ? 'bg-brand-gold/10 text-brand-gold' : 'bg-brand-blue/10 text-brand-blue'}`}>
                         {t.isCertificateSlot ? <CheckCircle2 className="w-7 h-7" /> : <FileText className="w-7 h-7" />}
@@ -265,6 +300,7 @@ export function DocumentTemplatesView() {
               initial={{ opacity: 0, x: 100 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 100 }}
+              transition={{ type: "spring", damping: 20, stiffness: 100 }}
               data-tour="templates-form"
               className="bg-white p-10 rounded-[2.5rem] shadow-2xl border border-slate-100 h-fit sticky top-10"
             >
@@ -272,7 +308,7 @@ export function DocumentTemplatesView() {
                 <h3 className="text-2xl font-black text-brand-blue tracking-tight">
                   {editingTemplate ? 'Editar Plantilla' : 'Nueva Plantilla'}
                 </h3>
-                <button onClick={resetForm} className="p-2 hover:bg-slate-50 rounded-xl text-slate-400">
+                <button onClick={resetForm} className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 transition-colors">
                   <X className="w-6 h-6" />
                 </button>
               </div>
@@ -280,16 +316,21 @@ export function DocumentTemplatesView() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Asignación de Carrera</label>
-                  <select
-                    className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest appearance-none focus:outline-none focus:ring-2 focus:ring-brand-blue/10"
-                    value={careerId}
-                    onChange={e => setCareerId(e.target.value)}
-                  >
-                    <option value="">GLOBAL (Toda la institución)</option>
-                    {careers.map(c => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      className="w-full pl-6 pr-12 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest appearance-none focus:outline-none focus:ring-2 focus:ring-brand-blue/10 cursor-pointer"
+                      value={careerId}
+                      onChange={e => setCareerId(e.target.value)}
+                    >
+                      <option value="">GLOBAL (Toda la institución)</option>
+                      {careers.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                      <ChevronRight className="w-5 h-5 rotate-90" />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -312,7 +353,7 @@ export function DocumentTemplatesView() {
                       <input
                         type="number"
                         required
-                        className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-black"
+                        className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-brand-blue/10"
                         value={sortOrder}
                         onChange={e => setSortOrder(Number(e.target.value))}
                       />
@@ -322,7 +363,7 @@ export function DocumentTemplatesView() {
                     <button
                       type="button"
                       onClick={() => setIsRequired(!isRequired)}
-                      className={`flex items-center justify-center gap-2 py-4 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${isRequired ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-slate-50 text-slate-400 border border-slate-100'}`}
+                      className={`flex items-center justify-center gap-2 py-4 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 ${isRequired ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-slate-50 text-slate-400 border border-slate-100'}`}
                     >
                       {isRequired ? 'Es Obligatorio' : 'Es Opcional'}
                     </button>
@@ -332,9 +373,12 @@ export function DocumentTemplatesView() {
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Formato Institucional (.docx)</label>
                   <div className="grid grid-cols-4 gap-3">
-                    <div className="col-span-3">
+                    <div className={cn(
+                      "relative transition-all duration-300",
+                      (blankFileKey && !protectedFormats.includes(blankFileKey)) ? "col-span-2" : "col-span-3"
+                    )}>
                         <select
-                          className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest appearance-none focus:outline-none"
+                          className="w-full pl-6 pr-12 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest appearance-none focus:outline-none cursor-pointer"
                           value={blankFileKey}
                           onChange={e => setBlankFileKey(e.target.value)}
                         >
@@ -343,8 +387,23 @@ export function DocumentTemplatesView() {
                             <option key={f} value={f}>{f}</option>
                           ))}
                         </select>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                          <ChevronRight className="w-5 h-5 rotate-90" />
+                        </div>
                     </div>
-                    <label className="cursor-pointer bg-brand-gold text-white rounded-2xl flex items-center justify-center hover:scale-105 transition-all shadow-lg shadow-yellow-600/20">
+
+                    {blankFileKey && !protectedFormats.includes(blankFileKey) && (
+                      <button
+                        type="button"
+                        onClick={handleDeleteFormat}
+                        className="col-span-1 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all hover:bg-rose-100 border border-rose-100"
+                        title="Eliminar formato del sistema"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    )}
+
+                    <label className="col-span-1 cursor-pointer bg-brand-gold text-white rounded-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg shadow-yellow-600/20">
                       {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <UploadCloud className="w-5 h-5" />}
                       <input type="file" accept=".docx" className="hidden" onChange={handleFileUpload} />
                     </label>
@@ -355,16 +414,23 @@ export function DocumentTemplatesView() {
                     <button
                       type="button"
                       onClick={() => setIsCertificateSlot(!isCertificateSlot)}
-                      className={`w-full py-4 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${isCertificateSlot ? 'bg-brand-gold text-white shadow-xl shadow-yellow-600/20' : 'bg-slate-50 text-slate-400 border border-slate-100'}`}
+                      className={`w-full py-4 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 ${isCertificateSlot ? 'bg-brand-gold text-white shadow-xl shadow-yellow-600/20' : 'bg-slate-50 text-slate-400 border border-slate-100'}`}
                     >
                       {isCertificateSlot ? 'Marcar como Slot de Certificado' : 'Es documento normal'}
                     </button>
                     
                     <button
                       type="submit"
-                      className="w-full py-4 bg-brand-blue text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl shadow-blue-900/30 hover:scale-[1.02] transition-all"
+                      disabled={isSubmitting}
+                      className="w-full py-4 bg-brand-blue text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl shadow-blue-900/30 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                     >
-                      {editingTemplate ? 'Guardar Cambios' : 'Crear Plantilla'}
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" /> Procesando...
+                        </>
+                      ) : (
+                        editingTemplate ? 'Guardar Cambios' : 'Crear Plantilla'
+                      )}
                     </button>
                 </div>
               </form>

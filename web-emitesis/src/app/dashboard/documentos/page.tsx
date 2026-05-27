@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useRef } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { 
   FileStack, 
@@ -38,6 +38,7 @@ import { useLanguage } from "@/providers/LanguageProvider";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { parseReviewAnnotations } from "@/lib/pdf-review-annotations";
+import { toast } from "sonner";
 
 const DocumentPdfReviewViewer = dynamic(
   () =>
@@ -109,7 +110,8 @@ function DocumentosContent() {
       } else if (user.role === ROLES.ESTUDIANTE) {
         res = await internshipsService.findByStudent(user.id);
       } else {
-        res = await internshipsService.findAll();
+        const careerId = user.role === 'COORDINADOR' ? user.careerId : undefined;
+        res = await internshipsService.findAll(1, 200, careerId);
       }
 
       const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
@@ -140,7 +142,7 @@ function DocumentosContent() {
     try {
       await documentsService.downloadTemplate(doc.id, doc.name);
     } catch (error: any) {
-      alert(error.message);
+      toast.error(error.message || t.common.errors.generic);
     } finally {
       setDownloadingId(null);
     }
@@ -148,7 +150,7 @@ function DocumentosContent() {
 
   const handleViewDocument = (doc: any) => {
     if (!doc.filePath) {
-      alert("El archivo no está disponible.");
+      toast.error("El archivo no está disponible.");
       return;
     }
     setViewingDoc(doc);
@@ -163,13 +165,13 @@ function DocumentosContent() {
 
     // Regla de Negocio: Solo PDF
     if (file.type !== "application/pdf") {
-      alert(t.common.errors.invalidFormat || "Solo se permiten archivos en formato PDF");
+      toast.error(t.common.errors.invalidFormat || "Solo se permiten archivos en formato PDF");
       return;
     }
 
     // Regla de Negocio: Máximo 10MB
     if (file.size > 10 * 1024 * 1024) {
-      alert(t.common.errors.maxSize);
+      toast.error(t.common.errors.maxSize);
       return;
     }
 
@@ -210,10 +212,10 @@ function DocumentosContent() {
       }
 
       await documentsService.uploadDocument(docId, file);
-      alert(t.common.success.generic);
+      toast.success(t.common.success.generic);
       loadInternships();
     } catch (error: any) {
-      alert(error.message);
+      toast.error(error.message || t.common.errors.generic);
     } finally {
       setUploadingId(null);
       setAiFeedback(null);
@@ -225,7 +227,7 @@ function DocumentosContent() {
     setUploadingId(pendingUpload.id);
     try {
       await documentsService.uploadDocument(pendingUpload.id, pendingUpload.file, code);
-      alert(t.common.success.generic);
+      toast.success(t.common.success.generic);
       setIs2faModalOpen(false);
       setPendingUpload(null);
       loadInternships();
@@ -241,6 +243,9 @@ function DocumentosContent() {
   };
 
   const getFirstPageAsBase64 = async (file: File): Promise<string> => {
+    // Configurar worker de pdfjs para evitar errores de inicialización
+    pdfjs.GlobalWorkerOptions.workerSrc = "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+    
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
     const page = await pdf.getPage(1);
@@ -269,10 +274,10 @@ function DocumentosContent() {
           return;
         }
         await documentsService.uploadDocument(id, file);
-        alert(t.common.success.generic);
+        toast.success(t.common.success.generic);
         loadInternships();
       } catch (error: any) {
-        alert(error.message);
+        toast.error(error.message || t.common.errors.generic);
       } finally {
         setUploadingId(null);
         setPendingUpload(null);
@@ -289,36 +294,36 @@ function DocumentosContent() {
     if (!deletingId) return;
     try {
       if (currentUser?.isTwoFactorEnabled) {
-          setPendingAction(() => async (code: string) => {
+          pendingActionRef.current = async (code: string) => {
               await documentsService.deleteDocumentFile(deletingId, code);
-          });
+          };
           setIsConfirmModalOpen(false);
           setIs2faModalOpen(true);
           return;
       }
       await documentsService.deleteDocumentFile(deletingId);
-      alert(t.common.success.deleted);
+      toast.success(t.common.success.deleted || t.common.success.generic);
       loadInternships();
     } catch (error: any) {
-      alert(error.message);
+      toast.error(error.message || t.common.errors.generic);
     }
   };
 
   const handle2faConfirmAction = async (code: string) => {
-      if (!pendingAction) return;
+      if (!pendingActionRef.current) return;
       try {
-          const action = pendingAction();
-          await action(code);
-          alert(t.common.success.generic);
+          await pendingActionRef.current(code);
+          toast.success(t.common.success.generic);
           setIs2faModalOpen(false);
-          setPendingAction(null);
+          pendingActionRef.current = null;
           loadInternships();
-      } catch (error) {
+      } catch (error: any) {
+          toast.error(error.message || t.common.errors.generic);
           throw error;
       }
   };
 
-  const [pendingAction, setPendingAction] = useState<(() => (code: string) => Promise<void>) | null>(null);
+  const pendingActionRef = useRef<((code: string) => Promise<void>) | null>(null);
 
   const filteredInternships = internships.filter(item => {
     const matchesSearch = 
@@ -331,14 +336,14 @@ function DocumentosContent() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PENDIENTE': return 'bg-slate-100 text-slate-500';
-      case 'EN_REVISION_TUTOR': return 'bg-blue-100 text-blue-700';
+      case 'PENDIENTE': return 'text-slate-500';
+      case 'EN_REVISION_TUTOR': return 'text-blue-700';
       case 'APROBADO_TUTOR': 
-      case 'APROBADO_DEFINITIVO': return 'bg-emerald-100 text-emerald-700';
+      case 'APROBADO_DEFINITIVO': return 'text-emerald-700';
       case 'RECHAZADO_TUTOR':
-      case 'RECHAZADO_COORDINADOR': return 'bg-red-100 text-red-700';
-      case 'INCUMPLIDO': return 'bg-rose-100 text-rose-700';
-      default: return 'bg-slate-100 text-slate-500';
+      case 'RECHAZADO_COORDINADOR': return 'text-red-700';
+      case 'INCUMPLIDO': return 'text-rose-700';
+      default: return 'text-slate-500';
     }
   };
 
@@ -465,7 +470,7 @@ function DocumentosContent() {
                        isLocked ? <Lock className="w-7 h-7" /> : <FileText className="w-7 h-7" />}
                     </div>
                     <div className={cn(
-                       "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm",
+                       "text-[10px] font-black uppercase tracking-widest",
                        getStatusColor(doc.status)
                     )}>
                       {getStatusLabel(doc.status)}
@@ -475,12 +480,12 @@ function DocumentosContent() {
                   <h3 className="text-lg font-black text-[#003366] mb-2 leading-tight group-hover:text-[#C5A059] transition-colors line-clamp-2 min-h-[3rem]">{doc.name}</h3>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {isCertSlot && (
-                      <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-violet-100 text-violet-800 border border-violet-200">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-violet-800">
                         {t.documents.student.system}
                       </span>
                     )}
                     {isOptional && !isCertSlot && (
-                      <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">
                         {t.documents.student.optional}
                       </span>
                     )}
@@ -632,8 +637,8 @@ function DocumentosContent() {
                     >
                       <div className="absolute top-0 right-0 p-6">
                         <div className={cn(
-                          "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest",
-                          item.status === 'Activo' ? "bg-emerald-100 text-emerald-700" : "bg-orange-100 text-orange-700"
+                          "text-[10px] font-black uppercase tracking-widest",
+                          item.status === 'Activo' ? "text-emerald-700" : "text-orange-700"
                         )}>
                           {item.status}
                         </div>
@@ -704,8 +709,8 @@ function DocumentosContent() {
                         </td>
                         <td className="px-8 py-6">
                            <span className={cn(
-                             "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider",
-                             item.status === 'Activo' ? "bg-emerald-100 text-emerald-700" : "bg-orange-100 text-orange-700"
+                             "text-[10px] font-black uppercase tracking-wider",
+                             item.status === 'Activo' ? "text-emerald-700" : "text-orange-700"
                            )}>
                              {item.status}
                            </span>
@@ -750,7 +755,7 @@ function DocumentosContent() {
         onClose={() => {
             setIs2faModalOpen(false);
             setPendingUpload(null);
-            setPendingAction(null);
+            pendingActionRef.current = null;
         }}
         onConfirm={pendingUpload ? confirmUploadWith2fa : handle2faConfirmAction}
         title={pendingUpload ? t.documents.modal2fa.titleUpload : t.documents.modal2fa.titleDefault}

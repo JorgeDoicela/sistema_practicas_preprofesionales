@@ -117,6 +117,11 @@ export default function RegistrarConvenioPage() {
             return;
         }
 
+        if (cleanForm.endDate && new Date(cleanForm.endDate) <= new Date(cleanForm.startDate)) {
+            setError(t.documents.detail.errors.invalidDateRange);
+            return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -130,7 +135,7 @@ export default function RegistrarConvenioPage() {
             // 6. El sistema confirma el registro exitoso
             setSuccess(true);
             setTimeout(() => {
-                router.push("/coordinador/dashboard");
+                router.push("/coordinador/convenios/list");
             }, 2000);
         } catch (err: any) {
             setError(err.message || t.common.error);
@@ -158,7 +163,7 @@ export default function RegistrarConvenioPage() {
                             {t.coordinator.agreements.successDesc}
                         </p>
                         <button 
-                            onClick={() => router.push('/dashboard')}
+                            onClick={() => router.push('/coordinador/convenios/list')}
                             className="w-full bg-[#003366] text-white rounded-2xl py-4 text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-900/20 hover:translate-y-[-2px] transition-all"
                         >
                             {t.common.back}
@@ -173,7 +178,7 @@ export default function RegistrarConvenioPage() {
         <DashboardLayout>
             <div className="max-w-4xl mx-auto py-8 px-4">
                 <div className="mb-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#003366]/5 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4 border border-[#003366]/10">
+                    <div className="flex items-center gap-2 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4">
                         <FileText size={12} /> {t.coordinator.agreements.mgmt}
                     </div>
                     <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">{t.coordinator.agreements.title}</h1>

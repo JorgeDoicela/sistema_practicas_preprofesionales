@@ -22,6 +22,7 @@ import { motion } from "framer-motion";
 import { reportsService, GlobalStats } from "@/services/reports.service";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { toast } from "sonner";
 
 export default function ReportesPage() {
   const { t } = useLanguage();
@@ -36,11 +37,22 @@ export default function ReportesPage() {
   const loadStats = async () => {
     try {
       setLoading(true);
-      const res: any = await reportsService.getGlobalStats();
+      const userStr = localStorage.getItem("user");
+      let careerId = undefined;
+      if (userStr) {
+        try {
+          const userObj = JSON.parse(userStr);
+          careerId = userObj.careerId;
+        } catch (e) {
+          console.error("Error parsing user from localStorage", e);
+        }
+      }
+      const res: any = await reportsService.getGlobalStats(careerId);
       const data = res?.data || res || null;
       setStats(data);
     } catch (error) {
       console.error("Error loading stats:", error);
+      toast.error(t.common.error || "Error al cargar los datos");
     } finally {
       setLoading(false);
     }
@@ -51,8 +63,9 @@ export default function ReportesPage() {
       setExporting(type);
       if (type === "excel") await reportsService.exportGlobalExcel();
       else await reportsService.exportGlobalPdf();
+      toast.success(t.common.success.generic);
     } catch (error) {
-      alert(t.coordinator.reports.errorExport);
+      toast.error(t.coordinator.reports.errorExport);
     } finally {
       setExporting(null);
     }
@@ -138,7 +151,7 @@ export default function ReportesPage() {
                  <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden" data-tour="reportes-efficiency-metrics">
                     <div className="p-4 sm:p-6 md:p-8 border-b border-slate-50 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                        <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">{t.coordinator.reports.summary.title}</h3>
-                       <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-xl">
+                       <div className="flex items-center gap-2">
                           <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">{t.coordinator.reports.summary.status}</span>
                        </div>
                     </div>
@@ -289,10 +302,10 @@ function ReportStatCard({ title, value, hint, icon, color, href }: ReportStatCar
         </div>
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
         <h4 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tighter">{value}</h4>
-        <p className="text-[11px] font-semibold text-slate-500 mt-3 flex items-center gap-2">
+        <div className="text-[11px] font-semibold text-slate-500 mt-3 flex items-center gap-2">
            <div className={cn("w-1.5 h-1.5 rounded-full", colorMap[color].split(" ")[0].replace('from-', 'bg-'))} />
            {hint}
-        </p>
+        </div>
       </motion.div>
     </CardWrapper>
   );

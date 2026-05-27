@@ -5,7 +5,7 @@ export const agreementsService = {
     return api.post('/agreements', formData);
   },
 
-  async findAll() {
-    return api.get('/agreements');
+  async findAll(page = 1, limit = 1000) {
+    return api.get(`/agreements?page=${page}&limit=${limit}`);
   }
 };

@@ -40,7 +40,7 @@ export class AbsencesService {
       'Nueva Ausencia Justificada',
       `El estudiante tiene una ausencia pendiente de revisión para el ${absenceDate.toLocaleDateString('es-EC')}.`,
       'WARNING',
-      `/tutor-academico/estudiantes/${internship.id}`,
+      '/tutor-academico/ausencias',
     );
 
     return absence;
@@ -108,7 +108,7 @@ export class AbsencesService {
       `Ausencia ${statusLabel}`,
       `Tu ausencia del ${absence.date.toLocaleDateString('es-EC')} fue ${statusLabel}.${dto.reviewNotes ? ' Nota: ' + dto.reviewNotes : ''}`,
       dto.status === 'APROBADA' ? 'SUCCESS' : 'WARNING',
-      '/dashboard/asistencia',
+      '/dashboard/ausencias',
     );
 
     return updated;
