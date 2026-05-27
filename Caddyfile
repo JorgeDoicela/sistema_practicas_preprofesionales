@@ -1,7 +1,7 @@
 # Configuración de Caddy para producción
-# Gestiona la emisión y renovación automática de certificados SSL (HTTPS) con Let's Encrypt
+# Gestiona el enrutamiento sobre HTTP (delegando el SSL a Cloudflare)
 
-{$DOMAIN} {
+http://{$DOMAIN} {
     # Habilitar compresión para optimizar la transferencia de datos
     encode gzip zstd
 
