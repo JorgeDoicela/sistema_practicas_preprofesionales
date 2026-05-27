@@ -7,6 +7,7 @@ http://{$DOMAIN} {
 
     # Enrutar peticiones dirigidas al backend (NestJS)
     reverse_proxy /api/* api:5000
+    reverse_proxy /socket.io/* api:5000
 
     # Enrutar todo el resto de peticiones al frontend (Next.js)
     reverse_proxy * web:3005
