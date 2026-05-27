@@ -21,7 +21,10 @@ ARG NEXT_PUBLIC_RECAPTCHA_SITE_KEY=
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_RECAPTCHA_SITE_KEY=$NEXT_PUBLIC_RECAPTCHA_SITE_KEY
 
-# Construir la aplicación Next.js
+# Limitar memoria para evitar caidas por falta de RAM en la VPS durante la compilacion
+ENV NODE_OPTIONS="--max-old-space-size=1024"
+
+# Construir la aplicacion Next.js
 RUN npm run build
 
 # Etapa de producción

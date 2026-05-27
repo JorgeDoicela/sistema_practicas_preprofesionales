@@ -22,7 +22,9 @@ services:
       - emitesis-network-prod
 
   api:
-    image: ghcr.io/jorgedoicela/sistema_practicas_preprofesionales-api:latest
+    build:
+      context: ./api-emitesis
+      dockerfile: Dockerfile
     container_name: emitesis-api-prod
     restart: always
     environment:
@@ -55,7 +57,12 @@ services:
       - emitesis-network-prod
 
   web:
-    image: ghcr.io/jorgedoicela/sistema_practicas_preprofesionales-web:latest
+    build:
+      context: ./web-emitesis
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000/api}
+        NEXT_PUBLIC_RECAPTCHA_SITE_KEY: ${NEXT_PUBLIC_RECAPTCHA_SITE_KEY:-}
     container_name: emitesis-web-prod
     restart: always
     environment:
