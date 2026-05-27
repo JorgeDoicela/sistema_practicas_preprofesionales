@@ -24,11 +24,15 @@ mostrar_ayuda() {
     echo "====================================================================="
 }
 
-# Verificar que los contenedores estén en ejecución
+# Verificar que los contenedores estén en ejecución y detectar el nombre activo dinámicamente
 verificar_contenedor() {
-    if ! docker ps --format '{{.Names}}' | grep -q "^$API_CONTAINER$"; then
-        echo "[ERROR] El contenedor '$API_CONTAINER' no está en ejecución." >&2
-        echo "Asegúrese de levantar los servicios con 'docker compose -f docker-compose.prod.yml up -d' primero." >&2
+    if docker ps --format '{{.Names}}' | grep -q "^emitesis-api-prod$"; then
+        API_CONTAINER="emitesis-api-prod"
+    elif docker ps --format '{{.Names}}' | grep -q "^emitesis-api$"; then
+        API_CONTAINER="emitesis-api"
+    else
+        echo "[ERROR] Ningún contenedor de la API ('emitesis-api-prod' o 'emitesis-api') está en ejecución." >&2
+        echo "Asegúrese de levantar los servicios con 'docker compose up -d' o 'docker-compose up -d' primero." >&2
         exit 1
     fi
 }
