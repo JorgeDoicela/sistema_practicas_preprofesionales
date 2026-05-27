@@ -42,7 +42,7 @@ services:
       RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     volumes:
-      - api_uploads:/app/uploads
+      - api_uploads_prod:/app/uploads
     depends_on:
       db:
         condition: service_healthy
