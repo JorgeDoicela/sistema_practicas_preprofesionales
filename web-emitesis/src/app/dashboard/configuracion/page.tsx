@@ -55,7 +55,7 @@ export default function ConfigurationPage() {
       
       const updatedUser = { ...user, isTwoFactorEnabled: true };
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      Cookies.set("user", JSON.stringify(updatedUser), { expires: 1, secure: true, sameSite: "strict", path: "/" });
+      Cookies.set("user", JSON.stringify(updatedUser), { expires: 1, secure: typeof window !== 'undefined' && window.location.protocol === 'https:', sameSite: "strict", path: "/" });
       
       setUser(updatedUser);
       setStep("status");
@@ -81,7 +81,7 @@ export default function ConfigurationPage() {
       
       const updatedUser = { ...user, isTwoFactorEnabled: false };
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      Cookies.set("user", JSON.stringify(updatedUser), { expires: 1, secure: true, sameSite: "strict", path: "/" });
+      Cookies.set("user", JSON.stringify(updatedUser), { expires: 1, secure: typeof window !== 'undefined' && window.location.protocol === 'https:', sameSite: "strict", path: "/" });
       
       setUser(updatedUser);
       setStep("status");

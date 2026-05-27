@@ -96,9 +96,9 @@ api.interceptors.response.use(
             localStorage.setItem('user', JSON.stringify(result.user));
           }
 
-          Cookies.set('token', newAccessToken, { secure: true, sameSite: 'strict', path: '/' });
+          Cookies.set('token', newAccessToken, { secure: typeof window !== 'undefined' && window.location.protocol === 'https:', sameSite: 'strict', path: '/' });
           if (result.user) {
-            Cookies.set('user', JSON.stringify(result.user), { secure: true, sameSite: 'strict', path: '/' });
+            Cookies.set('user', JSON.stringify(result.user), { secure: typeof window !== 'undefined' && window.location.protocol === 'https:', sameSite: 'strict', path: '/' });
           }
 
           // Reintentar petición original
