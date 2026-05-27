@@ -51,6 +51,7 @@ jobs:
         run: npx prisma migrate deploy
         env:
           DATABASE_URL: postgresql://postgres:password@localhost:5432/emitesis_test?schema=public
+          DIRECT_URL: postgresql://postgres:password@localhost:5432/emitesis_test?schema=public
 
       - name: Run Lint
         run: npm run lint || true
@@ -59,6 +60,7 @@ jobs:
         run: npm run test:cov || true
         env:
           DATABASE_URL: postgresql://postgres:password@localhost:5432/emitesis_test?schema=public
+          DIRECT_URL: postgresql://postgres:password@localhost:5432/emitesis_test?schema=public
 
       - name: Build Application
         run: npm run build
