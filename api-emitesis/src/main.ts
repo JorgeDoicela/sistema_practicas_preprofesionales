@@ -10,8 +10,21 @@ import helmet from 'helmet';
 import { json, urlencoded } from 'express';
 import * as express from 'express';
 import { join } from 'path';
+import * as fs from 'fs';
 
 async function bootstrap() {
+  // Ajuste automático de DATABASE_URL si corre local fuera de Docker
+  const isDocker = fs.existsSync('/.dockerenv');
+  if (!isDocker) {
+    if (process.env.DATABASE_URL && process.env.DATABASE_URL.includes('@db:5432')) {
+      process.env.DATABASE_URL = process.env.DATABASE_URL.replace('@db:5432', '@127.0.0.1:5432');
+      console.log(`\x1b[33m[Host-Local]\x1b[0m DATABASE_URL redirigida dinámicamente: ${process.env.DATABASE_URL}`);
+    }
+    if (process.env.DIRECT_URL && process.env.DIRECT_URL.includes('@db:5432')) {
+      process.env.DIRECT_URL = process.env.DIRECT_URL.replace('@db:5432', '@127.0.0.1:5432');
+    }
+  }
+
   const isProduction = process.env.NODE_ENV === 'production';
   const app = await NestFactory.create(AppModule, {
     logger: isProduction ? ['error', 'warn'] : ['error', 'warn', 'log'],

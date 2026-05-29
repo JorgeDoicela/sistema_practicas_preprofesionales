@@ -1,5 +1,6 @@
 /**
  * Setup Script: Industrializa el arranque del proyecto con resiliencia extrema.
+ * Carga entornos, resuelve conexiones Docker vs Host y maneja fallos tolerantes.
  */
 const { execSync } = require('child_process');
 const fs = require('fs');
@@ -8,6 +9,32 @@ const path = require('path');
 const root = path.join(__dirname, '..');
 const apiDir = path.join(root, 'api-emitesis');
 const isVercel = process.env.VERCEL === '1' || !!process.env.CI;
+
+// Cargar variables .env al arranque para resolución inteligente
+try {
+  const dotenv = require('dotenv');
+  const rootEnv = path.join(root, '.env');
+  const apiEnv = path.join(apiDir, '.env');
+  
+  if (fs.existsSync(apiEnv)) {
+    dotenv.config({ path: apiEnv });
+  } else if (fs.existsSync(rootEnv)) {
+    dotenv.config({ path: rootEnv });
+  }
+} catch (e) {
+  // Ignorar silenciosamente si no está instalado aún
+}
+
+// Adaptación automática para correr npx prisma fuera de Docker (Host local)
+const isDocker = fs.existsSync('/.dockerenv');
+if (!isDocker) {
+  if (process.env.DATABASE_URL && process.env.DATABASE_URL.includes('@db:5432')) {
+    process.env.DATABASE_URL = process.env.DATABASE_URL.replace('@db:5432', '@127.0.0.1:5432');
+  }
+  if (process.env.DIRECT_URL && process.env.DIRECT_URL.includes('@db:5432')) {
+    process.env.DIRECT_URL = process.env.DIRECT_URL.replace('@db:5432', '@127.0.0.1:5432');
+  }
+}
 
 // Estado de la ejecución para resumen final
 const status = {
@@ -25,7 +52,7 @@ function run(cmd, cwd = root, retries = 3, critical = true) {
   for (let i = 1; i <= retries; i++) {
     console.log(`\n> [${i}/${retries}] Ejecutando: ${cmd}`);
     try {
-      execSync(cmd, { cwd, stdio: 'inherit' });
+      execSync(cmd, { cwd, stdio: 'inherit', env: process.env });
       return true; 
     } catch (e) {
       if (i === retries) {
@@ -56,6 +83,9 @@ console.log('\x1b[35m%s\x1b[0m', '==============================================
 // 1. Diagnóstico de Entorno
 status.env = isVercel ? 'Vercel / CI' : 'Local (Development)';
 console.log(`[INFO] Entorno detectado: \x1b[36m${status.env}\x1b[0m`);
+if (!isDocker && !isVercel && process.env.DATABASE_URL) {
+  console.log(`[INFO]DATABASE_URL redirigida dinámicamente a Host: \x1b[32m${process.env.DATABASE_URL}\x1b[0m`);
+}
 
 // 2. Limpieza Preventiva
 try {
@@ -83,7 +113,6 @@ if (isVercel) {
     console.warn('\x1b[33m[AVISO]\x1b[0m DATABASE_URL no definida. Saltando sincronización.');
     status.dbSync = 'SALTADO (Sin URL)';
   } else {
-    // En Vercel usamos db push para evitar errores de historial de migraciones (P3005)
     if (run('npx prisma db push --skip-generate', apiDir, 3, false)) {
       status.dbSync = 'EXITO';
     } else {
@@ -91,11 +120,21 @@ if (isVercel) {
     }
   }
 } else {
-  // En local forzamos el reset para asegurar limpieza total
-  if (run('npx prisma db push --force-reset', apiDir, 2, true)) {
-    status.dbSync = 'EXITO (Reset Total)';
+  // En local sincronizamos de forma segura sin forzar el reset.
+  // Es tolerable a fallos para no interrumpir el instalador npm install si Docker está inactivo.
+  const syncSuccess = run('npx prisma db push', apiDir, 2, false);
+  if (syncSuccess) {
+    status.dbSync = 'EXITO (Sincronización)';
   } else {
-    status.dbSync = 'FALLIDO';
+    status.dbSync = 'FALLIDO (Base de datos inactiva)';
+    // Remover de status.errors para que no cause salida abortiva
+    status.errors = status.errors.filter(err => !err.includes('prisma db push'));
+    
+    console.log('\n\x1b[33m[AVISO DE INSTALACIÓN]\x1b[0m');
+    console.log('  La base de datos local no se encuentra activa en este momento (puerto 5432 cerrado).');
+    console.log('  La instalación de paquetes continuará normalmente.');
+    console.log('  Una vez que inicies Docker con \x1b[36mnpm run docker:up\x1b[0m, ejecuta \x1b[36mnpm run setup\x1b[0m');
+    console.log('  para sincronizar y poblar tu base de datos automáticamente.\n');
   }
 }
 
@@ -117,8 +156,8 @@ console.log('\x1b[35m%s\x1b[0m', '           RESUMEN DE CONFIGURACIÓN          
 console.log('\x1b[35m%s\x1b[0m', '===================================================');
 console.log(` Entorno:      ${status.env}`);
 console.log(` Prisma Client: ${status.prismaGenerate === 'EXITO' ? '\x1b[32m✔' : '\x1b[31m✘'} ${status.prismaGenerate}\x1b[0m`);
-console.log(` DB Sync:      ${status.dbSync.includes('EXITO') ? '\x1b[32m✔' : '\x1b[31m✘'} ${status.dbSync}\x1b[0m`);
-console.log(` DB Seed:      ${status.dbSeed === 'EXITO' ? '\x1b[32m✔' : '\x1b[31m✘'} ${status.dbSeed}\x1b[0m`);
+console.log(` DB Sync:      ${status.dbSync.includes('EXITO') ? '\x1b[32m✔' : (status.dbSync.includes('FALLIDO') ? '\x1b[33m!' : '\x1b[31m✘')} ${status.dbSync}\x1b[0m`);
+console.log(` DB Seed:      ${status.dbSeed === 'EXITO' ? '\x1b[32m✔' : (status.dbSeed === 'SALTADO' ? '\x1b[33m-' : '\x1b[31m✘')} ${status.dbSeed}\x1b[0m`);
 
 if (status.errors.length > 0) {
   console.log('\n\x1b[31m[!] Errores detectados durante el proceso:\x1b[0m');
@@ -132,6 +171,5 @@ if (status.errors.length > 0) {
     process.exit(1);
   }
 } else {
-  console.log('\n\x1b[32m[PERFECTO] Todo configurado correctamente.\x1b[0m\n');
+  console.log('\n\x1b[32m[PERFECTO] Guardián de configuración completado.\x1b[0m\n');
 }
-

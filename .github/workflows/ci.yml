@@ -162,7 +162,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
-          source: "docker-compose.prod.yml,Caddyfile,backup-db.sh,manage-db.sh"
+          source: "docker-compose.prod.yml,nginx.conf,backup-db.sh,manage-db.sh"
           target: "~/emitesis"
 
       - name: Execute remote deployment commands via SSH
@@ -186,7 +186,7 @@ jobs:
             # Escribir el archivo .env de produccion a partir del secret
             echo "$ENV_PROD" > .env
 
-            # Asegurar que la variable DOMAIN este presente en el archivo .env para Caddy
+            # Asegurar que la variable DOMAIN este presente en el archivo .env si es requerida
             if ! grep -q "DOMAIN=" .env; then
               echo "DOMAIN=$DOMAIN" >> .env
             else

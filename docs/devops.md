@@ -44,7 +44,7 @@ El backend utiliza un script de entrada personalizado (`docker-entrypoint.sh`) q
 
 ## 3. Guía de Despliegue Automatizado en Servidor de Producción (AWS VPS)
 
-El despliegue de la aplicación se encuentra automatizado a través de GitHub Actions utilizando Docker y Caddy Proxy para la automatización de certificados SSL (HTTPS).
+El despliegue de la aplicación se encuentra automatizado a través de GitHub Actions utilizando Docker y Nginx Proxy en conjunto con el SSL de Cloudflare para la gestión del tráfico y certificados SSL (HTTPS) de forma centralizada.
 
 ### 3.1 Requisitos Previos en el Servidor (AWS VPS)
 
@@ -80,7 +80,7 @@ Para que el pipeline de GitHub Actions pueda realizar la compilación, transfere
     BLOB_READ_WRITE_TOKEN=su_token_de_vercel_blob
     OPENAI_API_KEY=su_clave_openai
     ```
-*   `DOMAIN`: El nombre de dominio o subdominio apuntado a la IP de la VPS (por ejemplo, `emitesis.tudominio.com`). Caddy utilizará esta variable para generar y renovar el certificado SSL automáticamente.
+*   `DOMAIN`: El nombre de dominio o subdominio apuntado a la IP de la VPS (por ejemplo, `emitesis.tudominio.com`). Cloudflare actuará como proxy de este dominio y enrutará las peticiones HTTP seguras al puerto 80 del servidor VPS.
 
 ### 3.3 Flujo de Despliegue Automatizado
 
@@ -91,7 +91,7 @@ Una vez configurados los secretos en GitHub, el flujo se ejecuta automáticament
 3.  **Fase de Despliegue Continuo (CD):** 
     *   Se conecta al servidor VPS por SSH.
     *   Crea el directorio de trabajo `~/emitesis` en el servidor si no existe.
-    *   Transfiere los archivos de orquestación `docker-compose.prod.yml` y `Caddyfile`.
+    *   Transfiere los archivos de orquestación `docker-compose.prod.yml` y `nginx.conf`.
     *   Escribe el archivo `.env` en base al secreto `ENV_PROD` y asocia el secreto `DOMAIN`.
     *   Autentica el motor Docker local en GHCR usando el token temporal de GitHub Actions.
     *   Descarga las imágenes actualizadas (`docker compose pull`).
@@ -103,7 +103,7 @@ Una vez configurados los secretos en GitHub, el flujo se ejecuta automáticament
 Si por algún motivo requiere realizar el despliegue de forma manual directo en el servidor:
 
 1.  Acceda al servidor e instale Docker y Docker Compose si no los tiene.
-2.  Cree el directorio del proyecto y transfiera los archivos `docker-compose.prod.yml` y `Caddyfile` al mismo.
+2.  Cree el directorio del proyecto y transfiera los archivos `docker-compose.prod.yml` y `nginx.conf` al mismo.
 3.  Cree un archivo `.env` en ese directorio y defina manualmente las variables de producción (incluyendo `DOMAIN`).
 4.  Inicie sesión en GHCR de forma manual en su terminal local o servidor:
     ```bash
