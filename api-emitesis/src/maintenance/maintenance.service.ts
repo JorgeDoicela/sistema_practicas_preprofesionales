@@ -110,7 +110,7 @@ export class MaintenanceService {
   /**
    * Genera un volcado de la base de datos (Estructura para implementación futura)
    */
-  async backupDatabase() {
+  backupDatabase() {
     this.logger.log('Simulando backup de base de datos...');
     // Aquí se integraría la lógica para pg_dump o exportación a JSON de todas las tablas
     return {

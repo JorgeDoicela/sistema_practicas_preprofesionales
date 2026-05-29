@@ -51,7 +51,7 @@ export class SystemLogsService {
         ip: input.ip != null ? this.truncate(String(input.ip), 64) : null,
         durationMs: input.durationMs ?? null,
         ...(input.metadata !== undefined && input.metadata !== null
-          ? { metadata: input.metadata as Prisma.InputJsonValue }
+          ? { metadata: input.metadata }
           : {}),
       };
 

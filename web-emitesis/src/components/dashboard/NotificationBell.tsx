@@ -13,12 +13,6 @@ export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    loadNotifications();
-    const interval = setInterval(loadNotifications, 60000); // Poll every minute
-    return () => clearInterval(interval);
-  }, []);
-
   const loadNotifications = async () => {
     try {
       const [list, count] = await Promise.all([
@@ -31,6 +25,12 @@ export function NotificationBell() {
       console.error("Error loading notifications", e);
     }
   };
+
+  useEffect(() => {
+    loadNotifications();
+    const interval = setInterval(loadNotifications, 60000); // Poll every minute
+    return () => clearInterval(interval);
+  }, []);
 
   const handleMarkAsRead = async (id: string) => {
     try {

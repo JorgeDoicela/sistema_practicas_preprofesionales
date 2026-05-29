@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 
+// eslint-disable-next-line no-control-regex
 const CTRL = new RegExp('[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]', 'g');
 
 /** Elimina NUL y controles ASCII; no altera el contenido imprimible (apto para contraseñas). */

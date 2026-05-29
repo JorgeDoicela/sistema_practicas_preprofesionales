@@ -130,7 +130,7 @@ export class AuthService {
       });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     const { password: _, ...result } = user;
     
     // Si tiene 2FA activado, no devolvemos el token todavía
@@ -235,7 +235,7 @@ export class AuthService {
       sub: user.id, 
       role: user.role,
       fullName: user.fullName,
-      careerId: (user as any).careerId ?? null,
+      careerId: (user).careerId ?? null,
     };
 
     const [accessToken, refreshToken] = await Promise.all([
@@ -275,10 +275,10 @@ export class AuthService {
         email: user.email,
         fullName: user.fullName,
         role: user.role,
-        careerId: (user as any).careerId ?? null,
-        cedula: (user as any).cedula ?? null,
-        isTwoFactorEnabled: (user as any).isTwoFactorEnabled || false,
-        lopdpAccepted: (user as any).lopdpAccepted || false,
+        careerId: (user).careerId ?? null,
+        cedula: (user).cedula ?? null,
+        isTwoFactorEnabled: (user).isTwoFactorEnabled || false,
+        lopdpAccepted: (user).lopdpAccepted || false,
       }
     };
   }

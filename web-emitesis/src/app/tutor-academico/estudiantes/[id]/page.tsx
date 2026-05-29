@@ -352,7 +352,7 @@ export default function StudentDetailPage() {
                             </p>
                           )}
                           <p className="text-sm text-slate-600 font-medium leading-relaxed italic">
-                            "{visit.observations}"
+                            &quot;{visit.observations}&quot;
                           </p>
                           {visit.recommendations && (
                             <p className="mt-3 text-xs text-amber-700 bg-amber-50 rounded-xl px-3 py-2 font-medium border border-amber-100">

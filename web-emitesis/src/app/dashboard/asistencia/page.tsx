@@ -29,12 +29,14 @@ import { toast } from "sonner";
 import dynamic from "next/dynamic";
 import { useLanguage } from "@/providers/LanguageProvider";
 
+function MapLoading() {
+  const { t } = useLanguage();
+  return <div className="h-[300px] w-full bg-slate-100 animate-pulse rounded-2xl flex items-center justify-center text-[10px] font-black uppercase text-slate-400">{t.asistencia.accessingRadar}</div>;
+}
+
 const LeafletMap = dynamic(() => import("@/components/dashboard/MapComponent"), {
   ssr: false,
-  loading: () => {
-    const { t } = useLanguage();
-    return <div className="h-[300px] w-full bg-slate-100 animate-pulse rounded-2xl flex items-center justify-center text-[10px] font-black uppercase text-slate-400">{t.asistencia.accessingRadar}</div>
-  }
+  loading: () => <MapLoading />
 });
 
 // ── Tipos ─────────────────────────────────────────────────────────────────

@@ -187,7 +187,7 @@ export default function CoordinadorAusenciasPage() {
                             </p>
                             {ab.reviewNotes && (
                               <p className="text-xs text-slate-500 mt-1 italic">
-                                <span className="font-bold not-italic text-[#003366]">Nota:</span> "{ab.reviewNotes}"
+                                <span className="font-bold not-italic text-[#003366]">Nota:</span> &quot;{ab.reviewNotes}&quot;
                               </p>
                             )}
                           </div>

@@ -252,6 +252,17 @@ interface ReportStatCardProps {
   href?: string;
 }
 
+const CardWrapper = ({ href, children }: { href?: string; children: React.ReactNode }) => {
+  if (href) {
+    return (
+      <Link href={href} className="block group">
+        {children}
+      </Link>
+    );
+  }
+  return <div className="group">{children}</div>;
+};
+
 function ReportStatCard({ title, value, hint, icon, color, href }: ReportStatCardProps) {
   const router = useRouter();
   const colorMap: Record<string, string> = {
@@ -261,19 +272,8 @@ function ReportStatCard({ title, value, hint, icon, color, href }: ReportStatCar
     indigo: "from-indigo-600 to-indigo-400 text-indigo-600 shadow-indigo-200",
   };
 
-  const CardWrapper = ({ children }: { children: React.ReactNode }) => {
-    if (href) {
-      return (
-        <Link href={href} className="block group">
-          {children}
-        </Link>
-      );
-    }
-    return <div className="group">{children}</div>;
-  };
-
   return (
-    <CardWrapper>
+    <CardWrapper href={href}>
       <motion.div 
         whileHover={{ y: -8, scale: 1.02 }}
         whileTap={{ scale: 0.98 }}

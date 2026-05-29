@@ -289,7 +289,7 @@ function EvalCard({ type, title, subtitle, evaluation, icon, color }: any) {
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
                   <TrendingUp className="w-3 h-3 text-[#C5A059]" /> {t.evaluation.cards.feedback}
                 </p>
-                <p className="text-xs font-medium text-slate-600 italic">"{evaluation.observations}"</p>
+                <p className="text-xs font-medium text-slate-600 italic">&quot;{evaluation.observations}&quot;</p>
               </div>
             )}
           </>

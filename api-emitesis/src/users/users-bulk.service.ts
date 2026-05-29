@@ -41,8 +41,8 @@ export class UsersBulkService {
       if (rowNumber === 1) return; // Saltar cabecera
 
       // Sanitización de entradas (OWASP A03)
-      const email = row.getCell(1).text?.trim().toLowerCase().replace(/[<>\/\\"'`]/g, '');
-      const fullName = row.getCell(2).text?.trim().replace(/[<>\/\\"'`]/g, '');
+      const email = row.getCell(1).text?.trim().toLowerCase().replace(/[<>/\\"'`]/g, '');
+      const fullName = row.getCell(2).text?.trim().replace(/[<>/\\"'`]/g, '');
       const roleStr = row.getCell(3).text?.trim().toUpperCase();
       const careerName = row.getCell(4).text?.trim();
 

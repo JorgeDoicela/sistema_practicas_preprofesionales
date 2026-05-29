@@ -4,6 +4,7 @@
  */
 
 /** Sin literales de control en el fuente (eslint no-control-regex). */
+// eslint-disable-next-line no-control-regex
 const CTRL = new RegExp('[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]', 'g');
 
 /** Elimina bytes nulos y caracteres de control ASCII (riesgo en algunos drivers / logs). */

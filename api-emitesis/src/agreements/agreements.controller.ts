@@ -41,7 +41,7 @@ export class AgreementsController {
   @Roles(Role.COORDINADOR) // Solo el Coordinador gestiona convenios
   @UseInterceptors(
     FileInterceptor('file', {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+       
       storage: diskStorage({
         destination: (req, file: MulterFile, cb: (error: Error | null, destination: string) => void) => {
           const uploadPath = './uploads/agreements';

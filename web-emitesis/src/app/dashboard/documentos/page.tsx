@@ -608,7 +608,7 @@ function DocumentosContent() {
                         Retroalimentación
                       </div>
                       <p className="text-xs text-rose-800 font-medium leading-relaxed italic">
-                        "{doc.observations}"
+                        &quot;{doc.observations}&quot;
                       </p>
                       <div className="mt-3 flex items-center gap-2">
                          <div className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
@@ -791,7 +791,7 @@ function DocumentosContent() {
               <p className="text-slate-600 text-sm font-medium leading-relaxed mb-6">
                  {t.documents.ai.detected}
                  <br /><br />
-                 <span className="text-rose-600 font-bold">"{aiFeedback.feedback}"</span>
+                 <span className="text-rose-600 font-bold">&quot;{aiFeedback.feedback}&quot;</span>
               </p>
               <div className="grid grid-cols-2 gap-4">
                 <button
