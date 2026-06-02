@@ -17,10 +17,23 @@ if (!dbUrl) {
   console.log('[Entrypoint] DATABASE_URL no definida. Saltando verificación.');
   process.exit(0);
 }
-// Reemplazar el protocolo para permitir parseo correcto
-const parsed = new URL(dbUrl.replace('postgresql://', 'http://').replace('postgres://', 'http://'));
-const host = parsed.hostname;
-const port = parsed.port || 5432;
+// Reemplazar el protocolo para permitir parseo correcto de forma robusta
+let host = 'db';
+let port = 5432;
+try {
+  const parsed = new URL(dbUrl.replace('postgresql://', 'http://').replace('postgres://', 'http://'));
+  host = parsed.hostname || 'db';
+  port = parsed.port || 5432;
+} catch (e) {
+  console.log('[Entrypoint] Advertencia: No se pudo parsear DATABASE_URL usando URL(). Intentando regex fallback...');
+  const match = dbUrl.match(/@([^/:]+)(?::(\d+))?/);
+  if (match) {
+    host = match[1];
+    port = match[2] || 5432;
+  } else {
+    console.log('[Entrypoint] No se pudo extraer host/puerto. Usando defaults (db:5432).');
+  }
+}
 console.log('[Entrypoint] Intentando conectar a la base de datos en ' + host + ':' + port + '...');
 
 const check = () => {
