@@ -21,18 +21,16 @@ if (!dbUrl) {
 let host = 'db';
 let port = 5432;
 try {
-  const parsed = new URL(dbUrl.replace('postgresql://', 'http://').replace('postgres://', 'http://'));
-  host = parsed.hostname || 'db';
-  port = parsed.port || 5432;
+  const urlWithoutProtocol = dbUrl.split('://')[1] || dbUrl;
+  const authorityAndPath = urlWithoutProtocol.split('/')[0];
+  const parts = authorityAndPath.split('@');
+  const hostPort = parts[parts.length - 1]; // El último elemento siempre es host:port o host
+  const hostPortParts = hostPort.split(':');
+  host = hostPortParts[0] || 'db';
+  const parsedPort = parseInt(hostPortParts[1], 10);
+  port = isNaN(parsedPort) ? 5432 : parsedPort;
 } catch (e) {
-  console.log('[Entrypoint] Advertencia: No se pudo parsear DATABASE_URL usando URL(). Intentando regex fallback...');
-  const match = dbUrl.match(/@([^/:]+)(?::(\d+))?/);
-  if (match) {
-    host = match[1];
-    port = match[2] || 5432;
-  } else {
-    console.log('[Entrypoint] No se pudo extraer host/puerto. Usando defaults (db:5432).');
-  }
+  console.log('[Entrypoint] Error al parsear DATABASE_URL. Usando valores por defecto (db:5432).');
 }
 console.log('[Entrypoint] Intentando conectar a la base de datos en ' + host + ':' + port + '...');
 
