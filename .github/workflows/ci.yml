@@ -179,6 +179,8 @@ jobs:
           port: 22
           envs: GITHUB_TOKEN,GITHUB_ACTOR,ENV_PROD,DOMAIN
           script: |
+            set -e
+
             # Crear directorio si no existe y asegurar ubicacion
             mkdir -p ~/emitesis
             cd ~/emitesis
@@ -204,10 +206,10 @@ jobs:
             echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
 
             # Descargar las imagenes mas recientes desde GHCR
-            docker compose -f docker-compose.prod.yml pull
+            docker-compose -f docker-compose.prod.yml pull
 
             # Levantar/Actualizar los servicios en segundo plano con eliminacion de contenedores huerfanos
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker-compose -f docker-compose.prod.yml up -d --remove-orphans
 
             # Limpiar imagenes obsoletas o sin etiqueta para evitar consumo innecesario de almacenamiento en el VPS
             docker image prune -f
