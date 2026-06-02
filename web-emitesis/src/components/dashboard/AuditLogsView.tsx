@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   ScrollText,
   Search,
@@ -29,7 +29,7 @@ export function AuditLogsView() {
   const [filterLevel, setFilterLevel] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
 
-  const loadLogs = async () => {
+  const loadLogs = useCallback(async () => {
     setLoading(true);
     try {
       const result = await systemLogsService.getLogs(page, 20, {
@@ -43,11 +43,11 @@ export function AuditLogsView() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, filterLevel, filterCategory]);
 
   useEffect(() => {
     loadLogs();
-  }, [page, filterLevel, filterCategory]);
+  }, [loadLogs]);
 
   const getLevelBadge = (level: string) => {
     switch (level) {

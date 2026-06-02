@@ -22,7 +22,7 @@ function ResetPasswordForm() {
     if (!token) {
       setMessage({ type: 'error', text: t.resetPassword.invalidToken });
     }
-  }, [token]);
+  }, [token, t.resetPassword.invalidToken]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

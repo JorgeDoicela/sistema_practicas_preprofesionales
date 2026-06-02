@@ -229,7 +229,7 @@ export function DashboardMain() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
@@ -633,7 +633,7 @@ export function DashboardMain() {
     }
 
     return { cards: [] };
-  }, [appRole, internships, agreementsCount, adminStats, globalStats]);
+  }, [appRole, internships, agreementsCount, adminStats, globalStats, t]);
 
   const recentAttendances = useMemo(() => {
     return flattenRecentAttendances(internships, 6, t);

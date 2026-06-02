@@ -272,7 +272,6 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       newSocket.close();
       socketRef.current = null;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshRooms, refreshContacts]);
 
   useEffect(() => {
@@ -306,7 +305,6 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       clearTimeout(retryTimer);
       window.removeEventListener("storage", handleStorage);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initSocket]);
 
   // Cargar historial al cambiar sala activa

@@ -64,7 +64,7 @@ export function ProfileView() {
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [t.profile.errorLoading]);
 
   const openEdit = () => {
     setEditName(profile?.fullName ?? "");

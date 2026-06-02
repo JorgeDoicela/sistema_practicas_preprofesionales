@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   ShieldAlert,
   Search,
@@ -39,7 +39,7 @@ export function PrivacyAdminView() {
   const [responseMsg, setResponseMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const loadRequests = async () => {
+  const loadRequests = useCallback(async () => {
     setLoading(true);
     try {
       const data = await privacyService.findAllAdmin();
@@ -49,11 +49,11 @@ export function PrivacyAdminView() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t.admin.privacy.toastLoadError]);
 
   useEffect(() => {
     loadRequests();
-  }, []);
+  }, [loadRequests]);
 
   const handleRespond = async (status: string) => {
     if (!selectedRequest || !responseMsg.trim()) {

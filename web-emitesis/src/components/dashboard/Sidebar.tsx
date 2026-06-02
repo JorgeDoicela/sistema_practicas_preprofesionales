@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import type { ElementType } from "react";
 import { cn } from "@/lib/utils";
 import {
@@ -151,9 +151,9 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         setIsResizing(true);
     };
 
-    const stopResizing = () => setIsResizing(false);
+    const stopResizing = useCallback(() => setIsResizing(false), []);
 
-    const resize = (e: MouseEvent) => {
+    const resize = useCallback((e: MouseEvent) => {
         if (isResizing) {
             const newWidth = e.clientX;
             if (newWidth >= 200 && newWidth <= 480) {
@@ -161,7 +161,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 localStorage.setItem("sidebarWidth", newWidth.toString());
             }
         }
-    };
+    }, [isResizing]);
 
     useEffect(() => {
         if (isResizing) {
@@ -172,7 +172,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             window.removeEventListener("mousemove", resize);
             window.removeEventListener("mouseup", stopResizing);
         };
-    }, [isResizing]);
+    }, [isResizing, resize, stopResizing]);
 
     const roleRaw: string = user?.role ?? "";
     const role = normalizeApiRoleToAppRole(roleRaw);

@@ -26,10 +26,19 @@ export default function LeafletMap({ lat, lng, radiusM = 200, onChange }: Leafle
   const markerInstance = useRef<L.Marker | null>(null);
   const circleInstance = useRef<L.Circle | null>(null);
 
+  const initialLatRef = useRef(lat);
+  const initialLngRef = useRef(lng);
+  const initialRadiusRef = useRef(radiusM);
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
   useEffect(() => {
     if (!mapRef.current || mapInstance.current) return;
 
-    const center: [number, number] = [lat || -0.180653, lng || -78.467838];
+    const center: [number, number] = [initialLatRef.current || -0.180653, initialLngRef.current || -78.467838];
     
     // Initialize map
     const map = L.map(mapRef.current).setView(center, 16);
@@ -44,9 +53,9 @@ export default function LeafletMap({ lat, lng, radiusM = 200, onChange }: Leafle
     markerInstance.current = L.marker(center, { icon }).addTo(map);
 
     // Initial Circle
-    if (radiusM > 0) {
+    if (initialRadiusRef.current > 0) {
       circleInstance.current = L.circle(center, {
-        radius: radiusM,
+        radius: initialRadiusRef.current,
         fillColor: "#003366",
         fillOpacity: 0.1,
         color: "#003366",
@@ -57,7 +66,7 @@ export default function LeafletMap({ lat, lng, radiusM = 200, onChange }: Leafle
 
     // Click event
     map.on("click", (e) => {
-      onChange(e.latlng.lat, e.latlng.lng);
+      onChangeRef.current(e.latlng.lat, e.latlng.lng);
     });
 
     return () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Navbar } from "@/components/dashboard/Navbar";
@@ -10,12 +10,14 @@ import { normalizeApiRoleToAppRole, type Role } from "@/constants/roles";
 import { canRoleAccessPath, getHomePathForRole, normalizePathname } from "@/lib/route-access";
 import { DashboardTour } from "@/components/tour/DashboardTour";
 import { useLanguage } from "@/providers/LanguageProvider";
-import { useRef } from "react";
 import { AICopilot } from "./AICopilot";
 import { internshipsService } from "@/services/internships.service";
 import { ROLES } from "@/constants/roles";
 import Cookies from "js-cookie";
 
+// Inactivity & Session Limits (Enterprise Security)
+const INACTIVITY_LIMIT = 15 * 60 * 1000; // 15 minutos
+const ABSOLUTE_LIMIT = 4 * 60 * 60 * 1000; // 4 horas
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { t } = useLanguage();
@@ -28,27 +30,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [activeInternship, setActiveInternship] = useState<any>(null);
   const [appRole, setAppRole] = useState<string | null>(null);
 
-  // Inactivity & Session Limits (Enterprise Security)
-  const INACTIVITY_LIMIT = 15 * 60 * 1000; // 15 minutos
-  const ABSOLUTE_LIMIT = 4 * 60 * 60 * 1000; // 4 horas
-  
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const securityCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const resetInactivityTimer = () => {
-    // 1. Actualizar timestamp global (todas las pestañas ven esto)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('last_activity', Date.now().toString());
-    }
-    
-    // 2. Timer local para ejecución inmediata si esta es la pestaña activa
-    if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
-    inactivityTimerRef.current = setTimeout(() => {
-      checkSessionSecurity();
-    }, INACTIVITY_LIMIT + 1000); // Pequeño buffer para dejar que el interval actúe primero
-  };
-
-  const handleLogout = (reason: 'inactivity' | 'absolute' | 'manual' | 'sync' = 'manual') => {
+  const handleLogout = useCallback((reason: 'inactivity' | 'absolute' | 'manual' | 'sync' = 'manual') => {
     console.warn(`[Security] Logging out due to: ${reason}`);
     
     // 1. Limpiar localStorage
@@ -70,9 +55,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                          reason === 'absolute' ? 'sessionLimit=true' : 'logout=true';
       window.location.href = `/login?${errorParam}`;
     }
-  };
+  }, []);
 
-  const checkSessionSecurity = () => {
+  const checkSessionSecurity = useCallback(() => {
     if (typeof window === 'undefined') return;
 
     const now = Date.now();
@@ -93,7 +78,20 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       handleLogout('absolute');
       return;
     }
-  };
+  }, [handleLogout]);
+
+  const resetInactivityTimer = useCallback(() => {
+    // 1. Actualizar timestamp global (todas las pestañas ven esto)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('last_activity', Date.now().toString());
+    }
+    
+    // 2. Timer local para ejecución inmediata si esta es la pestaña activa
+    if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+    inactivityTimerRef.current = setTimeout(() => {
+      checkSessionSecurity();
+    }, INACTIVITY_LIMIT + 1000); // Pequeño buffer para dejar que el interval actúe primero
+  }, [checkSessionSecurity]);
 
   useEffect(() => {
     const handleInitialState = () => {
@@ -122,7 +120,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         window.removeEventListener(event, resetInactivityTimer);
       });
     };
-  }, []);
+  }, [checkSessionSecurity, resetInactivityTimer]);
 
   useEffect(() => {
     const isTokenExpired = (tok: string): boolean => {
@@ -253,7 +251,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [router, pathname]);
+  }, [router, pathname, handleLogout]);
 
   if (isLoading || !isAuthorized) {
     return (

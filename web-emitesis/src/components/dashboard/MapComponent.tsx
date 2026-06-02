@@ -28,11 +28,14 @@ export default function MapComponent({ center, zoom = 14, points = [], radiusM, 
   const circleRef = useRef<L.Circle | null>(null);
   const circlesRef = useRef<L.Circle[]>([]);
 
+  const initialCenterRef = useRef(center);
+  const initialZoomRef = useRef(zoom);
+
   useEffect(() => {
     if (!mapRef.current || mapInstance.current) return;
 
     // Initialize map
-    const map = L.map(mapRef.current).setView([center.lat, center.lng], zoom);
+    const map = L.map(mapRef.current).setView([initialCenterRef.current.lat, initialCenterRef.current.lng], initialZoomRef.current);
     mapInstance.current = map;
 
     // Add tiles
