@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -50,6 +50,7 @@ export default function UsuariosManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   
   // Dynamic filter states
   const [selectedRole, setSelectedRole] = useState<string>('ALL');
@@ -114,7 +115,7 @@ export default function UsuariosManagementPage() {
           .replace('{created}', String(result.summary.created))
           .replace('{skipped}', String(result.summary.skipped))
       );
-      fetchData(currentPage, limit);
+      fetchData(currentPage, limit, debouncedSearchTerm, selectedRole, selectedStatus);
     } catch (err: unknown) {
       toast.error((err as Error).message || t.admin.users.toastError);
     } finally {
@@ -123,12 +124,12 @@ export default function UsuariosManagementPage() {
     }
   };
 
-  const fetchData = async (
-    page = currentPage,
-    currentLimit = limit,
-    search = searchTerm,
-    role = selectedRole,
-    status = selectedStatus
+  const fetchData = useCallback(async (
+    page: number,
+    currentLimit: number,
+    search: string,
+    role: string,
+    status: string
   ) => {
     try {
       setLoading(true);
@@ -156,20 +157,20 @@ export default function UsuariosManagementPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchData(currentPage, limit, searchTerm, selectedRole, selectedStatus);
-  }, [currentPage, limit, selectedRole, selectedStatus]);
+  }, []);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetchData(1, limit, searchTerm, selectedRole, selectedStatus);
+      setDebouncedSearchTerm(searchTerm);
       setCurrentPage(1);
     }, 400);
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm]);
+
+  useEffect(() => {
+    fetchData(currentPage, limit, debouncedSearchTerm, selectedRole, selectedStatus);
+  }, [fetchData, currentPage, limit, debouncedSearchTerm, selectedRole, selectedStatus]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -218,7 +219,7 @@ export default function UsuariosManagementPage() {
         toast.success(t.admin.users.toastCreateSuccess);
       }
       setIsModalOpen(false);
-      fetchData(currentPage, limit);
+      fetchData(currentPage, limit, debouncedSearchTerm, selectedRole, selectedStatus);
     } catch (err: unknown) {
       const errorMsg = (err as Error).message || t.admin.users.toastError;
       setError(errorMsg);
@@ -230,7 +231,7 @@ export default function UsuariosManagementPage() {
     try {
       await usersService.update(user.id, { isActive: !user.isActive });
       toast.success(t.admin.users.toastStatusSuccess);
-      fetchData(currentPage, limit);
+      fetchData(currentPage, limit, debouncedSearchTerm, selectedRole, selectedStatus);
     } catch (err: unknown) {
       toast.error((err as Error).message || t.admin.users.toastError);
     }
@@ -255,7 +256,7 @@ export default function UsuariosManagementPage() {
       await usersService.remove(id);
       toast.success(t.admin.users.toastDeleteSuccess);
       deleteConfirm.close();
-      fetchData(currentPage, limit);
+      fetchData(currentPage, limit, debouncedSearchTerm, selectedRole, selectedStatus);
     } catch (err: unknown) {
       toast.error((err as Error).message || t.admin.users.toastError);
     } finally {
@@ -268,7 +269,7 @@ export default function UsuariosManagementPage() {
     try {
       await usersService.remove(pendingDeleteId, code);
       toast.success(t.admin.users.toastDeleteSuccess);
-      fetchData(currentPage, limit);
+      fetchData(currentPage, limit, debouncedSearchTerm, selectedRole, selectedStatus);
       setIs2faModalOpen(false);
       setPendingDeleteId(null);
     } catch (err: unknown) {

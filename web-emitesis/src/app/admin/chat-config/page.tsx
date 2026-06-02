@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { 
   Shield, 
@@ -159,7 +159,7 @@ export default function ChatConfigPage() {
   const [savingRetention, setSavingRetention] = useState(false);
 
   // ── Metadatos por rol (Traducidos) ──────────────────────────────────────────
-  const ROLE_META: Record<Role, { label: string; color: string; Icon: React.ElementType; desc: string }> = {
+  const ROLE_META = useMemo<Record<Role, { label: string; color: string; Icon: React.ElementType; desc: string }>>(() => ({
     ADMIN: {
       label: t.common.roles.ADMIN,
       color: "text-red-700",
@@ -191,7 +191,7 @@ export default function ChatConfigPage() {
       Icon: Building2,
       desc: t.common.language === "es" ? "Institución receptora de pasantes" : "Host institution for interns",
     },
-  };
+  }), [t]);
 
   const PAIR_CONTEXT: Partial<Record<string, string>> = {
     "TUTOR__COORDINADOR": t.common.language === "es" ? "Canal de coordinación académica: tutores y coordinadores discuten asignaciones y avances." : "Academic coordination channel: tutors and coordinators discuss assignments and progress.",
@@ -270,7 +270,7 @@ export default function ChatConfigPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t.common.error]);
 
   useEffect(() => {
     fetchPermissions();
@@ -315,7 +315,7 @@ export default function ChatConfigPage() {
     } finally {
       setToggling(null);
     }
-  }, []);
+  }, [ROLE_META, t.chatConfig.title]);
 
   // Pares únicos para la tabla
   const handleSaveRetention = async () => {

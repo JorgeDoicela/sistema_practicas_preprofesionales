@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { announcementsService, Announcement } from "@/services/announcements.service";
 import { useLanguage } from "@/providers/LanguageProvider";
@@ -30,11 +30,7 @@ export default function AdminAnnouncementsPage() {
   const [newType, setNewType] = useState<Announcement['type']>("INFO");
   const [newEndDate, setNewEndDate] = useState("");
 
-  useEffect(() => {
-    loadAnnouncements();
-  }, []);
-
-  async function loadAnnouncements() {
+  const loadAnnouncements = useCallback(async () => {
     try {
       setLoading(true);
       const res: any = await announcementsService.findAll();
@@ -46,7 +42,11 @@ export default function AdminAnnouncementsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [t.common.errors.generic]);
+
+  useEffect(() => {
+    loadAnnouncements();
+  }, [loadAnnouncements]);
 
   async function handleCreate() {
     if (!newTitle || !newContent) return;

@@ -108,7 +108,7 @@ export default function EvaluarEstudiantePage() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t.common.errors.generic]);
 
   useEffect(() => {
     loadData();

@@ -176,7 +176,7 @@ export default function AsistenciaPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t.asistencia.viewerHint, t.common.error]);
 
   useEffect(() => { loadData(); }, [loadData]);
 

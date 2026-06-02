@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -37,7 +37,7 @@ export default function CarrerasAdminPage() {
     requiredHours: 160,
   });
 
-  const loadCareers = async () => {
+  const loadCareers = useCallback(async () => {
     try {
       setLoading(true);
       const res: any = await careersService.findAll();
@@ -48,9 +48,9 @@ export default function CarrerasAdminPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t.admin.careers.loadError]);
 
-  useEffect(() => { loadCareers(); }, []);
+  useEffect(() => { loadCareers(); }, [loadCareers]);
 
   const openModal = (career: Career | null = null) => {
     setEditingCareer(career);

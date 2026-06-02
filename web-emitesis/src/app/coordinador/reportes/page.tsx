@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { 
   BarChart3, 
@@ -32,9 +32,9 @@ export default function ReportesPage() {
 
   useEffect(() => {
     loadStats();
-  }, []);
+  }, [loadStats]);
 
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     try {
       setLoading(true);
       const userStr = localStorage.getItem("user");
@@ -56,7 +56,7 @@ export default function ReportesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t.common.error]);
 
   const handleExport = async (type: "excel" | "pdf") => {
     try {
