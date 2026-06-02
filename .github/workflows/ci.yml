@@ -162,7 +162,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
-          source: "docker-compose.prod.yml,nginx.conf,backup-db.sh,manage-db.sh"
+          source: "docker-compose.prod.yml,nginx.conf,backup-db.sh,manage-db.sh,certs/origin.pem,certs/origin.key"
           target: "~/emitesis"
 
       - name: Execute remote deployment commands via SSH

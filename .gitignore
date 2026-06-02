@@ -19,7 +19,6 @@ web-emitesis/out/
 
 # misc
 .DS_Store
-*.pem
 
 # debug
 npm-debug.log*
