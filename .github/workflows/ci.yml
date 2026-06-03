@@ -271,13 +271,13 @@ jobs:
             echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
 
             # TEMPORAL: Limpiar volúmenes corruptos de la base de datos (se removerá después de este despliegue)
-            docker compose -f docker-compose.prod.yml down -v || true
+            docker-compose -f docker-compose.prod.yml down -v || true
 
             # Descargar las imagenes mas recientes desde GHCR
-            docker compose -f docker-compose.prod.yml pull
+            docker-compose -f docker-compose.prod.yml pull
 
             # Levantar/Actualizar los servicios en segundo plano con eliminacion de contenedores huerfanos
-            if ! docker compose -f docker-compose.prod.yml up -d --remove-orphans; then
+            if ! docker-compose -f docker-compose.prod.yml up -d --remove-orphans; then
               echo "=== ERROR AL INICIAR LOS CONTENEDORES ==="
               echo "=== ESTADO DE TODOS LOS CONTENEDORES ==="
               docker ps -a || true
