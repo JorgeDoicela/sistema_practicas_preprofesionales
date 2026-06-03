@@ -147,6 +147,7 @@ jobs:
           labels: ${{ steps.meta-frontend.outputs.labels }}
           build-args: |
             NEXT_PUBLIC_API_URL=/api
+            NEXT_PUBLIC_RECAPTCHA_SITE_KEY=6Lej8bosAAAAAHS1jnehMjfBm1FZ6a6a__3Yuteg
 
   deploy:
     name: Deploy to AWS VPS
@@ -227,6 +228,18 @@ jobs:
             echo "POSTGRES_DB=emitesis_db" >> .env
             echo "DATABASE_URL=postgresql://postgres:EmitesPass2026@db:5432/emitesis_db?schema=public" >> .env
             echo "DIRECT_URL=postgresql://postgres:EmitesPass2026@db:5432/emitesis_db?schema=public" >> .env
+
+            # Forzar consistencia de variables del dominio de producción
+            # Esto evita bloqueos por CORS y fallos en WebAuthn (inicio con huella dactilar)
+            sed -i '/^CORS_ORIGINS=/d' .env || true
+            sed -i '/^PUBLIC_APP_URL=/d' .env || true
+            sed -i '/^WEBAUTHN_RP_ID=/d' .env || true
+            sed -i '/^WEBAUTHN_ORIGIN=/d' .env || true
+
+            echo "CORS_ORIGINS=https://$DOMAIN" >> .env
+            echo "PUBLIC_APP_URL=https://$DOMAIN" >> .env
+            echo "WEBAUTHN_RP_ID=$DOMAIN" >> .env
+            echo "WEBAUTHN_ORIGIN=https://$DOMAIN" >> .env
 
             # DIAGNÓSTICO SEGURO (no expone contraseñas completas en logs)
             echo "=== DIAGNÓSTICO SEGURO DE VARIABLES EN .ENV ==="

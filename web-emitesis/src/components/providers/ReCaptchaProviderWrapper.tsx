@@ -8,7 +8,7 @@ interface ReCaptchaProviderWrapperProps {
 }
 
 export function ReCaptchaProviderWrapper({ children }: ReCaptchaProviderWrapperProps) {
-  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "";
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6Lej8bosAAAAAHS1jnehMjfBm1FZ6a6a__3Yuteg";
   
   return (
     <GoogleReCaptchaProvider

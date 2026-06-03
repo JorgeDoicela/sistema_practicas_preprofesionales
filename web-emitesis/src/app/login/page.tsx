@@ -30,7 +30,7 @@ export default function LoginPage() {
     const [mfaUserId, setMfaUserId] = useState<string | null>(null);
     const { t } = useLanguage();
 
-    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6Lej8bosAAAAAHS1jnehMjfBm1FZ6a6a__3Yuteg";
     const isDev = process.env.NODE_ENV === "development";
 
     const handleSubmit = async (e: React.FormEvent) => {
