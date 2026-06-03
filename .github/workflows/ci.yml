@@ -197,6 +197,55 @@ jobs:
               sed -i "s/DOMAIN=.*/DOMAIN=$DOMAIN/" .env
             fi
 
+            # Validar consistencia de credenciales en el archivo .env
+            if [ -f .env ]; then
+              ENV_USER=$(grep "^POSTGRES_USER=" .env | cut -d'=' -f2- | tr -d '"' | tr -d "'")
+              ENV_USER=${ENV_USER:-postgres}
+              
+              ENV_PASS=$(grep "^POSTGRES_PASSWORD=" .env | cut -d'=' -f2- | tr -d '"' | tr -d "'")
+              ENV_PASS=${ENV_PASS:-password}
+              
+              ENV_DB=$(grep "^POSTGRES_DB=" .env | cut -d'=' -f2- | tr -d '"' | tr -d "'")
+              ENV_DB=${ENV_DB:-emitesis_db}
+
+              DB_URL=$(grep "^DATABASE_URL=" .env | cut -d'=' -f2- | tr -d '"' | tr -d "'")
+              
+              echo "=== CONTROL DE CALIDAD DE VARIABLES DE ENTORNO ==="
+              if [ -n "$DB_URL" ]; then
+                DB_URL_CLEAN=$(echo "$DB_URL" | cut -d'?' -f1)
+                DB_URL_NO_PROTO=$(echo "$DB_URL_CLEAN" | sed -E 's|.*://||')
+                DB_URL_AUTH=$(echo "$DB_URL_NO_PROTO" | cut -d'@' -f1)
+                DB_URL_HOST_DB=$(echo "$DB_URL_NO_PROTO" | cut -d'@' -f2)
+                
+                DB_URL_USER=$(echo "$DB_URL_AUTH" | cut -d':' -f1)
+                DB_URL_PASS=$(echo "$DB_URL_AUTH" | cut -d':' -f2)
+                DB_URL_DB=$(echo "$DB_URL_HOST_DB" | cut -d'/' -f2)
+
+                ERROR_DETECTADO=0
+                if [ "$ENV_USER" != "$DB_URL_USER" ]; then
+                  echo "❌ ERROR: El usuario en POSTGRES_USER ('$ENV_USER') no coincide con el usuario en DATABASE_URL ('$DB_URL_USER')."
+                  ERROR_DETECTADO=1
+                fi
+                if [ "$ENV_PASS" != "$DB_URL_PASS" ]; then
+                  echo "❌ ERROR: La contraseña en POSTGRES_PASSWORD no coincide con la contraseña configurada en DATABASE_URL."
+                  ERROR_DETECTADO=1
+                fi
+                if [ "$ENV_DB" != "$DB_URL_DB" ]; then
+                  echo "❌ ERROR: La base de datos en POSTGRES_DB ('$ENV_DB') no coincide con la base de datos en DATABASE_URL ('$DB_URL_DB')."
+                  ERROR_DETECTADO=1
+                fi
+                
+                if [ $ERROR_DETECTADO -eq 1 ]; then
+                  echo "Por favor, corrige tu secreto ENV_PROD en GitHub para que las credenciales coincidan."
+                  exit 1
+                else
+                  echo "✅ Las credenciales en POSTGRES_USER/PASSWORD/DB coinciden con DATABASE_URL."
+                fi
+              else
+                echo "⚠️ ADVERTENCIA: DATABASE_URL no está definida en el archivo .env, usando valores por defecto."
+              fi
+            fi
+
             # Asegurar permisos de ejecucion para el script de respaldo automatizado
             chmod +x backup-db.sh
 
