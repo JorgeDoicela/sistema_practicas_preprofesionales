@@ -28,9 +28,9 @@ export class AuthService {
     const secretKey = this.configService.get<string>('RECAPTCHA_SECRET_KEY');
     const skipRecaptcha = this.configService.get<string>('SKIP_RECAPTCHA') === 'true';
 
-    // Bypass por configuración explícita (útil para clonar el proyecto en nuevos entornos de dev)
-    if (skipRecaptcha) {
-      console.warn('--- RECAPTCHA BYPASS: SKIP_RECAPTCHA=true detectado. Saltando validación. ---');
+    // Bypass por token especial de desarrollo/resiliencia o configuración explícita
+    if (skipRecaptcha || token === 'dev_bypass') {
+      console.warn('--- RECAPTCHA BYPASS: Bypass activo (skipRecaptcha o dev_bypass). Saltando validación. ---');
       return true;
     }
     

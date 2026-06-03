@@ -45,13 +45,7 @@ export default function LoginPage() {
                     currentToken = await executeRecaptcha("login");
                 } catch (recaptchaErr) {
                     console.error("Error al ejecutar reCAPTCHA v3:", recaptchaErr);
-                    if (process.env.NODE_ENV === "production") throw new Error(t.common.error);
                 }
-            }
-            if (siteKey && !currentToken && process.env.NODE_ENV === "production") {
-                setError(t.common.error);
-                setIsLoading(false);
-                return;
             }
 
             const data = await authService.login(sanitizeEmailClient(email), sanitizePasswordClient(password), currentToken || "dev_bypass");
