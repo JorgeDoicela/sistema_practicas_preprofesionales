@@ -211,7 +211,16 @@ jobs:
             docker-compose -f docker-compose.prod.yml pull
 
             # Levantar/Actualizar los servicios en segundo plano con eliminacion de contenedores huerfanos
-            docker-compose -f docker-compose.prod.yml up -d --remove-orphans
+            if ! docker-compose -f docker-compose.prod.yml up -d --remove-orphans; then
+              echo "=== ERROR AL INICIAR LOS CONTENEDORES ==="
+              echo "=== LOGS DE LA BASE DE DATOS ==="
+              docker-compose -f docker-compose.prod.yml logs --tail=100 db || true
+              echo "=== LOGS DEL API (BACKEND) ==="
+              docker-compose -f docker-compose.prod.yml logs --tail=100 api || true
+              echo "=== LOGS DEL WEB (FRONTEND) ==="
+              docker-compose -f docker-compose.prod.yml logs --tail=100 web || true
+              exit 1
+            fi
 
             # Limpiar imagenes obsoletas o sin etiqueta para evitar consumo innecesario de almacenamiento en el VPS
             docker image prune -f
