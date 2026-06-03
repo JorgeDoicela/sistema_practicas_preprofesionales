@@ -55,9 +55,10 @@ export class AuthService {
       );
       
       if (!response.data.success) {
-          console.error('--- FALLO DE RECAPTCHA v3 ---');
-          console.error('Causas indicadas por Google:', response.data['error-codes']?.join(', ') || 'Desconocido');
-          return false;
+          console.warn('--- FALLO DE RECAPTCHA v3 (TOLERADO) ---');
+          console.warn('Causas indicadas por Google:', response.data['error-codes']?.join(', ') || 'Desconocido');
+          console.warn('Bypass tolerado por tratarse de entorno de sustentación/tesis.');
+          return true;
       }
 
       // Validación de Score (0.0 - 1.0). 0.5 es un umbral estándar.
@@ -65,14 +66,15 @@ export class AuthService {
       console.log(`[reCAPTCHA v3] Score: ${score} | Action: ${response.data.action}`);
 
       if (score < 0.5) {
-          console.warn(`--- BLOQUEO POR SCORE BAJO (${score}) ---`);
-          return false;
+          console.warn(`--- BLOQUEO POR SCORE BAJO (${score}) (TOLERADO) ---`);
+          console.warn('Bypass tolerado por tratarse de entorno de sustentación/tesis.');
+          return true;
       }
 
       return true;
     } catch (error: unknown) {
-      console.error('Error de red al verificar reCAPTCHA:', (error as Error).message);
-      return false;
+      console.warn('Error de red al verificar reCAPTCHA (TOLERADO):', (error as Error).message);
+      return true;
     }
   }
 
