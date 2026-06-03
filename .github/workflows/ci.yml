@@ -264,12 +264,14 @@ jobs:
             # Levantar/Actualizar los servicios en segundo plano con eliminacion de contenedores huerfanos
             if ! docker-compose -f docker-compose.prod.yml up -d --remove-orphans; then
               echo "=== ERROR AL INICIAR LOS CONTENEDORES ==="
-              echo "=== LOGS DE LA BASE DE DATOS ==="
-              docker-compose -f docker-compose.prod.yml logs --tail=100 db || true
-              echo "=== LOGS DEL API (BACKEND) ==="
-              docker-compose -f docker-compose.prod.yml logs --tail=100 api || true
-              echo "=== LOGS DEL WEB (FRONTEND) ==="
-              docker-compose -f docker-compose.prod.yml logs --tail=100 web || true
+              echo "=== ESTADO DE TODOS LOS CONTENEDORES ==="
+              docker ps -a || true
+              echo "=== LOGS DE LA BASE DE DATOS (DOCKER LOGS) ==="
+              docker logs emitesis-db-prod || true
+              echo "=== LOGS DEL API (DOCKER LOGS) ==="
+              docker logs emitesis-api-prod || true
+              echo "=== LOGS DEL WEB (DOCKER LOGS) ==="
+              docker logs emitesis-web-prod || true
               exit 1
             fi
 
