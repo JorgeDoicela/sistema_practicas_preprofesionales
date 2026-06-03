@@ -1,0 +1,19 @@
+# =====================================================================
+#   PRAXISHUB - CONFIGURACIÓN DE TERRAFORM
+# =====================================================================
+# Renombra este archivo a 'terraform.tfvars' e ingresa tus valores reales.
+# ¡NUNCA subas 'terraform.tfvars' a tu repositorio de Git!
+
+# Credenciales de AWS
+aws_access_key = "TU_AWS_ACCESS_KEY_AQUI"
+aws_secret_key = "TU_AWS_SECRET_KEY_AQUI"
+aws_region     = "us-east-1"
+
+# Ajustes de la instancia
+instance_name     = "praxishub-prod-instance"
+availability_zone = "us-east-1a"
+bundle_id         = "small_2_0" # 2 GB RAM ($10/mes). Puedes usar "micro_2_0" (1 GB RAM - $5/mes) si el presupuesto es bajo.
+
+# Tu clave pública SSH local (~/.ssh/id_rsa.pub) para poder ingresar por consola.
+# Si la dejas vacía, deberás usar la consola web oficial de AWS Lightsail para conectarte.
+ssh_public_key = "ssh-rsa AAAA..."
