@@ -187,8 +187,8 @@ jobs:
             mkdir -p ~/emitesis
             cd ~/emitesis
 
-            # Escribir el archivo .env de produccion a partir del secret
-            echo "$ENV_PROD" > .env
+            # Escribir el archivo .env de produccion y limpiar retornos de carro de Windows (CRLF -> LF)
+            echo "$ENV_PROD" | tr -d '\r' > .env
 
             # Asegurar que la variable DOMAIN este presente en el archivo .env si es requerida
             if ! grep -q "DOMAIN=" .env; then
@@ -246,10 +246,9 @@ jobs:
               fi
             fi
 
-            # Asegurar permisos de ejecucion para el script de respaldo automatizado
+            # Asegurar formato LF y permisos de ejecucion para los scripts operativos
+            sed -i 's/\r$//' backup-db.sh manage-db.sh || true
             chmod +x backup-db.sh
-
-            # Asegurar permisos de ejecucion para el script gestor unificado de base de datos
             chmod +x manage-db.sh
 
 
