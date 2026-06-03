@@ -27,8 +27,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: ${API_PORT:-5000}
-      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-emitesis_db}?schema=public}
-      DIRECT_URL: ${DIRECT_URL:-${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-emitesis_db}?schema=public}}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:password@db:5432/emitesis_db?schema=public}
+      DIRECT_URL: ${DIRECT_URL:-postgresql://postgres:password@db:5432/emitesis_db?schema=public}
       JWT_SECRET: ${JWT_SECRET:-EmitesisSecretKey2026!}
       CORS_ORIGINS: ${CORS_ORIGINS:-}
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:3005}
