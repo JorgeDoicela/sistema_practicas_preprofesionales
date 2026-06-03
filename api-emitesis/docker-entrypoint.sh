@@ -12,11 +12,12 @@ set -e
 echo "Esperando a que la base de datos esté disponible..."
 node -e "
 const net = require('net');
-const dbUrl = process.env.DATABASE_URL;
+let dbUrl = process.env.DATABASE_URL;
 if (!dbUrl) {
   console.log('[Entrypoint] DATABASE_URL no definida. Saltando verificación.');
   process.exit(0);
 }
+dbUrl = dbUrl.replace(/[\"\']/g, '').trim();
 // Reemplazar el protocolo para permitir parseo correcto de forma robusta
 let host = 'db';
 let port = 5432;
