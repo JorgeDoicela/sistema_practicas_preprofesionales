@@ -36,8 +36,15 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config as RetryableConfig;
     
-    // Si es 401 y hay sesión activa
-    if (error.response?.status === 401 && typeof window !== 'undefined') {
+    // No interceptar rutas de autenticación pública (login, registro, etc.) para evitar bucles o alertas confusas
+    const isAuthRoute = originalRequest.url?.includes('/auth/login') ||
+                        originalRequest.url?.includes('/auth/register-company') ||
+                        originalRequest.url?.includes('/auth/forgot-password') ||
+                        originalRequest.url?.includes('/auth/reset-password') ||
+                        originalRequest.url?.includes('/auth/2fa/authenticate');
+
+    // Si es 401, hay sesión activa y no es una ruta de login/registro
+    if (error.response?.status === 401 && typeof window !== 'undefined' && !isAuthRoute) {
       // Caso 1: Si ya intentamos reintentar y volvió a dar 401, significa que el token refrescado también falló
       // → Forzar logout total inmediato para evitar bucles o quedarse atascado en /dashboard.
       if (originalRequest._retry) {
