@@ -42,11 +42,6 @@ const daysAgo = (n: number): Date => {
     return d;
 };
 
-const hoursAgo = (n: number): Date => {
-    const d = new Date();
-    d.setHours(d.getHours() - n);
-    return d;
-};
 
 const randInt = (min: number, max: number): number =>
     Math.floor(Math.random() * (max - min + 1)) + min;
@@ -138,7 +133,7 @@ const visitObservations = [
 // ── MAIN ──────────────────────────────────────────────────────────────────
 
 async function main() {
-    console.log('\n🚀 INICIANDO MASTER SEED v13.0 — ISTPET "Mayor Pedro Traversari"');
+    console.log('\n🚀 INICIANDO MASTER SEED v14.0 — ISTPET "Mayor Pedro Traversari"');
     console.log('═══════════════════════════════════════════════════════════\n');
 
     // ─── 1. LIMPIEZA (orden estricto de integridad referencial) ──────────────
@@ -146,6 +141,7 @@ async function main() {
     const tables = [
         'activityPhoto', 'attendance', 'documentVersion', 'documentComment', 'document',
         'documentTemplate', 'monitoringVisit', 'evaluation', 'internshipStatusHistory',
+        'absence', 'lopdpLog', 'chatMessage', 'chatRoomMember', 'chatRoom', 'chatPermission',
         'internship', 'agreement', 'userCredential', 'dataRequest', 'inAppNotification',
         'user', 'career', 'company', 'emailLog', 'systemSetting', 'announcement', 'systemLog'
     ];
@@ -176,13 +172,14 @@ async function main() {
         // Departamento de Tecnologías de la Información y Comunicación
         { name: 'Desarrollo de Software', faculty: 'Tecnologías de la Información y Comunicación', modalidad: Modalidad.PRESENCIAL, hours: 200 },
         { name: 'Electrónica', faculty: 'Tecnologías de la Información y Comunicación', modalidad: Modalidad.SEMIPRESENCIAL, hours: 200 },
-        { name: 'Redes y Telecomunicaciones', faculty: 'Tecnologías de la Información y Comunicación', modalidad: Modalidad.SEMIPRESENCIAL, hours: 200 },
+        { name: 'Redes & Telecomunicaciones', faculty: 'Tecnologías de la Información y Comunicación', modalidad: Modalidad.SEMIPRESENCIAL, hours: 200 },
+        { name: 'Desarrollo de Software', faculty: 'Tecnologías de la Información y Comunicación', modalidad: Modalidad.EN_LINEA, hours: 200 },
         // Departamento de Ingeniería y Diseño
         { name: 'Mecánica Automotriz', faculty: 'Ingeniería y Diseño', modalidad: Modalidad.PRESENCIAL, hours: 160 },
         { name: 'Diseño Gráfico', faculty: 'Ingeniería y Diseño', modalidad: Modalidad.PRESENCIAL, hours: 160 },
         // Departamento de Ciencias Administrativas y Comerciales
         { name: 'Contabilidad y Asesoría Tributaria', faculty: 'Ciencias Administrativas y Comerciales', modalidad: Modalidad.EN_LINEA, hours: 160 },
-        { name: 'Marketing y Comercio Electrónico', faculty: 'Ciencias Administrativas y Comerciales', modalidad: Modalidad.EN_LINEA, hours: 160 },
+        { name: 'Marketing & Comercio Electrónico', faculty: 'Ciencias Administrativas y Comerciales', modalidad: Modalidad.EN_LINEA, hours: 160 },
         { name: 'Talento Humano', faculty: 'Ciencias Administrativas y Comerciales', modalidad: Modalidad.HIBRIDA, hours: 160 },
         // Departamento de Ciencias de la Educación
         { name: 'Educación Inicial', faculty: 'Ciencias de la Educación', modalidad: Modalidad.PRESENCIAL, hours: 320 },
@@ -223,8 +220,9 @@ async function main() {
     });
 
     // Plantillas específicas por carrera del ISTPET
-    const careerSW = careers.find((c) => c.name === 'Desarrollo de Software')!;
-    const careerRedes = careers.find((c) => c.name === 'Redes y Telecomunicaciones')!;
+    const careerSW = careers.find((c) => c.name === 'Desarrollo de Software' && c.modalidad === Modalidad.PRESENCIAL)!;
+    const careerSWOnline = careers.find((c) => c.name === 'Desarrollo de Software' && c.modalidad === Modalidad.EN_LINEA)!;
+    const careerRedes = careers.find((c) => c.name === 'Redes & Telecomunicaciones')!;
     const careerElec = careers.find((c) => c.name === 'Electrónica')!;
     const careerAuto = careers.find((c) => c.name === 'Mecánica Automotriz')!;
     const careerDG = careers.find((c) => c.name === 'Diseño Gráfico')!;
@@ -233,10 +231,13 @@ async function main() {
     const careerDepo = careers.find((c) => c.name === 'Entrenamiento Deportivo')!;
 
     const csTemplateData = [
-        // Desarrollo de Software
+        // Desarrollo de Software (Presencial)
         { name: 'F-SW-01 - Enlace al Repositorio de Código (GitHub/GitLab)', sortOrder: 8, careerId: careerSW.id },
         { name: 'F-SW-02 - Manual Técnico del Proyecto de Software', sortOrder: 9, careerId: careerSW.id },
-        // Redes y Telecomunicaciones
+        // Desarrollo de Software (En Línea)
+        { name: 'F-SW-01 - Enlace al Repositorio de Código (GitHub/GitLab)', sortOrder: 8, careerId: careerSWOnline.id },
+        { name: 'F-SW-02 - Manual Técnico del Proyecto de Software', sortOrder: 9, careerId: careerSWOnline.id },
+        // Redes & Telecomunicaciones
         { name: 'F-RED-01 - Diagrama de Red y Topología Implementada', sortOrder: 8, careerId: careerRedes.id },
         { name: 'F-RED-02 - Reporte de Configuración de Equipos', sortOrder: 9, careerId: careerRedes.id },
         // Electrónica
@@ -270,33 +271,33 @@ async function main() {
     console.log('🏢 [4/12] Creando empresas y convenios...');
     const companiesData = [
         // ── TI: Desarrollo de Software / Redes / Electrónica ──────────────────
-        { name: 'Kruger Corp', ruc: '1797766554001', address: 'Cumbayá, Paseo San Francisco Lc-12', rep: 'Ernesto Kruger', email: 'hr@krugercorp.com', convenio: 'Activo' },
-        { name: 'Ministerio de Telecomunicaciones (MINTEL)', ruc: '1760000010001', address: 'Quito, Av. 6 de Diciembre N25-75 y Colón', rep: 'Galo Cevallos', email: 'practicas@mintel.gob.ec', convenio: 'Activo' },
-        { name: 'CNT EP', ruc: '1760000030001', address: 'Quito, Av. Amazonas N39-137 y Villalengua', rep: 'Byron Espinoza', email: 'practicas@cnt.gob.ec', convenio: 'Activo' },
-        { name: 'Claro Ecuador S.A.', ruc: '1791345678001', address: 'Quito, Av. República de El Salvador N36-140', rep: 'Verónica Mora', email: 'practicantes@claro.com.ec', convenio: 'Activo' },
-        { name: 'Consejo de la Judicatura', ruc: '1768006130001', address: 'Quito, Av. Amazonas N37-101 y Unión Nacional', rep: 'Patricia Solís', email: 'practicas@funcionjudicial.gob.ec', convenio: 'Activo' },
+        { name: 'Kruger Corp', ruc: '1797766554001', address: 'Cumbayá, Paseo San Francisco Lc-12', rep: 'Ernesto Kruger', email: 'hr@krugercorp.com', convenio: 'Activo', sector: 'Tecnología' },
+        { name: 'Ministerio de Telecomunicaciones (MINTEL)', ruc: '1760000010001', address: 'Quito, Av. 6 de Diciembre N25-75 y Colón', rep: 'Galo Cevallos', email: 'practicas@mintel.gob.ec', convenio: 'Activo', sector: 'Gobierno' },
+        { name: 'CNT EP', ruc: '1760000030001', address: 'Quito, Av. Amazonas N39-137 y Villalengua', rep: 'Byron Espinoza', email: 'practicas@cnt.gob.ec', convenio: 'Activo', sector: 'Telecomunicaciones' },
+        { name: 'Claro Ecuador S.A.', ruc: '1791345678001', address: 'Quito, Av. República de El Salvador N36-140', rep: 'Verónica Mora', email: 'practicantes@claro.com.ec', convenio: 'Activo', sector: 'Telecomunicaciones' },
+        { name: 'Consejo de la Judicatura', ruc: '1768006130001', address: 'Quito, Av. Amazonas N37-101 y Unión Nacional', rep: 'Patricia Solís', email: 'practicas@funcionjudicial.gob.ec', convenio: 'Activo', sector: 'Gobierno' },
         // ── Mecánica Automotriz ────────────────────────────────────────────────
-        { name: 'Toyota Casabaca S.A.', ruc: '1799887766001', address: 'Quito, Av. Simón Bolívar km 12, Valle de Los Chillos', rep: 'Mónica Ruiz', email: 'rrhh@casabaca.com', convenio: 'Activo' },
-        { name: 'Automotores Continental S.A.', ruc: '1790226553001', address: 'Quito, Av. 10 de Agosto N36-211 y Naciones Unidas', rep: 'Rodrigo Cedeño', email: 'rrhh@autoconti.com.ec', convenio: 'Activo' },
-        { name: 'MARESA (Manufacturas Armaduría y Rep. S.A.)', ruc: '1790014932001', address: 'Quito, Av. Galo Plaza Lasso km 7.5', rep: 'Carlos Olmedo', email: 'practicantes@maresa.com.ec', convenio: 'Expirado' },
+        { name: 'Toyota Casabaca S.A.', ruc: '1799887766001', address: 'Quito, Av. Simón Bolívar km 12, Valle de Los Chillos', rep: 'Mónica Ruiz', email: 'rrhh@casabaca.com', convenio: 'Activo', sector: 'Automotriz' },
+        { name: 'Automotores Continental S.A.', ruc: '1790226553001', address: 'Quito, Av. 10 de Agosto N36-211 y Naciones Unidas', rep: 'Rodrigo Cedeño', email: 'rrhh@autoconti.com.ec', convenio: 'Activo', sector: 'Automotriz' },
+        { name: 'MARESA (Manufacturas Armaduría y Rep. S.A.)', ruc: '1790014932001', address: 'Quito, Av. Galo Plaza Lasso km 7.5', rep: 'Carlos Olmedo', email: 'practicantes@maresa.com.ec', convenio: 'Expirado', sector: 'Automotriz' },
         // ── Diseño Gráfico ────────────────────────────────────────────────────
-        { name: 'Ministerio de Turismo del Ecuador', ruc: '1760000060001', address: 'Quito, Av. Eloy Alfaro N32-300 y Carlos Tobar', rep: 'Andrea Vallejo', email: 'practicas@turismo.gob.ec', convenio: 'Activo' },
-        { name: 'Grupo El Comercio C.A.', ruc: '1790011801001', address: 'Quito, Av. Pedro Vicente Maldonado y El Tablón', rep: 'Santiago Rivadeneira', email: 'practicas@elcomercio.com', convenio: 'Activo' },
+        { name: 'Ministerio de Turismo del Ecuador', ruc: '1760000060001', address: 'Quito, Av. Eloy Alfaro N32-300 y Carlos Tobar', rep: 'Andrea Vallejo', email: 'practicas@turismo.gob.ec', convenio: 'Activo', sector: 'Gobierno' },
+        { name: 'Grupo El Comercio C.A.', ruc: '1790011801001', address: 'Quito, Av. Pedro Vicente Maldonado y El Tablón', rep: 'Santiago Rivadeneira', email: 'practicas@elcomercio.com', convenio: 'Activo', sector: 'Medios de Comunicación' },
         // ── Contabilidad / Marketing / Talento Humano ─────────────────────────
-        { name: 'Corporación Favorita C.A.', ruc: '1791122334001', address: 'Quito, Av. General Enríquez 1360, Sangolquí', rep: 'Ricardo Noboa', email: 'rrhh@favorita.ec', convenio: 'Activo' },
-        { name: 'Servicio de Rentas Internas (SRI)', ruc: '1760000020001', address: 'Quito, Av. Amazonas 4430 y Villalengua', rep: 'Mireya Zambrano', email: 'practicas@sri.gob.ec', convenio: 'Activo' },
-        { name: 'Banco Pichincha C.A.', ruc: '1790011223001', address: 'Quito, Av. Amazonas N35-211 y Japón', rep: 'Lucía Mendoza', email: 'talento@pichincha.com', convenio: 'Activo' },
-        { name: 'Instituto Ecuatoriano de Seguridad Social (IESS)', ruc: '1760000070001', address: 'Quito, Av. 10 de Agosto 2270 y Briceño', rep: 'Jorge Freire', email: 'practicas@iess.gob.ec', convenio: 'En Trámite' },
+        { name: 'Corporación Favorita C.A.', ruc: '1791122334001', address: 'Quito, Av. General Enríquez 1360, Sangolquí', rep: 'Ricardo Noboa', email: 'rrhh@favorita.ec', convenio: 'Activo', sector: 'Comercio' },
+        { name: 'Servicio de Rentas Internas (SRI)', ruc: '1760000020001', address: 'Quito, Av. Amazonas 4430 y Villalengua', rep: 'Mireya Zambrano', email: 'practicas@sri.gob.ec', convenio: 'Activo', sector: 'Gobierno' },
+        { name: 'Banco Pichincha C.A.', ruc: '1790011223001', address: 'Quito, Av. Amazonas N35-211 y Japón', rep: 'Lucía Mendoza', email: 'talento@pichincha.com', convenio: 'Activo', sector: 'Financiero' },
+        { name: 'Instituto Ecuatoriano de Seguridad Social (IESS)', ruc: '1760000070001', address: 'Quito, Av. 10 de Agosto 2270 y Briceño', rep: 'Jorge Freire', email: 'practicas@iess.gob.ec', convenio: 'En Trámite', sector: 'Gobierno' },
         // ── Educación Inicial / Básica / Inclusiva ────────────────────────────
-        { name: 'Unidad Educativa Municipal "Quitumbe"', ruc: '1768150310001', address: 'Quito, Av. Rumichaca y Av. Quitumbe Ñan', rep: 'Lic. Rosa Taipe', email: 'practicas@quitumbe.edu.ec', convenio: 'Activo' },
-        { name: 'Jardín de Infantes Municipal Chillogallo', ruc: '1768200110001', address: 'Quito, Av. Matilde Álvarez S/N, Chillogallo', rep: 'Lic. Margarita Simba', email: 'practicas@chillogallo.edu.ec', convenio: 'Activo' },
-        { name: 'Ministerio de Educación', ruc: '1760000050001', address: 'Quito, Av. Amazonas N34-451 y Atahualpa', rep: 'Carlos Tobar', email: 'practicaspreprofesionales@educacion.gob.ec', convenio: 'Activo' },
+        { name: 'Unidad Educativa Municipal "Quitumbe"', ruc: '1768150310001', address: 'Quito, Av. Rumichaca y Av. Quitumbe Ñan', rep: 'Lic. Rosa Taipe', email: 'practicas@quitumbe.edu.ec', convenio: 'Activo', sector: 'Educación' },
+        { name: 'Jardín de Infantes Municipal Chillogallo', ruc: '1768200110001', address: 'Quito, Av. Matilde Álvarez S/N, Chillogallo', rep: 'Lic. Margarita Simba', email: 'practicas@chillogallo.edu.ec', convenio: 'Activo', sector: 'Educación' },
+        { name: 'Ministerio de Educación', ruc: '1760000050001', address: 'Quito, Av. Amazonas N34-451 y Atahualpa', rep: 'Carlos Tobar', email: 'practicaspreprofesionales@educacion.gob.ec', convenio: 'Activo', sector: 'Gobierno' },
         // ── Entrenamiento Deportivo ───────────────────────────────────────────
-        { name: 'Liga Deportiva Universitaria de Quito (LDU)', ruc: '1790011001001', address: 'Quito, Estadio Rodrigo Paz Delgado, Av. Galo Plaza', rep: 'Gustavo Morán', email: 'practicas@ldu.com.ec', convenio: 'Activo' },
-        { name: 'Ministerio del Deporte', ruc: '1760000040001', address: 'Quito, Av. 6 de Diciembre N25-95 y Colón', rep: 'Alexandra Torres', email: 'practicas@deporte.gob.ec', convenio: 'Activo' },
+        { name: 'Liga Deportiva Universitaria de Quito (LDU)', ruc: '1790011001001', address: 'Quito, Estadio Rodrigo Paz Delgado, Av. Galo Plaza', rep: 'Gustavo Morán', email: 'practicas@ldu.com.ec', convenio: 'Activo', sector: 'Deportes' },
+        { name: 'Ministerio del Deporte', ruc: '1760000040001', address: 'Quito, Av. 6 de Diciembre N25-95 y Colón', rep: 'Alexandra Torres', email: 'practicas@deporte.gob.ec', convenio: 'Activo', sector: 'Gobierno' },
         // ── Gastronomía ───────────────────────────────────────────────────────
-        { name: 'JW Marriott Hotel Quito', ruc: '1791500300001', address: 'Quito, Av. Orellana 1172 y Av. Amazonas', rep: 'Chef Roberto Alarcón', email: 'rrhh@marriottquito.com', convenio: 'Activo' },
-        { name: 'Restaurant Zazu', ruc: '1792100450001', address: 'Quito, Mariano Aguilera 331 y La Pradera', rep: 'Chef Rodrigo Pacheco', email: 'practicas@zazuquito.com', convenio: 'Activo' },
+        { name: 'JW Marriott Hotel Quito', ruc: '1791500300001', address: 'Quito, Av. Orellana 1172 y Av. Amazonas', rep: 'Chef Roberto Alarcón', email: 'rrhh@marriottquito.com', convenio: 'Activo', sector: 'Hospitalidad' },
+        { name: 'Restaurant Zazu', ruc: '1792100450001', address: 'Quito, Mariano Aguilera 331 y La Pradera', rep: 'Chef Rodrigo Pacheco', email: 'practicas@zazuquito.com', convenio: 'Activo', sector: 'Gastronomía' },
     ];
 
     const companies = await (prisma.company as any).createManyAndReturn({
@@ -308,7 +309,7 @@ async function main() {
             email: c.email,
             phone: `02${randInt(2, 3)}${randInt(100000, 999999)}`,
             city: 'Quito',
-            sector: pick(['Tecnología', 'Servicios', 'Educación', 'Industrial', 'Alimentación']),
+            sector: c.sector,
         })),
     });
 
@@ -343,6 +344,7 @@ async function main() {
         { name: 'Ing. Sandra Freire Toapanta', email: 'coordinador.ing@istpet.edu.ec' },
         { name: 'Lcda. Carmen Suárez Almeida', email: 'coordinador.adm@istpet.edu.ec' },
         { name: 'Lcda. Rosa Herrera Burbano', email: 'coordinador.edu@istpet.edu.ec' },
+        { name: 'Lic. Patricia Noboa Toapanta', email: 'coordinador.dep@istpet.edu.ec' },
     ];
     const coordinators = await (prisma.user as any).createManyAndReturn({
         data: coordsData.map(cd => ({
@@ -360,11 +362,11 @@ async function main() {
     const tutorsByCareer: Record<string, string[]> = {
         'Desarrollo de Software': ['Ing. Andrés Gallegos Larrea', 'Ing. Paola Cisneros Méndez'],
         'Electrónica': ['Ing. Diego Ramírez Castro', 'Ing. Luis Ortiz Pérez'],
-        'Redes y Telecomunicaciones': ['Ing. Javier Salazar Vaca', 'Ing. Elena Gómez Torres'],
+        'Redes & Telecomunicaciones': ['Ing. Javier Salazar Vaca', 'Ing. Elena Gómez Torres'],
         'Mecánica Automotriz': ['Tec. Ricardo Toapanta Moreira', 'Tec. Fernando Arias Gallegos'],
         'Diseño Gráfico': ['Dis. Valentina López Enríquez', 'Dis. Sebastián Ponce Villacís'],
         'Contabilidad y Asesoría Tributaria': ['CPA. Natalia Quiñonez Freire', 'CPA. Patricia Almeida Herrera'],
-        'Marketing y Comercio Electrónico': ['Ing. Miguel Burbano Larrea', 'Ing. Gabriela Méndez Salazar'],
+        'Marketing & Comercio Electrónico': ['Ing. Miguel Burbano Larrea', 'Ing. Gabriela Méndez Salazar'],
         'Talento Humano': ['Psic. Daniela Castro Vaca', 'Psic. Carlos Cisneros López'],
         'Educación Inicial': ['Lic. Mariana Ortiz Ramírez', 'Lic. Lucía Torres Arias'],
         'Educación Básica': ['Lic. Sofía Pérez Gallegos', 'Lic. Juan Gómez Toapanta'],
@@ -428,7 +430,7 @@ async function main() {
             careerId: careers[i % careers.length].id,
             cedula: genCedula(),
             phone: genPhone(),
-            ciclo: `${randInt(1, 6)}to Ciclo`,
+            ciclo: `${['1er', '2do', '3er', '4to', '5to', '6to'][randInt(0, 5)]} Ciclo`,
             ...lopdp,
         })),
     });
@@ -584,6 +586,7 @@ async function main() {
             index: i,
             studentId: s.id,
             tutorId: tutor.id,
+            careerId: s.careerId,
             status,
             startOffset,
             hoursCompleted,
@@ -1316,7 +1319,7 @@ async function main() {
     };
 
     console.log('═══════════════════════════════════════════════════════════');
-    console.log('✅ MASTER SEED v13.5 — ISTPET "Mayor Pedro Traversari" OK');
+    console.log('✅ MASTER SEED v14.0 — ISTPET "Mayor Pedro Traversari" OK');
     console.log('═══════════════════════════════════════════════════════════');
     console.log('\n📊 RESUMEN DE REGISTROS CREADOS:');
     console.log('─────────────────────────────────────────────────────');
@@ -1349,11 +1352,14 @@ async function main() {
     console.log('  🔐 Credenciales de acceso (contraseña universal: password123):');
     console.log('     admin@istpet.edu.ec                  → ADMIN');
     console.log('     coordinador.tic@istpet.edu.ec        → COORDINADOR (TIC)');
-    console.log('     coordinador.adm@istpet.edu.ec        → COORDINADOR (Admin)');
-    console.log('     coordinador.edu@istpet.edu.ec        → COORDINADOR (Educación)');
-    console.log('     tutor.c1.1@istpet.edu.ec              → TUTOR (Desarrollo de Software)');
-    console.log('     tutor.c4.1@istpet.edu.ec              → TUTOR (Mecánica Automotriz)');
-    console.log('     tutor.c13.1@istpet.edu.ec             → TUTOR (Gastronomía)');
+    console.log('     coordinador.ing@istpet.edu.ec        → COORDINADOR (Ingeniería y Diseño)');
+    console.log('     coordinador.adm@istpet.edu.ec        → COORDINADOR (Administrativo)');
+    console.log('     coordinador.edu@istpet.edu.ec        → COORDINADOR (Ciencias de la Educación)');
+    console.log('     coordinador.dep@istpet.edu.ec        → COORDINADOR (Cultura, Deporte y Gastronomía)');
+    console.log('     tutor.c1.1@istpet.edu.ec             → TUTOR (Desarrollo de Software — Presencial)');
+    console.log('     tutor.c4.1@istpet.edu.ec             → TUTOR (Desarrollo de Software — En Línea)');
+    console.log('     tutor.c5.1@istpet.edu.ec             → TUTOR (Mecánica Automotriz)');
+    console.log('     tutor.c14.1@istpet.edu.ec            → TUTOR (Gastronomía)');
     console.log('     estudiante1@est.istpet.edu.ec        → ESTUDIANTE');
     console.log('     bloqueado@est.istpet.edu.ec          → cuenta bloqueada (test)');
     console.log('');

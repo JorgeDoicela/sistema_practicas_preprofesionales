@@ -160,7 +160,7 @@ model Internship {
 
 model Career {
   id          String       @id @default(uuid())
-  name        String       @unique
+  name        String
   faculty     String?
   /// Modalidad oficial de la carrera según el programa académico del ISTPET
   modalidad   Modalidad    @default(PRESENCIAL)
@@ -170,6 +170,8 @@ model Career {
   createdAt   DateTime     @default(now())
   /// RF-CAREER-001: Configuración dinámica (horas requeridas, docs obligatorios, etc.)
   config      Json?        @default("{\"requiredHours\": 160}")
+
+  @@unique([name, modalidad])
 }
 
 model InternshipStatusHistory {
