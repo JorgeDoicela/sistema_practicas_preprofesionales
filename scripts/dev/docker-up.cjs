@@ -3,7 +3,7 @@ const { copyFileSync, existsSync } = require('fs');
 const { join } = require('path');
 const { spawnSync } = require('child_process');
 
-const root = join(__dirname, '..');
+const root = join(__dirname, '..', '..');
 const envPath = join(root, '.env');
 const examplePath = join(root, '.env.example');
 

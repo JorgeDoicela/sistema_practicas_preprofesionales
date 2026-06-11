@@ -8,6 +8,11 @@
 
 set -e
 
+# Detectar el directorio raíz del proyecto (dos niveles arriba de scripts/ops/)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+cd "$PROJECT_ROOT"
+
 # Códigos de colores ANSI para una visualización premium en consola
 GREEN='\033[0;32m'
 RED='\033[0;31m'

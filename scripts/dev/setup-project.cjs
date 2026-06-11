@@ -6,7 +6,7 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const root = path.join(__dirname, '..');
+const root = path.join(__dirname, '..', '..');
 const apiDir = path.join(root, 'api-emitesis');
 const isVercel = process.env.VERCEL === '1' || !!process.env.CI;
 
@@ -84,7 +84,7 @@ console.log('\x1b[35m%s\x1b[0m', '==============================================
 status.env = isVercel ? 'Vercel / CI' : 'Local (Development)';
 console.log(`[INFO] Entorno detectado: \x1b[36m${status.env}\x1b[0m`);
 if (!isDocker && !isVercel && process.env.DATABASE_URL) {
-  console.log(`[INFO]DATABASE_URL redirigida dinámicamente a Host: \x1b[32m${process.env.DATABASE_URL}\x1b[0m`);
+  console.log(`[INFO] DATABASE_URL redirigida dinámicamente a Host: \x1b[32m${process.env.DATABASE_URL}\x1b[0m`);
 }
 
 // 2. Limpieza Preventiva

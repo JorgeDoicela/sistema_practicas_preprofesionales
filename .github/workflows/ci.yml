@@ -165,7 +165,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
-          source: "docker-compose.prod.yml,nginx.conf,backup-db.sh,manage-db.sh,certs/origin.pem,certs/origin.key"
+          source: "docker-compose.prod.yml,nginx.conf,scripts/ops/backup-db.sh,scripts/ops/manage-db.sh,certs/origin.pem,certs/origin.key"
           target: "~/emitesis"
 
       - name: Execute remote deployment commands via SSH
@@ -316,6 +316,13 @@ jobs:
               else
                 echo "⚠️ ADVERTENCIA: DATABASE_URL no está definida en el archivo .env, usando valores por defecto."
               fi
+            fi
+
+            # Reubicar scripts desde la estructura del repositorio a la raiz del deploy
+            if [ -d scripts/ops ]; then
+              mv scripts/ops/backup-db.sh .
+              mv scripts/ops/manage-db.sh .
+              rm -rf scripts
             fi
 
             # Asegurar formato LF y permisos de ejecucion para los scripts operativos

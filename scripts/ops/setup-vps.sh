@@ -107,18 +107,30 @@ log_info "Fase 4/5: Configurando estructura de directorios y scripts operativos.
 mkdir -p "$HOME/emitesis/backups"
 
 # Copiar scripts operativos al directorio definitivo de la aplicación
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 if [ -f "backup-db.sh" ]; then
     cp backup-db.sh "$HOME/emitesis/backup-db.sh"
     chmod +x "$HOME/emitesis/backup-db.sh"
     log_success "Script de respaldos copiado a ~/emitesis/backup-db.sh"
+elif [ -f "$SCRIPT_DIR/backup-db.sh" ]; then
+    cp "$SCRIPT_DIR/backup-db.sh" "$HOME/emitesis/backup-db.sh"
+    chmod +x "$HOME/emitesis/backup-db.sh"
+    log_success "Script de respaldos copiado a ~/emitesis/backup-db.sh"
 else
-    log_warning "No se encontró el script 'backup-db.sh' en el directorio actual. Asegúrese de transferirlo."
+    log_warning "No se encontró el script 'backup-db.sh' en el directorio actual ni en $SCRIPT_DIR. Asegúrese de transferirlo."
 fi
 
 if [ -f "manage-db.sh" ]; then
     cp manage-db.sh "$HOME/emitesis/manage-db.sh"
     chmod +x "$HOME/emitesis/manage-db.sh"
     log_success "Script gestor de base de datos copiado a ~/emitesis/manage-db.sh"
+elif [ -f "$SCRIPT_DIR/manage-db.sh" ]; then
+    cp "$SCRIPT_DIR/manage-db.sh" "$HOME/emitesis/manage-db.sh"
+    chmod +x "$HOME/emitesis/manage-db.sh"
+    log_success "Script gestor de base de datos copiado a ~/emitesis/manage-db.sh"
+else
+    log_warning "No se encontró el script 'manage-db.sh' en el directorio actual ni en $SCRIPT_DIR. Asegúrese de transferirlo."
 fi
 
 # 5. Automatización de Copias de Seguridad (Cron Job Diario)

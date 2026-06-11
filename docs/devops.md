@@ -121,9 +121,9 @@ Si por algún motivo requiere realizar el despliegue de forma manual directo en 
 
 ## 4. Scripts de Automatización Avanzada y Seguridad Estricta
 
-Para garantizar un estándar de fiabilidad y seguridad óptimo (equivalente a entornos transaccionales o bancarios), el repositorio incluye dos scripts de automatización para su ejecución en la VPS.
+Para garantizar un estándar de fiabilidad y seguridad óptimo (equivalente a entornos transaccionales o bancarios), el repositorio incluye varios scripts de automatización organizados bajo la carpeta `scripts/ops/` para su ejecución o aprovisionamiento en la VPS.
 
-### 4.1 Script de Aprovisionamiento y Segurización (`setup-vps.sh`)
+### 4.1 Script de Aprovisionamiento y Segurización (`scripts/ops/setup-vps.sh`)
 
 Este script se encarga de preparar un servidor recién creado con todas las dependencias necesarias y aplicar reglas estrictas de cortafuegos (firewall).
 
@@ -137,13 +137,13 @@ Este script se encarga de preparar un servidor recién creado con todas las depe
 4.  **Respaldo Continuo:** Copia el script de respaldo en el directorio operativo y configura un cron job (tarea automática programada) para ejecutar copias de seguridad de la base de datos todos los días a las 03:00 AM de forma silenciosa.
 
 **Cómo ejecutarlo en la VPS (Una sola vez):**
-Una vez clonado el repositorio o transferido el script `setup-vps.sh` y `backup-db.sh` al servidor, ejecute:
+Una vez clonado el repositorio o transferidos los scripts `setup-vps.sh` y `backup-db.sh` al servidor (ubicados bajo `scripts/ops/` en el repositorio), ejecute:
 ```bash
-chmod +x setup-vps.sh backup-db.sh
-./setup-vps.sh
+chmod +x scripts/ops/setup-vps.sh scripts/ops/backup-db.sh
+./scripts/ops/setup-vps.sh
 ```
 
-### 4.2 Script de Respaldos de Base de Datos (`backup-db.sh`)
+### 4.2 Script de Respaldos de Base de Datos (`scripts/ops/backup-db.sh`)
 
 Este script se encarga de proteger la información del sistema ante pérdidas fortuitas o corrupción de datos.
 
@@ -157,7 +157,7 @@ Este script se encarga de proteger la información del sistema ante pérdidas fo
 **Ubicación de los respaldos:**
 Los archivos de respaldo se almacenan de forma segura en la ruta `~/emitesis/backups/`.
 
-### 4.3 Script Gestor de Base de Datos Unificado (`manage-db.sh`)
+### 4.3 Script Gestor de Base de Datos Unificado (`scripts/ops/manage-db.sh`)
 
 Para simplificar las tareas rutinarias de administración sobre la base de datos de producción (evitando memorizar comandos complejos de Docker), se proporciona un script gestor unificado interactivo y parametrizable.
 

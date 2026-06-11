@@ -7,11 +7,11 @@
     "web-emitesis"
   ],
   "scripts": {
-    "docker:up": "node scripts/docker-up.cjs",
-    "docker:reset": "docker compose down -v && node scripts/docker-up.cjs",
-    "docker:down": "node scripts/docker-down.cjs",
+    "docker:up": "node scripts/dev/docker-up.cjs",
+    "docker:reset": "docker compose down -v && node scripts/dev/docker-up.cjs",
+    "docker:down": "node scripts/dev/docker-down.cjs",
     "docker:logs": "docker compose logs -f",
-    "setup": "node scripts/setup-project.cjs",
+    "setup": "node scripts/dev/setup-project.cjs",
     "fix:setup": "powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Where-Object { $_.Id -ne $PID } | Stop-Process -Force -ErrorAction SilentlyContinue; rd -s -q node_modules\\.prisma; npm run setup\"",
     "postinstall": "npm run setup",
     "dev:back": "npm run start:dev -w api-emitesis",

@@ -124,8 +124,11 @@ case "$1" in
         
     backup)
         # Buscar el script de respaldo localmente
+        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
         if [ -f "./backup-db.sh" ]; then
             ./backup-db.sh
+        elif [ -f "$SCRIPT_DIR/backup-db.sh" ]; then
+            "$SCRIPT_DIR/backup-db.sh"
         elif [ -f "$HOME/emitesis/backup-db.sh" ]; then
             "$HOME/emitesis/backup-db.sh"
         else

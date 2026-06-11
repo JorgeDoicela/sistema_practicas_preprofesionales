@@ -1,5 +1,5 @@
 # Orquestación de producción para el sistema EmiTesis
-# Incluye Caddy Proxy para SSL/HTTPS (usar cuando se active Cloudflare)
+# Incluye Proxy Nginx configurado para SSL/HTTPS (para uso con Cloudflare)
 
 services:
   db:
