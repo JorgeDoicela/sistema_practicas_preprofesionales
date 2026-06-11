@@ -1,7 +1,81 @@
 import axios from 'axios';
 import { API_URL } from '@/lib/api-base';
+import { isJwtExpired } from '@/lib/jwt';
 import { toast } from 'sonner';
 import Cookies from 'js-cookie';
+
+export const AUTH_TOKEN_UPDATED_EVENT = 'auth:token-updated';
+
+export function notifyTokenUpdated(token: string) {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(AUTH_TOKEN_UPDATED_EVENT, { detail: { token } }));
+  }
+}
+
+function persistSessionTokens(
+  accessToken: string,
+  refreshToken: string,
+  user?: Record<string, unknown>,
+) {
+  localStorage.setItem('token', accessToken);
+  localStorage.setItem('refresh_token', refreshToken);
+  if (user) {
+    localStorage.setItem('user', JSON.stringify(user));
+  }
+
+  Cookies.set('token', accessToken, {
+    secure: typeof window !== 'undefined' && window.location.protocol === 'https:',
+    sameSite: 'strict',
+    path: '/',
+  });
+  if (user) {
+    Cookies.set('user', JSON.stringify(user), {
+      secure: typeof window !== 'undefined' && window.location.protocol === 'https:',
+      sameSite: 'strict',
+      path: '/',
+    });
+  }
+
+  notifyTokenUpdated(accessToken);
+}
+
+/** Devuelve un access token válido, refrescándolo si hace falta. */
+export async function getValidAccessToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null;
+
+  const userStr = localStorage.getItem('user');
+  if (!userStr) return null;
+
+  const token = localStorage.getItem('token');
+  if (token && !isJwtExpired(token)) return token;
+
+  const refreshToken = localStorage.getItem('refresh_token');
+  if (!refreshToken || isJwtExpired(refreshToken)) return null;
+
+  try {
+    const user = JSON.parse(userStr);
+    const response = await axios.post(`${API_URL}/auth/refresh`, {
+      userId: user.id,
+      refreshToken,
+    });
+
+    const rawResult = response.data;
+    const result =
+      rawResult && typeof rawResult === 'object' && 'success' in rawResult
+        ? rawResult.data
+        : rawResult;
+
+    const newAccessToken = result?.accessToken || result?.access_token;
+    const newRefreshToken = result?.refreshToken || result?.refresh_token;
+
+    if (!newAccessToken || !newRefreshToken) return null;
+
+    persistSessionTokens(newAccessToken, newRefreshToken, result?.user);
+    return newAccessToken;
+  } catch {
+    return null;
+  }
+}
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -96,17 +170,7 @@ api.interceptors.response.use(
           const newAccessToken = result.accessToken || result.access_token;
           const newRefreshToken = result.refreshToken || result.refresh_token;
 
-          localStorage.setItem('token', newAccessToken);
-          localStorage.setItem('refresh_token', newRefreshToken);
-          
-          if (result.user) {
-            localStorage.setItem('user', JSON.stringify(result.user));
-          }
-
-          Cookies.set('token', newAccessToken, { secure: typeof window !== 'undefined' && window.location.protocol === 'https:', sameSite: 'strict', path: '/' });
-          if (result.user) {
-            Cookies.set('user', JSON.stringify(result.user), { secure: typeof window !== 'undefined' && window.location.protocol === 'https:', sameSite: 'strict', path: '/' });
-          }
+          persistSessionTokens(newAccessToken, newRefreshToken, result.user);
 
           // Reintentar petición original
           if (originalRequest.headers) {

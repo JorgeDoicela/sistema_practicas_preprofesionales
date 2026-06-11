@@ -10,6 +10,12 @@ import React, {
 } from "react";
 import { io, Socket } from "socket.io-client";
 import { API_URL } from "@/lib/api-base";
+import { isJwtExpired } from "@/lib/jwt";
+import {
+  api,
+  AUTH_TOKEN_UPDATED_EVENT,
+  getValidAccessToken,
+} from "@/services/auth.service";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -91,17 +97,8 @@ export const useChat = () => useContext(ChatContext);
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-async function apiFetch<T>(path: string, token: string): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) throw new Error(`API ${res.status}`);
-  const json = await res.json();
-  // Si la respuesta viene envuelta por el TransformInterceptor del backend
-  if (json && typeof json === 'object' && 'success' in json && 'data' in json) {
-    return json.data as T;
-  }
-  return json as T;
+async function chatApiFetch<T>(path: string): Promise<T> {
+  return api.get(path) as Promise<T>;
 }
 
 // ── Provider ──────────────────────────────────────────────────────────────────
@@ -131,7 +128,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const refreshRooms = useCallback(async () => {
     if (!tokenRef.current) return;
     try {
-      const data = await apiFetch<ChatRoom[]>("/chat/rooms", tokenRef.current);
+      const data = await chatApiFetch<ChatRoom[]>("/chat/rooms");
       setRooms(data);
       setUnreadTotal(data.reduce((s, r) => s + (r.unreadCount ?? 0), 0));
     } catch {}
@@ -140,7 +137,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const refreshContacts = useCallback(async () => {
     if (!tokenRef.current) return;
     try {
-      const data = await apiFetch<ChatUser[]>("/chat/contacts", tokenRef.current);
+      const data = await chatApiFetch<ChatUser[]>("/chat/contacts");
       setContacts(data);
     } catch {}
   }, []);
@@ -148,30 +145,50 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const refreshUnread = useCallback(async () => {
     if (!tokenRef.current) return;
     try {
-      const { count } = await apiFetch<{ count: number }>("/chat/unread", tokenRef.current);
+      const { count } = await chatApiFetch<{ count: number }>("/chat/unread");
       setUnreadTotal(count);
     } catch {}
   }, []);
 
-  // Cargar historial de la sala activa
   const loadRoomHistory = useCallback(async (roomId: string) => {
     if (!tokenRef.current) return;
     try {
-      const data = await apiFetch<ChatMessage[]>(
-        `/chat/rooms/${roomId}/messages`,
-        tokenRef.current,
-      );
+      const data = await chatApiFetch<ChatMessage[]>(`/chat/rooms/${roomId}/messages`);
       setMessages(data);
     } catch {}
+  }, []);
+
+  const teardownSocket = useCallback(() => {
+    if (socketRef.current) {
+      socketRef.current.removeAllListeners();
+      socketRef.current.close();
+      socketRef.current = null;
+    }
+    tokenRef.current = null;
+    setSocket(null);
+    setConnected(false);
+    setRooms([]);
+    setContacts([]);
+    setMessages([]);
+    setUnreadTotal(0);
+    setOnlineUserIds(new Set());
+    setTypingByRoom({});
   }, []);
 
   // ── Socket setup ─────────────────────────────────────────────────────────
 
   const initSocket = useCallback((savedToken: string) => {
+    if (isJwtExpired(savedToken)) return;
+
     if (socketRef.current) {
-      setSocket(socketRef.current);
-      setConnected(socketRef.current.connected);
-      return;
+      if (tokenRef.current === savedToken) {
+        setSocket(socketRef.current);
+        setConnected(socketRef.current.connected);
+        return;
+      }
+      socketRef.current.removeAllListeners();
+      socketRef.current.close();
+      socketRef.current = null;
     }
 
     tokenRef.current = savedToken;
@@ -193,6 +210,10 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       });
       refreshRooms();
       refreshContacts();
+    });
+
+    newSocket.on("connect_error", () => {
+      setConnected(false);
     });
 
     newSocket.on("disconnect", () => setConnected(false));
@@ -261,51 +282,56 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
 
     socketRef.current = newSocket;
     setSocket(newSocket);
-
-    refreshRooms();
-    refreshContacts();
-
-    return () => {
-      ["connect", "disconnect", "newMessage", "userStatusChange", "typing", "stopTyping", "messagesRead"].forEach(
-        e => newSocket.off(e),
-      );
-      newSocket.close();
-      socketRef.current = null;
-    };
   }, [refreshRooms, refreshContacts]);
 
   useEffect(() => {
-    // Intento inicial — puede ser que el token ya esté disponible
-    const savedToken = localStorage.getItem("token");
-    if (savedToken) {
-      const cleanup = initSocket(savedToken);
-      return cleanup;
-    }
+    let cancelled = false;
 
-    // Si el token aún no está (login desde otra tab o refresh rápido),
-    // escuchar el evento storage para inicializar el socket en cuanto aparezca
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === "token" && e.newValue) {
-        const cleanup = initSocket(e.newValue);
-        window.removeEventListener("storage", handleStorage);
-        return cleanup;
+    const connectWithValidToken = async () => {
+      const token = await getValidAccessToken();
+      if (cancelled) return;
+      if (!token) {
+        teardownSocket();
+        return;
       }
+      initSocket(token);
     };
+
+    connectWithValidToken();
+
+    const handleTokenUpdated = (event: Event) => {
+      const detail = (event as CustomEvent<{ token?: string }>).detail;
+      const nextToken = detail?.token ?? localStorage.getItem("token");
+      if (!nextToken || isJwtExpired(nextToken)) {
+        teardownSocket();
+        return;
+      }
+      if (tokenRef.current === nextToken && socketRef.current) {
+        socketRef.current.auth = { token: nextToken };
+        return;
+      }
+      initSocket(nextToken);
+    };
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key !== "token") return;
+      if (!e.newValue || isJwtExpired(e.newValue)) {
+        teardownSocket();
+        return;
+      }
+      initSocket(e.newValue);
+    };
+
+    window.addEventListener(AUTH_TOKEN_UPDATED_EVENT, handleTokenUpdated);
     window.addEventListener("storage", handleStorage);
 
-    // También intentar con un pequeño delay para cubrir el caso de hydration
-    const retryTimer = setTimeout(() => {
-      const retryToken = localStorage.getItem("token");
-      if (retryToken && !socketRef.current) {
-        initSocket(retryToken);
-      }
-    }, 500);
-
     return () => {
-      clearTimeout(retryTimer);
+      cancelled = true;
+      window.removeEventListener(AUTH_TOKEN_UPDATED_EVENT, handleTokenUpdated);
       window.removeEventListener("storage", handleStorage);
+      teardownSocket();
     };
-  }, [initSocket]);
+  }, [initSocket, teardownSocket]);
 
   // Cargar historial al cambiar sala activa
   useEffect(() => {

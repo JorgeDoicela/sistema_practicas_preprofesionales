@@ -8,7 +8,7 @@ import { BRAND_LOGO_SRC, BRAND_LOGO_BANNER, BRAND_LOGO_WHITE, BRAND_LOGO_MAIN } 
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Lock, Mail, Eye, EyeOff, AlertTriangle, MapPin, Brain, Fingerprint } from "lucide-react";
-import { authService } from "@/services/auth.service";
+import { authService, notifyTokenUpdated } from "@/services/auth.service";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { sanitizeEmailClient, sanitizePasswordClient } from "@/utils/security";
 import { ROLE_REDIRECTS, Role, normalizeApiRoleToAppRole } from "@/constants/roles";
@@ -68,6 +68,7 @@ export default function LoginPage() {
             // GUARDAR EN COOKIES (Nivel Bancario - Permite que el Middleware lo vea en el Servidor)
             Cookies.set("token", data.access_token, { expires: 1, secure: typeof window !== 'undefined' && window.location.protocol === 'https:', sameSite: 'strict', path: '/' });
             Cookies.set("user", JSON.stringify(user), { expires: 1, secure: typeof window !== 'undefined' && window.location.protocol === 'https:', sameSite: 'strict', path: '/' });
+            notifyTokenUpdated(data.access_token);
 
             const role = user.role as Role;
             router.push(ROLE_REDIRECTS[role] || "/dashboard");
@@ -96,6 +97,7 @@ export default function LoginPage() {
             // Cookies para Middleware
             Cookies.set("token", data.access_token, { expires: 1, secure: typeof window !== 'undefined' && window.location.protocol === 'https:', sameSite: 'strict', path: '/' });
             Cookies.set("user", JSON.stringify(user), { expires: 1, secure: typeof window !== 'undefined' && window.location.protocol === 'https:', sameSite: 'strict', path: '/' });
+            notifyTokenUpdated(data.access_token);
 
             const role = user.role as Role;
             router.push(ROLE_REDIRECTS[role] || "/dashboard");
