@@ -1,14 +1,22 @@
 #!/bin/sh
 # =====================================================================
-#   EMITESIS CORE - ENTRYPOINT DOCKER DE LA API
+#   EMITESIS CORE - ENTRYPOINT DOCKER DE LA API (PRODUCCIÓN)
 # =====================================================================
-# Script ejecutado al arrancar el contenedor. Realiza una espera activa
-# de la base de datos, ejecuta las migraciones pendientes y semillas,
-# y finalmente arranca el servidor NestJS en producción.
+# Orden al arrancar el contenedor api:
+#   1. Esperar Postgres (host "db" en Docker Compose prod)
+#   2. prisma migrate deploy  → aplica migraciones pendientes
+#   3. prisma db seed         → SOLO si SKIP_PRISMA_SEED != true
+#   4. exec del CMD           → por defecto: node dist/main.js
+#
+# NOTAS:
+# - Usar migrate deploy / migrate reset, NUNCA db push en producción (causa P3005).
+# - En AWS, SKIP_PRISMA_SEED=true por defecto; seed con manage-db.sh o ensure-migrations.
+# - Si migrate deploy falla con P3005, ejecutar en VPS: ./manage-db.sh repair
+# - La app arranca en dist/main.js (ver Dockerfile CMD y docker-compose.prod.yml)
+# =====================================================================
 
 set -e
 
-# Esperar a que la base de datos esté lista usando un script de Node.js puro de alta precisión
 echo "Esperando a que la base de datos esté disponible..."
 node -e "
 const net = require('net');
@@ -18,14 +26,13 @@ if (!dbUrl) {
   process.exit(0);
 }
 dbUrl = dbUrl.replace(/[\"\']/g, '').trim();
-// Reemplazar el protocolo para permitir parseo correcto de forma robusta
 let host = 'db';
 let port = 5432;
 try {
   const urlWithoutProtocol = dbUrl.split('://')[1] || dbUrl;
   const authorityAndPath = urlWithoutProtocol.split('/')[0];
   const parts = authorityAndPath.split('@');
-  const hostPort = parts[parts.length - 1]; // El último elemento siempre es host:port o host
+  const hostPort = parts[parts.length - 1];
   const hostPortParts = hostPort.split(':');
   host = hostPortParts[0] || 'db';
   const parsedPort = parseInt(hostPortParts[1], 10);
@@ -54,11 +61,9 @@ const check = () => {
 check();
 "
 
-# Ejecutar migraciones de Prisma
 echo "Ejecutando npx prisma migrate deploy..."
 npx prisma migrate deploy
 
-# Semillas demo (destructivo: borra y recrea datos). Automático salvo SKIP_PRISMA_SEED=true.
 if [ "$SKIP_PRISMA_SEED" = "true" ]; then
   echo "SKIP_PRISMA_SEED=true: se omite prisma db seed."
 else
@@ -66,6 +71,5 @@ else
   npx prisma db seed
 fi
 
-# Iniciar la aplicación
 echo "Iniciando la aplicación..."
 exec "$@"

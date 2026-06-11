@@ -1,5 +1,22 @@
-# Orquestación de producción para el sistema EmiTesis
-# Incluye Proxy Nginx configurado para SSL/HTTPS (para uso con Cloudflare)
+# =============================================================================
+# PRODUCCIÓN — AWS Lightsail VPS (~/emitesis)
+# =============================================================================
+# NO es Neon. La BD es el contenedor "db" (Postgres local en Docker).
+# Desarrollo con npm run dev → Neon en api-emitesis/.env (otra BD distinta).
+#
+# Despliegue: git push main → GitHub Actions copia este archivo y ejecuta
+# ensure-migrations.sh antes de reiniciar api/web.
+#
+# Operaciones manuales en VPS: ver scripts/ops/README.md
+#   ./manage-db.sh reset --force   → borrar datos y re-sembrar
+#   ./manage-db.sh repair          → error P3005 (schema sin migraciones)
+#
+# IMPORTANTE:
+# - Arranque API: node dist/main.js  (NO dist/src/main.js)
+# - Healthcheck: usa Node (Alpine no incluye wget)
+# - SKIP_PRISMA_SEED=true en prod; seed manual con manage-db.sh o ensure-migrations
+# - Web depende de api healthy → si api falla, web no arranca
+# =============================================================================
 
 services:
   db:
@@ -36,10 +53,12 @@ services:
       WEBAUTHN_ORIGIN: ${WEBAUTHN_ORIGIN:-http://localhost:3005}
       MAIL_USER: ${MAIL_USER:-}
       MAIL_PASS: ${MAIL_PASS:-}
+      # En prod el entrypoint NO ejecuta seed automático (evita borrar datos en cada restart).
       SKIP_PRISMA_SEED: ${SKIP_PRISMA_SEED:-true}
       SKIP_RECAPTCHA: ${SKIP_RECAPTCHA:-}
       RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    # Nest compila a dist/main.js (no dist/src/main.js). Mantener alineado con Dockerfile CMD.
     command: ["node", "dist/main.js"]
     volumes:
       - api_uploads_prod:/app/uploads
@@ -47,6 +66,7 @@ services:
       db:
         condition: service_healthy
     healthcheck:
+      # Usar Node: la imagen Alpine no trae wget y el check fallaba con "unhealthy".
       test:
         [
           "CMD-SHELL",
@@ -95,4 +115,3 @@ networks:
 volumes:
   postgres_data_prod:
   api_uploads_prod:
-

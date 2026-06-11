@@ -1,4 +1,6 @@
 {
   "extends": "./tsconfig.json",
+  // El seed se ejecuta con tsx (prisma db seed), no con nest build.
+  // Excluirlo evita que errores de tipos en seed.ts rompan el build de la API en CI.
   "exclude": ["node_modules", "test", "dist", "prisma/seeds", "**/*spec.ts"]
 }

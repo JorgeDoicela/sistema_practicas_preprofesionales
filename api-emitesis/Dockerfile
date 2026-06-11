@@ -1,43 +1,47 @@
-# Etapa de construcción
+# =============================================================================
+# Imagen Docker API — usada en GHCR y desplegada en AWS VPS
+# =============================================================================
+# Build: GitHub Actions (build-api) → ghcr.io/.../sistema_practicas_preprofesionales-api
+#
+# Arranque producción:
+#   ENTRYPOINT → docker-entrypoint.sh (migrate deploy + seed opcional)
+#   CMD        → node dist/main.js
+#
+# ⚠️  nest build genera dist/main.js (NO dist/src/main.js).
+#     Si cambias la salida del compilador, actualiza también:
+#       - package.json "start:prod"
+#       - docker-compose.prod.yml command
+# =============================================================================
+
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# OpenSSL en el builder para que `prisma generate` detecte bien la variante del motor.
 RUN apk add --no-cache openssl wget
 
-# Copiar archivos de dependencias
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Instalar dependencias
 RUN npm install --legacy-peer-deps
 
-# Copiar el resto del código
 COPY . .
 
-# Generar cliente de Prisma y construir la aplicación NestJS
 RUN npx prisma generate
 RUN npm run build
 
-# Etapa de producción
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Instalar dependencias del sistema necesarias para Prisma
 RUN apk add --no-cache openssl wget
 
-# Copiar archivos necesarios desde la etapa de construcción
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 
-# Exponer el puerto del API
 EXPOSE 5000
 
-# Usar el script de entrada para manejar migraciones y semillas
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 

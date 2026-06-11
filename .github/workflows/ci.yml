@@ -219,6 +219,11 @@ jobs:
           cache-from: type=gha,scope=web
           cache-to: type=gha,mode=max,scope=web
 
+  # ---------------------------------------------------------------------------
+  # CD: push a main → copia compose/scripts a ~/emitesis en Lightsail,
+  # pull imágenes GHCR, ensure-migrations.sh (repara P3005 si aplica), up -d.
+  # BD producción = Postgres Docker (NO Neon). Ver scripts/ops/README.md
+  # ---------------------------------------------------------------------------
   deploy:
     name: Deploy to AWS VPS
     runs-on: ubuntu-latest
@@ -241,6 +246,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
+          # README ops queda en el repo; en VPS solo se copian scripts ejecutables.
           source: "docker-compose.prod.yml,nginx.conf,scripts/ops/backup-db.sh,scripts/ops/manage-db.sh,scripts/ops/ensure-migrations.sh,certs/origin.pem,certs/origin.key"
           target: "~/emitesis"
 

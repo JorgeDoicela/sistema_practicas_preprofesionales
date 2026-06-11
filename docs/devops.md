@@ -66,6 +66,17 @@ En la pestaña de configuración del repositorio de GitHub, configure las siguie
 
 ## 5. Scripts de Operación y Automatización (Ops)
 
+**Guía operativa completa (errores frecuentes, Neon vs AWS, credenciales demo):** [`scripts/ops/README.md`](../scripts/ops/README.md)
+
+### Neon (desarrollo) vs Postgres Docker (producción AWS)
+
+| Entorno | Base de datos | Archivo |
+|---------|---------------|---------|
+| `npm run dev` local | Neon cloud | `api-emitesis/.env` |
+| VPS Lightsail | Contenedor `db` | `~/emitesis/.env` (inyectado por CI) |
+
+No son la misma base de datos. Reset en Neon no afecta producción y viceversa.
+
 Ubicados en la carpeta `scripts/ops/`, estos scripts simplifican tareas críticas en el servidor:
 
 ### 5.1 Aprovisionamiento Inicial (`setup-vps.sh`)
@@ -81,15 +92,31 @@ Script programado mediante CRON:
 3.  Asigna privilegios estrictos `600` al archivo generado para seguridad.
 4.  **Rotación de Respaldos:** Elimina automáticamente del disco local (`~/emitesis/backups/`) archivos con más de 30 días de antigüedad para proteger el almacenamiento.
 
-### 5.3 Gestor Unificado de Base de Datos (`manage-db.sh`)
+### 5.3 Asegurar migraciones en deploy (`ensure-migrations.sh`)
+Ejecutado automáticamente por GitHub Actions antes de reiniciar API/web. Aplica `prisma migrate deploy` y, si detecta el error **P3005** (schema sin historial de migraciones), repara la BD y ejecuta el seed.
+
+### 5.4 Gestor Unificado de Base de Datos (`manage-db.sh`)
 Facilita la interacción rutinaria con Prisma y bases de datos Docker en producción. Comandos disponibles:
 *   `./manage-db.sh migrate` $\to$ Ejecuta las migraciones pendientes en el contenedor.
 *   `./manage-db.sh seed` $\to$ Siembra la base de datos de producción con datos oficiales.
 *   `./manage-db.sh backup` $\to$ Lanza un respaldo instantáneo comprimido en caliente.
-*   `./manage-db.sh reset` $\to$ Limpia por completo la base de datos y recrea esquemas y datos semilla. Requiere confirmación manual e interactiva por seguridad.
+*   `./manage-db.sh reset` $\to$ Limpia por completo la base de datos (`migrate reset` + seed). **No usar `db push` en producción.**
+*   `./manage-db.sh repair` $\to$ Repara error P3005 sin intervención manual.
 
-### 5.4 Limpieza y Restablecimiento Completo (`reset-all.sh`)
+### 5.5 Limpieza y Restablecimiento Completo (`reset-all.sh`)
 Script utilizado principalmente en entornos de desarrollo y staging para limpiar por completo el volumen de Docker, eliminar imágenes colgadas, recrear los contenedores desde cero y aplicar semillas frescas. Ejecútelo con:
 ```bash
 ./scripts/ops/reset-all.sh
 ```
+
+### 5.6 Fallos frecuentes en producción
+
+| Síntoma | Causa habitual | Solución |
+|---------|----------------|----------|
+| `P3005` en logs de API | `db push` dejó tablas sin `_prisma_migrations` | `./manage-db.sh repair` |
+| API `unhealthy` / web no arranca | API caída; web depende de api healthy | `docker logs emitesis-api-prod` |
+| `Cannot find module dist/src/main.js` | Ruta de arranque incorrecta | Debe ser `node dist/main.js` |
+| Login rechaza email admin | Carácter `ñ` en email del seed | Usar `cristhofer.parreno@adm.istpet.edu.ec` |
+| Contenedor API reiniciando al usar `manage-db.sh` | `docker exec` en contenedor inestable | El script usa `compose run` como respaldo |
+
+**Despliegue rutinario:** solo `git push origin main` y verificar que el job *Deploy to AWS VPS* termine en verde.

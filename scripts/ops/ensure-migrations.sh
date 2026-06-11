@@ -2,8 +2,18 @@
 # =====================================================================
 #   EMITESIS CORE - ASEGURAR MIGRACIONES EN PRODUCCIÓN
 # =====================================================================
-# Ejecuta prisma migrate deploy antes de arrancar la API.
-# Si detecta P3005 (schema sin historial de migraciones), repara la BD.
+# Ejecuta prisma migrate deploy ANTES de reiniciar la API en deploy.
+# Lo invoca GitHub Actions (ci.yml) y puede correrse a mano en ~/emitesis.
+#
+# ¿Por qué existe?
+# - Web depende de api healthy; si migrate deploy falla, api reinicia en bucle.
+# - Error P3005: tablas sin tabla _prisma_migrations (p. ej. tras db push).
+#   → Repara: DROP SCHEMA + migrate deploy + seed.
+#
+# Ubicación en VPS: ~/emitesis/ensure-migrations.sh (copiado por CI).
+# PROJECT_ROOT: si el script está junto a docker-compose.prod.yml, usa ese dir.
+#
+# Ver también: scripts/ops/README.md y ./manage-db.sh repair
 
 set -e
 

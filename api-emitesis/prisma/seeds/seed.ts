@@ -1,4 +1,14 @@
 /**
+ * SEED INSTITUCIONAL — ejecutar con: npx prisma db seed
+ * (definido en package.json → prisma.seed). Purga todas las tablas al inicio.
+ *
+ * Entornos:
+ * - Desarrollo: Neon (api-emitesis/.env) → npx prisma db seed
+ * - Producción AWS: ~/emitesis → ./manage-db.sh seed o reset --force
+ *
+ * Login demo: password123 | Admin: cristhofer.parreno@adm.istpet.edu.ec
+ * Emails ASCII (sin ñ) por validación HTML5 del formulario de login.
+ *
  * Instituto Superior Tecnológico "Mayor Pedro Traversari" (ISTPET)
  * Av. Matilde Álvarez y Hugo Díaz Romero, sector Chillogallo, Quito – Ecuador
  * Teléfonos: 02 303 2894 / 098 4033166 | admisiones@istpet.edu.ec
@@ -64,7 +74,8 @@ const photoUrl = (seed: string | number): string =>
     `https://picsum.photos/seed/${seed}/800/600`;
 
 /** Genera un email institucional a partir del nombre completo.
- * Elimina títulos (Ing., Lic., etc.), quita acentos y toma primer nombre + primer apellido.
+ * Elimina títulos (Ing., Lic., etc.), quita acentos/ñ y toma primer nombre + primer apellido.
+ * Los emails deben ser ASCII: el login web usa type="email" y rechaza la ñ.
  * Ejemplo: 'Ing. Andrés Gallegos Larrea' → 'andres.gallegos@istpet.edu.ec' */
 const toEmail = (fullName: string, domain: string): string => {
     const cleaned = fullName
@@ -368,7 +379,7 @@ async function main() {
     // ─── 5. USUARIOS ──────────────────────────────────────────────────────────
     console.log('👥 [5/12] Creando usuarios por rol...');
 
-    // Admin del sistema
+    // Admin del sistema (email ASCII: sin ñ para validación HTML5 del login)
     const adminUser = await prisma.user.create({
         data: {
             email: 'cristhofer.parreno@adm.istpet.edu.ec',

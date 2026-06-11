@@ -2,9 +2,20 @@
 # =====================================================================
 #   EMITESIS CORE - GESTOR DE BASE DE DATOS UNIFICADO
 # =====================================================================
-# Script de administración interactivo y automatizado para gestionar las
-# migraciones de Prisma, semillas institucionales y copias de seguridad de
-# la base de datos de EmiTesis en entornos de desarrollo y producción.
+# Uso en VPS: cd ~/emitesis && ./manage-db.sh [comando]
+#
+# Comandos: migrate | seed | reset [--force] | repair | backup | help
+#
+# REGLAS:
+# - Producción AWS: Postgres en Docker (db). NO es Neon.
+# - reset/repair usan "migrate reset" + seed, NUNCA "db push --force-reset".
+# - Si api está reiniciando, el script usa "docker compose run" en lugar de exec.
+# - repair: solo para error Prisma P3005.
+#
+# Credenciales demo tras seed: password123
+# Admin: cristhofer.parreno@adm.istpet.edu.ec (emails ASCII, sin ñ)
+#
+# Documentación: scripts/ops/README.md
 
 set -e
 
