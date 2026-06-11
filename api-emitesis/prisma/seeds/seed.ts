@@ -355,9 +355,11 @@ async function main() {
         [17, 18],        // Entrenamiento Deportivo
         [19, 20],        // Gastronomía
     ];
-    const careerIndexById = new Map(careers.map((c, idx) => [c.id, idx]));
+    const careerIndexById = new Map<string, number>(
+        careers.map((c, idx) => [c.id, idx]),
+    );
     const pickCompanyForStudent = (careerId: string, assignmentIndex: number): Company => {
-        const ci = careerIndexById.get(careerId) ?? 0;
+        const ci: number = careerIndexById.get(careerId) ?? 0;
         const pool = careerCompanyIndices[ci] ?? [0];
         return companies[pool[assignmentIndex % pool.length]];
     };
