@@ -7,8 +7,36 @@ on:
     branches: [ main ]
 
 jobs:
+  changes:
+    name: Detect changed paths
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      web: ${{ steps.filter.outputs.web }}
+      infra: ${{ steps.filter.outputs.infra }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            api:
+              - 'api-emitesis/**'
+              - 'package-lock.json'
+            web:
+              - 'web-emitesis/**'
+              - 'package-lock.json'
+            infra:
+              - 'docker-compose.prod.yml'
+              - 'nginx.conf'
+              - 'scripts/ops/**'
+              - 'certs/**'
+
   backend:
     name: Backend (api-emitesis)
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -35,7 +63,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '22'
-          # Sin package-lock.json, la caché de npm de setup-node falla ("paths were not resolved").
           package-manager-cache: false
 
       - name: Install dependencies
@@ -67,6 +94,8 @@ jobs:
 
   frontend:
     name: Frontend (web-emitesis)
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -93,10 +122,15 @@ jobs:
       - name: Build Application
         run: npm run build
 
-  build-and-push:
-    name: Build & Push to GHCR
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [backend, frontend]
+  build-api:
+    name: Build & Push API image
+    needs: [changes, backend]
+    if: |
+      always() &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.changes.outputs.api == 'true' &&
+      needs.backend.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -132,6 +166,35 @@ jobs:
           tags: ${{ steps.meta-backend.outputs.tags }}
           labels: ${{ steps.meta-backend.outputs.labels }}
           provenance: false
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+
+  build-web:
+    name: Build & Push Web image
+    needs: [changes, frontend]
+    if: |
+      always() &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.changes.outputs.web == 'true' &&
+      needs.frontend.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Extract metadata for Docker (Frontend)
         id: meta-frontend
@@ -153,12 +216,20 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_URL=/api
             NEXT_PUBLIC_RECAPTCHA_SITE_KEY=6Lej8bosAAAAAHS1jnehMjfBm1FZ6a6a__3Yuteg
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
 
   deploy:
     name: Deploy to AWS VPS
     runs-on: ubuntu-latest
-    needs: build-and-push
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [changes, build-api, build-web]
+    if: |
+      always() &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      (needs.changes.outputs.api == 'true' || needs.changes.outputs.web == 'true' || needs.changes.outputs.infra == 'true') &&
+      (needs.build-api.result == 'success' || needs.build-api.result == 'skipped') &&
+      (needs.build-web.result == 'success' || needs.build-web.result == 'skipped')
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -180,23 +251,28 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
           ENV_PROD: ${{ secrets.ENV_PROD }}
           DOMAIN: ${{ secrets.DOMAIN }}
+          DEPLOY_API: ${{ needs.changes.outputs.api }}
+          DEPLOY_WEB: ${{ needs.changes.outputs.web }}
+          DEPLOY_INFRA: ${{ needs.changes.outputs.infra }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
-          envs: GITHUB_TOKEN,GITHUB_ACTOR,ENV_PROD,DOMAIN
+          envs: GITHUB_TOKEN,GITHUB_ACTOR,ENV_PROD,DOMAIN,DEPLOY_API,DEPLOY_WEB,DEPLOY_INFRA
           script: |
             set -e
 
-            # Crear directorio si no existe y asegurar ubicacion
+            echo "=== Despliegue selectivo ==="
+            echo "API:   $DEPLOY_API"
+            echo "Web:   $DEPLOY_WEB"
+            echo "Infra: $DEPLOY_INFRA"
+
             mkdir -p ~/emitesis
             cd ~/emitesis
 
-            # Escribir el archivo .env de produccion y limpiar retornos de carro de Windows (CRLF -> LF)
             echo "$ENV_PROD" | tr -d '\r' > .env
 
-            # Limpiar comillas externas y espacios en los valores del archivo .env
             while IFS= read -r line || [ -n "$line" ]; do
               if [[ "$line" =~ ^# ]] || [[ -z "$line" ]]; then
                 echo "$line"
@@ -204,13 +280,11 @@ jobs:
                 key=$(echo "$line" | cut -d'=' -f1)
                 val=$(echo "$line" | cut -d'=' -f2-)
 
-                # Recortar espacios en blanco al inicio y final
                 key="${key#${key%%[![:space:]]*}}"
                 key="${key%${key##*[![:space:]]}}"
                 val="${val#${val%%[![:space:]]*}}"
                 val="${val%${val##*[![:space:]]}}"
 
-                # Quitar comillas externas
                 val="${val#\"}"
                 val="${val%\"}"
                 val="${val#\'}"
@@ -220,8 +294,6 @@ jobs:
               fi
             done < .env > .env.tmp && mv .env.tmp .env
 
-            # Forzar credenciales de base de datos limpias y garantizadas en el archivo .env
-            # Esto evita fallos por caracteres especiales, comillas o discrepancias en los secretos de GitHub
             sed -i '/^POSTGRES_USER=/d' .env || true
             sed -i '/^POSTGRES_PASSWORD=/d' .env || true
             sed -i '/^POSTGRES_DB=/d' .env || true
@@ -234,8 +306,6 @@ jobs:
             echo "DATABASE_URL=postgresql://postgres:EmitesPass2026@db:5432/emitesis_db?schema=public" >> .env
             echo "DIRECT_URL=postgresql://postgres:EmitesPass2026@db:5432/emitesis_db?schema=public" >> .env
 
-            # Forzar consistencia de variables del dominio de producción
-            # Esto evita bloqueos por CORS y fallos en WebAuthn (inicio con huella dactilar)
             sed -i '/^CORS_ORIGINS=/d' .env || true
             sed -i '/^PUBLIC_APP_URL=/d' .env || true
             sed -i '/^WEBAUTHN_RP_ID=/d' .env || true
@@ -246,7 +316,6 @@ jobs:
             echo "WEBAUTHN_RP_ID=$DOMAIN" >> .env
             echo "WEBAUTHN_ORIGIN=https://$DOMAIN" >> .env
 
-            # DIAGNÓSTICO SEGURO (no expone contraseñas completas en logs)
             echo "=== DIAGNÓSTICO SEGURO DE VARIABLES EN .ENV ==="
             while IFS= read -r line || [ -n "$line" ]; do
               if [[ "$line" =~ ^# ]] || [[ -z "$line" ]]; then
@@ -256,10 +325,8 @@ jobs:
               val=$(echo "$line" | cut -d'=' -f2-)
 
               if [[ "$key" == *"PASSWORD"* ]] || [[ "$key" == *"SECRET"* ]] || [[ "$key" == *"KEY"* ]] || [[ "$key" == *"TOKEN"* ]] || [[ "$key" == *"PASS"* ]]; then
-                # Imprimir solo longitud y primer/último carácter para verificar limpieza
                 echo "$key: longitud=${#val} | empieza con: '${val:0:1}' | termina con: '${val: -1}'"
               elif [[ "$key" == "DATABASE_URL" ]] || [[ "$key" == "DIRECT_URL" ]]; then
-                # Enmascarar contraseña en la URL y mostrar estructura
                 masked_val=$(echo "$val" | sed -E 's/:[^:@]*@/:***@/')
                 echo "$key: $masked_val"
               else
@@ -267,33 +334,31 @@ jobs:
               fi
             done < .env
 
-            # Asegurar que la variable DOMAIN este presente en el archivo .env si es requerida
             if ! grep -q "DOMAIN=" .env; then
               echo "DOMAIN=$DOMAIN" >> .env
             else
               sed -i "s/DOMAIN=.*/DOMAIN=$DOMAIN/" .env
             fi
 
-            # Validar consistencia de credenciales en el archivo .env
             if [ -f .env ]; then
               ENV_USER=$(grep "^POSTGRES_USER=" .env | cut -d'=' -f2- | tr -d '"' | tr -d "'")
               ENV_USER=${ENV_USER:-postgres}
-              
+
               ENV_PASS=$(grep "^POSTGRES_PASSWORD=" .env | cut -d'=' -f2- | tr -d '"' | tr -d "'")
               ENV_PASS=${ENV_PASS:-password}
-              
+
               ENV_DB=$(grep "^POSTGRES_DB=" .env | cut -d'=' -f2- | tr -d '"' | tr -d "'")
               ENV_DB=${ENV_DB:-emitesis_db}
 
               DB_URL=$(grep "^DATABASE_URL=" .env | cut -d'=' -f2- | tr -d '"' | tr -d "'")
-              
+
               echo "=== CONTROL DE CALIDAD DE VARIABLES DE ENTORNO ==="
               if [ -n "$DB_URL" ]; then
                 DB_URL_CLEAN=$(echo "$DB_URL" | cut -d'?' -f1)
                 DB_URL_NO_PROTO=$(echo "$DB_URL_CLEAN" | sed -E 's|.*://||')
                 DB_URL_AUTH=$(echo "$DB_URL_NO_PROTO" | cut -d'@' -f1)
                 DB_URL_HOST_DB=$(echo "$DB_URL_NO_PROTO" | cut -d'@' -f2)
-                
+
                 DB_URL_USER=$(echo "$DB_URL_AUTH" | cut -d':' -f1)
                 DB_URL_PASS=$(echo "$DB_URL_AUTH" | cut -d':' -f2)
                 DB_URL_DB=$(echo "$DB_URL_HOST_DB" | cut -d'/' -f2)
@@ -311,7 +376,7 @@ jobs:
                   echo "❌ ERROR: La base de datos en POSTGRES_DB ('$ENV_DB') no coincide con la base de datos en DATABASE_URL ('$DB_URL_DB')."
                   ERROR_DETECTADO=1
                 fi
-                
+
                 if [ $ERROR_DETECTADO -eq 1 ]; then
                   echo "Por favor, corrige tu secreto ENV_PROD en GitHub para que las credenciales coincidan."
                   exit 1
@@ -323,27 +388,44 @@ jobs:
               fi
             fi
 
-            # Reubicar scripts desde la estructura del repositorio a la raiz del deploy
             if [ -d scripts/ops ]; then
               mv scripts/ops/backup-db.sh .
               mv scripts/ops/manage-db.sh .
               rm -rf scripts
             fi
 
-            # Asegurar formato LF y permisos de ejecucion para los scripts operativos
             sed -i 's/\r$//' backup-db.sh manage-db.sh || true
             chmod +x backup-db.sh
             chmod +x manage-db.sh
 
-
-            # Iniciar sesion en GitHub Container Registry para poder descargar las imagenes
             echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
 
-            # Descargar las imagenes mas recientes desde GHCR
-            docker-compose -f docker-compose.prod.yml pull
+            DEPLOY_SERVICES=""
 
-            # Levantar/Actualizar los servicios en segundo plano con eliminacion de contenedores huerfanos
-            if ! docker-compose -f docker-compose.prod.yml up -d --remove-orphans; then
+            if [ "$DEPLOY_API" = "true" ]; then
+              echo "→ Descargando imagen del API..."
+              docker-compose -f docker-compose.prod.yml pull api
+              DEPLOY_SERVICES="$DEPLOY_SERVICES api"
+            fi
+
+            if [ "$DEPLOY_WEB" = "true" ]; then
+              echo "→ Descargando imagen del frontend..."
+              docker-compose -f docker-compose.prod.yml pull web
+              DEPLOY_SERVICES="$DEPLOY_SERVICES web"
+            fi
+
+            if [ "$DEPLOY_INFRA" = "true" ]; then
+              echo "→ Actualizando infraestructura (nginx / compose)..."
+              DEPLOY_SERVICES="$DEPLOY_SERVICES nginx"
+            fi
+
+            if [ -z "$DEPLOY_SERVICES" ]; then
+              echo "No hay servicios que actualizar."
+              exit 0
+            fi
+
+            echo "→ Reiniciando servicios:$DEPLOY_SERVICES"
+            if ! docker-compose -f docker-compose.prod.yml up -d --remove-orphans $DEPLOY_SERVICES; then
               echo "=== ERROR AL INICIAR LOS CONTENEDORES ==="
               echo "=== ESTADO DE TODOS LOS CONTENEDORES ==="
               docker ps -a || true
@@ -356,7 +438,4 @@ jobs:
               exit 1
             fi
 
-            # Limpiar imagenes obsoletas o sin etiqueta para evitar consumo innecesario de almacenamiento en el VPS
             docker image prune -f
-
-

@@ -2,24 +2,24 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Praxis Hub - Prácticas Preprofesionales",
-  description: "Plataforma para la gestión integral de prácticas preprofesionales.",
-  icons: {
-    icon: "/images/brand/logo_fondo2_png.png",
-    shortcut: "/images/brand/logo_fondo2_png.png",
-    apple: "/images/brand/logo_fondo2_png.png",
-  },
+    title: "Praxis Hub - Prácticas Preprofesionales",
+    description: "Plataforma para la gestión integral de prácticas preprofesionales.",
+    icons: {
+        icon: "/images/brand/sin_fondo_png.png",
+        shortcut: "/images/brand/sin_fondo_png.png",
+        apple: "/images/brand/sin_fondo_png.png",
+    },
 
 
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Praxis Hub",
-  },
-  formatDetection: {
-    telephone: false,
-  },
+    manifest: "/manifest.json",
+    appleWebApp: {
+        capable: true,
+        statusBarStyle: "default",
+        title: "Praxis Hub",
+    },
+    formatDetection: {
+        telephone: false,
+    },
 };
 
 import { Navbar } from "@/components/navigation/Navbar";
@@ -35,36 +35,36 @@ import { ThemeScript } from "@/components/providers/ThemeScript";
 import { LanguageProvider } from "@/providers/LanguageProvider";
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
-  return (
-    <html lang="es" suppressHydrationWarning>
-      <head>
-        <ThemeScript />
-      </head>
-      <body className="font-google antialiased bg-background text-foreground">
-        <ThemeProvider>
-          <LanguageProvider>
-            <Navbar />
-            <main className="min-h-screen">
-              <SocketProvider>
-                <ChatProvider>
-                  <ReCaptchaProviderWrapper>
-                    <PrivacyConsentWrapper>
-                      {children}
-                    </PrivacyConsentWrapper>
-                  </ReCaptchaProviderWrapper>
-                  <ChatWidgetLoader />
-                </ChatProvider>
-              </SocketProvider>
-            </main>
-            <Footer />
-            <Toaster position="top-right" richColors />
-          </LanguageProvider>
-        </ThemeProvider>
-      </body>
-    </html>
-  );
+    return (
+        <html lang="es" suppressHydrationWarning>
+            <head>
+                <ThemeScript />
+            </head>
+            <body className="font-google antialiased bg-background text-foreground">
+                <ThemeProvider>
+                    <LanguageProvider>
+                        <Navbar />
+                        <main className="min-h-screen">
+                            <SocketProvider>
+                                <ChatProvider>
+                                    <ReCaptchaProviderWrapper>
+                                        <PrivacyConsentWrapper>
+                                            {children}
+                                        </PrivacyConsentWrapper>
+                                    </ReCaptchaProviderWrapper>
+                                    <ChatWidgetLoader />
+                                </ChatProvider>
+                            </SocketProvider>
+                        </main>
+                        <Footer />
+                        <Toaster position="top-right" richColors />
+                    </LanguageProvider>
+                </ThemeProvider>
+            </body>
+        </html>
+    );
 }
