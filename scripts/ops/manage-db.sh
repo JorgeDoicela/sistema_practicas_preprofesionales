@@ -68,6 +68,7 @@ mostrar_ayuda() {
     echo -e "  ${CYAN}reset${NC}              : Purga por completo la base de datos e inicializa de cero"
     echo -e "                       (Advertencia: Ejecuta drop total, recreamiento y seed)."
     echo -e "  ${CYAN}reset --force${NC}      : Realiza el restablecimiento total omitiendo la confirmación."
+    echo -e "  ${CYAN}repair${NC}             : Repara error P3005 (schema sin historial de migraciones)."
     echo -e "  ${CYAN}backup${NC}             : Genera una copia de seguridad comprimida e inmediata en disco."
     echo -e "  ${CYAN}help${NC}               : Muestra este panel informativo."
     echo -e "${PURPLE}=====================================================================${NC}"
@@ -115,6 +116,22 @@ api_prisma_cmd() {
 reiniciar_api() {
     log_info "Reiniciando servicio API..."
     "${COMPOSE_CMD[@]}" up -d api
+}
+
+db_container_name() {
+    if docker ps --format '{{.Names}}' | grep -q '^emitesis-db-prod$'; then
+        echo "emitesis-db-prod"
+    else
+        echo "emitesis-db"
+    fi
+}
+
+limpiar_schema_public() {
+    local db_container
+    db_container="$(db_container_name)"
+    log_warning "Eliminando schema public para reconstruir migraciones desde cero..."
+    docker exec -i "$db_container" psql -U postgres -d emitesis_db -v ON_ERROR_STOP=1 -c \
+        "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO postgres; GRANT ALL ON SCHEMA public TO public;"
 }
 
 case "$1" in
@@ -166,6 +183,22 @@ case "$1" in
         else
             log_info "Operación cancelada por el usuario. La base de datos permanece intacta."
         fi
+        ;;
+
+    repair)
+        verificar_entorno
+        log_warning "Reparando base de datos con error P3005 (tablas sin _prisma_migrations)..."
+        docker stop "$API_CONTAINER" 2>/dev/null || true
+
+        if ! api_prisma_cmd "npx prisma migrate reset --force --skip-seed"; then
+            log_warning "migrate reset no aplicó; limpiando schema manualmente..."
+            limpiar_schema_public
+            api_prisma_cmd "npx prisma migrate deploy"
+        fi
+
+        api_prisma_cmd "npx prisma db seed"
+        reiniciar_api
+        log_success "Base de datos reparada. La API debería arrancar sin P3005."
         ;;
 
     backup)
