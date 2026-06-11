@@ -1,8 +1,8 @@
-# EmiTesis: Sistema de Gobernanza y Gestión de Prácticas Preprofesionales
+# Praxis Hub: Sistema de Gobernanza y Gestión de Prácticas Preprofesionales
 
-> Plataforma centralizada y automatizada para la digitalización integral, auditoría y trazabilidad del ciclo de vida de las prácticas preprofesionales a nivel institucional.
+> Plataforma centralizada y de grado empresarial (*Enterprise-grade*) para la digitalización integral, auditoría y trazabilidad del ciclo de vida de las prácticas preprofesionales a nivel institucional.
 
-EmiTesis es un ecosistema digital de grado empresarial (*Enterprise-grade*) diseñado para administrar de inicio a fin el proceso de pasantías y prácticas institucionales. Sustituyendo el manejo físico o disperso de documentos, EmiTesis orquesta la interacción entre autoridades, instituciones corporativas y estudiantes, garantizando la **seguridad documental**, **control de asistencia preciso mediante Geofencing**, e integración con **Inteligencia Artificial para soporte proactivo**.
+Praxis Hub es un ecosistema digital diseñado para administrar de inicio a fin el proceso de pasantías y prácticas institucionales en el **ISTPET**. Sustituyendo el manejo analógico y disperso de documentos, Praxis Hub orquesta la interacción segura entre autoridades, empresas y estudiantes, garantizando la **seguridad documental**, **control de asistencia preciso mediante Geofencing**, e integración con **Inteligencia Artificial para soporte proactivo**.
 
 ---
 
@@ -10,10 +10,10 @@ EmiTesis es un ecosistema digital de grado empresarial (*Enterprise-grade*) dise
 
 Históricamente, la administración de pasantías presenta retos críticos: falsificación de registros de asistencia, demoras en el flujo burocrático de revisión documental, y dificultad en la supervisión real (véase [La Problemática y Propuesta de Valor](./docs/problematica.md)).
 
-EmiTesis soluciona estos obstáculos a través de un ecosistema interconectado basado en 3 pilares estructurales:
-1. **Verificación Estricta (Geofencing y Biometría):** Garantiza que cada hora registrada sea legítima.
-2. **Validación en Cascada (Nested Approvals):** Flujos de validación estricta multinivel para documentos legales y académicos.
-3. **Observabilidad 360°:** Integración del seguimiento empresarial con el rendimiento y soporte asistido por AI (GPT-4o).
+Praxis Hub soluciona estos obstáculos a través de un ecosistema interconectado basado en 3 pilares estructurales:
+1. **Verificación Estricta (Geofencing y Biometría):** Garantiza que cada hora registrada sea legítima mediante la fórmula de Haversine y autenticación passwordless (Passkeys/WebAuthn).
+2. **Validación en Cascada (Nested Approvals):** Flujos de validación estricta multinivel para documentos legales y académicos con estados inmutables al ser aprobados.
+3. **Observabilidad 360°:** Integración del seguimiento empresarial con el rendimiento y soporte asistido por IA (GPT-4o) con directrices "Zero-Hallucination Policy".
 
 ---
 
@@ -24,7 +24,7 @@ El sistema se compone de una arquitectura **Hybrid Universal Bridge**, segmentan
 | Capa | Tecnologías Clave | Propósito Estratégico |
 | :--- | :--- | :--- |
 | **Frontend UI** | Next.js 16 (App Router), React 19, Tailwind CSS | Interfaces Premium reactivas, protección de rutas y renderizado optimizado (SSR/CSR). |
-| **Backend Core** | NestJS 11+, TypeScript, JWT, OAuth (WebAuthn) | Procesamiento robusto, interceptores globales y tareas automáticas asíncronas (CRON). |
+| **Backend Core** | NestJS 11+, TypeScript, JWT, WebAuthn | Procesamiento robusto, interceptores globales y tareas automáticas asíncronas (CRON). |
 | **Motor de Base de Datos** | PostgreSQL, Prisma ORM 5+ | Manejo de consistencia de alta presión, relaciones y logs de auditoría masivos. |
 | **Document Storage** | Vercel Blob, PDF.js | Almacenamiento perenne de evidencias fotográficas, documentos firmados y convenios. |
 | **AI Copilot** | OpenAI GPT-4o | Asistente contextual con directrices anti-alucinaciones "Zero-Hallucination Policy". |
@@ -40,9 +40,8 @@ La integridad del sistema depende de una separación de responsabilidades absolu
 1. **Administrador:** Orquestador de la plataforma; gestiona analíticas de salud del sistema, carreras, cronogramas y limpieza en caliente (Hot Maintenance).
 2. **Coordinador de Prácticas:** Regulador del ecosistema; aprueba documentos en última instancia, maneja convenios corporativos y emite la certificación final.
 3. **Tutor Académico:** Monitor educativo; da primera revisión a documentos y valida el progreso de objetivos.
-4. **Empresa (RRHH/Convenio):** Entidad legal enmarcada en el sistema, agrupa tutores empresariales.
-5. **Tutor Empresarial:** Supervisor en campo; responsable de realizar las evaluaciones duales técnicas.
-6. **Estudiante:** El protagonista en campo; registra asistencia geo-localizada, somete documentos a iteración y requiere retroalimentación contínua.
+4. **Empresa (RRHH/Convenio):** Entidad legal enmarcada en el sistema, responsable de registrar las evaluaciones técnicas duales y visualizar los marcajes en vivo.
+5. **Estudiante:** El protagonista en campo; registra asistencia geo-localizada, somete documentos a iteración y requiere retroalimentación contínua.
 
 *Más detalles en [Lógica de Negocio y Reglas Técnicas](./docs/logica-negocio.md).*
 
@@ -50,7 +49,7 @@ La integridad del sistema depende de una separación de responsabilidades absolu
 
 ## Instalación y Despliegue Local (Zero-Config)
 
-EmiTesis está industrializado para ser "Clone & Run". Toda la configuración necesaria ya viene incluida en el repositorio.
+Praxis Hub está industrializado para ser "Clone & Run". Toda la configuración necesaria ya viene incluida en el repositorio.
 
 ### Requisitos Previos
 *   **Node.js** (v22+)
@@ -71,28 +70,30 @@ EmiTesis está industrializado para ser "Clone & Run". Toda la configuración ne
    ```
 
 3. **Lanzar el ecosistema**
-   Inicia el backend, el frontend y muestra los accesos directos.
+   Inicia el backend y el frontend concurrentemente.
    ```bash
    npm run dev
    ```
-
----
+   *   **Frontend:** [http://localhost:3005](http://localhost:3005)
+   *   **Backend / Swagger:** [http://localhost:5000/api/docs](http://localhost:5000/api/docs)
 
 ---
 
 ## Documentación Institucional
 
-Este repositorio cuenta con un nivel de especificación detallado destinado a Desarrolladores, Arquitectos y DevOps. Recomendamos fuertemente revisar los documentos en estricto orden para entender el sistema de manera global:
+Este repositorio cuenta con un nivel de especificación detallado destinado a Desarrolladores, Arquitectos y DevOps. Recomendamos revisar los documentos en el siguiente orden para entender el sistema de manera global:
 
-1. **[Planteamiento de la Problemática y Solución](./docs/problematica.md)**
-2. **[Arquitectura y Topología de Despliegue](./docs/arquitectura.md)**
-3. **[Lógica de Negocio y State Machines](./docs/logica-negocio.md)**
-4. **[Diseño de Base de Datos y Estrategia de Seeding](./docs/base-de-datos.md)**
-5. **[Políticas de Seguridad y Privacidad LOPDP](./docs/seguridad.md)**
-6. **[Documentación de Componentes y Guía de Desarrollo](./docs/desarrollo.md)**
-7. **[Endpoints del API y Especificaciones](./docs/api-guia.md)**
-8. **[Manual de Usuario](./docs/manual-usuario.md)**
-9. ... *y guías de Devops y Mantenimiento alojadas en la misma carpeta base*.
+1. **[Planteamiento de la Problemática y Solución](./docs/problematica.md)**: Caso de negocio y propuesta de valor estratégico.
+2. **[Arquitectura y Topología de Despliegue](./docs/arquitectura.md)**: Estructura C4, resiliencia y motor contextual IA.
+3. **[Lógica de Negocio y State Machines](./docs/logica-negocio.md)**: Ciclos de vida, flujos de aprobación e inmutabilidad.
+4. **[Diseño de Base de Datos y Estrategia de Seeding](./docs/base-de-datos.md)**: Diccionario y simulación hiperrealista.
+5. **[Políticas de Seguridad y Privacidad LOPDP](./docs/seguridad.md)**: Encriptación, ARCO y protección de sesión.
+6. **[Guía de Desarrollo y Estándares](./docs/desarrollo.md)**: Convenciones de código, DTOs y manejo de Skeletons.
+7. **[Endpoints del API y Especificaciones](./docs/api-guia.md)**: Catálogo de API y uso de Swagger.
+8. **[Manual de Usuario](./docs/manual-usuario.md)**: Guía detallada de flujos operativos por rol.
+9. **[Guía de Pruebas y Calidad](./docs/pruebas.md)**: Cobertura Jest, e2e y análisis estático.
+10. **[DevOps y Despliegue Continuo](./docs/devops.md)**: Terraform, Docker y pipelines de CI/CD.
+11. **[Protocolo de Mantenimiento](./docs/mantenimiento.md)**: Respaldos automáticos, restauración y logs.
 
 ---
-**EmiTesis © 2026** - Transformando la trazabilidad burocrática en operabilidad inteligente.
+**Praxis Hub © 2026** - Transformando la trazabilidad burocrática en operabilidad inteligente.

@@ -1,49 +1,60 @@
-# Guía de Pruebas y Calidad de Software
+# Guía de Pruebas y Aseguramiento de Calidad (Praxis Hub)
 
-Este documento describe los procedimientos para validar la integridad del código y asegurar que el sistema EmiTesis cumpla con los estándares de calidad antes de pasar a producción.
+Este documento describe los procedimientos, herramientas y convenciones de pruebas implementados para validar la integridad del código, el correcto funcionamiento de las reglas de negocio y asegurar que el sistema **Praxis Hub** cumpla con los más altos estándares de calidad de software antes de pasar a producción.
 
-## 1. Pruebas Automatizadas (Backend)
+---
 
-El sistema utiliza **Jest** como motor de pruebas y **Supertest** para pruebas de integración de API.
+## 1. Tipos de Pruebas y Cobertura (Backend)
 
-### Ejecución de Pruebas
-Dentro de la carpeta `api-emitesis`:
+El backend utiliza **Jest** como motor de ejecución de pruebas y **Supertest** para las solicitudes HTTP en integración de API.
+
+*   **Pruebas Unitarias (`Unit Tests`):** Validan funciones, servicios y helpers de forma totalmente aislada simulando la base de datos (mediante mocks del prisma service). Ej. validación del cálculo de distancias GPS o de fechas límites en `DocumentsService`.
+*   **Pruebas de Integración y Extremo a Extremo (`e2e`):** Validan el ciclo de vida completo de una solicitud HTTP en controladores y rutas relacionales con base de datos de pruebas dedicada. Se alojan en la carpeta `test/`.
+
+### Comandos de Ejecución (En la carpeta `api-emitesis/`)
 ```bash
 # Ejecutar todas las pruebas unitarias
 npm run test
 
-# Ejecutar pruebas en modo observador (watch)
+# Ejecutar pruebas en modo observador (watch mode)
 npm run test:watch
 
-# Generar reporte de cobertura (coverage)
+# Ejecutar pruebas de integración e2e
+npm run test:e2e
+
+# Generar reporte detallado de cobertura (coverage)
 npm run test:cov
 ```
 
-### Tipos de Pruebas Implementadas
-*   **Unitarias:** Validan la lógica aislada de los servicios (ej. validación de fechas en `DocumentsService`).
-*   **Integración (e2e):** Validan el flujo completo desde la petición HTTP hasta la respuesta, incluyendo la interacción con la base de datos (carpeta `test/`).
+---
 
-## 2. Análisis Estático de Código (Linting)
+## 2. Análisis Estático de Código (Linting y Formateo)
 
-Para mantener un estilo de código uniforme y profesional, el proyecto utiliza **ESLint** y **Prettier**. Se ha configurado un entorno flexible que permite la evolución del código sin bloqueos innecesarios por reglas de estilo estrictas.
+Para mantener la legibilidad, escalabilidad y coherencia estilística a lo largo de todo el monorepositorio, el proyecto utiliza **ESLint** (con reglas de TypeScript) y **Prettier** para formateo automático.
 
 ### Comandos de Validación
 ```bash
-# Validar y corregir automáticamente problemas de estilo
+# Validar y corregir automáticamente problemas de estilo y sintaxis
 npm run lint
 
 # Formatear todos los archivos según las reglas establecidas
 npm run format
 ```
 
-## 3. Pruebas de Humo (Smoke Tests)
-Antes de cada despliegue, se recomienda verificar los endpoints críticos mediante la interfaz de **Swagger** en `/api/docs`:
-1.  Login exitoso.
-2.  Registro de asistencia (Geofencing).
-3.  Carga de documentos.
+---
 
-## 4. Integración en el Pipeline (CI)
-Estas verificaciones se ejecutan automáticamente en GitHub Actions. El pipeline está configurado con un enfoque **flexible e informativo**:
-*   Los errores de estilo (Lint) o pruebas unitarias fallidas generan reportes detallados en las anotaciones del commit para su revisión técnica.
-*   El pipeline continuará con la fase de construcción (Build) siempre que el código sea compilable, asegurando la entrega continua (CD) sin detener despliegues críticos por advertencias secundarias.
-*   La compilación exitosa (`npm run build`) es el requisito indispensable para la publicación de imágenes de contenedor.
+## 3. Pruebas de Humo (Smoke Tests)
+
+Antes de autorizar un paso de versión a preproducción o producción, se debe ejecutar manualmente una batería de pruebas rápidas sobre la interfaz interactiva de Swagger (`/api/docs`) o la interfaz web:
+1.  **Flujo de Sesión:** Autenticación exitosa `/auth/login` y retorno de JWT.
+2.  **Validación GPS:** Intento de "Check-In" enviando coordenadas correctas y validación de aceptación.
+3.  **Gestión Documental:** Carga de un documento PDF de prueba y paso de estado a `EN_REVISION_TUTOR`.
+
+---
+
+## 4. Integración Continua (GitHub Actions CI/CD)
+
+Las pruebas y análisis estáticos están integrados en el pipeline automático de GitHub Actions definido en `ci.yml`. El flujo está diseñado de manera pragmática y flexible:
+*   **Anotaciones Informativas:** Los fallos estilísticos o advertencias menores de ESLint se reportan como anotaciones en los archivos del Commit o Pull Request para su posterior limpieza por parte del equipo de desarrollo, sin interrumpir el flujo del pipeline.
+*   **Compilación Estricta:** La fase de construcción (`npm run build`) en backend y frontend es mandatoria e ineludible. Cualquier error de tipado o compilación TypeScript detendrá inmediatamente el pipeline para evitar el empaquetado de artefactos con errores.
+*   **Aislamiento:** El pipeline levanta una instancia efímera de base de datos PostgreSQL en un contenedor de Docker en paralelo para correr las pruebas de integración e2e de manera limpia en la nube.

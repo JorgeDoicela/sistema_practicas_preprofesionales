@@ -1,6 +1,6 @@
-# PraxisHub Infrastructure as Code (IaC) - AWS Lightsail & Docker
+# Praxis Hub Infrastructure as Code (IaC) - AWS Lightsail & Docker
 
-Este módulo de **Terraform** permite automatizar por completo el aprovisionamiento y despliegue del sistema PraxisHub en la nube de Amazon Web Services (AWS) utilizando **AWS Lightsail**.
+Este módulo de **Terraform** permite automatizar por completo el aprovisionamiento y despliegue del sistema **Praxis Hub** en la nube de Amazon Web Services (AWS) utilizando **AWS Lightsail**.
 
 El objetivo de esta implementación es garantizar la **portabilidad absoluta y la replicabilidad instantánea** del sistema. Cualquier institución que desee implementar esta plataforma puede levantar un servidor idéntico y seguro en pocos minutos sin necesidad de interactuar manualmente con la consola web de AWS.
 
@@ -96,4 +96,4 @@ Una vez creado el servidor con Terraform, la aplicación se despliega en cuesti�
 
 ## Aporte Metodológico para la Tesis (IaC)
 
-Esta carpeta implementa el concepto de **Infraestructura como Código (IaC)**. Al utilizar archivos de configuración declarativos (`main.tf`), se elimina el "factor humano" y la configuración manual propensa a errores. Esto permite que el sistema PraxisHub posea una propiedad de **escalabilidad horizontal y portabilidad multi-región**, lo cual es un estándar de la industria Cloud Native actual (DevOps).
+Esta carpeta implementa el concept de **Infraestructura como Código (IaC)**. Al utilizar archivos de configuración declarativos (`main.tf`), se elimina el "factor humano" y la configuración manual propensa a errores. Esto permite que el sistema **Praxis Hub** posea una propiedad de **escalabilidad horizontal y portabilidad multi-región**, lo cual es un estándar de la industria Cloud Native actual (DevOps).

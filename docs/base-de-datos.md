@@ -1,69 +1,96 @@
-# Base de Datos y Estrategia de Seeding Masivo
+# Base de Datos y Estrategia de Seeding Masivo (Praxis Hub)
 
-Este documento cubre el mapeo transaccional que utiliza Prisma ORM integrado en PostgreSQL para asegurar persistencia y la estrategia de siembra para simulación industrial.
+Este documento cubre el diseño del modelo entidad-relación transaccional implementado en PostgreSQL utilizando Prisma ORM para asegurar integridad referencial, consistencia de datos relacionales y la estrategia de siembra para simulación industrial.
 
 ---
 
 ## 1. Diseño Entidad-Relación y Estructura Nuclear
 
-El diagrama está optimizado para Normalización 3NF en datos tabulares y denormalización ligera en historiales en volumen (utilizando campos tipo `Json`) para alto rendimiento en lecturas.
+El modelo relacional está optimizado para Normalización 3NF en datos tabulares y denormalización controlada en campos históricos complejos (utilizando el tipo nativo `Json` de PostgreSQL) para alto rendimiento en lecturas de configuraciones y ubicaciones GPS.
 
 ```mermaid
 erDiagram
-    USER ||--o{ INTERNSHIP_AS_STUDENT : participa
-    USER ||--o{ INTERNSHIP_AS_TUTOR : supervisa
+    USER ||--o{ INTERNSHIP : "estudiante o tutor"
     USER ||--o{ CREDENTIAL : "WebAuthn"
     USER ||--o{ DATA_REQUEST : "Derechos LOPDP"
+    USER ||--o{ LOPDP_LOG : "Aceptación LOPDP"
+    USER ||--o{ SYSTEM_LOG : "Auditoría"
+    USER ||--o{ NOTIFICATION : "Notificaciones"
+    USER ||--o{ CHAT_MEMBER : "Participación"
+    USER ||--o{ CHAT_MESSAGE : "Envío"
     
     COMPANY ||--|{ AGREEMENT : firma
     COMPANY ||--|{ INTERNSHIP : aloja
-    COMPANY ||--o{ USER : "RRHH"
+    COMPANY ||--o{ USER : "RRHH / Contacto"
     
     CAREER ||--|{ USER : enseña
+    CAREER ||--|{ INTERNSHIP : pertenece
     CAREER ||--|{ DOCUMENT_TEMPLATE : hereda
     
     INTERNSHIP ||--|{ ATTENDANCE : asiste
     INTERNSHIP ||--|{ DOCUMENT : genera
     INTERNSHIP ||--|{ EVALUATION : recibe
+    INTERNSHIP ||--|{ MONITORING_VISIT : supervisa
     INTERNSHIP ||--o{ STATUS_HISTORY : "Logs Modificaciones"
+    INTERNSHIP ||--|{ ABSENCE : "Justificativos"
     
     ATTENDANCE ||--|{ ACTIVITY_PHOTO : evidencia
+    
+    DOCUMENT ||--|{ DOCUMENT_VERSION : versiona
+    DOCUMENT ||--|{ DOCUMENT_COMMENT : retroalimenta
+    DOCUMENT ||--o{ DOCUMENT_TEMPLATE : "instancia de"
+    
+    CHAT_ROOM ||--|{ CHAT_MEMBER : contiene
+    CHAT_ROOM ||--|{ CHAT_MESSAGE : agrupa
 ```
 
 ---
 
-## 2. Tablas Transversales de Seguridad y Auditoría Operativa
+## 2. Diccionario de Tablas Principales
 
-Una aplicación empresarial debe poder trazar el "quién, qué y cuándo" sin necesidad imperativa de revisar backups de base de datos o logs planos del orquestador.
+### A. Núcleo Académico y Estudiantil
+*   **`User`:** Contiene los datos principales de los usuarios. Soporta múltiples roles mediante la columna `role` (`ADMIN`, `COORDINADOR`, `TUTOR`, `ESTUDIANTE`, `EMPRESA`). Almacena configuraciones de autenticación de dos factores (2FA), hashes de contraseña (BCrypt), tokens de sesión y estados de privacidad LOPDP.
+*   **`Career`:** Define las carreras del ISTPET. Almacena su modalidad oficial y una configuración flexible (`config` tipo `Json`) donde se parametrizan variables dinámicas como la cantidad de horas obligatorias (`requiredHours`).
+*   **`Internship` (Pasantías):** Representa la asignación transaccional entre un estudiante, un tutor académico y una empresa. Almacena fechas de inicio/fin, modalidad real de la práctica, datos de contacto del tutor empresarial, coordenadas GPS (`lat`, `lng`) y las ubicaciones de geofencing permitidas (`allowedLocations` tipo `Json`).
 
-1. **`SystemLog` (Bitácora Maestra):**
-   Posee indexación doble `category + createdAt(Desc)` para guardar los milisegundos de consulta, errores fatales, alertas y comportamientos de usuarios del sistema. Es la fuente del "Dashboard de Salud Institucional" para ver peticiones HTTP/500 en vivo.
-2. **`EmailLog` (Registro de Fallos de Red):**
-   Almacena temporalmente los ecos (Bounce/Bugs) y despachos exitosos asíncronos del Nodemailer, conteniendo qué formato se envió ("EXITO/FALLIDO") asegurando que nadie mienta alegando "no recibí el correo de rechazo".
-3. **`InternshipStatusHistory` (Time-Travel Debugging):**
-   Graba las mutaciones históricas del estado de la pasantía. (e.g. Cuándo se pasó de "En Proceso" a "Finalizado" y bajo qué Autorizador).
-4. **`DataRequest` (Flujo Legal ARCO):**
-   Centralización legal en caso de que un estudiante invoque su derecho a que borren toda su data fotográfica y GPS basándose en la normativa LOPDP. 
+### B. Control de Asistencias y Evidencias
+*   **`Attendance`:** Bitácora de marcaciones diarias. Guarda las marcas temporales de `checkIn` y `checkOut`, ubicación GPS capturada, desviación calculada (`distanceKm`) respecto al radio de la empresa, descripción de las tareas del día y referencias de fotos de entrada/salida.
+*   **`ActivityPhoto`:** Almacena la galería de imágenes cargadas por el estudiante a lo largo del día para validar visualmente sus actividades.
+*   **`Absence`:** Justificativos cargados por los estudiantes ante faltas (enfermedad, calamidad doméstica, laboral, etc.), sujetos a revisión y aprobación del tutor académico.
+
+### C. Gestión Documental y Flujos de Aprobación
+*   **`DocumentTemplate`:** Catálogo maestro de plantillas documentales configuradas institucionalmente o por carrera (ej. Formulario F01, Plan de Actividades, Ficha de Aceptación).
+*   **`Document`:** Instanciación de una plantilla dentro del expediente de una pasantía. Almacena las URLs de Vercel Blob, estados de flujo, fechas límites (`dueDate`), anotaciones de revisión de fragmentos (`reviewAnnotations` tipo `Json`) y las propiedades de firma electrónica (código único de verificación, firma digital y hash).
+*   **`DocumentVersion`:** Historial de versiones del documento cargadas por el estudiante tras recibir rechazos del tutor.
+*   **`DocumentComment`:** Conversaciones e hilos de retroalimentación técnica entre el estudiante y el tutor sobre el documento.
+
+### D. Evaluación y Monitoreo
+*   **`Evaluation`:** Rúbrica de calificación dual (`ACADEMICA` y `EMPRESARIAL`) que evalúa puntualidad, proactividad, trabajo en equipo, habilidades técnicas y actitud.
+*   **`MonitoringVisit`:** Registro formal de visitas físicas o virtuales realizadas por el tutor académico a la empresa, incluyendo observaciones y carga de evidencias.
+
+### E. Seguridad, Auditoría y Cumplimiento Legal
+*   **`SystemLog`:** Registro persistente de transacciones HTTP, duración de peticiones, códigos de estado, direcciones IP y correos de actores para auditoría técnica en tiempo real.
+*   **`LopdpLog`:** Registro inmutable de la aceptación de términos y políticas de protección de datos (LOPDP) de cada usuario.
+*   **`DataRequest`:** Flujo formal de ejercicio de derechos ARCO (Acceso, Rectificación, Cancelación y Oposición) presentados por los usuarios.
+*   **`UserCredential`:** Llaves criptográficas y contadores del estándar WebAuthn (Passkeys) asociados a los usuarios.
+*   **`EmailLog`:** Trazabilidad de correos electrónicos despachados y fallidos (Bounce logs).
+*   **`SystemSetting`:** Configuración dinámica del comportamiento del sistema (módulos SMTP, límites de radio GPS y umbrales de reCAPTCHA).
+
+### F. Módulo de Comunicación Interactiva
+*   **`ChatPermission`:** Tabla de permisos que restringe qué roles pueden escribirse entre sí (ej. Estudiante $\leftrightarrow$ Tutor).
+*   **`ChatRoom`, `ChatRoomMember`, `ChatMessage`:** Estructura relacional para mensajería interna instantánea 1:1 o grupal entre los participantes de una práctica, con soporte para borrado por LOPDP.
 
 ---
 
-## 3. Gestión Documental Algorítmica
+## 3. Estrategia de Inyección y Simulación ("Master Seeder v11.0")
 
-El núcleo de los requisitos es el mapeo entre Formatos Generales e Instanciaciones:
+El archivo `prisma/seeds/seed.ts` implementa un **algoritmo hiperrealista probabilístico** para poblar PostgreSQL local o entornos de staging/QA en segundos.
 
-*   **`DocumentTemplate`:** Representa un documento configurado para la Institución o una Carrera (Ej. `F01 - Planilla de Aceptación`). Controla el ordenamiento (Sort Priority), si es obligatorio u opcional y su visibilidad en el ecosistema.
-*   **`Document`:** Instanciación física de ese Template, perteneciente al Pasantías del Jugador, acoplado con estados, observaciones e indexación de URLs a Vercel Blob. 
-*   **`DocumentComment` / `DocumentVersion`:** Para guardar el historial cuando el tutor se los rechaza y el estudiante hace iteraciones corrigiendo fallos.
-
----
-
-## 4. Estrategia de Inyección y Simulación ("Master Seeder v11.0")
-
-El archivo `prisma/seeds/seed.ts` no inyecta simplemente 3 usuarios genéricos; utiliza un **algoritmo hiperrealista probabilístico** para pre-llenar postgres. 
-
-El comando `npx prisma db seed` borra de forma segura jerárquicamente la base y reconstruye:
-- **50 Estudiantes Modelados Matemáticamente:** 10 asumen escenarios "exitosos", otros 20 escenarios estancados o críticos de plazos vencidos.
-- **20 Días de Marcación Simulados:** Distorsiones geomatemáticas y simulacros de fechas de hace 90 días, poblados con URLs de evidencia dummy y fotos random.
-- **Purga de Fallos:** Inyección forzada de historiales de error simulados (Logs HTTP 500), Notificaciones (In-App), Mails fallidos y Data Privacy Requests para llenar el panel de administrador y analizar interfaces con data.
-
-Este seeder convierte tu base local en 30 segundos en el equivalente a una plataforma con meses intensos de estrés de producción.
+### Acciones del comando `npm run setup` / `npx prisma db seed`:
+1.  **Limpieza Jerárquica:** Borra en orden de cascada todas las tablas relacionales para evitar colisiones de llaves primarias o restricciones de integridad.
+2.  **Configuración Base:** Crea las carreras académicas (ej. Ciberseguridad, Desarrollo de Software), plantillas documentales oficiales y roles principales.
+3.  **Generación de 50 Estudiantes Simulación:** Modela matemáticamente tres perfiles de estudiantes:
+    *   **Escenario Exitoso (20%):** Prácticas completas, documentos aprobados, evaluaciones duales excelentes y asistencias con geofencing perfecto.
+    *   **Escenario Crítico (30%):** Estudiantes con marcaciones con alertas GPS (fuera del radio de tolerancia), documentos rechazados por mala redacción o plazos vencidos, y solicitudes de justificación de ausencias pendientes.
+    *   **Escenario en Progreso (50%):** Progreso activo con bitácoras diarias variadas, chats iniciados y retroalimentación interactiva en proceso.
+4.  **Simulación de 20 Días de Operación:** Genera datos históricos con fechas pasadas, calculando geolocalizaciones reales alrededor de las sedes corporativas con ruidos geométricos realistas, inyectando fotos dummy de evidencias y logs de auditoría (SystemLog, EmailLog) para llenar los tableros del Administrador.
