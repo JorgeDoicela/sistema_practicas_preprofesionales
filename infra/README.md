@@ -89,7 +89,7 @@ Una vez creado el servidor con Terraform, la aplicaci√≥n se despliega en cuesti√
 
 5. **Poblar la base de datos (Opcional):**
    ```bash
-   ./manage-db.sh seed
+   ./scripts/ops/manage-db.sh seed
    ```
 
 ---

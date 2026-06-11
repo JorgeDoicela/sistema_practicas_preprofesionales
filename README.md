@@ -53,7 +53,7 @@ La integridad del sistema depende de una separación de responsabilidades absolu
 EmiTesis está industrializado para ser "Clone & Run". Toda la configuración necesaria ya viene incluida en el repositorio.
 
 ### Requisitos Previos
-*   **Node.js** (v20+)
+*   **Node.js** (v22+)
 *   **Docker** (Para la base de datos local, aunque por defecto usa Neon en la nube)
 
 ### Pasos para iniciar:
