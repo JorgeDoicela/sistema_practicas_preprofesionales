@@ -241,7 +241,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
-          source: "docker-compose.prod.yml,nginx.conf,scripts/ops/backup-db.sh,scripts/ops/manage-db.sh,certs/origin.pem,certs/origin.key"
+          source: "docker-compose.prod.yml,nginx.conf,scripts/ops/backup-db.sh,scripts/ops/manage-db.sh,scripts/ops/ensure-migrations.sh,certs/origin.pem,certs/origin.key"
           target: "~/emitesis"
 
       - name: Execute remote deployment commands via SSH
@@ -391,12 +391,14 @@ jobs:
             if [ -d scripts/ops ]; then
               mv scripts/ops/backup-db.sh .
               mv scripts/ops/manage-db.sh .
+              mv scripts/ops/ensure-migrations.sh .
               rm -rf scripts
             fi
 
-            sed -i 's/\r$//' backup-db.sh manage-db.sh || true
+            sed -i 's/\r$//' backup-db.sh manage-db.sh ensure-migrations.sh || true
             chmod +x backup-db.sh
             chmod +x manage-db.sh
+            chmod +x ensure-migrations.sh
 
             echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
 
@@ -405,6 +407,8 @@ jobs:
             if [ "$DEPLOY_API" = "true" ]; then
               echo "→ Descargando imagen del API..."
               docker-compose -f docker-compose.prod.yml pull api
+              echo "→ Asegurando migraciones de Prisma antes de reiniciar API..."
+              ./ensure-migrations.sh
               DEPLOY_SERVICES="$DEPLOY_SERVICES api"
             fi
 
