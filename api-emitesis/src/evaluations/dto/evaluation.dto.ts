@@ -10,10 +10,6 @@ export class CreateEvaluationDto {
   @IsString()
   type: 'EMPRESARIAL' | 'ACADEMICA';
 
-  @IsOptional()
-  @IsUUID('4')
-  evaluatorId?: string;
-
   @IsInt()
   @Min(1)
   @Max(5)

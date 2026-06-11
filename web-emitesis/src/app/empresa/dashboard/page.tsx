@@ -21,6 +21,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
+import { usersService } from "@/services/users.service";
 import Link from "next/link";
 import { LivePresenceWidget } from "@/components/dashboard/LivePresenceWidget";
 import { useLanguage } from "@/providers/LanguageProvider";
@@ -32,15 +33,19 @@ export default function EmpresaDashboardPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState<string>("");
-  const [userRole, setUserRole] = useState<string>("");
 
   const loadData = useCallback(async () => {
     try {
       const userStr = localStorage.getItem("user");
       if (!userStr) return;
       const user = JSON.parse(userStr);
+      if (!user.companyId) {
+        const profile = await usersService.getProfile();
+        const normalized = { ...user, ...profile };
+        localStorage.setItem("user", JSON.stringify(normalized));
+        user.companyId = normalized.companyId;
+      }
       setCompanyName(user.fullName || "");
-      setUserRole(user.role || "");
 
       if (!user.companyId) {
         setLoading(false);
@@ -83,7 +88,9 @@ export default function EmpresaDashboardPage() {
 
   const activeCount = safeInternships.filter((i) => i.status === "En Proceso" || i.status === "Activo").length;
   const testEnabledCount = safeInternships.filter((i) => i.testEnabled).length;
-  const evaluatedCount = safeInternships.filter((i) => i.evaluation).length;
+  const evaluatedCount = safeInternships.filter((i) =>
+    Array.isArray(i.evaluations) && i.evaluations.some((ev: any) => ev.type === "EMPRESARIAL")
+  ).length;
   const totalHours = internships.reduce((acc, i) => {
     const worked = i.attendances?.length ? i.attendances.reduce((s: number, a: any) => {
       if (!a.checkOut) return s;
@@ -227,6 +234,9 @@ function PasanteCard({
   onToggleTest: () => void;
 }) {
   const { t } = useLanguage();
+  const businessEvaluation = Array.isArray(internship.evaluations)
+    ? internship.evaluations.find((ev: any) => ev.type === "EMPRESARIAL")
+    : null;
   const hoursWorked = internship.attendances?.reduce((s: number, a: any) => {
     if (!a.checkOut) return s;
     return s + (new Date(a.checkOut).getTime() - new Date(a.checkIn).getTime()) / 3600000;
@@ -273,7 +283,7 @@ function PasanteCard({
 
         {/* Estado del test */}
         <div className="flex items-center gap-4 flex-shrink-0">
-          {internship.evaluation ? (
+          {businessEvaluation ? (
             <div className="flex items-center gap-2 text-emerald-600">
               <CheckCircle2 className="w-4 h-4" />
               <span className="text-[10px] font-black uppercase tracking-widest">
@@ -297,7 +307,7 @@ function PasanteCard({
           )}
 
           {/* Toggle test */}
-          {!internship.evaluation && (
+          {!businessEvaluation && (
             <button
               onClick={onToggleTest}
               disabled={toggling}
@@ -322,7 +332,7 @@ function PasanteCard({
           )}
 
           {/* Ir a evaluar */}
-          {internship.testEnabled && !internship.evaluation && (
+          {internship.testEnabled && !businessEvaluation && (
             <Link
               href={`/empresa/estudiantes/${internship.id}`}
               className="flex items-center gap-2 px-5 py-3 bg-[#C5A059] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#b08940] transition-all shadow-lg shadow-amber-900/10"
@@ -333,7 +343,7 @@ function PasanteCard({
             </Link>
           )}
 
-          {internship.evaluation && (
+          {businessEvaluation && (
             <Link
               href={`/empresa/estudiantes/${internship.id}`}
               className="flex items-center gap-2 px-5 py-3 bg-slate-100 text-[#003366] rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"

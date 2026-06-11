@@ -4,6 +4,7 @@ export interface JwtPayload {
   role: string;
   fullName: string;
   careerId?: string | null;
+  companyId?: string | null;
   iat?: number;
   exp?: number;
 }

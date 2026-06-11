@@ -103,7 +103,10 @@ export default function EvaluacionesPage() {
           try {
             const evRes: any = await evaluationsService.findByInternship(i.id);
             // Desempaquetado industrial de la respuesta
-            const ev = evRes?.data ? (Array.isArray(evRes.data) ? evRes.data[0] : evRes.data) : (Array.isArray(evRes) ? evRes[0] : null);
+            const evList = evRes?.data
+              ? (Array.isArray(evRes.data) ? evRes.data : [evRes.data])
+              : (Array.isArray(evRes) ? evRes : []);
+            const ev = evList.find((item: any) => item.type === "EMPRESARIAL") ?? null;
 
             if (ev) {
               const p = Number(ev.punctuality) || 0;

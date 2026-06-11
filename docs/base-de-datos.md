@@ -51,7 +51,7 @@ erDiagram
 ### A. Núcleo Académico y Estudiantil
 *   **`User`:** Contiene los datos principales de los usuarios. Soporta múltiples roles mediante la columna `role` (`ADMIN`, `COORDINADOR`, `TUTOR`, `ESTUDIANTE`, `EMPRESA`). Almacena configuraciones de autenticación de dos factores (2FA), hashes de contraseña (BCrypt), tokens de sesión y estados de privacidad LOPDP.
 *   **`Career`:** Define las carreras del ISTPET. Almacena su modalidad oficial y una configuración flexible (`config` tipo `Json`) donde se parametrizan variables dinámicas como la cantidad de horas obligatorias (`requiredHours`).
-*   **`Internship` (Pasantías):** Representa la asignación transaccional entre un estudiante, un tutor académico y una empresa. Almacena fechas de inicio/fin, modalidad real de la práctica, datos de contacto del tutor empresarial, coordenadas GPS (`lat`, `lng`) y las ubicaciones de geofencing permitidas (`allowedLocations` tipo `Json`).
+*   **`Internship` (Pasantías):** Representa la asignación transaccional entre un estudiante, un tutor académico y una empresa. Almacena fechas de inicio/fin, modalidad real de la práctica, coordenadas GPS (`lat`, `lng`) y las ubicaciones de geofencing permitidas (`allowedLocations` tipo `Json`).
 
 ### B. Control de Asistencias y Evidencias
 *   **`Attendance`:** Bitácora de marcaciones diarias. Guarda las marcas temporales de `checkIn` y `checkOut`, ubicación GPS capturada, desviación calculada (`distanceKm`) respecto al radio de la empresa, descripción de las tareas del día y referencias de fotos de entrada/salida.
@@ -65,7 +65,7 @@ erDiagram
 *   **`DocumentComment`:** Conversaciones e hilos de retroalimentación técnica entre el estudiante y el tutor sobre el documento.
 
 ### D. Evaluación y Monitoreo
-*   **`Evaluation`:** Rúbrica de calificación dual (`ACADEMICA` y `EMPRESARIAL`) que evalúa puntualidad, proactividad, trabajo en equipo, habilidades técnicas y actitud.
+*   **`Evaluation`:** Rúbrica de calificación dual (`ACADEMICA` y `EMPRESARIAL`) que evalúa puntualidad, proactividad, trabajo en equipo, habilidades técnicas y actitud. Cada evaluación puede registrar el usuario evaluador (`evaluatorId`) para trazabilidad.
 *   **`MonitoringVisit`:** Registro formal de visitas físicas o virtuales realizadas por el tutor académico a la empresa, incluyendo observaciones y carga de evidencias.
 
 ### E. Seguridad, Auditoría y Cumplimiento Legal

@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Req, UseGuards } from '@nestjs/common';
 import { EvaluationsService } from './evaluations.service';
 import { CreateEvaluationDto } from './dto/evaluation.dto';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
@@ -13,8 +13,8 @@ export class EvaluationsController {
 
   @Post()
   @Roles(Role.EMPRESA, Role.COORDINADOR, Role.TUTOR)
-  async createOrUpdate(@Body() dto: CreateEvaluationDto) {
-    return this.evaluationsService.createOrUpdate(dto);
+  async createOrUpdate(@Body() dto: CreateEvaluationDto, @Req() req: any) {
+    return this.evaluationsService.createOrUpdate(dto, req.user);
   }
 
   @Get('internship/:id')
@@ -24,8 +24,8 @@ export class EvaluationsController {
     Role.TUTOR,
     Role.ESTUDIANTE,
   )
-  async findByInternship(@Param('id') id: string) {
-    return this.evaluationsService.findByInternship(id);
+  async findByInternship(@Param('id') id: string, @Req() req: any) {
+    return this.evaluationsService.findByInternship(id, req.user);
   }
 
   @Get('internship/:id/grade')

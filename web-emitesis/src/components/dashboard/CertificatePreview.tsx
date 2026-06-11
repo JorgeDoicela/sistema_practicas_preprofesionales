@@ -93,13 +93,13 @@ export function CertificatePreview({ isOpen, onClose, internship }: CertificateP
                 <p className="max-w-xl text-sm leading-relaxed text-slate-600 mb-10">
                   Por haber cumplido satisfactoriamente con el programa de prácticas preprofesionales en 
                   la institución <strong className="text-[#003366]">{internship.company?.name}</strong>, 
-                  completando un total de <strong className="text-[#003366] text-lg">{internship.totalHours} horas</strong> cronológicas bajo la supervisión 
-                  del tutor empresarial <strong className="text-slate-800">{internship.businessTutorName || "No especificado"}</strong>.
+                  completando un total de <strong className="text-[#003366] text-lg">{internship.totalHours} horas</strong> cronológicas
+                  bajo la supervisión institucional de la empresa receptora y el acompañamiento del tutor académico.
                 </p>
 
                 <div className="grid grid-cols-2 gap-20 mt-12 w-full max-w-lg">
                   <div className="border-t border-slate-300 pt-4">
-                     <p className="text-[10px] font-black text-[#003366] uppercase tracking-widest">Tutor Empresarial</p>
+                     <p className="text-[10px] font-black text-[#003366] uppercase tracking-widest">Empresa Receptora</p>
                      <p className="text-[9px] text-slate-400">{internship.company?.name}</p>
                   </div>
                   <div className="border-t border-slate-300 pt-4">

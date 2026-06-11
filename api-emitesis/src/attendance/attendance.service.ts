@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../infrastructure/storage/storage.service';
 import { RegisterAttendanceDto } from './dto/register-attendance.dto';
@@ -236,7 +236,27 @@ export class AttendanceService {
     });
   }
 
-  async findByInternship(internshipId: string, startDate?: string, endDate?: string) {
+  async findByInternship(
+    internshipId: string,
+    startDate?: string,
+    endDate?: string,
+    actor?: { id: string; role: string; companyId?: string | null },
+  ) {
+    const internship = await this.prisma.internship.findUnique({
+      where: { id: internshipId },
+      select: { studentId: true, tutorId: true, companyId: true },
+    });
+    if (!internship) throw new NotFoundException('Asignación no encontrada');
+
+    if (actor && actor.role !== 'ADMIN' && actor.role !== 'COORDINADOR') {
+      const isStudentOwner = internship.studentId === actor.id;
+      const isTutorOwner = internship.tutorId === actor.id;
+      const isCompanyOwner = internship.companyId === actor.companyId;
+      if (!isStudentOwner && !isTutorOwner && !isCompanyOwner) {
+        throw new ForbiddenException('No tienes permiso para ver asistencias de esta práctica.');
+      }
+    }
+
     const where: any = { internshipId };
 
     if (startDate || endDate) {
@@ -255,7 +275,7 @@ export class AttendanceService {
     });
   }
 
-  async getSummary(internshipId: string) {
+  async getSummary(internshipId: string, actor?: { id: string; role: string; companyId?: string | null }) {
     const internship = await this.prisma.internship.findUnique({
       where: { id: internshipId },
       include: {
@@ -264,6 +284,14 @@ export class AttendanceService {
     });
 
     if (!internship) throw new NotFoundException('Asignación no encontrada');
+    if (actor && actor.role !== 'ADMIN' && actor.role !== 'COORDINADOR') {
+      const isStudentOwner = internship.studentId === actor.id;
+      const isTutorOwner = internship.tutorId === actor.id;
+      const isCompanyOwner = internship.companyId === actor.companyId;
+      if (!isStudentOwner && !isTutorOwner && !isCompanyOwner) {
+        throw new ForbiddenException('No tienes permiso para ver el resumen de esta práctica.');
+      }
+    }
 
     let totalMinutes = 0;
     let incompleteRecords = 0;

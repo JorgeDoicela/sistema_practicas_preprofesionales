@@ -1,16 +1,5 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsInt,
-  IsDateString,
-  IsOptional,
-  IsEmail,
-  MaxLength,
-  IsUUID,
-  Min,
-  Max,
-} from 'class-validator';
-import { StripControlChars, SanitizeEmailField } from '../../common/decorators/strip-control-chars.decorator';
+import { IsString, IsNotEmpty, IsInt, IsDateString, IsOptional, MaxLength, IsUUID, Min, Max } from 'class-validator';
+import { StripControlChars } from '../../common/decorators/strip-control-chars.decorator';
 
 export class CreateInternshipDto {
   @IsUUID('4', { message: 'studentId debe ser un UUID válido' })
@@ -40,30 +29,6 @@ export class CreateInternshipDto {
   @IsString()
   @IsNotEmpty()
   location: string;
-
-  @IsOptional()
-  @StripControlChars()
-  @MaxLength(200)
-  @IsString()
-  businessTutorName?: string;
-
-  @IsOptional()
-  @SanitizeEmailField()
-  @MaxLength(254)
-  @IsEmail({}, { message: 'Correo del tutor empresarial no válido' })
-  businessTutorEmail?: string;
-
-  @IsOptional()
-  @StripControlChars()
-  @MaxLength(30)
-  @IsString()
-  businessTutorPhone?: string;
-
-  @IsOptional()
-  @StripControlChars()
-  @MaxLength(150)
-  @IsString()
-  businessTutorPosition?: string;
 
   @IsOptional()
   @StripControlChars()

@@ -106,14 +106,13 @@ export const es = {
     },
     roles: {
       label: "Control de Acceso",
-      title: "Seis portales, una plataforma",
+      title: "Cinco portales, una plataforma",
       subtitle: "Separación absoluta de responsabilidades. Cada rol accede solo a lo que le corresponde.",
       items: [
         { role: "Administrador", desc: "Control total: usuarios, carreras, anuncios, salud del sistema y mantenimiento automático de archivos.", features: ["Análisis en vivo", "Privacidad LOPDP", "Registros del Sistema", "Mantenimiento"] },
         { role: "Coordinador de Prácticas", desc: "Aprobación definitiva con firma digital, convenios y emisión del certificado QR final.", features: ["Asignación masiva", "Firma Digital", "Plantillas oficiales", "Exportar Datos"] },
         { role: "Tutor Académico", desc: "Primera revisión con comentarios digitales, visitas de seguimiento y hilos de conversación.", features: ["Comentarios digitales", "Visitas de seguimiento", "Conversación fluida", "Evaluación académica"] },
-        { role: "Empresa (RRHH)", desc: "Entidad legal del convenio. Gestiona tutores de empresa, perfil corporativo y acuerdos vigentes.", features: ["Perfil de Empresa", "Tutores de empresa", "Convenios activos", "Pasantes asignados"] },
-        { role: "Tutor Empresarial", desc: "Evaluación desde la empresa sobre puntualidad, equipo, técnica, iniciativa y actitud.", features: ["Evaluación dual", "5 criterios", "Validación de horas", "Observaciones"] },
+        { role: "Empresa (RRHH)", desc: "Cuenta única de la empresa receptora. Seguimiento de pasantes, evaluación empresarial, asistencia y comunicación con el tutor académico.", features: ["Evaluación empresarial", "Seguimiento de asistencia", "Convenios activos", "Pasantes asignados"] },
         { role: "Estudiante", desc: "Registro por GPS, fotos con descripción por IA, acceso con huella o rostro y asistente Nexo.", features: ["Registro por GPS", "Fotos de actividades", "Asistente IA", "Certificado QR"] },
       ],
     },
@@ -136,7 +135,7 @@ export const es = {
       steps: [
         { title: "Convenio de Cooperación", desc: "Vinculación formal con la empresa y archivo digital organizado." },
         { title: "Plan de Prácticas", desc: "Creación automática de documentos obligatorios según la carrera." },
-        { title: "Asignación y Ubicación", desc: "Tutor académico, tutor de empresa y sedes autorizadas con radio de GPS." },
+        { title: "Asignación y Ubicación", desc: "Tutor académico, empresa receptora y sedes autorizadas con radio de GPS." },
         { title: "Ejecución con Evidencia", desc: "Registro por GPS, fotos con IA y acceso con huella o rostro." },
         { title: "Validación en Cascada", desc: "Tutor revisa con comentarios; Coordinador firma con sello digital institucional." },
         { title: "Evaluación Dual", desc: "Calificación académica y empresarial consolidada." },
@@ -436,7 +435,7 @@ export const es = {
     },
     corporate: {
       title: "Portal Corporativo",
-      desc: "Gestión de convenios, perfiles de empresas y tutores empresariales con seguridad RUC.",
+      desc: "Gestión de convenios, perfil corporativo y evaluación de pasantes con seguridad RUC.",
     },
     monitoring: {
       title: "Seguimiento en Vivo",
@@ -468,7 +467,7 @@ export const es = {
           title: "Control Institucional",
           features: [
             "Gestión de convenios",
-            "Administración de tutores de empresa",
+            "Evaluación empresarial de pasantes",
             "Evaluación académica y empresarial",
             "Visualización de pasantes activos",
             "Perfil corporativo seguro",
@@ -1393,7 +1392,7 @@ export const es = {
           punctuality: { label: "Puntualidad", desc: "Asistencia y cumplimiento de horarios." },
           teamwork: { label: "Trabajo en Equipo", desc: "Colaboración y relaciones interpersonales." },
         },
-        referenceIndustrial: "Referencia del Tutor de Empresa",
+        referenceIndustrial: "Referencia de la Empresa",
         referenceIndustrialText: "Referencia Industrial",
         finishBtn: "Finalizar Evaluación",
       }
@@ -1616,7 +1615,7 @@ export const es = {
       },
       business: {
         title: "Evaluación Empresarial",
-        subtitle: "Tutor de la Empresa/Institución",
+        subtitle: "Empresa receptora / Institución",
       },
       pending: "Pendiente de calificación",
       performance: "Rendimiento Técnico",
@@ -1708,17 +1707,6 @@ export const es = {
       locationName: "Etiqueta de Sede",
       radius: "Radio",
       mapLoading: "Cargando Mapa Institucional...",
-      businessTutor: {
-        title: "Tutor Empresarial",
-        name: "Tutor Empresarial (Nombre)",
-        namePlaceholder: "Nombre del supervisor en empresa",
-        position: "Tutor Empresarial (Cargo)",
-        positionPlaceholder: "Ej: Jefe de RRHH, Supervisor TI",
-        email: "Tutor Empresarial (Email)",
-        emailPlaceholder: "email@empresa.com",
-        phone: "Tutor Empresarial (Teléfono)",
-        phonePlaceholder: "Ej: 0987654321",
-      },
       activities: "Descripción de Actividades a Realizar",
       activitiesPlaceholder: "Describa las actividades y responsabilidades que tendrá el pasante en la empresa...",
       warningTitle: "Aviso de Notificación",

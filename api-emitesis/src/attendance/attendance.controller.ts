@@ -31,19 +31,19 @@ export class AttendanceController {
   }
 
   @Get('internship/:id')
-  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ESTUDIANTE)
+  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ESTUDIANTE, Role.EMPRESA)
   findByInternship(
     @Param('id') id: string,
     @Req() req: any
   ) {
     const { startDate, endDate } = req.query;
-    return this.attendanceService.findByInternship(id, startDate, endDate);
+    return this.attendanceService.findByInternship(id, startDate, endDate, req.user);
   }
 
   @Get('internship/:id/summary')
-  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ESTUDIANTE)
-  getSummary(@Param('id') id: string) {
-    return this.attendanceService.getSummary(id);
+  @Roles(Role.TUTOR, Role.COORDINADOR, Role.ESTUDIANTE, Role.EMPRESA)
+  getSummary(@Param('id') id: string, @Req() req: any) {
+    return this.attendanceService.getSummary(id, req.user);
   }
 
   /** RF-15: Subir foto de entrada o salida antes del check-in/out */

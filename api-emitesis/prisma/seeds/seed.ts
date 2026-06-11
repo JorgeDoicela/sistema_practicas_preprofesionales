@@ -63,6 +63,21 @@ const genPhone = () => `09${randInt(7, 9)}${randInt(1000000, 9999999)}`;
 const photoUrl = (seed: string | number): string =>
     `https://picsum.photos/seed/${seed}/800/600`;
 
+/** Genera un email institucional a partir del nombre completo.
+ * Elimina títulos (Ing., Lic., etc.), quita acentos y toma primer nombre + primer apellido.
+ * Ejemplo: 'Ing. Andrés Gallegos Larrea' → 'andres.gallegos@istpet.edu.ec' */
+const toEmail = (fullName: string, domain: string): string => {
+    const cleaned = fullName
+        .replace(/^(Ing\.|Lic\.|Lcda\.|CPA\.|Psic\.|Tec\.|Dis\.|Chef\.)\s*/i, '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')  // quitar acentos
+        .toLowerCase()
+        .replace(/[^a-z\s]/g, '')         // solo letras y espacios
+        .trim();
+    const parts = cleaned.split(/\s+/);
+    return `${parts[0]}.${parts[1] ?? 'user'}@${domain}`;
+};
+
 const firstNames = [
     'Mateo', 'Sofía', 'Juan', 'Valentina', 'Andrés', 'Isabella',
     'Diego', 'Camila', 'Luis', 'Lucía', 'Carlos', 'Mariana',
@@ -90,7 +105,7 @@ const getUniqueName = (): string => {
 const tutorRejectionComments = [
     'Los objetivos no son medibles. Por favor usa la metodología SMART.',
     'El cronograma no incluye fechas específicas. Corregir y reenviar.',
-    'Falta la firma del tutor empresarial en la sección 3.',
+    'Falta la firma de la empresa receptora en la sección 3.',
     'Las actividades descritas no corresponden al perfil de la carrera.',
     'El informe no tiene las horas desglosadas por semana. Revisar formato.',
     'La introducción es demasiado breve. Debe tener al menos 3 párrafos.',
@@ -115,7 +130,7 @@ const approvalComments = [
 const studentResponses = [
     'He corregido los objetivos usando la metodología SMART. Adjunto nueva versión.',
     'Actualicé el cronograma con fechas específicas. Por favor revisar.',
-    'Agregué la firma del tutor empresarial. Reenvío el documento corregido.',
+    'Agregué la firma de la empresa receptora. Reenvío el documento corregido.',
     'He ampliado la introducción y agregado los anexos fotográficos. Gracias por la retroalimentación.',
     'Corregí el desglose de horas por semana según el formato oficial.',
 ];
@@ -124,7 +139,7 @@ const visitObservations = [
     'El estudiante se integra correctamente al equipo técnico. Muestra iniciativa y actitud proactiva.',
     'El ambiente de trabajo es adecuado. Se verificó el cumplimiento de los objetivos planteados.',
     'Se observó al estudiante realizando tareas acordes con su perfil profesional.',
-    'El tutor empresarial expresó satisfacción con el desempeño del pasante.',
+    'La empresa receptora expresó satisfacción con el desempeño del pasante.',
     'Se detectaron algunas dificultades en la comunicación con el equipo. Se recomendó refuerzo.',
     'Excelente avance. El estudiante ya maneja las herramientas principales del área.',
     'Se verificó el registro de asistencia y está al día. El estudiante cumple con el horario acordado.',
@@ -323,65 +338,87 @@ async function main() {
     });
     console.log(`   ✓ ${companies.length} empresas y ${companies.length} convenios creados.\n`);
 
+    // Índices en companies[] alineados con companiesData (solo convenios activos o en trámite).
+    const careerCompanyIndices: number[][] = [
+        [0, 1, 4],       // Desarrollo de Software (Presencial) → TI
+        [0, 1, 2],       // Electrónica
+        [2, 3, 1],       // Redes & Telecomunicaciones
+        [0, 1, 4],       // Desarrollo de Software (En Línea)
+        [5, 6],          // Mecánica Automotriz
+        [8, 9],          // Diseño Gráfico
+        [11, 12, 10],    // Contabilidad y Asesoría Tributaria
+        [9, 10, 12],     // Marketing & Comercio Electrónico
+        [10, 12, 13],    // Talento Humano
+        [15, 14],        // Educación Inicial
+        [14, 16],        // Educación Básica
+        [14, 16],        // Educación Inclusiva
+        [17, 18],        // Entrenamiento Deportivo
+        [19, 20],        // Gastronomía
+    ];
+    const careerIndexById = new Map(careers.map((c, idx) => [c.id, idx]));
+    const pickCompanyForStudent = (careerId: string, assignmentIndex: number): Company => {
+        const ci = careerIndexById.get(careerId) ?? 0;
+        const pool = careerCompanyIndices[ci] ?? [0];
+        return companies[pool[assignmentIndex % pool.length]];
+    };
+
     // ─── 5. USUARIOS ──────────────────────────────────────────────────────────
     console.log('👥 [5/12] Creando usuarios por rol...');
 
     // Admin del sistema
     const adminUser = await prisma.user.create({
         data: {
-            email: 'admin@istpet.edu.ec',
+            email: 'cristhofer.parreño@adm.istpet.edu.ec',
             password,
-            fullName: 'Administrador del Sistema EMITESIS — ISTPET',
+            fullName: 'Cristhofer Parreño',
             role: Role.ADMIN,
             ...lopdp,
         },
     });
 
-    // Coordinadores — uno por departamento académico del ISTPET
-    // (en ISTs la coordinación de prácticas recae en los coordinadores de carrera)
-    const coordsData = [
-        { name: 'Ing. Marco Villacís Enríquez', email: 'coordinador.tic@istpet.edu.ec' },
-        { name: 'Ing. Sandra Freire Toapanta', email: 'coordinador.ing@istpet.edu.ec' },
-        { name: 'Lcda. Carmen Suárez Almeida', email: 'coordinador.adm@istpet.edu.ec' },
-        { name: 'Lcda. Rosa Herrera Burbano', email: 'coordinador.edu@istpet.edu.ec' },
-        { name: 'Lic. Patricia Noboa Toapanta', email: 'coordinador.dep@istpet.edu.ec' },
-    ];
-    const coordinators = await (prisma.user as any).createManyAndReturn({
-        data: coordsData.map(cd => ({
-            email: cd.email,
+    // Coordinador General de Prácticas Preprofesionales — ISTPET
+    // En ISTs de este tamaño un solo coordinador supervisa todas las carreras.
+    const coordinator = await prisma.user.create({
+        data: {
+            email: 'wilfrido.trujillo@coo.istpet.edu.ec',
             password,
-            fullName: cd.name,
+            fullName: 'Wilfrido Trujillo',
             role: Role.COORDINADOR,
             cedula: genCedula(),
             phone: genPhone(),
-            ...lopdp
-        })),
+            ...lopdp,
+        },
     });
+    // Envolver en array para que el resto del seed pueda usar coordinators[n] sin cambios
+    const coordinators = [coordinator];
 
     // Tutores académicos — docentes del ISTPET asignados por carrera
-    const tutorsByCareer: Record<string, string[]> = {
-        'Desarrollo de Software': ['Ing. Andrés Gallegos Larrea', 'Ing. Paola Cisneros Méndez'],
-        'Electrónica': ['Ing. Diego Ramírez Castro', 'Ing. Luis Ortiz Pérez'],
-        'Redes & Telecomunicaciones': ['Ing. Javier Salazar Vaca', 'Ing. Elena Gómez Torres'],
-        'Mecánica Automotriz': ['Tec. Ricardo Toapanta Moreira', 'Tec. Fernando Arias Gallegos'],
-        'Diseño Gráfico': ['Dis. Valentina López Enríquez', 'Dis. Sebastián Ponce Villacís'],
-        'Contabilidad y Asesoría Tributaria': ['CPA. Natalia Quiñonez Freire', 'CPA. Patricia Almeida Herrera'],
-        'Marketing & Comercio Electrónico': ['Ing. Miguel Burbano Larrea', 'Ing. Gabriela Méndez Salazar'],
-        'Talento Humano': ['Psic. Daniela Castro Vaca', 'Psic. Carlos Cisneros López'],
-        'Educación Inicial': ['Lic. Mariana Ortiz Ramírez', 'Lic. Lucía Torres Arias'],
-        'Educación Básica': ['Lic. Sofía Pérez Gallegos', 'Lic. Juan Gómez Toapanta'],
-        'Educación Inclusiva': ['Lic. Camila Herrera Ponce', 'Lic. Mateo Enríquez Moreira'],
-        'Entrenamiento Deportivo': ['Lic. Alejandro Villacís Freire', 'Lic. Isabella Quiñonez Burbano'],
-        'Gastronomía': ['Chef. Patricia Almeida Salazar', 'Chef. Ricardo Larrea Cisneros'],
-    };
+    // Array indexado por índice de carrera (ci) para garantizar emails únicos,
+    // incluso cuando la misma carrera existe en varias modalidades.
+    const tutorsByCareerIdx: string[][] = [
+        ['Ing. Andrés Gallegos Larrea', 'Ing. Paola Cisneros Méndez'],      // ci=0  Desarrollo de Software (Presencial)
+        ['Ing. Diego Ramírez Castro', 'Ing. Luis Ortiz Pérez'],           // ci=1  Electrónica
+        ['Ing. Javier Salazar Vaca', 'Ing. Elena Gómez Torres'],         // ci=2  Redes & Telecomunicaciones
+        ['Ing. Roberto Torres Almeida', 'Ing. Fernanda Larrea Vaca'],        // ci=3  Desarrollo de Software (En Línea)
+        ['Tec. Ricardo Toapanta Moreira', 'Tec. Fernando Arias Gallegos'],     // ci=4  Mecánica Automotriz
+        ['Dis. Valentina López Enríquez', 'Dis. Sebastián Ponce Villacís'],  // ci=5  Diseño Gráfico
+        ['CPA. Natalia Quiñonez Freire', 'CPA. Patricia Almeida Herrera'],    // ci=6  Contabilidad y Asesoría Tributaria
+        ['Ing. Miguel Burbano Larrea', 'Ing. Gabriela Méndez Salazar'],    // ci=7  Marketing & Comercio Electrónico
+        ['Psic. Daniela Castro Vaca', 'Psic. Carlos Cisneros López'],      // ci=8  Talento Humano
+        ['Lic. Mariana Ortiz Ramírez', 'Lic. Lucía Torres Arias'],          // ci=9  Educación Inicial
+        ['Lic. Sofía Pérez Gallegos', 'Lic. Juan Gómez Toapanta'],         // ci=10 Educación Básica
+        ['Lic. Camila Herrera Ponce', 'Lic. Mateo Enríquez Moreira'],      // ci=11 Educación Inclusiva
+        ['Lic. Alejandro Villacís Freire', 'Lic. Isabella Quiñonez Burbano'],  // ci=12 Entrenamiento Deportivo
+        ['Chef. Carmen Almeida Salazar', 'Chef. Ricardo Larrea Cisneros'],    // ci=13 Gastronomía
+    ];
 
     const tutorsAcadData: any[] = [];
     for (let ci = 0; ci < careers.length; ci++) {
         const career = careers[ci];
-        const names = tutorsByCareer[career.name] ?? [`Ing. Docente ${career.name} A`, `Ing. Docente ${career.name} B`];
+        const names = tutorsByCareerIdx[ci] ?? [`Ing. Docente ${career.name} A`, `Ing. Docente ${career.name} B`];
         for (let t = 0; t < names.length; t++) {
             tutorsAcadData.push({
-                email: `tutor.c${ci + 1}.${t + 1}@istpet.edu.ec`,
+                email: toEmail(names[t], 'tut.istpet.edu.ec'),
                 password,
                 fullName: names[t],
                 role: Role.TUTOR,
@@ -394,53 +431,63 @@ async function main() {
     }
     const tutorsAcad = await (prisma.user as any).createManyAndReturn({ data: tutorsAcadData });
 
-    // Tutores empresariales (uno por empresa)
+    // Supervisores empresariales — un representante con nombre real por empresa
     const tutorsEmp = await (prisma.user as any).createManyAndReturn({
-        data: companies.map(comp => ({
-            email: `supervisor@${comp.email.split('@')[1]}`,
-            password,
-            fullName: getUniqueName(),
-            role: Role.EMPRESA,
-            companyId: comp.id,
-            cedula: genCedula(),
-            phone: genPhone(),
-            ...lopdp,
-        })),
+        data: companies.map(comp => {
+            const empName = getUniqueName();
+            return {
+                email: toEmail(empName, comp.email.split('@')[1]),
+                password,
+                fullName: empName,
+                role: Role.EMPRESA,
+                companyId: comp.id,
+                cedula: genCedula(),
+                phone: genPhone(),
+                ...lopdp,
+            };
+        }),
     });
 
-    // Usuarios rol EMPRESA (representantes de empresa con acceso al portal)
+    // Representantes adicionales con acceso al portal por empresa
     await prisma.user.createMany({
-        data: Array.from({ length: 4 }).map((_, i) => ({
-            email: `empresa.portal${i + 1}@${companies[i].email.split('@')[1]}`,
-            password,
-            fullName: `Portal Empresa — ${companies[i].name}`,
-            role: Role.EMPRESA,
-            companyId: companies[i].id,
-            ...lopdp,
-        })),
+        data: Array.from({ length: 4 }).map((_, i) => {
+            const portalName = getUniqueName();
+            return {
+                email: toEmail(portalName, companies[i].email.split('@')[1]),
+                password,
+                fullName: portalName,
+                role: Role.EMPRESA,
+                companyId: companies[i].id,
+                ...lopdp,
+            };
+        }),
     });
 
     // Estudiantes (60: cubrir todos los escenarios posibles)
     const students = await (prisma.user as any).createManyAndReturn({
-        data: Array.from({ length: 60 }).map((_, i) => ({
-            email: `estudiante${i + 1}@est.istpet.edu.ec`,
-            password,
-            fullName: getUniqueName(),
-            role: Role.ESTUDIANTE,
-            careerId: careers[i % careers.length].id,
-            cedula: genCedula(),
-            phone: genPhone(),
-            ciclo: `${['1er', '2do', '3er', '4to', '5to', '6to'][randInt(0, 5)]} Ciclo`,
-            ...lopdp,
-        })),
+        data: Array.from({ length: 60 }).map((_, i) => {
+            const name = getUniqueName();
+            return {
+                email: toEmail(name, 'est.istpet.edu.ec'),
+                password,
+                fullName: name,
+                role: Role.ESTUDIANTE,
+                careerId: careers[i % careers.length].id,
+                cedula: genCedula(),
+                phone: genPhone(),
+                ciclo: `${['1er', '2do', '3er', '4to', '5to', '6to'][randInt(0, 5)]} Ciclo`,
+                ...lopdp,
+            };
+        }),
     });
 
     // Usuario con cuenta bloqueada (por intentos fallidos)
+    const blockedName = 'Carlos Mendoza Ríos';
     await prisma.user.create({
         data: {
-            email: 'bloqueado@est.istpet.edu.ec',
+            email: toEmail(blockedName, 'est.istpet.edu.ec'),
             password,
-            fullName: 'Cuenta Bloqueada Test',
+            fullName: blockedName,
             role: Role.ESTUDIANTE,
             careerId: careers[0].id,
             failedAttempts: 5,
@@ -450,7 +497,7 @@ async function main() {
     });
 
     console.log(
-        `   ✓ 1 admin + ${coordinators.length} coordinadores + ${tutorsAcad.length} tutores acad. + ` +
+        `   ✓ 1 admin + 1 coordinador + ${tutorsAcad.length} tutores acad. + ` +
         `${tutorsEmp.length} supervisores + 4 portales empresa + ${students.length} estudiantes + 1 bloqueado.\n`,
     );
 
@@ -483,6 +530,11 @@ async function main() {
     });
     console.log(`   ✓ ${webauthnUsers.length} credenciales WebAuthn registradas.\n`);
 
+    // Supervisor principal EMPRESA por compañía (mismo orden que companies[]).
+    const empresaUserByCompanyId = new Map<string, string>(
+        companies.map((comp, idx) => [comp.id, tutorsEmp[idx].id]),
+    );
+
     // ─── 7. PRÁCTICAS CON CICLO DE VIDA COMPLETO ──────────────────────────────
     console.log('📚 [7/12] Generando prácticas con ciclo de vida completo...');
 
@@ -499,12 +551,17 @@ async function main() {
     let internshipsCreated: Internship[] = [];
     const internshipsData: any[] = [];
     const studentInternshipMap: any[] = []; // Para trackear qué estudiante tiene qué index de internship
+    const careerAssignmentCounts = new Map<string, number>();
 
     for (let i = 0; i < students.length; i++) {
         const s = students[i];
-        const tutor = tutorsAcad[i % tutorsAcad.length];
-        const company = companies[i % companies.length];
         const career = careers.find((c) => c.id === s.careerId)!;
+        // Tutor académico de la misma carrera del estudiante.
+        const careerTutors = tutorsAcad.filter((t: any) => t.careerId === s.careerId);
+        const tutor = careerTutors[i % Math.max(careerTutors.length, 1)] ?? tutorsAcad[0];
+        const careerAssignments = careerAssignmentCounts.get(s.careerId) ?? 0;
+        careerAssignmentCounts.set(s.careerId, careerAssignments + 1);
+        const company = pickCompanyForStudent(s.careerId, careerAssignments);
         const reqHours = (career?.config as any)?.requiredHours ?? 160;
 
         // Determinar escenario
@@ -564,8 +621,6 @@ async function main() {
             status,
             modalidad: internshipModalidad,
             location: locationText,
-            businessTutorName: tutorsEmp[i % tutorsEmp.length].fullName,
-            businessTutorEmail: tutorsEmp[i % tutorsEmp.length].email,
             allowedLocations: hasPhysicalLocation ? [
                 {
                     label: 'Sede Principal',
@@ -586,6 +641,7 @@ async function main() {
             index: i,
             studentId: s.id,
             tutorId: tutor.id,
+            companyId: company.id,
             careerId: s.careerId,
             status,
             startOffset,
@@ -738,11 +794,14 @@ async function main() {
             });
         }
 
+        const empresaEvaluatorId = empresaUserByCompanyId.get(sInfo.companyId)!;
+
         // Evaluaciones
         if (i < 10) {
             evalBatchData.push({
                 internshipId: internship.id,
                 type: EvaluationType.EMPRESARIAL,
+                evaluatorId: empresaEvaluatorId,
                 status: 'COMPLETADO',
                 punctuality: randInt(4, 5),
                 teamwork: randInt(4, 5),
@@ -766,6 +825,7 @@ async function main() {
             evalBatchData.push({
                 internshipId: internship.id,
                 type: EvaluationType.EMPRESARIAL,
+                evaluatorId: empresaEvaluatorId,
                 status: 'COMPLETADO',
                 punctuality: randInt(3, 5),
                 teamwork: randInt(3, 5),
@@ -784,6 +844,7 @@ async function main() {
             evalBatchData.push({
                 internshipId: internship.id,
                 type: EvaluationType.EMPRESARIAL,
+                evaluatorId: empresaEvaluatorId,
                 status: 'PENDIENTE',
                 punctuality: 0, teamwork: 0, technicalSkills: 0, proactivity: 0, attitude: 0,
             });
@@ -1245,7 +1306,7 @@ async function main() {
     for (let i = 0; i < 10; i++) {
         const student = students[i];
         const tutor = tutorsAcad[i % tutorsAcad.length];
-        
+
         const room = await prisma.chatRoom.create({
             data: {
                 isGroup: false,
@@ -1350,18 +1411,14 @@ async function main() {
     console.log(`  ⚙️  Configuraciones del sistema: ${counts.settings}`);
     console.log('─────────────────────────────────────────────────────\n');
     console.log('  🔐 Credenciales de acceso (contraseña universal: password123):');
-    console.log('     admin@istpet.edu.ec                  → ADMIN');
-    console.log('     coordinador.tic@istpet.edu.ec        → COORDINADOR (TIC)');
-    console.log('     coordinador.ing@istpet.edu.ec        → COORDINADOR (Ingeniería y Diseño)');
-    console.log('     coordinador.adm@istpet.edu.ec        → COORDINADOR (Administrativo)');
-    console.log('     coordinador.edu@istpet.edu.ec        → COORDINADOR (Ciencias de la Educación)');
-    console.log('     coordinador.dep@istpet.edu.ec        → COORDINADOR (Cultura, Deporte y Gastronomía)');
-    console.log('     tutor.c1.1@istpet.edu.ec             → TUTOR (Desarrollo de Software — Presencial)');
-    console.log('     tutor.c4.1@istpet.edu.ec             → TUTOR (Desarrollo de Software — En Línea)');
-    console.log('     tutor.c5.1@istpet.edu.ec             → TUTOR (Mecánica Automotriz)');
-    console.log('     tutor.c14.1@istpet.edu.ec            → TUTOR (Gastronomía)');
-    console.log('     estudiante1@est.istpet.edu.ec        → ESTUDIANTE');
-    console.log('     bloqueado@est.istpet.edu.ec          → cuenta bloqueada (test)');
+    console.log('     cristhofer.parreño@adm.istpet.edu.ec  → ADMIN');
+    console.log('     wilfrido.trujillo@coo.istpet.edu.ec  → COORDINADOR GENERAL');
+    console.log('     andres.gallegos@tut.istpet.edu.ec    → TUTOR (Desarrollo de Software — Presencial)');
+    console.log('     roberto.torres@tut.istpet.edu.ec     → TUTOR (Desarrollo de Software — En Línea)');
+    console.log('     ricardo.toapanta@tut.istpet.edu.ec   → TUTOR (Mecánica Automotriz)');
+    console.log('     carmen.almeida@tut.istpet.edu.ec     → TUTOR (Gastronomía)');
+    console.log('     mateo.larrea@est.istpet.edu.ec       → ESTUDIANTE (primer estudiante generado)');
+    console.log('     carlos.mendoza@est.istpet.edu.ec     → ESTUDIANTE (cuenta bloqueada — test)');
     console.log('');
     console.log('  🏫 Instituto: I.S.T. "Mayor Pedro Traversari" — ISTPET');
     console.log('     Av. Matilde Álvarez y Hugo Díaz Romero, Chillogallo, Quito');

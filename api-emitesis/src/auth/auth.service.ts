@@ -11,7 +11,6 @@ import { RegisterCompanyDto } from './dto/register-company.dto';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import axios from 'axios';
-import { UserPayload } from './interfaces/user-payload.interface';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -238,6 +237,7 @@ export class AuthService {
       role: user.role,
       fullName: user.fullName,
       careerId: (user).careerId ?? null,
+      companyId: (user).companyId ?? null,
     };
 
     const [accessToken, refreshToken] = await Promise.all([
@@ -278,6 +278,7 @@ export class AuthService {
         fullName: user.fullName,
         role: user.role,
         careerId: (user).careerId ?? null,
+        companyId: (user).companyId ?? null,
         cedula: (user).cedula ?? null,
         isTwoFactorEnabled: (user).isTwoFactorEnabled || false,
         lopdpAccepted: (user).lopdpAccepted || false,
@@ -310,6 +311,7 @@ export class AuthService {
         fullName: user.fullName,
         role: user.role,
         careerId: user.careerId ?? null,
+        companyId: user.companyId ?? null,
         cedula: user.cedula ?? null,
         isTwoFactorEnabled: user.isTwoFactorEnabled || false,
         lopdpAccepted: user.lopdpAccepted || false,

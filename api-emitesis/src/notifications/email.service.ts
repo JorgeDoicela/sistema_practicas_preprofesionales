@@ -182,7 +182,7 @@ export class EmailService {
         }
     }
 
-    async sendAssignmentEmail(email: string, studentName: string, companyName: string, startDate: string, hours: number, location: string, businessTutorName?: string, excelBuffer?: Buffer) {
+    async sendAssignmentEmail(email: string, studentName: string, companyName: string, startDate: string, hours: number, location: string, excelBuffer?: Buffer) {
         const subject = 'Asignación de Prácticas Preprofesionales - ISTPET';
         try {
             const content = `
@@ -194,7 +194,6 @@ export class EmailService {
                     • Ubicación: ${location}<br>
                     • Fecha Inicio: ${new Date(startDate).toLocaleDateString()}<br>
                     • Carga Horaria: ${hours} horas<br>
-                    ${businessTutorName ? `• Tutor Empresarial: ${businessTutorName}` : ''}
                 </div>
                 <p>Adjunto encontrarás el archivo de control administrativo. Por favor, comunícate con tu tutor académico para el inicio del proceso.</p>
             `;
@@ -347,7 +346,6 @@ export class EmailService {
         hours: number;
         tutorName: string;
         startDate: string;
-        businessTutorName?: string;
     }): Promise<Buffer> {
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Asignación');
@@ -358,7 +356,6 @@ export class EmailService {
             { header: 'Dirección de Prácticas', key: 'location', width: 40 },
             { header: 'Horas', key: 'hours', width: 10 },
             { header: 'Tutor Académico', key: 'tutor', width: 30 },
-            { header: 'Tutor Empresarial', key: 'businessTutor', width: 30 },
             { header: 'Fecha Inicio', key: 'start', width: 15 },
         ];
 
@@ -368,7 +365,6 @@ export class EmailService {
             location: data.location,
             hours: data.hours,
             tutor: data.tutorName,
-            businessTutor: data.businessTutorName || '—',
             start: new Date(data.startDate).toLocaleDateString(),
         });
 
@@ -382,7 +378,7 @@ export class EmailService {
         return workbook.xlsx.writeBuffer() as unknown as Promise<Buffer>;
     }
 
-    async sendTutorAssignmentEmail(email: string, tutorName: string, studentName: string, companyName: string, startDate: string, hours: number, businessTutorName?: string, excelBuffer?: Buffer) {
+    async sendTutorAssignmentEmail(email: string, tutorName: string, studentName: string, companyName: string, startDate: string, hours: number, excelBuffer?: Buffer) {
         const subject = `Asignación de Tutoría Académica: ${studentName}`;
         try {
             const content = `

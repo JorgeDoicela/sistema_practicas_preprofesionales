@@ -58,7 +58,7 @@ type InternshipRow = {
   documents?: Array<{ status?: string }>;
   attendances?: Array<{ id: string; checkIn: string; checkOut?: string | null }>;
   testEnabled?: boolean;
-  evaluation?: any;
+  evaluations?: any[];
 };
 
 function countDocsByStatus(docs: Array<{ status?: string }> | undefined, st: string) {
@@ -584,7 +584,9 @@ export function DashboardMain() {
       const safeInternships = Array.isArray(internships) ? internships : [];
       const activeCount = safeInternships.filter((i) => i.status === "En Proceso" || i.status === "Activo").length;
       const testEnabledCount = safeInternships.filter((i) => i.testEnabled).length;
-      const evaluatedCount = safeInternships.filter((i) => i.evaluation).length;
+      const evaluatedCount = safeInternships.filter((i) =>
+        Array.isArray(i.evaluations) && i.evaluations.some((ev: any) => ev.type === "EMPRESARIAL")
+      ).length;
       const totalHours = safeInternships.reduce((acc, i) => {
         const worked = i.attendances?.length ? i.attendances.reduce((s: number, a: any) => {
           if (!a.checkOut) return s;

@@ -52,6 +52,7 @@ model User {
   sentMessages         ChatMessage[]
   lopdpLogs            LopdpLog[]
   refreshToken         String?
+  evaluationsGiven     Evaluation[]  @relation("EvaluationEvaluator")
 }
 
 /// Registro de actividad del sistema (peticiones HTTP, eventos relevantes, etc.)
@@ -134,10 +135,6 @@ model Internship {
   modalidad         Modalidad    @default(PRESENCIAL)
   /// Descripción libre del lugar físico o virtual de la práctica
   location          String?
-  businessTutorName     String?
-  businessTutorEmail    String?
-  businessTutorPhone    String?  // Teléfono del tutor/supervisor empresarial
-  businessTutorPosition String?  // Cargo del tutor empresarial (ej: Jefe de RRHH)
   activityDescription   String?  // Descripción general de las actividades a realizar
   lat               Float?
   lng               Float?
@@ -225,9 +222,11 @@ model Evaluation {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   internship      Internship     @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+  evaluator       User?          @relation("EvaluationEvaluator", fields: [evaluatorId], references: [id], onDelete: SetNull)
 
   @@unique([internshipId, type])
   @@index([internshipId])
+  @@index([evaluatorId])
 }
 
 model MonitoringVisit {

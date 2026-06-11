@@ -85,3 +85,6 @@ No. Bajo el **Protocolo de Inmutabilidad**, una vez que un documento alcanza el 
 
 ### ¿Por qué no puedo visualizar el botón para calificar al estudiante?
 El botón de evaluación para el rol `EMPRESA` se habilita automáticamente únicamente cuando el estudiante ha completado y validado el 100% de las horas requeridas por su carrera en la bitácora de asistencias.
+
+### ¿Quién evalúa por parte de la empresa?
+La evaluación empresarial se registra con la cuenta institucional `EMPRESA` vinculada a la compañía (`companyId`). Esa cuenta representa oficialmente a la empresa en el proceso de prácticas.

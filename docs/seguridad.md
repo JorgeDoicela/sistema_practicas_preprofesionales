@@ -42,7 +42,7 @@ El servidor NestJS ejecuta un Guard recursivo de permisos antes de cada ejecuci�
 5.  **`ESTUDIANTE` (Pasante):** Acceso en modo Sandbox. Solo puede registrar sus marcaciones de asistencia (Check-In/Out) validadas contra su geolocalización, subir sus documentos obligatorios, ver su roadmap visual y consultar a su Copiloto de IA.
 
 > [!NOTE]
-> **Gestión del Tutor Empresarial:** El rol `EMPRESA` gestiona la cuenta corporativa principal en el sistema. Los datos específicos del supervisor en campo (Tutor Empresarial) se almacenan de manera transaccional dentro de la asignación de la práctica (`businessTutorName`, `businessTutorEmail`, `businessTutorPosition`, `businessTutorPhone`) para fines de contacto directo y generación de actas.
+> **Gestión Empresarial Unificada:** La empresa opera con una única cuenta `EMPRESA` vinculada por `companyId`. Esa cuenta es el actor empresarial oficial para evaluar estudiantes, dar seguimiento y coordinar comunicación con el tutor académico por cada práctica.
 
 ---
 

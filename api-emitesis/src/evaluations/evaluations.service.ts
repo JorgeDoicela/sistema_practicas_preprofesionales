@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEvaluationDto } from './dto/evaluation.dto';
 import { SettingsService } from '../settings/settings.service';
@@ -12,16 +12,30 @@ export class EvaluationsService {
     private notificationsService: NotificationsService,
   ) {}
 
-  async createOrUpdate(dto: CreateEvaluationDto) {
+  async createOrUpdate(dto: CreateEvaluationDto, actor?: { id: string; role: string; companyId?: string | null }) {
     const { internshipId, ...data } = dto;
 
     // Verificar que el internship existe
     const internship = await this.prisma.internship.findUnique({
       where: { id: internshipId },
+      select: { id: true, studentId: true, tutorId: true, companyId: true },
     });
 
     if (!internship) {
       throw new NotFoundException('Internship no encontrado');
+    }
+
+    if (actor?.role === 'EMPRESA') {
+      if (data.type !== 'EMPRESARIAL') {
+        throw new ForbiddenException('La empresa solo puede registrar evaluaciones empresariales.');
+      }
+      if (actor.companyId !== internship.companyId) {
+        throw new ForbiddenException('No puedes evaluar prácticas de otra empresa.');
+      }
+    }
+
+    if (actor?.role === 'TUTOR' && internship.tutorId !== actor.id) {
+      throw new ForbiddenException('Solo el tutor académico asignado puede evaluar esta práctica.');
     }
 
     const result = await this.prisma.evaluation.upsert({
@@ -31,8 +45,8 @@ export class EvaluationsService {
           type: data.type as any,
         },
       },
-      update: { ...data, status: 'COMPLETADO' },
-      create: { internshipId, ...data, status: 'COMPLETADO' },
+      update: { ...data, evaluatorId: actor?.id, status: 'COMPLETADO' },
+      create: { internshipId, ...data, evaluatorId: actor?.id, status: 'COMPLETADO' },
     });
 
     // Notificar al estudiante que recibió una evaluación
@@ -54,9 +68,30 @@ export class EvaluationsService {
     return result;
   }
 
-  async findByInternship(internshipId: string) {
+  async findByInternship(internshipId: string, actor?: { id: string; role: string; companyId?: string | null }) {
+    const internship = await this.prisma.internship.findUnique({
+      where: { id: internshipId },
+      select: { studentId: true, tutorId: true, companyId: true },
+    });
+
+    if (!internship) {
+      throw new NotFoundException('Internship no encontrado');
+    }
+
+    if (actor && actor.role !== 'COORDINADOR' && actor.role !== 'ADMIN') {
+      const isOwnerStudent = internship.studentId === actor.id;
+      const isOwnerTutor = internship.tutorId === actor.id;
+      const isOwnerCompany = internship.companyId === actor.companyId;
+      if (!isOwnerStudent && !isOwnerTutor && !isOwnerCompany) {
+        throw new ForbiddenException('No tienes permiso para consultar evaluaciones de esta práctica.');
+      }
+    }
+
     return this.prisma.evaluation.findMany({
       where: { internshipId },
+      include: {
+        evaluator: { select: { id: true, fullName: true, email: true, role: true } },
+      },
     });
   }
 

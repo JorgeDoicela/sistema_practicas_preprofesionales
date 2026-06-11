@@ -28,14 +28,22 @@ export class CareersService {
   }
 
   async create(dto: CreateCareerDto) {
-    const existing = await this.prisma.career.findUnique({ where: { name: dto.name } });
+    const normalizedModalidad = (dto.modalidad as any) ?? 'PRESENCIAL';
+    const existing = await this.prisma.career.findUnique({
+      where: {
+        name_modalidad: {
+          name: dto.name,
+          modalidad: normalizedModalidad,
+        },
+      },
+    });
     if (existing) throw new ConflictException('Ya existe una carrera con ese nombre');
 
     return this.prisma.career.create({
       data: {
         name: dto.name,
         faculty: dto.faculty,
-        modalidad: (dto.modalidad as any) ?? 'PRESENCIAL',
+        modalidad: normalizedModalidad,
         config: { requiredHours: dto.requiredHours ?? 160 },
       },
     });

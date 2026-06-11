@@ -20,7 +20,7 @@ export class InternshipsService {
   ) {}
 
   async create(dto: CreateInternshipDto) {
-    const { studentId, companyId, tutorId, startDate, endDate, totalHours, location, modalidad, businessTutorName, businessTutorEmail, businessTutorPhone, businessTutorPosition, activityDescription, initialLat, initialLng, initialRadius } = dto;
+    const { studentId, companyId, tutorId, startDate, endDate, totalHours, location, modalidad, activityDescription, initialLat, initialLng, initialRadius } = dto;
 
     // A1: Estudiante ya asignado
     const activeInternship = await this.prisma.internship.findFirst({
@@ -88,10 +88,6 @@ export class InternshipsService {
             totalHours: finalHours,
             location,
             modalidad: (modalidad as any) ?? 'PRESENCIAL',
-            businessTutorName,
-            businessTutorEmail,
-            businessTutorPhone,
-            businessTutorPosition,
             activityDescription,
             status: 'En Proceso',
             lat: initialLat,
@@ -170,7 +166,6 @@ export class InternshipsService {
         hours: internship.totalHours,
         tutorName: internship.tutor.fullName,
         startDate: startDate,
-        businessTutorName: internship.businessTutorName || undefined,
       });
 
       // RF-ASG-001: Enviar correo al estudiante
@@ -181,7 +176,6 @@ export class InternshipsService {
         startDate,
         totalHours,
         location,
-        businessTutorName,
         excelBuffer
       ).catch((err: Error) => {
         console.error('Error al enviar correo de asignación al estudiante:', err.message);
@@ -195,7 +189,6 @@ export class InternshipsService {
         internship.company.name,
         startDate,
         totalHours,
-        businessTutorName,
         excelBuffer
       ).catch((err: Error) => {
         console.error('Error al enviar correo de asignación al tutor:', err.message);
@@ -293,7 +286,11 @@ export class InternshipsService {
     });
   }
 
-  async findByCompany(companyId: string) {
+  async findByCompany(companyId: string, actor?: { id: string; role: string; companyId?: string | null }) {
+    if (actor?.role === 'EMPRESA' && actor.companyId !== companyId) {
+      throw new ForbiddenException('No tienes permiso para consultar estudiantes de otra empresa.');
+    }
+
     return this.prisma.internship.findMany({
       where: { companyId },
       include: {
@@ -324,10 +321,13 @@ export class InternshipsService {
     });
   }
 
-  async toggleTest(id: string) {
+  async toggleTest(id: string, actor?: { id: string; role: string; companyId?: string | null }) {
     const internship = await this.prisma.internship.findUnique({ where: { id } });
     if (!internship) {
       throw new NotFoundException('Asignación no encontrada');
+    }
+    if (actor?.role === 'EMPRESA' && internship.companyId !== actor.companyId) {
+      throw new ForbiddenException('No tienes permiso para modificar esta práctica.');
     }
     return this.prisma.internship.update({
       where: { id },
@@ -335,7 +335,7 @@ export class InternshipsService {
     });
   }
 
-  async findOne(id: string, actor?: { id: string, role: string, email: string }) {
+  async findOne(id: string, actor?: { id: string, role: string, email: string, companyId?: string | null }) {
     const internship = await this.prisma.internship.findUnique({
       where: { id },
       include: {

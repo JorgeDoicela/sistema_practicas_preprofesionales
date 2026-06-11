@@ -5,6 +5,7 @@ export interface UserPayload {
   email: string;
   fullName: string;
   role: Role;
+  companyId?: string | null;
   isActive: boolean;
   createdAt: Date;
 }
