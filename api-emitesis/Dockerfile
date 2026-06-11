@@ -4,7 +4,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # OpenSSL en el builder para que `prisma generate` detecte bien la variante del motor.
-RUN apk add --no-cache openssl
+RUN apk add --no-cache openssl wget
 
 # Copiar archivos de dependencias
 COPY package*.json ./
@@ -26,7 +26,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Instalar dependencias del sistema necesarias para Prisma
-RUN apk add --no-cache openssl
+RUN apk add --no-cache openssl wget
 
 # Copiar archivos necesarios desde la etapa de construcción
 COPY --from=builder /app/package*.json ./

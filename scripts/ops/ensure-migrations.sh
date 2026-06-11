@@ -19,7 +19,11 @@ log_ok() { echo -e "${GREEN}[✔]${NC} $1"; }
 log_err() { echo -e "${RED}[✘]${NC} $1"; }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+if [ -f "$SCRIPT_DIR/docker-compose.prod.yml" ] || [ -f "$SCRIPT_DIR/docker-compose.yml" ]; then
+    PROJECT_ROOT="$SCRIPT_DIR"
+else
+    PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+fi
 cd "$PROJECT_ROOT"
 
 COMPOSE_FILE="docker-compose.prod.yml"
@@ -27,7 +31,14 @@ if [ ! -f "$COMPOSE_FILE" ]; then
     COMPOSE_FILE="docker-compose.yml"
 fi
 
-COMPOSE=(docker compose -f "$COMPOSE_FILE")
+if docker compose version >/dev/null 2>&1; then
+    COMPOSE=(docker compose -f "$COMPOSE_FILE")
+elif command -v docker-compose >/dev/null 2>&1; then
+    COMPOSE=(docker-compose -f "$COMPOSE_FILE")
+else
+    log_err "No se encontró docker compose ni docker-compose."
+    exit 1
+fi
 DB_CONTAINER="emitesis-db-prod"
 API_CONTAINER="emitesis-api-prod"
 

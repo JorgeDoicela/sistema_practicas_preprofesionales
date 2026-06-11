@@ -407,8 +407,6 @@ jobs:
             if [ "$DEPLOY_API" = "true" ]; then
               echo "→ Descargando imagen del API..."
               docker-compose -f docker-compose.prod.yml pull api
-              echo "→ Asegurando migraciones de Prisma antes de reiniciar API..."
-              ./ensure-migrations.sh
               DEPLOY_SERVICES="$DEPLOY_SERVICES api"
             fi
 
@@ -416,6 +414,16 @@ jobs:
               echo "→ Descargando imagen del frontend..."
               docker-compose -f docker-compose.prod.yml pull web
               DEPLOY_SERVICES="$DEPLOY_SERVICES web"
+            fi
+
+            # Web depende de API healthy; reparar migraciones siempre que se despliegue api o web.
+            if [ "$DEPLOY_API" = "true" ] || [ "$DEPLOY_WEB" = "true" ]; then
+              if [ "$DEPLOY_API" != "true" ]; then
+                echo "→ Descargando imagen del API (requerida para migraciones)..."
+                docker-compose -f docker-compose.prod.yml pull api
+              fi
+              echo "→ Asegurando migraciones de Prisma antes de reiniciar servicios..."
+              ./ensure-migrations.sh
             fi
 
             if [ "$DEPLOY_INFRA" = "true" ]; then

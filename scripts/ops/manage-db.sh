@@ -41,7 +41,11 @@ else
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+if [ -f "$SCRIPT_DIR/docker-compose.prod.yml" ] || [ -f "$SCRIPT_DIR/docker-compose.yml" ]; then
+    PROJECT_ROOT="$SCRIPT_DIR"
+else
+    PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+fi
 cd "$PROJECT_ROOT"
 
 if [ -f "docker-compose.prod.yml" ]; then
@@ -53,7 +57,14 @@ else
     exit 1
 fi
 
-COMPOSE_CMD=(docker compose -f "$COMPOSE_FILE")
+if docker compose version >/dev/null 2>&1; then
+    COMPOSE_CMD=(docker compose -f "$COMPOSE_FILE")
+elif command -v docker-compose >/dev/null 2>&1; then
+    COMPOSE_CMD=(docker-compose -f "$COMPOSE_FILE")
+else
+    log_error "No se encontró docker compose ni docker-compose."
+    exit 1
+fi
 API_CONTAINER="emitesis-api-prod"
 
 mostrar_ayuda() {

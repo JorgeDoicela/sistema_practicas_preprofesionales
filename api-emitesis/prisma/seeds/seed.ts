@@ -71,6 +71,7 @@ const toEmail = (fullName: string, domain: string): string => {
         .replace(/^(Ing\.|Lic\.|Lcda\.|CPA\.|Psic\.|Tec\.|Dis\.|Chef\.)\s*/i, '')
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')  // quitar acentos
+        .replace(/ñ/gi, 'n')              // ASCII para validación HTML5 de email
         .toLowerCase()
         .replace(/[^a-z\s]/g, '')         // solo letras y espacios
         .trim();
@@ -370,7 +371,7 @@ async function main() {
     // Admin del sistema
     const adminUser = await prisma.user.create({
         data: {
-            email: 'cristhofer.parreño@adm.istpet.edu.ec',
+            email: 'cristhofer.parreno@adm.istpet.edu.ec',
             password,
             fullName: 'Cristhofer Parreño',
             role: Role.ADMIN,
@@ -1413,7 +1414,7 @@ async function main() {
     console.log(`  ⚙️  Configuraciones del sistema: ${counts.settings}`);
     console.log('─────────────────────────────────────────────────────\n');
     console.log('  🔐 Credenciales de acceso (contraseña universal: password123):');
-    console.log('     cristhofer.parreño@adm.istpet.edu.ec  → ADMIN');
+    console.log('     cristhofer.parreno@adm.istpet.edu.ec   → ADMIN');
     console.log('     wilfrido.trujillo@coo.istpet.edu.ec  → COORDINADOR GENERAL');
     console.log('     andres.gallegos@tut.istpet.edu.ec    → TUTOR (Desarrollo de Software — Presencial)');
     console.log('     roberto.torres@tut.istpet.edu.ec     → TUTOR (Desarrollo de Software — En Línea)');
