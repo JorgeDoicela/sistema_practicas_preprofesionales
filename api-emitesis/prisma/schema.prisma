@@ -4,6 +4,8 @@ generator client {
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
+// Desarrollo (npm run dev): Neon → api-emitesis/.env (pooled + direct sin pooler).
+// Producción (VPS Docker): Postgres contenedor "db" → .env raíz (postgres@db:5432).
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")

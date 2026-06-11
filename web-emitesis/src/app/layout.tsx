@@ -5,8 +5,8 @@ export const metadata: Metadata = {
   title: "Praxis Hub - Prácticas Preprofesionales",
   description: "Plataforma para la gestión integral de prácticas preprofesionales.",
   icons: {
-    icon: "/images/brand/sin_fondo_png.png",
-    shortcut: "/images/brand/sin_fondo_png.png",
+    icon: "/images/brand/logo_fondo2_png.png",
+    shortcut: "/images/brand/logo_fondo2_png.png",
     apple: "/images/brand/logo_fondo2_png.png",
   },
 

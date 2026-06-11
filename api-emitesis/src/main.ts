@@ -13,14 +13,15 @@ import { join } from 'path';
 import * as fs from 'fs';
 
 async function bootstrap() {
-  // Ajuste automático de DATABASE_URL si corre local fuera de Docker
+  // Ajuste automático solo si alguien usa @db:5432 fuera de Docker (@db → 127.0.0.1).
+  // Desarrollo con Neon y producción en VPS (Docker inyecta postgres@db) no pasan por aquí.
   const isDocker = fs.existsSync('/.dockerenv');
   if (!isDocker) {
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL.includes('@db:5432')) {
+    if (process.env.DATABASE_URL?.includes('@db:5432')) {
       process.env.DATABASE_URL = process.env.DATABASE_URL.replace('@db:5432', '@127.0.0.1:5432');
-      console.log(`\x1b[33m[Host-Local]\x1b[0m DATABASE_URL redirigida dinámicamente: ${process.env.DATABASE_URL}`);
+      console.log(`\x1b[33m[Host-Local]\x1b[0m DATABASE_URL redirigida a PostgreSQL local (Docker): ${process.env.DATABASE_URL}`);
     }
-    if (process.env.DIRECT_URL && process.env.DIRECT_URL.includes('@db:5432')) {
+    if (process.env.DIRECT_URL?.includes('@db:5432')) {
       process.env.DIRECT_URL = process.env.DIRECT_URL.replace('@db:5432', '@127.0.0.1:5432');
     }
   }
