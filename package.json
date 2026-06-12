@@ -1,31 +1,31 @@
 {
-  "name": "sistema-practicas-preprofesionales",
-  "version": "1.0.0",
-  "description": "Sistema de Gestión de Prácticas Preprofesionales ISTPET",
-  "workspaces": [
-    "api-emitesis",
-    "web-emitesis"
-  ],
-  "scripts": {
-    "docker:up": "node scripts/dev/docker-up.cjs",
-    "docker:reset": "docker compose down -v && node scripts/dev/docker-up.cjs",
-    "docker:down": "node scripts/dev/docker-down.cjs",
-    "docker:logs": "docker compose logs -f",
-    "setup": "node scripts/dev/setup-project.cjs",
-    "fix:setup": "powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Where-Object { $_.Id -ne $PID } | Stop-Process -Force -ErrorAction SilentlyContinue; rd -s -q node_modules\\.prisma; npm run setup\"",
-    "postinstall": "npm run setup",
-    "dev:back": "npm run start:dev -w api-emitesis",
-    "dev:front": "npm run dev -w web-emitesis",
-    "info": "powershell -Command \"Start-Sleep -s 8; Write-Host '' ; Write-Host '===================================================' -ForegroundColor Gray; Write-Host '   SISTEMA EMITESIS - ACCESOS DIRECTOS (LOCAL)   ' -ForegroundColor Yellow; Write-Host '===================================================' -ForegroundColor Gray; Write-Host ' FRONTEND: http://localhost:3005' -ForegroundColor Cyan; Write-Host ' BACKEND:  http://localhost:5000' -ForegroundColor Cyan; Write-Host '===================================================' -ForegroundColor Gray; Write-Host ''\"",
-    "dev": "concurrently \"npm run dev:back\" \"npm run dev:front\" \"npm run info\""
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "concurrently": "^9.1.2"
-  },
-  "dependencies": {
-    "dotenv": "^17.3.1"
-  }
+    "name": "sistema-practicas-preprofesionales",
+    "version": "1.0.0",
+    "description": "Sistema de Gestión de Prácticas Preprofesionales ISTPET",
+    "workspaces": [
+        "api-emitesis",
+        "web-emitesis"
+    ],
+    "scripts": {
+        "docker:up": "node scripts/dev/docker-up.cjs",
+        "docker:reset": "docker compose down -v && node scripts/dev/docker-up.cjs",
+        "docker:down": "node scripts/dev/docker-down.cjs",
+        "docker:logs": "docker compose logs -f",
+        "setup": "node scripts/dev/setup-project.cjs",
+        "fix:setup": "powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Where-Object { $_.Id -ne $PID } | Stop-Process -Force -ErrorAction SilentlyContinue; rd -s -q node_modules\\.prisma; npm run setup\"",
+        "postinstall": "npm run setup",
+        "dev:back": "npm run start:dev -w api-emitesis",
+        "dev:front": "npm run dev -w web-emitesis",
+        "info": "powershell -Command \"Start-Sleep -s 8; Write-Host '' ; Write-Host '===================================================' -ForegroundColor Gray; Write-Host '   SISTEMA PRAXIS HUB - ACCESOS DIRECTOS (LOCAL)   ' -ForegroundColor Yellow; Write-Host '===================================================' -ForegroundColor Gray; Write-Host ' FRONTEND: http://localhost:3005' -ForegroundColor Cyan; Write-Host ' BACKEND:  http://localhost:5000' -ForegroundColor Cyan; Write-Host '===================================================' -ForegroundColor Gray; Write-Host ''\"",
+        "dev": "concurrently \"npm run dev:back\" \"npm run dev:front\" \"npm run info\""
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "concurrently": "^9.1.2"
+    },
+    "dependencies": {
+        "dotenv": "^17.3.1"
+    }
 }

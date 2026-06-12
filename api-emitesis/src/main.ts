@@ -105,6 +105,7 @@ async function bootstrap() {
   const port = process.env.PORT ?? 5000;
   await app.listen(port, '0.0.0.0');
   console.log(`Backend running on: http://localhost:${port}`);
+  console.log(`Frontend running on: ${process.env.WEBAUTHN_ORIGIN ?? 'http://localhost:3005'}`);
 }
 
 bootstrap().catch((err: Error) => {
