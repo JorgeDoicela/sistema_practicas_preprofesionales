@@ -38,7 +38,7 @@ services:
       - emitesis-network-prod
 
   api:
-    image: ghcr.io/jorgedoicela/sistema_practicas_preprofesionales-api:latest
+    image: ghcr.io/<usuario_github>/sistema_practicas_preprofesionales-api:latest
     container_name: emitesis-api-prod
     restart: always
     environment:
@@ -80,7 +80,7 @@ services:
       - emitesis-network-prod
 
   web:
-    image: ghcr.io/jorgedoicela/sistema_practicas_preprofesionales-web:latest
+    image: ghcr.io/<usuario_github>/sistema_practicas_preprofesionales-web:latest
     container_name: emitesis-web-prod
     restart: always
     environment:
