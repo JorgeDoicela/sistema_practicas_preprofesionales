@@ -255,6 +255,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           ENV_PROD: ${{ secrets.ENV_PROD }}
           DOMAIN: ${{ secrets.DOMAIN }}
           DEPLOY_API: ${{ needs.changes.outputs.api }}
@@ -265,7 +266,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
-          envs: GITHUB_TOKEN,GITHUB_ACTOR,ENV_PROD,DOMAIN,DEPLOY_API,DEPLOY_WEB,DEPLOY_INFRA
+          envs: GITHUB_TOKEN,GITHUB_ACTOR,GITHUB_REPOSITORY,ENV_PROD,DOMAIN,DEPLOY_API,DEPLOY_WEB,DEPLOY_INFRA
           script: |
             set -e
 
@@ -344,6 +345,12 @@ jobs:
               echo "DOMAIN=$DOMAIN" >> .env
             else
               sed -i "s/DOMAIN=.*/DOMAIN=$DOMAIN/" .env
+            fi
+
+            if ! grep -q "GITHUB_REPOSITORY=" .env; then
+              echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY" >> .env
+            else
+              sed -i "s|GITHUB_REPOSITORY=.*|GITHUB_REPOSITORY=$GITHUB_REPOSITORY|" .env
             fi
 
             if [ -f .env ]; then
