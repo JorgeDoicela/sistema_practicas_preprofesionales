@@ -270,6 +270,9 @@ jobs:
           script: |
             set -e
 
+            # Convertir GITHUB_REPOSITORY a minúsculas para evitar errores en las referencias de Docker
+            GITHUB_REPOSITORY=$(echo "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')
+
             echo "=== Despliegue selectivo ==="
             echo "API:   $DEPLOY_API"
             echo "Web:   $DEPLOY_WEB"
