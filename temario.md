@@ -1,6 +1,6 @@
 # Guia de Estudio y Temario Master: Praxis Hub - Sistema de Gobernanza y Gestion de Practicas Preprofesionales
 
-Este documento constituye la guia oficial y exhaustiva de estudio para la defensa de tesis del sistema Praxis Hub del Instituto Superior Tecnologico Pelileo (ISTPET). Esta diseñado especificamente para que una persona que no desarrollo directamente el codigo pueda comprender de inicio a fin la arquitectura, algoritmos, logica de negocio, politicas de seguridad, DevOps y despliegue del monorepositorio, capacitandose para responder con solvencia tecnica ante cualquier tribunal de grado.
+Este documento es la guía de estudio para la defensa de tesis del sistema Praxis Hub del Instituto Superior Tecnologico Mayor Pedro Traversari (ISTPET). Esta diseñado especificamente para comprender de inicio a fin la arquitectura, algoritmos, logica de negocio, politicas de seguridad, DevOps y despliegue del monorepositorio, capacitandose para responder con solvencia tecnica ante cualquier tribunal de grado.
 
 ---
 
