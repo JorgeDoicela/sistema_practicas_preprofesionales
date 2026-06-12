@@ -252,23 +252,20 @@ Tener instalado en el ordenador:
     ```bash
     npm install
     ```
-2.  **Levantar Base de Datos de Desarrollo:**
-    Inicie el contenedor local de PostgreSQL definido en el docker-compose:
-    ```bash
-    npm run docker:up
-    ```
-    *(Este comando ejecuta el script [docker-up.cjs](file:///home/jorge/Descargas/sistema_practicas_preprofesionales/scripts/dev/docker-up.cjs), el cual levanta PostgreSQL en el puerto 5432 local y verifica que este listo).*
-3.  **Configurar Variables de Entorno (.env):**
-    Copie el archivo `.env.example` de la raiz y renombrelo como `.env`.
-    *   Para desarrollo local tipico con Neon, configure `DATABASE_URL` y `DIRECT_URL`.
-    *   Para desarrollo local con la base de datos de Docker iniciada en el paso anterior, asegurese de apuntar a `localhost:5432`.
-4.  **Inicializar Proyecto (Migraciones y Semilla):**
-    Ejecute el script automatizado de arranque:
-    ```bash
-    npm run setup
-    ```
-    *(Este comando ejecuta [setup-project.cjs](file:///home/jorge/Descargas/sistema_practicas_preprofesionales/scripts/dev/setup-project.cjs), el cual compila Prisma, sincroniza las tablas de PostgreSQL con las migraciones, y ejecuta el semillero de datos cargando los perfiles de prueba en la base de datos).*
-5.  **Iniciar Servidores en Desarrollo:**
+2.  **Configurar e Inicializar la Base de Datos de Desarrollo:**
+    *   **Opción A (Recomendado - PostgreSQL Local en la Laptop):**
+        Si tienes PostgreSQL instalado en el sistema local (fuera de Docker o ya activo en Docker), asegúrate de que el servicio de Postgres esté iniciado y ejecuta:
+        ```bash
+        npm run setup:local-db
+        ```
+        *(Este comando automatizado e interactivo permite ingresar las credenciales locales de Postgres, crea la base de datos si no existe, genera el cliente de Prisma, sincroniza las tablas y carga los datos de prueba/seeders automáticamente).*
+    *   **Opción B (Docker Compose):**
+        Levanta el contenedor de Postgres y realiza la configuración corriendo:
+        ```bash
+        npm run docker:up
+        ```
+        *(Este comando levanta PostgreSQL en Docker en el puerto 5432 y crea el archivo .env. Luego deberás ejecutar `npm run setup` para inicializar y poblar la base de datos).*
+3.  **Iniciar Servidores en Desarrollo:**
     Para levantar la API (backend) en el puerto 5000 y la App Web (frontend) en el puerto 3005 de forma paralela en una sola terminal, ejecute:
     ```bash
     npm run dev

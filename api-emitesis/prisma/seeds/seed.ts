@@ -160,11 +160,11 @@ const visitObservations = [
 // ── MAIN ──────────────────────────────────────────────────────────────────
 
 async function main() {
-    console.log('\n🚀 INICIANDO MASTER SEED v14.0 — ISTPET "Mayor Pedro Traversari"');
+    console.log('\n INICIANDO MASTER SEED v14.0 — ISTPET "Mayor Pedro Traversari"');
     console.log('═══════════════════════════════════════════════════════════\n');
 
     // ─── 1. LIMPIEZA (orden estricto de integridad referencial) ──────────────
-    console.log('🧹 [1/12] Purgando base de datos...');
+    console.log(' [1/12] Purgando base de datos...');
     const tables = [
         'activityPhoto', 'attendance', 'documentVersion', 'documentComment', 'document',
         'documentTemplate', 'monitoringVisit', 'evaluation', 'internshipStatusHistory',
@@ -179,11 +179,11 @@ async function main() {
         } catch (error) {
             // Ignorar errores si la tabla no existe (P2021)
             if ((error as any).code !== 'P2021') {
-                console.warn(`   ⚠ No se pudo purgar la tabla ${table}:`, (error as any).message);
+                console.warn(`    No se pudo purgar la tabla ${table}:`, (error as any).message);
             }
         }
     }
-    console.log('   ✓ Base de datos purgada.\n');
+    console.log('    Base de datos purgada.\n');
 
     const password = await bcrypt.hash('password123', 10);
     const lopdp = {
@@ -194,7 +194,7 @@ async function main() {
 
     // ─── 2. CARRERAS REALES DEL ISTPET ────────────────────────────────────────
     // Fuente: https://institutotraversari.edu.ec — Programa Académico 2026
-    console.log('🎓 [2/12] Creando carreras reales del ISTPET...');
+    console.log(' [2/12] Creando carreras reales del ISTPET...');
     const careersData: { name: string; faculty: string; modalidad: Modalidad; hours: number }[] = [
         // Departamento de Tecnologías de la Información y Comunicación
         { name: 'Desarrollo de Software', faculty: 'Tecnologías de la Información y Comunicación', modalidad: Modalidad.PRESENCIAL, hours: 200 },
@@ -225,10 +225,10 @@ async function main() {
             config: { requiredHours: c.hours },
         })),
     });
-    console.log(`   ✓ ${careers.length} carreras creadas.\n`);
+    console.log(`    ${careers.length} carreras creadas.\n`);
 
     // ─── 3. DOCUMENT TEMPLATES (por carrera + globales) ──────────────────────
-    console.log('📋 [3/12] Creando plantillas de documentos...');
+    console.log(' [3/12] Creando plantillas de documentos...');
 
     // Plantillas globales (aplican a todas las carreras)
     const globalTemplatesData = [
@@ -290,12 +290,12 @@ async function main() {
     });
 
     const allTemplates = [...globalTemplates, ...careerSpecificTemplates];
-    console.log(`   ✓ ${allTemplates.length} plantillas creadas (${globalTemplates.length} globales + ${careerSpecificTemplates.length} específicas por carrera).\n`);
+    console.log(`    ${allTemplates.length} plantillas creadas (${globalTemplates.length} globales + ${careerSpecificTemplates.length} específicas por carrera).\n`);
 
     // ─── 4. EMPRESAS Y CONVENIOS ────────────────────────────────────────────────
     // Empresas reales y organismos públicos de Quito, seleccionados según los
     // perfiles profesionales de cada carrera del ISTPET.
-    console.log('🏢 [4/12] Creando empresas y convenios...');
+    console.log(' [4/12] Creando empresas y convenios...');
     const companiesData = [
         // ── TI: Desarrollo de Software / Redes / Electrónica ──────────────────
         { name: 'Kruger Corp', ruc: '1797766554001', address: 'Cumbayá, Paseo San Francisco Lc-12', rep: 'Ernesto Kruger', email: 'hr@krugercorp.com', convenio: 'Activo', sector: 'Tecnología' },
@@ -348,7 +348,7 @@ async function main() {
             status: companiesData[i].convenio,
         })),
     });
-    console.log(`   ✓ ${companies.length} empresas y ${companies.length} convenios creados.\n`);
+    console.log(`    ${companies.length} empresas y ${companies.length} convenios creados.\n`);
 
     // Índices en companies[] alineados con companiesData (solo convenios activos o en trámite).
     const careerCompanyIndices: number[][] = [
@@ -377,7 +377,7 @@ async function main() {
     };
 
     // ─── 5. USUARIOS ──────────────────────────────────────────────────────────
-    console.log('👥 [5/12] Creando usuarios por rol...');
+    console.log(' [5/12] Creando usuarios por rol...');
 
     // Admin del sistema (email ASCII: sin ñ para validación HTML5 del login)
     const adminUser = await prisma.user.create({
@@ -511,12 +511,12 @@ async function main() {
     });
 
     console.log(
-        `   ✓ 1 admin + 1 coordinador + ${tutorsAcad.length} tutores acad. + ` +
+        `    1 admin + 1 coordinador + ${tutorsAcad.length} tutores acad. + ` +
         `${tutorsEmp.length} supervisores + 4 portales empresa + ${students.length} estudiantes + 1 bloqueado.\n`,
     );
 
     // ─── 5b. REGISTROS LOPDP ──────────────────────────────────────────────────
-    console.log('⚖️  [5b] Creando logs de aceptación LOPDP...');
+    console.log(' [5b] Creando logs de aceptación LOPDP...');
     const allUsersForLopdp = [adminUser, ...coordinators, ...tutorsAcad, ...tutorsEmp, ...students];
     await prisma.lopdpLog.createMany({
         data: allUsersForLopdp.filter(u => u.lopdpAccepted).map(u => ({
@@ -528,10 +528,10 @@ async function main() {
             acceptedAt: daysAgo(randInt(30, 90)),
         })),
     });
-    console.log(`   ✓ ${allUsersForLopdp.length} logs de aceptación LOPDP creados.\n`);
+    console.log(`    ${allUsersForLopdp.length} logs de aceptación LOPDP creados.\n`);
 
     // ─── 6. CREDENCIALES WEBAUTHN ─────────────────────────────────────────────
-    console.log('🔑 [6/12] Creando credenciales WebAuthn...');
+    console.log(' [6/12] Creando credenciales WebAuthn...');
     // Registrar credencial para el admin y 5 tutores
     const webauthnUsers = [adminUser, ...tutorsAcad.slice(0, 5)];
     await prisma.userCredential.createMany({
@@ -542,7 +542,7 @@ async function main() {
             counter: randInt(1, 50),
         })),
     });
-    console.log(`   ✓ ${webauthnUsers.length} credenciales WebAuthn registradas.\n`);
+    console.log(`    ${webauthnUsers.length} credenciales WebAuthn registradas.\n`);
 
     // Supervisor principal EMPRESA por compañía (mismo orden que companies[]).
     const empresaUserByCompanyId = new Map<string, string>(
@@ -550,7 +550,7 @@ async function main() {
     );
 
     // ─── 7. PRÁCTICAS CON CICLO DE VIDA COMPLETO ──────────────────────────────
-    console.log('📚 [7/12] Generando prácticas con ciclo de vida completo...');
+    console.log(' [7/12] Generando prácticas con ciclo de vida completo...');
 
     /**
      * Escenarios distribuidos entre los 60 estudiantes:
@@ -896,7 +896,7 @@ async function main() {
         }
     }
     await prisma.absence.createMany({ data: absenceBatch });
-    console.log(`   ✓ ${absenceBatch.length} registros de ausencia creados.\n`);
+    console.log(`    ${absenceBatch.length} registros de ausencia creados.\n`);
 
     // Batches de nivel 3: Fotos de actividades, Comentarios, Versiones
     const activityPhotoBatch: any[] = [];
@@ -984,10 +984,10 @@ async function main() {
     await prisma.documentComment.createMany({ data: docCommentBatch });
     await prisma.documentVersion.createMany({ data: docVersionBatch });
 
-    console.log(`   ✓ ${internshipsCreated.length} prácticas generadas con documentos, asistencias, visitas y evaluaciones.\n`);
+    console.log(`    ${internshipsCreated.length} prácticas generadas con documentos, asistencias, visitas y evaluaciones.\n`);
 
     // ─── 8. SYSTEM LOGS (1500+) ───────────────────────────────────────────────
-    console.log('📜 [8/12] Generando logs de auditoría (1500+)...');
+    console.log(' [8/12] Generando logs de auditoría (1500+)...');
     const logCategories = ['AUTH', 'HTTP', 'SYSTEM', 'PRIVACY', 'GPS', 'EMAIL', 'DOCUMENT'];
     const logBatch: Prisma.SystemLogCreateManyInput[] = [];
 
@@ -1091,10 +1091,10 @@ async function main() {
     if (logBatch.length > 0) {
         await prisma.systemLog.createMany({ data: logBatch });
     }
-    console.log('   ✓ 1500 logs de auditoría insertados.\n');
+    console.log('    1500 logs de auditoría insertados.\n');
 
     // ─── 9. EMAIL LOGS ────────────────────────────────────────────────────────
-    console.log('📧 [9/12] Generando historial de correos...');
+    console.log(' [9/12] Generando historial de correos...');
     const emailSubjects = [
         'Documento rechazado — acción requerida',
         'Nueva práctica asignada',
@@ -1123,10 +1123,10 @@ async function main() {
         });
     }
     await prisma.emailLog.createMany({ data: emailBatch });
-    console.log('   ✓ 120 email logs generados.\n');
+    console.log('    120 email logs generados.\n');
 
     // ─── 10. GOBERNANZA: ANUNCIOS Y NOTIFICACIONES ────────────────────────────
-    console.log('📢 [10/12] Creando anuncios y notificaciones...');
+    console.log(' [10/12] Creando anuncios y notificaciones...');
 
     await prisma.announcement.createMany({
         data: [
@@ -1255,10 +1255,10 @@ async function main() {
     }
     await prisma.inAppNotification.createMany({ data: extraNotifs });
 
-    console.log('   ✓ 6 anuncios y ~200 notificaciones creados.\n');
+    console.log('    6 anuncios y ~200 notificaciones creados.\n');
 
     // ─── 11. SOLICITUDES ARCO (LOPDP) ─────────────────────────────────────────
-    console.log('🔒 [11/12] Creando solicitudes ARCO (LOPDP)...');
+    console.log(' [11/12] Creando solicitudes ARCO (LOPDP)...');
     const arcoRequests = [
         { student: students[0], type: 'ACCESO', details: 'Solicito copia completa de mis datos personales almacenados en el sistema, conforme al Art. 18 de la LOPDP.', status: 'COMPLETADA', response: 'Se envió el reporte completo de datos personales al correo institucional del solicitante.' },
         { student: students[1], type: 'CANCELACION', details: 'Solicito la eliminación de mi cuenta y datos personales por retiro voluntario de la institución.', status: 'EN_REVISION', response: null },
@@ -1278,10 +1278,10 @@ async function main() {
             createdAt: daysAgo(randInt(5, 45)),
         })),
     });
-    console.log(`   ✓ ${arcoRequests.length} solicitudes ARCO creadas.\n`);
+    console.log(`    ${arcoRequests.length} solicitudes ARCO creadas.\n`);
 
     // ─── 12b. PERMISOS DE CHAT ────────────────────────────────────────────────
-    console.log('💬 [12b] Inicializando permisos de chat por roles...');
+    console.log(' [12b] Inicializando permisos de chat por roles...');
     const allRoles = [Role.ADMIN, Role.COORDINADOR, Role.TUTOR, Role.ESTUDIANTE, Role.EMPRESA];
     const chatPermPairs: { fromRole: Role; toRole: Role }[] = [];
     for (const fromRole of allRoles) {
@@ -1312,10 +1312,10 @@ async function main() {
         skipDuplicates: true,
     });
     const enabledCount = chatPermPairs.filter(p => isAcademicPair(p.fromRole, p.toRole)).length;
-    console.log(`   ✓ ${chatPermPairs.length} pares de permisos de chat creados (${enabledCount} canales académicos activos por defecto).\n`);
+    console.log(`    ${chatPermPairs.length} pares de permisos de chat creados (${enabledCount} canales académicos activos por defecto).\n`);
 
     // ─── 12c. CONVERSACIONES REALES ───────────────────────────────────────────
-    console.log('💬 [12c] Generando conversaciones de prueba...');
+    console.log(' [12c] Generando conversaciones de prueba...');
     // Crear salas entre algunos estudiantes y sus tutores
     for (let i = 0; i < 10; i++) {
         const student = students[i];
@@ -1341,10 +1341,10 @@ async function main() {
             }
         });
     }
-    console.log('   ✓ 10 salas de chat con mensajes generadas.\n');
+    console.log('    10 salas de chat con mensajes generadas.\n');
 
     // ─── 12. CONFIGURACIONES DEL SISTEMA ──────────────────────────────────────
-    console.log('⚙️  [12/12] Configurando ajustes del sistema...');
+    console.log(' [12/12] Configurando ajustes del sistema...');
     await prisma.systemSetting.createMany({
         data: [
             { key: 'attendance_radius_meters', value: '250', category: 'GPS', description: 'Radio máximo permitido para el registro de asistencia por GPS (metros).' },
@@ -1362,7 +1362,7 @@ async function main() {
             { key: 'chat_message_retention_days', value: '730', category: 'CHAT', description: 'Periodo de retención de mensajes de chat antes de su anonimización o purga (días).' },
         ],
     });
-    console.log('   ✓ 12 configuraciones del sistema registradas.\n');
+    console.log('    12 configuraciones del sistema registradas.\n');
 
     // ─── RESUMEN FINAL ────────────────────────────────────────────────────────
     const counts = {
@@ -1394,37 +1394,37 @@ async function main() {
     };
 
     console.log('═══════════════════════════════════════════════════════════');
-    console.log('✅ MASTER SEED v14.0 — ISTPET "Mayor Pedro Traversari" OK');
+    console.log(' MASTER SEED v14.0 — ISTPET "Mayor Pedro Traversari" OK');
     console.log('═══════════════════════════════════════════════════════════');
-    console.log('\n📊 RESUMEN DE REGISTROS CREADOS:');
+    console.log('\n RESUMEN DE REGISTROS CREADOS:');
     console.log('─────────────────────────────────────────────────────');
-    console.log(`  🎓 Carreras                  : ${counts.careers}`);
-    console.log(`  📋 Plantillas de documentos  : ${counts.templates}`);
-    console.log(`  🏢 Empresas                  : ${counts.companies}`);
-    console.log(`  🤝 Convenios                 : ${counts.agreements}`);
-    console.log(`  👥 Usuarios (todos los roles): ${counts.users}`);
-    console.log(`  🔑 Credenciales WebAuthn     : ${counts.credentials}`);
-    console.log(`  📚 Prácticas preprofesionales: ${counts.internships}`);
-    console.log(`  🔄 Historial de estados      : ${counts.statusHistory}`);
-    console.log(`  📍 Registros de asistencia   : ${counts.attendances}`);
-    console.log(`  📸 Fotos de actividades      : ${counts.activityPhotos}`);
-    console.log(`  📄 Documentos                : ${counts.documents}`);
-    console.log(`  📑 Versiones de documentos   : ${counts.docVersions}`);
-    console.log(`  💬 Comentarios en documentos : ${counts.docComments}`);
-    console.log(`  ⭐ Evaluaciones              : ${counts.evaluations}`);
-    console.log(`  🏫 Visitas de monitoreo      : ${counts.monitoringVisits}`);
-    console.log(`  🏥 Ausencias justificadas    : ${counts.absences}`);
-    console.log(`  🗨️  Salas de chat             : ${counts.chatRooms}`);
-    console.log(`  ✉️  Mensajes de chat          : ${counts.chatMessages}`);
-    console.log(`  📜 Logs del sistema          : ${counts.systemLogs}`);
-    console.log(`  📧 Logs de email             : ${counts.emailLogs}`);
-    console.log(`  📢 Anuncios                  : ${counts.announcements}`);
-    console.log(`  🔔 Notificaciones in-app     : ${counts.notifications}`);
-    console.log(`  🔒 Solicitudes ARCO (LOPDP)  : ${counts.dataRequests}`);
-    console.log(`  ⚖️  Logs de aceptación LOPDP  : ${counts.lopdpLogs}`);
-    console.log(`  ⚙️  Configuraciones del sistema: ${counts.settings}`);
+    console.log(`   Carreras                  : ${counts.careers}`);
+    console.log(`   Plantillas de documentos  : ${counts.templates}`);
+    console.log(`   Empresas                  : ${counts.companies}`);
+    console.log(`   Convenios                 : ${counts.agreements}`);
+    console.log(`   Usuarios (todos los roles): ${counts.users}`);
+    console.log(`   Credenciales WebAuthn     : ${counts.credentials}`);
+    console.log(`   Prácticas preprofesionales: ${counts.internships}`);
+    console.log(`   Historial de estados      : ${counts.statusHistory}`);
+    console.log(`   Registros de asistencia   : ${counts.attendances}`);
+    console.log(`   Fotos de actividades      : ${counts.activityPhotos}`);
+    console.log(`   Documentos                : ${counts.documents}`);
+    console.log(`   Versiones de documentos   : ${counts.docVersions}`);
+    console.log(`   Comentarios en documentos : ${counts.docComments}`);
+    console.log(`   Evaluaciones              : ${counts.evaluations}`);
+    console.log(`   Visitas de monitoreo      : ${counts.monitoringVisits}`);
+    console.log(`   Ausencias justificadas    : ${counts.absences}`);
+    console.log(`    Salas de chat             : ${counts.chatRooms}`);
+    console.log(`    Mensajes de chat          : ${counts.chatMessages}`);
+    console.log(`   Logs del sistema          : ${counts.systemLogs}`);
+    console.log(`   Logs de email             : ${counts.emailLogs}`);
+    console.log(`   Anuncios                  : ${counts.announcements}`);
+    console.log(`   Notificaciones in-app     : ${counts.notifications}`);
+    console.log(`   Solicitudes ARCO (LOPDP)  : ${counts.dataRequests}`);
+    console.log(`    Logs de aceptación LOPDP  : ${counts.lopdpLogs}`);
+    console.log(`    Configuraciones del sistema: ${counts.settings}`);
     console.log('─────────────────────────────────────────────────────\n');
-    console.log('  🔐 Credenciales de acceso (contraseña universal: password123):');
+    console.log('   Credenciales de acceso (contraseña universal: password123):');
     console.log('     cristhofer.parreno@adm.istpet.edu.ec   → ADMIN');
     console.log('     wilfrido.trujillo@coo.istpet.edu.ec  → COORDINADOR GENERAL');
     console.log('     andres.gallegos@tut.istpet.edu.ec    → TUTOR (Desarrollo de Software — Presencial)');
@@ -1434,7 +1434,7 @@ async function main() {
     console.log('     mateo.larrea@est.istpet.edu.ec       → ESTUDIANTE (primer estudiante generado)');
     console.log('     carlos.mendoza@est.istpet.edu.ec     → ESTUDIANTE (cuenta bloqueada — test)');
     console.log('');
-    console.log('  🏫 Instituto: I.S.T. "Mayor Pedro Traversari" — ISTPET');
+    console.log('   Instituto: I.S.T. "Mayor Pedro Traversari" — ISTPET');
     console.log('     Av. Matilde Álvarez y Hugo Díaz Romero, Chillogallo, Quito');
     console.log('     Tel: 02 303 2894 | admisiones@istpet.edu.ec');
     console.log('═══════════════════════════════════════════════════════════\n');
@@ -1442,7 +1442,7 @@ async function main() {
 
 main()
     .catch((e) => {
-        console.error('\n❌ Error fatal en seed:', e);
+        console.error('\n Error fatal en seed:', e);
         process.exit(1);
     })
     .finally(async () => {

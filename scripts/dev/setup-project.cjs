@@ -133,8 +133,9 @@ if (isVercel) {
     console.log('\n\x1b[33m[AVISO DE INSTALACIÓN]\x1b[0m');
     console.log('  La base de datos local no se encuentra activa en este momento (puerto 5432 cerrado).');
     console.log('  La instalación de paquetes continuará normalmente.');
-    console.log('  Una vez que inicies Docker con \x1b[36mnpm run docker:up\x1b[0m, ejecuta \x1b[36mnpm run setup\x1b[0m');
-    console.log('  para sincronizar y poblar tu base de datos automáticamente.\n');
+    console.log('  Si deseas usar una base de datos PostgreSQL local instalada en tu sistema (o en Docker),');
+    console.log('  puedes iniciar tu servicio PostgreSQL y ejecutar \x1b[36mnpm run setup:local-db\x1b[0m');
+    console.log('  para configurarla, crear la base de datos, las tablas y la semilla automáticamente.\n');
   }
 }
 

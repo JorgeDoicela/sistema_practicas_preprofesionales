@@ -53,7 +53,9 @@ Praxis Hub está industrializado para ser "Clone & Run". Toda la configuración 
 
 ### Requisitos Previos
 *   **Node.js** (v22+)
-*   **Docker** (Para la base de datos local, aunque por defecto usa Neon en la nube)
+*   **Base de Datos:**
+    *   **Opción A (Recomendado):** Servidor PostgreSQL local instalado en la laptop/máquina (o corriendo en Docker).
+    *   **Opción B:** Neon PostgreSQL (en la nube).
 
 ### Pasos para iniciar:
 
@@ -63,13 +65,21 @@ Praxis Hub está industrializado para ser "Clone & Run". Toda la configuración 
    cd sistema_practicas_preprofesionales
    ```
 
-2. **Instalar dependencias (Configuración Automática)**
-   Al ejecutar este comando, el sistema detectará las variables de entorno, generará el cliente de base de datos y **reseteará/sembrará (seed)** los datos automáticamente para un entorno de pruebas fresco.
+2. **Instalar dependencias**
    ```bash
    npm install
    ```
 
-3. **Lanzar el ecosistema**
+3. **Configurar e Inicializar la Base de Datos Local**
+   Si vas a ejecutar el proyecto con una base de datos PostgreSQL local instalada en tu laptop, asegúrate de que tu servicio PostgreSQL esté iniciado y ejecuta desde la raíz:
+   ```bash
+   npm run setup:local-db
+   ```
+   *(Este asistente automatizado te guiará para configurar las credenciales, creará la base de datos si no existe, sincronizará las tablas con Prisma y cargará los seeders con los datos iniciales de prueba de forma automática).*
+
+   *Nota: Si decides usar Docker Compose, levanta la base de datos con `npm run docker:up` y luego ejecuta `npm run setup` para inicializarla.*
+
+4. **Lanzar el ecosistema**
    Inicia el backend y el frontend concurrentemente.
    ```bash
    npm run dev
