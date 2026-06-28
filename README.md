@@ -107,3 +107,4 @@ Este repositorio cuenta con un nivel de especificación detallado destinado a De
 
 ---
 **Praxis Hub © 2026** - Transformando la trazabilidad burocrática en operabilidad inteligente.
+**Parreño**
