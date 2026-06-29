@@ -328,7 +328,7 @@ export function DashboardMain() {
           {
             title: t.stats.activeInternships,
             value: String(active),
-            hint: `${internships.length} ${t.common.search}`, // Usando algo similar o literal si falta
+            hint: locale === 'es' ? `${internships.length} en total` : `${internships.length} total`,
             icon: <Users className="w-6 h-6" />,
             color: "bg-blue-500",
             href: "/coordinador/estudiantes",
@@ -344,7 +344,7 @@ export function DashboardMain() {
           {
             title: t.stats.completedHours,
             value: globalStats ? `${globalStats.totalCompletedHours}h` : "—",
-            hint: globalStats ? `${t.common.back} ${globalStats.totalPlannedHours}h ${t.dashboard.hours.required}` : "—",
+            hint: globalStats ? `${t.common.of} ${globalStats.totalPlannedHours}h ${t.dashboard.hours.required}` : "—",
             icon: <Clock className="w-6 h-6" />,
             color: "bg-amber-500",
             href: "/coordinador/reportes",

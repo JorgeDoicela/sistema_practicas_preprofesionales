@@ -30,10 +30,6 @@ export default function ReportesPage() {
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadStats();
-  }, [loadStats]);
-
   const loadStats = useCallback(async () => {
     try {
       setLoading(true);
@@ -57,6 +53,10 @@ export default function ReportesPage() {
       setLoading(false);
     }
   }, [t.common.error]);
+
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
 
   const handleExport = async (type: "excel" | "pdf") => {
     try {

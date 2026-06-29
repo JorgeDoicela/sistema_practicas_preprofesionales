@@ -49,7 +49,7 @@ export class AnalyticsService {
   }
 
   async getSystemHealthSeries() {
-    // Retorna una serie de tiempo (últimas 24 horas) para gráficos
+    // Retorna una serie de tiempo (últimas 24 horas) para gráficos en orden cronológico
     const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
     
     const logs = await this.prisma.systemLog.findMany({
@@ -58,21 +58,38 @@ export class AnalyticsService {
       orderBy: { createdAt: 'asc' },
     });
 
-    // Agrupar por hora
-    const series = {};
+    // Inicializar los 24 intervalos cronológicamente de forma consecutiva
+    const seriesList: any[] = [];
+    for (let i = 0; i < 24; i++) {
+      const d = new Date(last24h.getTime() + (i + 1) * 60 * 60 * 1000);
+      const h = d.getHours();
+      seriesList.push({
+        hour: `${h}:00`,
+        total: 0,
+        errors: 0,
+        sumDuration: 0,
+        countDuration: 0,
+      });
+    }
+
     logs.forEach(log => {
-      const hour = new Date(log.createdAt).getHours();
-      if (!series[hour]) series[hour] = { hour, total: 0, errors: 0, sumDuration: 0, countDuration: 0 };
-      series[hour].total++;
-      if (log.level === 'ERROR') series[hour].errors++;
-      if (log.durationMs) {
-        series[hour].sumDuration += log.durationMs;
-        series[hour].countDuration++;
+      const logDate = new Date(log.createdAt);
+      // Mapear cada log al intervalo correspondiente
+      const diffMs = logDate.getTime() - last24h.getTime();
+      const slotIndex = Math.floor(diffMs / (60 * 60 * 1000));
+      if (slotIndex >= 0 && slotIndex < 24) {
+        const s = seriesList[slotIndex];
+        s.total++;
+        if (log.level === 'ERROR') s.errors++;
+        if (log.durationMs) {
+          s.sumDuration += log.durationMs;
+          s.countDuration++;
+        }
       }
     });
 
-    return Object.values(series).map((s: any) => ({
-      hour: `${s.hour}:00`,
+    return seriesList.map(s => ({
+      hour: s.hour,
       total: s.total,
       errors: s.errors,
       avgLatency: s.countDuration > 0 ? Number((s.sumDuration / s.countDuration).toFixed(2)) : 0,

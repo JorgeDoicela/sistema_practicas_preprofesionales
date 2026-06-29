@@ -1075,6 +1075,7 @@ export const en = {
       refresh: "Refresh Data",
       latencyTitle: "API Latency (Last 24h)",
       avgLabel: "Current Average",
+      latencyMs: "Response Speed",
       trafficTitle: "Traffic and Errors",
       requests: "Requests",
       errors: "Errors",
@@ -1088,6 +1089,7 @@ export const en = {
       errorEvents: "Error Events",
       rolesTitle: "Role Distribution",
       cleanupSuccess: "Cleanup complete. Removed {count} files ({size} MB reclaimed).",
+      cleanupError: "Error performing file cleanup.",
       backupError: "Error requesting backup.",
     },
     settings: {

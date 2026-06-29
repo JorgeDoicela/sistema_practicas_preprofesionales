@@ -81,11 +81,9 @@ export const api = axios.create({
   baseURL: API_URL,
 });
 
-type RetryableConfig = {
+type RetryableConfig = import('axios').InternalAxiosRequestConfig & {
   _retry?: boolean;
   __retryCount?: number;
-  method?: string;
-  headers?: any;
 };
 
 // Interceptor para incluir el token en cada petición

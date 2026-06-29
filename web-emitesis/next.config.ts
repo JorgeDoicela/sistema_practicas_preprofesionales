@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
+const nextConfig: any = {
   eslint: {
     // Desactivar comprobación de ESLint durante la compilación para evitar bloqueos por warnings
     ignoreDuringBuilds: true,
@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config: any, { isServer }: any) => {
     const webpack = require("webpack");
 
     config.plugins = config.plugins || [];
