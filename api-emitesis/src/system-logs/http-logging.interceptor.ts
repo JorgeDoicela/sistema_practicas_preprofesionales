@@ -74,7 +74,7 @@ export class HttpLoggingInterceptor implements NestInterceptor {
     }
 
     const started = Date.now();
-    const user = req.user as { userId?: string; email?: string } | undefined;
+    const user = req.user;
 
     const write = (statusCode: number, level: 'INFO' | 'WARN' | 'ERROR') => {
       const durationMs = Date.now() - started;
