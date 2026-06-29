@@ -46,7 +46,7 @@ export class AttendanceService {
       return 'La ubicación del lugar de prácticas no ha sido configurada. Contacta a tu tutor académico.';
     }
 
-    const globalRadius = await this.settingsService.getNumberValue('attendance_radius', 250);
+    const globalRadius = await this.settingsService.getNumberValue('attendance_radius_meters', 250);
 
     for (const loc of locs) {
       // Usar radio específico de la loc o el global de configuración

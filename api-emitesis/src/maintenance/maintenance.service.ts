@@ -43,9 +43,28 @@ export class MaintenanceService {
 
     const referencedFiles = new Set<string>();
     
+    const normalizeDbPath = (p: string | null, isTemplate = false): string | null => {
+      if (!p) return null;
+      let clean = p.replace(/\\/g, '/').trim();
+      
+      const uploadsIndex = clean.indexOf('/uploads/');
+      if (uploadsIndex !== -1) {
+        clean = clean.substring(uploadsIndex + '/uploads/'.length);
+      } else if (clean.startsWith('uploads/')) {
+        clean = clean.substring('uploads/'.length);
+      }
+      
+      if (isTemplate && !clean.startsWith('templates/')) {
+        clean = `templates/${clean}`;
+      }
+      
+      return clean;
+    };
+
     // Poblar el set con rutas normalizadas
-    const addPath = (p: string | null) => {
-      if (p) referencedFiles.add(p.replace(/\\/g, '/'));
+    const addPath = (p: string | null, isTemplate = false) => {
+      const normalized = normalizeDbPath(p, isTemplate);
+      if (normalized) referencedFiles.add(normalized);
     };
 
     docs.forEach(d => addPath(d.filePath));
@@ -55,7 +74,7 @@ export class MaintenanceService {
     attendances2.forEach(a => addPath(a.checkOutPhoto));
     activityPhotos.forEach(p => addPath(p.photoUrl));
     monitoring.forEach(m => addPath(m.evidenceUrl));
-    templates.forEach(t => addPath(t.blankFileKey));
+    templates.forEach(t => addPath(t.blankFileKey, true));
 
     for (const dir of directories) {
       const dirPath = path.join(this.uploadsPath, dir);
@@ -66,9 +85,8 @@ export class MaintenanceService {
         // Excluir archivos de sistema de Git
         if (file.endsWith('.gitkeep')) continue;
 
-        // Normalizar path para comparar con la BD
-        // El path relativo suele empezar con 'uploads/'
-        const relativePath = path.relative(process.cwd(), file).replace(/\\/g, '/');
+        // Normalizar path de disco relativo a la carpeta de uploads para comparar
+        const relativePath = path.relative(this.uploadsPath, file).replace(/\\/g, '/');
         
         if (!referencedFiles.has(relativePath)) {
           const stats = fs.statSync(file);

@@ -138,7 +138,9 @@ export class CertificationService {
     }
 
     // Cargar plantilla
-    const templatePath = path.join(process.cwd(), 'src/templates/certificate.hbs');
+    const templatePath = fs.existsSync(path.join(__dirname, '..', 'templates', 'certificate.hbs'))
+      ? path.join(__dirname, '..', 'templates', 'certificate.hbs')
+      : path.join(process.cwd(), 'src/templates/certificate.hbs');
     const templateSource = fs.readFileSync(templatePath, 'utf8');
     const template = handlebars.compile(templateSource);
 

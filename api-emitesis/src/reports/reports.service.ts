@@ -190,7 +190,9 @@ export class ReportsService {
       };
     });
 
-    const templatePath = path.join(process.cwd(), 'src/templates/global-report.hbs');
+    const templatePath = fs.existsSync(path.join(__dirname, '..', 'templates', 'global-report.hbs'))
+      ? path.join(__dirname, '..', 'templates', 'global-report.hbs')
+      : path.join(process.cwd(), 'src/templates/global-report.hbs');
     if (!fs.existsSync(templatePath)) {
         // Fallback or create default if not exists
         return Buffer.from('Template not found');
