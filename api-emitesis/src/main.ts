@@ -37,7 +37,16 @@ async function bootstrap() {
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true, limit: '10mb' }));
 
-  app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
+  // Servir estáticos de subcarpetas específicas de uploads para evitar descarga pública de copias de seguridad
+  const uploadsPath = join(process.cwd(), 'uploads');
+  const staticDirs = ['documents', 'agreements', 'templates', 'photos', 'absences'];
+  for (const dir of staticDirs) {
+    const fullDir = join(uploadsPath, dir);
+    if (!fs.existsSync(fullDir)) {
+      fs.mkdirSync(fullDir, { recursive: true });
+    }
+    app.use(`/uploads/${dir}`, express.static(fullDir));
+  }
 
   app.use((req: any, res: any, next: any) => {
     if (!isProduction) {

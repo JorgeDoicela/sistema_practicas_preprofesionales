@@ -28,6 +28,141 @@ import { useSearchParams } from "next/navigation";
 
 import { Suspense } from "react";
 
+const FRIENDLY_METADATA_LABELS: Record<string, string> = {
+  body: "Datos Enviados (Body)",
+  query: "Parámetros de Consulta (Query)",
+  userAgent: "Navegador / Dispositivo",
+  acceptLanguage: "Idioma del Navegador",
+  error: "Detalle del Error",
+  stack: "Traza del Error (Stack Trace)",
+  context: "Módulo / Contexto",
+  ip: "Dirección IP",
+  userId: "ID de Usuario",
+  email: "Correo Electrónico",
+  role: "Rol de Usuario",
+  details: "Detalles del Sistema"
+};
+
+const getMetadataIcon = (key: string) => {
+  switch (key) {
+    case 'body':
+    case 'details':
+      return <Terminal className="w-3.5 h-3.5 text-indigo-400" />;
+    case 'query':
+      return <Search className="w-3.5 h-3.5 text-amber-400" />;
+    case 'userAgent':
+    case 'acceptLanguage':
+      return <Globe className="w-3.5 h-3.5 text-emerald-400" />;
+    case 'error':
+      return <AlertCircle className="w-3.5 h-3.5 text-rose-400" />;
+    case 'stack':
+      return <Bug className="w-3.5 h-3.5 text-rose-300 animate-pulse" />;
+    default:
+      return <Activity className="w-3.5 h-3.5 text-slate-400" />;
+  }
+};
+
+const renderMetadataValue = (value: any) => {
+  if (value === null || value === undefined) {
+    return <span className="text-slate-500 italic font-medium">Ninguno</span>;
+  }
+
+  if (typeof value === 'object') {
+    if (Array.isArray(value)) {
+      if (value.length === 0) return <span className="text-slate-500 italic font-medium">Lista Vacía</span>;
+      return (
+        <div className="flex flex-wrap gap-1.5 mt-1">
+          {value.map((val, idx) => (
+            <span key={idx} className="px-2 py-0.5 bg-slate-800 text-slate-300 rounded-md text-[10px] border border-white/5 font-mono">
+              {typeof val === 'object' ? JSON.stringify(val) : String(val)}
+            </span>
+          ))}
+        </div>
+      );
+    }
+
+    if (Object.keys(value).length === 0) {
+      return <span className="text-slate-500 italic font-medium">Vacío</span>;
+    }
+
+    return (
+      <pre className="bg-slate-950/70 text-indigo-300 p-3 rounded-xl text-[10px] font-mono whitespace-pre-wrap overflow-x-auto border border-white/5 max-h-[180px] custom-scrollbar mt-1 shadow-inner">
+        {JSON.stringify(value, null, 2)}
+      </pre>
+    );
+  }
+
+  if (typeof value === 'boolean') {
+    return value ? (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+        VERDADERO
+      </span>
+    ) : (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black tracking-widest bg-rose-500/10 text-rose-400 border border-rose-500/20">
+        FALSO
+      </span>
+    );
+  }
+
+  const strVal = String(value);
+  if (strVal.length > 100) {
+    return (
+      <div className="bg-slate-950/40 text-slate-300 p-3 rounded-xl text-[10px] font-mono whitespace-pre-wrap border border-white/5 max-h-[150px] overflow-y-auto custom-scrollbar mt-1">
+        {strVal}
+      </div>
+    );
+  }
+
+  return <span className="text-slate-200 font-mono font-medium break-all selection:bg-indigo-500/30">{strVal}</span>;
+};
+
+const renderMetadata = (metadata: any) => {
+  if (!metadata || typeof metadata !== 'object') {
+    return (
+      <div className="p-5 bg-slate-900 rounded-[1.5rem] border border-white/5 text-center">
+        <span className="text-slate-500 italic text-xs font-medium">Sin metadatos registrados</span>
+      </div>
+    );
+  }
+
+  const keys = Object.keys(metadata);
+  if (keys.length === 0) {
+    return (
+      <div className="p-5 bg-slate-900 rounded-[1.5rem] border border-white/5 text-center">
+        <span className="text-slate-500 italic text-xs font-medium">Sin metadatos registrados</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5 bg-slate-900 rounded-[1.5rem] border border-white/5 shadow-inner">
+      {keys.map((key) => {
+        const label = FRIENDLY_METADATA_LABELS[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+        const val = metadata[key];
+        const isSpanned = key === 'stack' || key === 'error' || (typeof val === 'object' && val !== null && Object.keys(val).length > 2) || (typeof val === 'string' && val.length > 100);
+
+        return (
+          <div 
+            key={key} 
+            className={cn(
+              "p-4 bg-slate-950/20 rounded-2xl border border-white/5 flex flex-col gap-1.5 transition-all hover:bg-slate-950/30",
+              isSpanned && "md:col-span-2"
+            )}
+          >
+            <div className="flex items-center gap-2 border-b border-white/5 pb-1.5">
+              {getMetadataIcon(key)}
+              <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-wider">{label}</span>
+            </div>
+            <div className="text-xs mt-1">
+              {renderMetadataValue(val)}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 function AdminLogsContent() {
   const searchParams = useSearchParams();
   const initialLevel = searchParams.get("level") || "";
@@ -329,9 +464,7 @@ function AdminLogsContent() {
                                         exit={{ opacity: 0, height: 0 }}
                                         className="overflow-hidden"
                                       >
-                                        <pre className="bg-slate-900 text-slate-300 p-5 rounded-[1.5rem] text-[11px] font-mono whitespace-pre-wrap overflow-x-auto max-h-[300px] shadow-inner border border-white/5 custom-scrollbar">
-                                          {JSON.stringify(log.metadata, null, 2)}
-                                        </pre>
+                                          {renderMetadata(log.metadata)}
                                       </motion.div>
                                     </td>
                                   </tr>

@@ -1,7 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as fs from 'fs';
 import * as path from 'path';
+import { spawn } from 'child_process';
+import * as zlib from 'zlib';
 
 @Injectable()
 export class MaintenanceService {
@@ -126,14 +128,80 @@ export class MaintenanceService {
   }
 
   /**
-   * Genera un volcado de la base de datos (Estructura para implementación futura)
+   * Genera un volcado comprimido de la base de datos usando pg_dump.
    */
-  backupDatabase() {
-    this.logger.log('Simulando backup de base de datos...');
-    // Aquí se integraría la lógica para pg_dump o exportación a JSON de todas las tablas
-    return {
-      message: 'Backup solicitado. En entornos de producción Neon, use la consola para snapshots exactos.',
-      timestamp: new Date().toISOString(),
-    };
+  async backupDatabase() {
+    this.logger.log('Iniciando copia de seguridad de la base de datos...');
+    const dbUrl = process.env.DATABASE_URL;
+    if (!dbUrl) {
+      this.logger.error('DATABASE_URL no está definida.');
+      throw new InternalServerErrorException('La variable de entorno DATABASE_URL no está definida.');
+    }
+
+    const backupsDir = path.join(this.uploadsPath, 'backups');
+    if (!fs.existsSync(backupsDir)) {
+      fs.mkdirSync(backupsDir, { recursive: true });
+    }
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `backup_emitesis_${timestamp}.sql.gz`;
+    const filePath = path.join(backupsDir, filename);
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        // Ejecutar pg_dump pasando la URL de conexión de forma directa
+        const pgDump = spawn('pg_dump', [dbUrl], {
+          env: { ...process.env },
+        });
+
+        const gzip = zlib.createGzip();
+        const writeStream = fs.createWriteStream(filePath);
+
+        pgDump.stdout.pipe(gzip).pipe(writeStream);
+
+        let errorMsg = '';
+        pgDump.stderr.on('data', (data) => {
+          errorMsg += data.toString();
+        });
+
+        pgDump.on('error', (err) => {
+          this.logger.error(`Error al ejecutar pg_dump: ${err.message}`);
+          reject(err);
+        });
+
+        writeStream.on('finish', () => {
+          pgDump.on('close', (code) => {
+            if (code !== 0) {
+              this.logger.error(`pg_dump falló con código ${code}: ${errorMsg}`);
+              reject(new Error(errorMsg || `pg_dump exit code ${code}`));
+            } else {
+              resolve();
+            }
+          });
+        });
+
+        writeStream.on('error', (err) => {
+          reject(err);
+        });
+      });
+
+      this.logger.log(`Copia de seguridad guardada en: ${filePath}`);
+      return {
+        message: `Copia de seguridad generada con éxito en el servidor: ${filename}`,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error: any) {
+      // Eliminar el archivo si quedó a medias
+      if (fs.existsSync(filePath)) {
+        try {
+          fs.unlinkSync(filePath);
+        } catch {}
+      }
+
+      this.logger.error(`Fallo al generar copia de seguridad: ${error.message}`);
+      throw new InternalServerErrorException(
+        `No se pudo generar la copia de seguridad. Asegúrese de que 'pg_dump' esté instalado en el sistema. Detalles: ${error.message}`,
+      );
+    }
   }
 }
