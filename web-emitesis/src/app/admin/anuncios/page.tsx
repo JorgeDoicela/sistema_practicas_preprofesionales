@@ -25,6 +25,8 @@ export default function AdminAnnouncementsPage() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [processingIds, setProcessingIds] = useState<string[]>([]);
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newType, setNewType] = useState<Announcement['type']>("INFO");
@@ -49,11 +51,12 @@ export default function AdminAnnouncementsPage() {
   }, [loadAnnouncements]);
 
   async function handleCreate() {
-    if (!newTitle || !newContent) return;
+    if (!newTitle.trim() || !newContent.trim()) return;
     try {
+      setPublishing(true);
       const res = await announcementsService.create({
-        title: newTitle,
-        content: newContent,
+        title: newTitle.trim(),
+        content: newContent.trim(),
         type: newType,
         endDate: newEndDate || undefined,
       });
@@ -66,31 +69,43 @@ export default function AdminAnnouncementsPage() {
     } catch (err) {
       console.error(err);
       toast.error(t.admin.announcements.errorCreated);
+    } finally {
+      setPublishing(false);
     }
   }
 
   async function toggleActive(id: string, current: boolean) {
+    if (processingIds.includes(id)) return;
     try {
+      setProcessingIds(prev => [...prev, id]);
       await announcementsService.update(id, { isActive: !current });
       setAnnouncements(announcements.map(a => a.id === id ? { ...a, isActive: !current } : a));
       toast.success(t.admin.announcements.successUpdated);
     } catch (err) {
       console.error(err);
       toast.error(t.admin.announcements.errorUpdated);
+    } finally {
+      setProcessingIds(prev => prev.filter(x => x !== id));
     }
   }
 
   async function handleDelete(id: string) {
+    if (processingIds.includes(id)) return;
     if (!confirm(t.admin.announcements.confirmDelete)) return;
     try {
+      setProcessingIds(prev => [...prev, id]);
       await announcementsService.remove(id);
       setAnnouncements(announcements.filter(a => a.id !== id));
       toast.success(t.admin.announcements.successDeleted);
     } catch (err) {
       console.error(err);
       toast.error(t.admin.announcements.errorDeleted);
+    } finally {
+      setProcessingIds(prev => prev.filter(x => x !== id));
     }
   }
+
+  const todayStr = new Date().toISOString().split("T")[0];
 
   return (
     <DashboardLayout>
@@ -108,8 +123,9 @@ export default function AdminAnnouncementsPage() {
             </p>
           </div>
           <button 
+            disabled={creating}
             onClick={() => setCreating(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-[#003366] text-white rounded-2xl shadow-lg hover:shadow-[#003366]/20 transition-all text-sm font-bold"
+            className="flex items-center gap-2 px-6 py-3 bg-[#003366] text-white rounded-2xl shadow-lg hover:shadow-[#003366]/20 transition-all text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Plus className="w-4 h-4" />
             {t.admin.announcements.newBtn}
@@ -132,8 +148,9 @@ export default function AdminAnnouncementsPage() {
                         <input 
                           value={newTitle}
                           onChange={e => setNewTitle(e.target.value)}
+                          disabled={publishing}
                           placeholder={t.admin.announcements.titlePlaceholder}
-                          className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-[#003366] focus:ring-2 focus:ring-[#C5A059]"
+                          className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-[#003366] focus:ring-2 focus:ring-[#C5A059] disabled:opacity-60 disabled:cursor-not-allowed"
                         />
                      </div>
                      <div className="md:col-span-2">
@@ -142,7 +159,9 @@ export default function AdminAnnouncementsPage() {
                           type="date"
                           value={newEndDate}
                           onChange={e => setNewEndDate(e.target.value)}
-                          className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-[#003366] focus:ring-2 focus:ring-[#C5A059]"
+                          min={todayStr}
+                          disabled={publishing}
+                          className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-[#003366] focus:ring-2 focus:ring-[#C5A059] disabled:opacity-60 disabled:cursor-not-allowed"
                         />
                      </div>
                   </div>
@@ -153,8 +172,9 @@ export default function AdminAnnouncementsPage() {
                             <button
                                key={tType}
                                type="button"
+                               disabled={publishing}
                                onClick={() => setNewType(tType as any)}
-                               className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                               className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-60 disabled:cursor-not-allowed ${
                                   newType === tType 
                                   ? 'bg-[#003366] text-white shadow-lg' 
                                   : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
@@ -168,16 +188,36 @@ export default function AdminAnnouncementsPage() {
                    <div>
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">{t.admin.announcements.contentLabel}</label>
                       <textarea 
-                         value={newContent}
-                         onChange={e => setNewContent(e.target.value)}
-                         rows={4}
-                         placeholder={t.admin.announcements.contentPlaceholder}
-                         className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-[#003366] focus:ring-2 focus:ring-[#C5A059]"
+                          value={newContent}
+                          onChange={e => setNewContent(e.target.value)}
+                          disabled={publishing}
+                          rows={4}
+                          placeholder={t.admin.announcements.contentPlaceholder}
+                          className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-[#003366] focus:ring-2 focus:ring-[#C5A059] disabled:opacity-60 disabled:cursor-not-allowed"
                       />
                    </div>
                   <div className="flex justify-end gap-3 mt-4">
-                     <button onClick={() => setCreating(false)} className="px-6 py-3 text-sm font-black text-slate-400 uppercase tracking-widest hover:text-slate-600">{t.admin.announcements.cancel}</button>
-                     <button onClick={handleCreate} className="px-10 py-3 bg-[#C5A059] text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-lg shadow-gold/20">{t.admin.announcements.publish}</button>
+                     <button 
+                       onClick={() => setCreating(false)} 
+                       disabled={publishing}
+                       className="px-6 py-3 text-sm font-black text-slate-400 uppercase tracking-widest hover:text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                     >
+                       {t.admin.announcements.cancel}
+                     </button>
+                     <button 
+                       onClick={handleCreate} 
+                       disabled={publishing || !newTitle.trim() || !newContent.trim()}
+                       className="px-10 py-3 bg-[#C5A059] text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-lg shadow-gold/20 hover:bg-[#b08d4b] disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                     >
+                       {publishing ? (
+                         <>
+                           <Loader2 className="w-4 h-4 animate-spin" />
+                           Publicando...
+                         </>
+                       ) : (
+                         t.admin.announcements.publish
+                       )}
+                     </button>
                   </div>
                </div>
             </motion.div>
@@ -226,25 +266,41 @@ export default function AdminAnnouncementsPage() {
                             'text-blue-700'
                          }`}>
                             {a.type}
-                         </span>
+                          </span>
                       </div>
                    </div>
                 </div>
                 
                 <div className="flex items-center gap-2">
                    <button 
+                     disabled={processingIds.includes(a.id)}
                      onClick={() => toggleActive(a.id, a.isActive)}
-                     className={`p-3 rounded-xl transition-all ${a.isActive ? 'text-emerald-500 bg-emerald-50 hover:bg-emerald-100' : 'text-slate-400 bg-slate-50 hover:bg-slate-100'}`}
+                     className={`p-3 rounded-xl transition-all ${
+                       processingIds.includes(a.id) ? 'opacity-50 cursor-not-allowed' : ''
+                     } ${a.isActive ? 'text-emerald-500 bg-emerald-50 hover:bg-emerald-100' : 'text-slate-400 bg-slate-50 hover:bg-slate-100'}`}
                      title={a.isActive ? t.admin.announcements.deactivate : t.admin.announcements.activate}
                    >
-                      {a.isActive ? <ToggleRight className="w-6 h-6" /> : <ToggleLeft className="w-6 h-6" />}
+                      {processingIds.includes(a.id) ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : a.isActive ? (
+                        <ToggleRight className="w-6 h-6" />
+                      ) : (
+                        <ToggleLeft className="w-6 h-6" />
+                      )}
                    </button>
                    <button 
+                     disabled={processingIds.includes(a.id)}
                      onClick={() => handleDelete(a.id)}
-                     className="p-3 text-rose-400 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all"
+                     className={`p-3 text-rose-400 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all ${
+                       processingIds.includes(a.id) ? 'opacity-50 cursor-not-allowed' : ''
+                     }`}
                      title={t.admin.announcements.delete}
                    >
-                      <Trash2 className="w-5 h-5" />
+                      {processingIds.includes(a.id) ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-5 h-5" />
+                      )}
                    </button>
                 </div>
               </div>

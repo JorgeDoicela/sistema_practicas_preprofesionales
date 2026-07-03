@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
+import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
 
 import { SystemLogsService } from '../system-logs/system-logs.service';
 
@@ -54,13 +55,14 @@ export class AnnouncementsService {
     });
   }
 
-  async update(id: string, dto: any) {
+  async update(id: string, dto: UpdateAnnouncementDto) {
+    const updateData: any = { ...dto };
+    if ('endDate' in dto) {
+      updateData.endDate = dto.endDate ? new Date(dto.endDate) : null;
+    }
     return this.prisma.announcement.update({
       where: { id },
-      data: {
-        ...dto,
-        endDate: dto.endDate ? new Date(dto.endDate) : undefined,
-      },
+      data: updateData,
     });
   }
 

@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, ForbiddenException, BadRequestException, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Role } from '@prisma/client';
 
@@ -10,8 +10,45 @@ export const ANONYMIZED_CONTENT = '[Contenido eliminado — solicitud de privaci
 const SELF_DELETE_WINDOW_HOURS = 24;
 
 @Injectable()
-export class ChatService {
+export class ChatService implements OnModuleInit {
   constructor(private readonly prisma: PrismaService) {}
+
+  async onModuleInit() {
+    try {
+      await this.initializePermissions();
+    } catch (err: any) {
+      console.error('[ChatService] Error al inicializar los permisos de chat:', err.message);
+    }
+  }
+
+  private async initializePermissions() {
+    const roles = Object.values(Role);
+    for (const r1 of roles) {
+      for (const r2 of roles) {
+        if (r1 === r2) continue;
+
+        let isEnabled = false;
+        if (
+          r1 === Role.ADMIN || r2 === Role.ADMIN ||
+          (r1 === Role.COORDINADOR && r2 === Role.TUTOR) || (r1 === Role.TUTOR && r2 === Role.COORDINADOR) ||
+          (r1 === Role.COORDINADOR && r2 === Role.ESTUDIANTE) || (r1 === Role.ESTUDIANTE && r2 === Role.COORDINADOR) ||
+          (r1 === Role.COORDINADOR && r2 === Role.EMPRESA) || (r1 === Role.EMPRESA && r2 === Role.COORDINADOR) ||
+          (r1 === Role.TUTOR && r2 === Role.ESTUDIANTE) || (r1 === Role.ESTUDIANTE && r2 === Role.TUTOR)
+        ) {
+          isEnabled = true;
+        }
+
+        const exists = await this.prisma.chatPermission.findUnique({
+          where: { fromRole_toRole: { fromRole: r1, toRole: r2 } },
+        });
+        if (!exists) {
+          await this.prisma.chatPermission.create({
+            data: { fromRole: r1, toRole: r2, isEnabled },
+          });
+        }
+      }
+    }
+  }
 
   // ── Permisos ──────────────────────────────────────────────────────────────
 
@@ -33,6 +70,23 @@ export class ChatService {
       create: { fromRole, toRole, isEnabled },
       update: { isEnabled },
     });
+  }
+
+  async updatePermissionsBulk(items: { fromRole: Role; toRole: Role; isEnabled: boolean }[]) {
+    return this.prisma.$transaction(
+      items.flatMap(item => [
+        this.prisma.chatPermission.upsert({
+          where: { fromRole_toRole: { fromRole: item.toRole, toRole: item.fromRole } },
+          create: { fromRole: item.toRole, toRole: item.fromRole, isEnabled: item.isEnabled },
+          update: { isEnabled: item.isEnabled },
+        }),
+        this.prisma.chatPermission.upsert({
+          where: { fromRole_toRole: { fromRole: item.fromRole, toRole: item.toRole } },
+          create: { fromRole: item.fromRole, toRole: item.toRole, isEnabled: item.isEnabled },
+          update: { isEnabled: item.isEnabled },
+        }),
+      ]),
+    );
   }
 
   async canRolesCommunicate(roleA: Role, roleB: Role): Promise<boolean> {

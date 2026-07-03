@@ -212,7 +212,11 @@ export default function UsuariosManagementPage() {
     setError(null);
     try {
       if (editingUser) {
-        await usersService.update(editingUser.id, form);
+        const updateData = { ...form };
+        if (!updateData.password || !updateData.password.trim()) {
+          delete updateData.password;
+        }
+        await usersService.update(editingUser.id, updateData);
         toast.success(t.admin.users.toastUpdateSuccess);
       } else {
         await usersService.create(form);
@@ -299,30 +303,32 @@ export default function UsuariosManagementPage() {
             <p className="text-slate-500 mt-2 font-medium">{t.admin.users.subtitle}</p>
           </div>
           
-          <div className="flex flex-wrap items-center gap-3 md:gap-4" data-tour="users-new">
-            <div className="relative">
-              <input 
-                type="file" 
-                className="absolute inset-0 opacity-0 cursor-pointer" 
-                accept=".xlsx, .xls"
-                onChange={handleBulkUpload}
-                disabled={isBulkLoading}
-              />
+          {currentUser?.role === 'ADMIN' && (
+            <div className="flex flex-wrap items-center gap-3 md:gap-4" data-tour="users-new">
+              <div className="relative">
+                <input 
+                  type="file" 
+                  className="absolute inset-0 opacity-0 cursor-pointer" 
+                  accept=".xlsx, .xls"
+                  onChange={handleBulkUpload}
+                  disabled={isBulkLoading}
+                />
+                <button 
+                  className="flex items-center gap-3 bg-white text-[#003366] px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all border border-slate-100 shadow-sm"
+                >
+                  {isBulkLoading ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} className="text-[#C5A059]" />}
+                  {t.admin.users.bulkUpload}
+                </button>
+              </div>
+
               <button 
-                className="flex items-center gap-3 bg-white text-[#003366] px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all border border-slate-100 shadow-sm"
+                onClick={() => handleOpenModal()}
+                className="flex items-center gap-3 bg-[#003366] text-white px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-blue-900/20 hover:translate-y-[-2px] transition-all"
               >
-                {isBulkLoading ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} className="text-[#C5A059]" />}
-                {t.admin.users.bulkUpload}
+                <Plus size={18} /> {t.admin.users.newUser}
               </button>
             </div>
-
-            <button 
-              onClick={() => handleOpenModal()}
-              className="flex items-center gap-3 bg-[#003366] text-white px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-blue-900/20 hover:translate-y-[-2px] transition-all"
-            >
-              <Plus size={18} /> {t.admin.users.newUser}
-            </button>
-          </div>
+          )}
         </div>
 
         {/* Search & Advanced Filters panel */}
@@ -452,7 +458,9 @@ export default function UsuariosManagementPage() {
                   <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400">{t.admin.users.table.role}</th>
                   <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400">{t.admin.users.table.status}</th>
                   <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400">{t.admin.users.table.registration}</th>
-                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-right text-slate-400">{t.admin.users.table.actions}</th>
+                  {currentUser?.role === 'ADMIN' && (
+                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-right text-slate-400">{t.admin.users.table.actions}</th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -499,31 +507,33 @@ export default function UsuariosManagementPage() {
                       <td className="px-8 py-5 text-[11px] text-slate-500 font-medium">
                         {new Date(user.createdAt).toLocaleDateString()}
                       </td>
-                      <td className="px-8 py-5">
-                        <div className="flex items-center justify-end gap-2">
-                           <button 
-                            onClick={() => handleToggleStatus(user)}
-                            title={user.isActive ? t.common.inactive : t.common.active}
-                            className={`p-2 rounded-xl transition-all ${user.isActive ? 'text-amber-500 hover:bg-amber-50' : 'text-emerald-500 hover:bg-emerald-50'}`}
-                           >
-                             {user.isActive ? <UserX size={18} /> : <UserCheck size={18} />}
-                           </button>
-                           <button 
-                            onClick={() => handleOpenModal(user)}
-                            title={t.common.edit}
-                            className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
-                           >
-                             <Edit size={18} />
-                           </button>
-                           <button 
-                            onClick={() => handleDelete(user.id)}
-                            title={t.common.delete}
-                            className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                           >
-                             <Trash2 size={18} />
-                           </button>
-                        </div>
-                      </td>
+                      {currentUser?.role === 'ADMIN' && (
+                        <td className="px-8 py-5">
+                          <div className="flex items-center justify-end gap-2">
+                             <button 
+                              onClick={() => handleToggleStatus(user)}
+                              title={user.isActive ? t.common.inactive : t.common.active}
+                              className={`p-2 rounded-xl transition-all ${user.isActive ? 'text-amber-500 hover:bg-amber-50' : 'text-emerald-500 hover:bg-emerald-50'}`}
+                             >
+                               {user.isActive ? <UserX size={18} /> : <UserCheck size={18} />}
+                             </button>
+                             <button 
+                              onClick={() => handleOpenModal(user)}
+                              title={t.common.edit}
+                              className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
+                             >
+                               <Edit size={18} />
+                             </button>
+                             <button 
+                              onClick={() => handleDelete(user.id)}
+                              title={t.common.delete}
+                              className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                             >
+                               <Trash2 size={18} />
+                             </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))
                 )}

@@ -1,4 +1,5 @@
-import { IsString, IsNotEmpty, IsOptional, IsInt, Min, Max } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsInt, Min, Max, IsEnum } from 'class-validator';
+import { Modalidad } from '@prisma/client';
 
 export class CreateCareerDto {
   @IsString()
@@ -10,8 +11,8 @@ export class CreateCareerDto {
   faculty?: string;
 
   @IsOptional()
-  @IsString()
-  modalidad?: string;
+  @IsEnum(Modalidad)
+  modalidad?: Modalidad;
 
   @IsOptional()
   @IsInt()
@@ -30,8 +31,8 @@ export class UpdateCareerDto {
   faculty?: string;
 
   @IsOptional()
-  @IsString()
-  modalidad?: string;
+  @IsEnum(Modalidad)
+  modalidad?: Modalidad;
 
   @IsOptional()
   @IsInt()

@@ -74,7 +74,9 @@ export default function AdminHealthPage() {
       const res = await maintenanceService.cleanupOrphanedFiles();
       setResult({ 
         type: "success", 
-        text: t.admin.health.cleanupSuccess.replace('{count}', String(res.deletedCount)).replace('{size}', String(res.reclaimedMb))
+        text: t.admin.health.cleanupSuccess
+          .replace('{count}', String(res?.deletedCount ?? 0))
+          .replace('{size}', String(res?.reclaimedMb ?? 0))
       });
       setTimeout(() => setResult(null), 5000);
     } catch (err) {

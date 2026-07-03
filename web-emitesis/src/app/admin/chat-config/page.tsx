@@ -254,16 +254,10 @@ export default function ChatConfigPage() {
     setTimeout(() => setToast(null), 3500);
   };
 
-  const getToken = () => localStorage.getItem("token") ?? "";
-
   const fetchPermissions = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/chat/permissions`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error();
-      const data: ChatPermission[] = await res.json();
+      const data = await chatConfigService.getPermissions() as unknown as ChatPermission[];
       setPermissions(data);
     } catch {
       showToast("error", t.common.error);
@@ -275,16 +269,10 @@ export default function ChatConfigPage() {
   useEffect(() => {
     fetchPermissions();
     // Cargar configuración de retención actual
-    fetch(`${API_URL}/settings/chat_message_retention_days`, {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data?.value) {
-          const days = parseInt(data.value, 10) || 730;
-          setRetentionDays(days);
-          setRetentionInput(String(days));
-        }
+    chatConfigService.getRetentionDays()
+      .then(days => {
+        setRetentionDays(days);
+        setRetentionInput(String(days));
       })
       .catch(() => {});
   }, [fetchPermissions]);
@@ -293,12 +281,7 @@ export default function ChatConfigPage() {
     const key = pairKey(fromRole, toRole);
     setToggling(key);
     try {
-      const res = await fetch(`${API_URL}/chat/permissions`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ fromRole, toRole, isEnabled: !current }),
-      });
-      if (!res.ok) throw new Error();
+      await chatConfigService.updatePermission(fromRole, toRole, !current);
       setPermissions(prev =>
         prev.map(p => {
           const same = p.fromRole === fromRole && p.toRole === toRole;
@@ -317,6 +300,28 @@ export default function ChatConfigPage() {
     }
   }, [ROLE_META, t.chatConfig.title]);
 
+  const handleToggleBulk = useCallback(async (items: { fromRole: Role; toRole: Role; isEnabled: boolean }[]) => {
+    setLoading(true);
+    try {
+      await chatConfigService.updatePermissionsBulk(items);
+      setPermissions(prev =>
+        prev.map(p => {
+          const match = items.find(
+            item =>
+              (item.fromRole === p.fromRole && item.toRole === p.toRole) ||
+              (item.fromRole === p.toRole && item.toRole === p.fromRole)
+          );
+          return match ? { ...p, isEnabled: match.isEnabled } : p;
+        })
+      );
+      showToast("success", "Permisos actualizados correctamente.");
+    } catch {
+      showToast("error", "Error al actualizar los permisos.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   // Pares únicos para la tabla
   const handleSaveRetention = async () => {
     const days = parseInt(retentionInput, 10);
@@ -326,12 +331,7 @@ export default function ChatConfigPage() {
     }
     setSavingRetention(true);
     try {
-      const res = await fetch(`${API_URL}/settings/chat_message_retention_days`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ value: String(days) }),
-      });
-      if (!res.ok) throw new Error();
+      await chatConfigService.updateRetentionDays(days);
       setRetentionDays(days);
       showToast("success", `${t.chatConfig.retention.current}: ${days} ${t.chatConfig.retention.days}.`);
     } catch {
@@ -518,6 +518,7 @@ export default function ChatConfigPage() {
                 targetPairs={preset.pairs}
                 currentPairs={pairs}
                 onApply={handleToggle}
+                onApplyBulk={handleToggleBulk}
                 disableAll={preset.pairs.length === 0}
               />
             ))}
@@ -639,6 +640,7 @@ function PresetButton({
   targetPairs,
   currentPairs,
   onApply,
+  onApplyBulk,
   disableAll = false,
 }: {
   label: string;
@@ -647,31 +649,42 @@ function PresetButton({
   targetPairs: [Role, Role][];
   currentPairs: { fromRole: Role; toRole: Role; isEnabled: boolean }[];
   onApply: (fromRole: Role, toRole: Role, current: boolean) => Promise<void>;
+  onApplyBulk: (items: { fromRole: Role; toRole: Role; isEnabled: boolean }[]) => Promise<void>;
   disableAll?: boolean;
 }) {
   const [loading, setLoading] = useState(false);
 
   const handleClick = async () => {
     setLoading(true);
-    if (disableAll) {
-      // Deshabilitar todos
-      for (const p of currentPairs) {
-        if (p.isEnabled) await onApply(p.fromRole, p.toRole, true);
-      }
-    } else {
-      // Habilitar los pares del preset que estén desactivados
-      for (const [a, b] of targetPairs) {
-        const existing = currentPairs.find(
-          p =>
-            (p.fromRole === a && p.toRole === b) ||
-            (p.fromRole === b && p.toRole === a),
-        );
-        if (existing && !existing.isEnabled) {
-          await onApply(existing.fromRole, existing.toRole, false);
+    try {
+      if (disableAll) {
+        const toDisable = currentPairs
+          .filter(p => p.isEnabled)
+          .map(p => ({ fromRole: p.fromRole, toRole: p.toRole, isEnabled: false }));
+        if (toDisable.length > 0) {
+          await onApplyBulk(toDisable);
+        }
+      } else {
+        const toEnable: { fromRole: Role; toRole: Role; isEnabled: boolean }[] = [];
+        for (const [a, b] of targetPairs) {
+          const existing = currentPairs.find(
+            p =>
+              (p.fromRole === a && p.toRole === b) ||
+              (p.fromRole === b && p.toRole === a),
+          );
+          if (existing && !existing.isEnabled) {
+            toEnable.push({ fromRole: existing.fromRole, toRole: existing.toRole, isEnabled: true });
+          }
+        }
+        if (toEnable.length > 0) {
+          await onApplyBulk(toEnable);
         }
       }
+    } catch {
+      // toast manejado por callback padre
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

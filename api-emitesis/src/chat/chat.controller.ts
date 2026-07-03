@@ -38,8 +38,11 @@ export class ChatController {
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Activar o desactivar chat entre un par de roles (solo ADMIN)' })
   updatePermission(
-    @Body() body: { fromRole: Role; toRole: Role; isEnabled: boolean },
+    @Body() body: any,
   ) {
+    if (Array.isArray(body)) {
+      return this.chatService.updatePermissionsBulk(body);
+    }
     return this.chatService.updatePermission(body.fromRole, body.toRole, body.isEnabled);
   }
 

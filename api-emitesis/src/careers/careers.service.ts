@@ -37,7 +37,7 @@ export class CareersService {
         },
       },
     });
-    if (existing) throw new ConflictException('Ya existe una carrera con ese nombre');
+    if (existing) throw new ConflictException('Ya existe una carrera con ese nombre y modalidad');
 
     return this.prisma.career.create({
       data: {
@@ -50,14 +50,32 @@ export class CareersService {
   }
 
   async update(id: string, dto: UpdateCareerDto) {
-    await this.findOne(id);
+    const current = await this.findOne(id);
 
     const updateData: Record<string, any> = {};
     if (dto.name !== undefined) updateData.name = dto.name;
     if (dto.faculty !== undefined) updateData.faculty = dto.faculty;
     if (dto.modalidad !== undefined) updateData.modalidad = dto.modalidad;
+
+    if (dto.name !== undefined || dto.modalidad !== undefined) {
+      const nameToCheck = dto.name ?? current.name;
+      const modalityToCheck = (dto.modalidad as any) ?? current.modalidad;
+
+      const existing = await this.prisma.career.findFirst({
+        where: {
+          name: nameToCheck,
+          modalidad: modalityToCheck,
+          id: { not: id },
+        },
+      });
+      if (existing) {
+        throw new ConflictException('Ya existe una carrera con ese nombre y modalidad');
+      }
+    }
+
     if (dto.requiredHours !== undefined) {
-      updateData.config = { requiredHours: dto.requiredHours };
+      const currentConfig = typeof current.config === 'object' ? (current.config as Record<string, any>) : {};
+      updateData.config = { ...currentConfig, requiredHours: dto.requiredHours };
     }
 
     return this.prisma.career.update({ where: { id }, data: updateData });
@@ -66,14 +84,22 @@ export class CareersService {
   async remove(id: string) {
     const career = await this.prisma.career.findUnique({
       where: { id },
-      include: { _count: { select: { internships: true } } },
+      include: { _count: { select: { internships: true, users: true } } },
     });
     if (!career) throw new NotFoundException('Carrera no encontrada');
+    
     if (career._count.internships > 0) {
       throw new ConflictException(
         `No se puede eliminar: hay ${career._count.internships} prácticas asociadas a esta carrera.`,
       );
     }
+
+    if (career._count.users > 0) {
+      throw new ConflictException(
+        `No se puede eliminar: hay ${career._count.users} usuarios asociados a esta carrera.`,
+      );
+    }
+
     return this.prisma.career.delete({ where: { id } });
   }
 }

@@ -29,6 +29,20 @@ export class UsersService {
       throw new ConflictException('El correo electrónico ya está registrado');
     }
 
+    const cleanCedula = dto.cedula?.trim() || null;
+    if (cleanCedula) {
+      const existingCedula = await this.prisma.user.findUnique({
+        where: { cedula: cleanCedula },
+      });
+      if (existingCedula) {
+        throw new ConflictException('La cédula ya está registrada');
+      }
+    }
+
+    if (dto.role === Role.COORDINADOR) {
+      await this.ensureSingleActiveCoordinator('', Role.COORDINADOR, true);
+    }
+
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
     const user = await this.prisma.user.create({
@@ -39,6 +53,9 @@ export class UsersService {
         role: dto.role,
         companyId: dto.companyId ?? null,
         careerId: dto.careerId ?? null,
+        cedula: cleanCedula,
+        phone: dto.phone?.trim() || null,
+        ciclo: dto.ciclo?.trim() || null,
       },
       select: {
         id: true,
@@ -47,6 +64,9 @@ export class UsersService {
         role: true,
         isActive: true,
         createdAt: true,
+        cedula: true,
+        phone: true,
+        ciclo: true,
       },
     });
 
@@ -98,6 +118,13 @@ export class UsersService {
           lopdpAcceptedAt: true,
           lopdpVersion: true,
           createdAt: true,
+          cedula: true,
+          phone: true,
+          ciclo: true,
+          careerId: true,
+          companyId: true,
+          career: { select: { id: true, name: true } },
+          company: { select: { id: true, name: true } },
         },
       }),
       this.prisma.user.count({ where }),
@@ -148,7 +175,13 @@ export class UsersService {
         isActive: true,
         createdAt: true,
         careerId: true,
+        companyId: true,
+        cedula: true,
+        phone: true,
+        ciclo: true,
+        isTwoFactorEnabled: true,
         career: { select: { id: true, name: true } },
+        company: { select: { id: true, name: true } },
       },
     });
 
@@ -211,6 +244,16 @@ export class UsersService {
       }
     }
 
+    const cleanCedula = dto.cedula !== undefined ? (dto.cedula?.trim() || null) : user.cedula;
+    if (cleanCedula && cleanCedula !== user.cedula) {
+      const existingCedula = await this.prisma.user.findUnique({
+        where: { cedula: cleanCedula },
+      });
+      if (existingCedula) {
+        throw new ConflictException('La cédula ya está registrada');
+      }
+    }
+
     if (id === currentUserId && dto.isActive === false) {
       throw new ForbiddenException('El administrador no puede inhabilitarse a sí mismo');
     }
@@ -234,6 +277,10 @@ export class UsersService {
       role: dto.role ?? user.role,
       isActive: dto.isActive ?? user.isActive,
       careerId: dto.careerId !== undefined ? dto.careerId : user.careerId,
+      companyId: dto.companyId !== undefined ? dto.companyId : user.companyId,
+      cedula: cleanCedula,
+      phone: dto.phone !== undefined ? (dto.phone?.trim() || null) : user.phone,
+      ciclo: dto.ciclo !== undefined ? (dto.ciclo?.trim() || null) : user.ciclo,
     };
 
     if (dto.password) {
@@ -250,6 +297,9 @@ export class UsersService {
         role: true,
         isActive: true,
         createdAt: true,
+        cedula: true,
+        phone: true,
+        ciclo: true,
       },
     });
 

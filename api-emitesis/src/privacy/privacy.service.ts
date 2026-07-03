@@ -155,6 +155,15 @@ export class PrivacyService {
       where: { id: requestId },
     });
 
+    if (!request) {
+      throw new NotFoundException('Solicitud ARCO no encontrada.');
+    }
+
+    const validStatuses = ['PENDIENTE', 'EN_REVISION', 'COMPLETADA', 'RECHAZADA'];
+    if (!validStatuses.includes(status)) {
+      throw new BadRequestException('Estado de solicitud no válido.');
+    }
+
     const updated = await this.prisma.dataRequest.update({
       where: { id: requestId },
       data: { response, status, updatedAt: new Date() },
@@ -164,7 +173,6 @@ export class PrivacyService {
     // RF-LOPDP Art. 22: si se aprueba una solicitud de CANCELACION,
     // anonimizar automáticamente los mensajes de chat del usuario.
     if (
-      request &&
       request.type === 'CANCELACION' &&
       status === 'COMPLETADA'
     ) {

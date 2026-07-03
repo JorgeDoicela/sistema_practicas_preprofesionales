@@ -58,7 +58,7 @@ export default function LopdpLogsPage() {
   const filteredLogs = logs.filter(log => 
     log.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     log.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    log.ip.toLowerCase().includes(searchTerm.toLowerCase())
+    (log.ip || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -184,11 +184,11 @@ export default function LopdpLogsPage() {
                   <td className="px-8 py-6 text-right">
                     <span className={cn(
                       "text-[9px] font-black uppercase tracking-widest",
-                      log.user.role === 'ADMIN' ? "text-purple-600" :
-                      log.user.role === 'COORDINADOR' ? "text-blue-600" :
+                      log.user?.role === 'ADMIN' ? "text-purple-600" :
+                      log.user?.role === 'COORDINADOR' ? "text-blue-600" :
                       "text-slate-600"
                     )}>
-                      {log.user.role}
+                      {log.user?.role || 'ESTUDIANTE'}
                     </span>
                   </td>
                 </motion.tr>

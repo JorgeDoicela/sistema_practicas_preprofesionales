@@ -6,6 +6,7 @@ import { RolesGuard } from '../auth/strategies/roles.guard';
 import { Roles } from '../auth/strategies/roles.decorator';
 import { AnnouncementsService } from './announcements.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
+import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
 
 @ApiTags('Announcements')
 @Controller('announcements')
@@ -36,7 +37,7 @@ export class AnnouncementsController {
   @Patch(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Actualizar un anuncio' })
-  update(@Param('id') id: string, @Body() updateDto: any) {
+  update(@Param('id') id: string, @Body() updateDto: UpdateAnnouncementDto) {
     return this.announcementsService.update(id, updateDto);
   }
 

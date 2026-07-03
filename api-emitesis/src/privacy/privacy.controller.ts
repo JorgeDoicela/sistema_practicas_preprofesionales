@@ -3,7 +3,7 @@ import { Role } from '@prisma/client';
 import { Roles } from '../auth/strategies/roles.decorator';
 import { RolesGuard } from '../auth/strategies/roles.guard';
 import { PrivacyService } from './privacy.service';
-import { PrivacyConsentDto, ArcoRequestDto } from './dto/privacy-actions.dto';
+import { PrivacyConsentDto, ArcoRequestDto, RespondToArcoRequestDto } from './dto/privacy-actions.dto';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
 
 @Controller('privacy')
@@ -54,8 +54,8 @@ export class PrivacyController {
   @Roles(Role.ADMIN, Role.COORDINADOR)
   respondAdmin(
     @Param('id') id: string,
-    @Body() body: { response: string; status: string }
+    @Body() dto: RespondToArcoRequestDto
   ) {
-    return this.privacyService.respondToRequest(id, body.response, body.status);
+    return this.privacyService.respondToRequest(id, dto.response, dto.status);
   }
 }

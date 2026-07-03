@@ -25,6 +25,7 @@ export class UpdateUserDto {
 
   @IsOptional()
   @SanitizePasswordField()
+  @Transform(({ value }) => (value === '' || value === null ? undefined : value))
   @MaxLength(128)
   @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
   password?: string;
@@ -44,30 +45,33 @@ export class UpdateUserDto {
   isActive?: boolean;
 
   @IsOptional()
-  @Transform(({ value }) => (value === '' || value === null ? undefined : value))
+  @Transform(({ value }) => (value === '' ? null : value))
   @IsUUID('4')
-  companyId?: string;
+  companyId?: string | null;
 
   @IsOptional()
-  @Transform(({ value }) => (value === '' || value === null ? undefined : value))
+  @Transform(({ value }) => (value === '' ? null : value))
   @IsUUID('4')
-  careerId?: string;
+  careerId?: string | null;
 
   @IsOptional()
   @StripControlChars()
+  @Transform(({ value }) => (value === '' ? null : value))
   @MaxLength(10)
   @IsString()
-  cedula?: string;
+  cedula?: string | null;
 
   @IsOptional()
   @StripControlChars()
+  @Transform(({ value }) => (value === '' ? null : value))
   @MaxLength(20)
   @IsString()
-  phone?: string;
+  phone?: string | null;
 
   @IsOptional()
   @StripControlChars()
+  @Transform(({ value }) => (value === '' ? null : value))
   @MaxLength(50)
   @IsString()
-  ciclo?: string;
+  ciclo?: string | null;
 }

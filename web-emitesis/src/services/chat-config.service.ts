@@ -36,6 +36,41 @@ class ChatConfigService {
     });
     if (!res.ok) throw new Error("Failed to update chat permission");
   }
+
+  async updatePermissionsBulk(items: { fromRole: string; toRole: string; isEnabled: boolean }[]): Promise<void> {
+    const res = await fetch(`${API_URL}/chat/permissions`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.getToken()}`,
+      },
+      body: JSON.stringify(items),
+    });
+    if (!res.ok) throw new Error("Failed to update bulk chat permissions");
+  }
+
+  async getRetentionDays(): Promise<number> {
+    const res = await fetch(`${API_URL}/settings/chat_message_retention_days`, {
+      headers: {
+        Authorization: `Bearer ${this.getToken()}`,
+      },
+    });
+    if (!res.ok) throw new Error("Failed to fetch retention days");
+    const data = await res.json();
+    return parseInt(data?.value, 10) || 730;
+  }
+
+  async updateRetentionDays(days: number): Promise<void> {
+    const res = await fetch(`${API_URL}/settings/chat_message_retention_days`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.getToken()}`,
+      },
+      body: JSON.stringify({ value: String(days) }),
+    });
+    if (!res.ok) throw new Error("Failed to update retention days");
+  }
 }
 
 export const chatConfigService = new ChatConfigService();

@@ -20,7 +20,7 @@ export class MaintenanceService {
     let deletedCount = 0;
     let totalSize = 0;
 
-    const directories = ['documents', 'agreements', 'templates', 'photos'];
+    const directories = ['documents', 'agreements', 'templates', 'photos', 'absences'];
     
     // Obtener todos los archivos referenciados en la BD de TODAS las tablas que manejan archivos
     const [
@@ -31,7 +31,8 @@ export class MaintenanceService {
       attendances2, 
       activityPhotos, 
       monitoring, 
-      templates
+      templates,
+      absences
     ] = await Promise.all([
       this.prisma.document.findMany({ select: { filePath: true }, where: { filePath: { not: null } } }),
       this.prisma.documentVersion.findMany({ select: { filePath: true } }),
@@ -41,6 +42,7 @@ export class MaintenanceService {
       this.prisma.activityPhoto.findMany({ select: { photoUrl: true } }),
       this.prisma.monitoringVisit.findMany({ select: { evidenceUrl: true }, where: { evidenceUrl: { not: null } } }),
       this.prisma.documentTemplate.findMany({ select: { blankFileKey: true }, where: { blankFileKey: { not: null } } }),
+      this.prisma.absence.findMany({ select: { filePath: true }, where: { filePath: { not: null } } }),
     ]);
 
     const referencedFiles = new Set<string>();
@@ -77,6 +79,7 @@ export class MaintenanceService {
     activityPhotos.forEach(p => addPath(p.photoUrl));
     monitoring.forEach(m => addPath(m.evidenceUrl));
     templates.forEach(t => addPath(t.blankFileKey, true));
+    absences.forEach(a => addPath(a.filePath));
 
     for (const dir of directories) {
       const dirPath = path.join(this.uploadsPath, dir);
@@ -103,6 +106,7 @@ export class MaintenanceService {
     }
 
     return {
+      success: true,
       deletedCount,
       reclaimedBytes: totalSize,
       reclaimedMb: Number((totalSize / (1024 * 1024)).toFixed(2)),
@@ -187,6 +191,7 @@ export class MaintenanceService {
 
       this.logger.log(`Copia de seguridad guardada en: ${filePath}`);
       return {
+        success: true,
         message: `Copia de seguridad generada con éxito en el servidor: ${filename}`,
         timestamp: new Date().toISOString(),
       };

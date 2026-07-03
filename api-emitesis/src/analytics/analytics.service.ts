@@ -18,10 +18,17 @@ export class AnalyticsService {
     ]);
 
     // Obtener distribución de roles
-    const rolesDistribution = await this.prisma.user.groupBy({
+    const rolesDistributionRaw = await this.prisma.user.groupBy({
       by: ['role'],
-      _count: true,
+      _count: {
+        id: true,
+      },
     });
+
+    const rolesDistribution = rolesDistributionRaw.map((item) => ({
+      role: item.role,
+      _count: item._count.id,
+    }));
 
     // Obtener promedio de tiempo de respuesta (últimos 1000 logs)
     const recentLogs = await this.prisma.systemLog.findMany({

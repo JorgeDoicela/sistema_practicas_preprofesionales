@@ -16,3 +16,11 @@ export class ArcoRequestDto {
     @IsOptional()
     details?: string;
 }
+
+export class RespondToArcoRequestDto {
+    @IsString()
+    response: string;
+
+    @IsEnum(['PENDIENTE', 'EN_REVISION', 'COMPLETADA', 'RECHAZADA'])
+    status: string;
+}

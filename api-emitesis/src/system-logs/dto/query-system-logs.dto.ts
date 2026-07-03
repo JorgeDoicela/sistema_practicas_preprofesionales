@@ -22,6 +22,6 @@ export class QuerySystemLogsDto {
 
   @IsOptional()
   @IsString()
-  @IsIn(['HTTP', 'AUTH', 'SYSTEM'])
+  @IsIn(['HTTP', 'AUTH', 'SYSTEM', 'PRIVACY'])
   category?: string;
 }

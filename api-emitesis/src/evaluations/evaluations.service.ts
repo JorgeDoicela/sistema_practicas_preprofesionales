@@ -13,6 +13,10 @@ export class EvaluationsService {
   ) {}
 
   async createOrUpdate(dto: CreateEvaluationDto, actor?: { id: string; role: string; companyId?: string | null }) {
+    if (!actor || !actor.id) {
+      throw new ForbiddenException('No se ha proporcionado un evaluador autenticado válido.');
+    }
+
     const { internshipId, ...data } = dto;
 
     // Verificar que el internship existe
@@ -25,7 +29,7 @@ export class EvaluationsService {
       throw new NotFoundException('Internship no encontrado');
     }
 
-    if (actor?.role === 'EMPRESA') {
+    if (actor.role === 'EMPRESA') {
       if (data.type !== 'EMPRESARIAL') {
         throw new ForbiddenException('La empresa solo puede registrar evaluaciones empresariales.');
       }
@@ -34,7 +38,7 @@ export class EvaluationsService {
       }
     }
 
-    if (actor?.role === 'TUTOR' && internship.tutorId !== actor.id) {
+    if (actor.role === 'TUTOR' && internship.tutorId !== actor.id) {
       throw new ForbiddenException('Solo el tutor académico asignado puede evaluar esta práctica.');
     }
 

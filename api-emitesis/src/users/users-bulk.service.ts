@@ -90,6 +90,17 @@ export class UsersBulkService {
           continue;
         }
 
+        if (userData.role === Role.COORDINADOR) {
+          const activeCoord = await this.prisma.user.findFirst({
+            where: { role: Role.COORDINADOR, isActive: true }
+          });
+          if (activeCoord) {
+            errors.push(`Fila con email ${userData.email}: Ya existe un Coordinador de Prácticas activo. No se puede crear otro.`);
+            skippedCount++;
+            continue;
+          }
+        }
+
         await this.prisma.user.create({ data: userData });
         createdCount++;
       } catch (error) {

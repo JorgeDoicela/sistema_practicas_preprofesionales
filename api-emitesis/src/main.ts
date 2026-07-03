@@ -112,6 +112,7 @@ async function bootstrap() {
   );
 
   app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalInterceptors(new TransformInterceptor());
   app.enableShutdownHooks();
 
   const port = process.env.PORT ?? 5000;

@@ -79,7 +79,11 @@ export default function CarrerasAdminPage() {
       setIsModalOpen(false);
       loadCareers();
     } catch (err: any) {
-      setError(err.message || t.common.error);
+      const apiMessage = err.response?.data?.message;
+      const formattedError = Array.isArray(apiMessage)
+        ? apiMessage.join(", ")
+        : (apiMessage || err.message || t.common.error);
+      setError(formattedError);
     } finally {
       setSaving(false);
     }
@@ -93,7 +97,11 @@ export default function CarrerasAdminPage() {
       toast.success(t.admin.careers.deleteSuccess);
       loadCareers();
     } catch (err: any) {
-      toast.error(err.message || t.common.error);
+      const apiMessage = err.response?.data?.message;
+      const formattedError = Array.isArray(apiMessage)
+        ? apiMessage.join(", ")
+        : (apiMessage || err.message || t.common.error);
+      toast.error(formattedError);
     } finally {
       setDeleting(null);
     }

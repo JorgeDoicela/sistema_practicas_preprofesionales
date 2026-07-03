@@ -59,6 +59,9 @@ type InternshipRow = {
   attendances?: Array<{ id: string; checkIn: string; checkOut?: string | null }>;
   testEnabled?: boolean;
   evaluations?: any[];
+  modalidad?: string;
+  startDate?: string | Date;
+  endDate?: string | Date | null;
 };
 
 function countDocsByStatus(docs: Array<{ status?: string }> | undefined, st: string) {
@@ -827,16 +830,26 @@ export function DashboardMain() {
                         <p className="text-sm font-black text-brand-blue">{internships[0]?.company?.name || "ISTPET"}</p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Área / Departamento</p>
-                        <p className="text-sm font-black text-brand-blue">Área Técnica</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Modalidad de práctica</p>
+                        <p className="text-sm font-black text-brand-blue uppercase tracking-wider text-xs">
+                          {internships[0]?.modalidad || "—"}
+                        </p>
                       </div>
                       <div className="space-y-1">
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.dashboard.startDate}</p>
-                        <p className="text-sm font-black text-brand-blue">---</p>
+                        <p className="text-sm font-black text-brand-blue">
+                          {internships[0]?.startDate 
+                            ? new Date(internships[0].startDate).toLocaleDateString(locale === 'es' ? 'es-EC' : 'en-US') 
+                            : '---'}
+                        </p>
                       </div>
                       <div className="space-y-1">
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fin estimado</p>
-                        <p className="text-sm font-black text-brand-blue">---</p>
+                        <p className="text-sm font-black text-brand-blue">
+                          {internships[0]?.endDate 
+                            ? new Date(internships[0].endDate).toLocaleDateString(locale === 'es' ? 'es-EC' : 'en-US') 
+                            : '---'}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -845,10 +858,15 @@ export function DashboardMain() {
                     <div className="flex-1 w-full">
                        <div className="flex items-center justify-between mb-2">
                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Progreso general</p>
-                         <span className="text-sm font-black text-brand-gold">65%</span>
+                         <span className="text-sm font-black text-brand-gold">
+                           {attendanceSummary?.progressPercentage ?? 0}%
+                         </span>
                        </div>
                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                         <div className="h-full bg-brand-gold rounded-full" style={{ width: '65%' }} />
+                         <div 
+                           className="h-full bg-brand-gold rounded-full transition-all duration-500" 
+                           style={{ width: `${attendanceSummary?.progressPercentage ?? 0}%` }} 
+                         />
                        </div>
                     </div>
                     <Link 
@@ -869,26 +887,43 @@ export function DashboardMain() {
                   <h3 className="text-lg font-black text-brand-blue uppercase tracking-tight">Próximos trámites</h3>
                 </div>
                 <div className="space-y-4">
-                  {[
-                    { label: 'Informe de actividades', date: 'Entrega antes del 25/06/2024' },
-                    { label: 'Evaluación de la entidad', date: 'Entrega antes del 30/06/2024' },
-                    { label: 'Plan de trabajo', date: 'Entrega antes del 05/07/2024' }
-                  ].map((task, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-50">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 flex items-center justify-center text-slate-400 shrink-0">
-                          <FileText className="w-5 h-5" />
+                  {(() => {
+                    const pendingDocs = (internships[0]?.documents ?? [])
+                      .filter((d: any) => d.status === 'PENDIENTE' || d.status === 'RECHAZADO')
+                      .slice(0, 3);
+                    
+                    if (pendingDocs.length === 0) {
+                      return (
+                        <p className="text-center text-xs text-slate-500 font-medium py-8">
+                          ¡Estás al día! No tienes trámites pendientes de entrega.
+                        </p>
+                      );
+                    }
+
+                    return pendingDocs.map((doc: any) => (
+                      <div key={doc.id} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-50">
+                        <div className="flex items-center gap-3 animate-fade-in">
+                          <div className="w-8 h-8 flex items-center justify-center text-slate-400 shrink-0">
+                            <FileText className="w-5 h-5" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[11px] font-black text-brand-blue uppercase tracking-tight truncate">{doc.name}</p>
+                            <p className="text-[9px] font-medium text-slate-400">
+                              {doc.dueDate 
+                                ? `Límite: ${new Date(doc.dueDate).toLocaleDateString(locale === 'es' ? 'es-EC' : 'en-US')}` 
+                                : 'Sin fecha límite'}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-[11px] font-black text-brand-blue uppercase tracking-tight">{task.label}</p>
-                          <p className="text-[9px] font-medium text-slate-400">{task.date}</p>
-                        </div>
+                        <span className={cn(
+                          "text-[9px] font-black uppercase tracking-widest shrink-0 ml-2",
+                          doc.status === 'RECHAZADO' ? "text-rose-500" : "text-brand-gold"
+                        )}>
+                          {doc.status === 'RECHAZADO' ? 'Rechazado' : 'Pendiente'}
+                        </span>
                       </div>
-                      <span className="text-[9px] font-black uppercase tracking-widest text-brand-gold">
-                        Pendiente
-                      </span>
-                    </div>
-                  ))}
+                    ));
+                  })()}
                 </div>
                 <Link 
                   href="/dashboard/documentos" 
@@ -905,25 +940,54 @@ export function DashboardMain() {
               <div className="md:col-span-2 bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
                 <h3 className="text-lg font-black text-brand-blue uppercase tracking-tight mb-6">Documentos recientes</h3>
                 <div className="space-y-4">
-                  {[
-                    { name: 'Informe de actividades - Abril', date: 'Subido el 20/05/2024' },
-                    { name: 'Plan de trabajo actualizado', date: 'Subido el 15/05/2024' }
-                  ].map((doc, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-50">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 flex items-center justify-center text-slate-400 shrink-0">
-                          <FileText className="w-5 h-5" />
+                  {(() => {
+                    const recentDocs = (internships[0]?.documents ?? [])
+                      .filter((d: any) => d.status !== 'PENDIENTE' || d.submittedAt)
+                      .sort((a: any, b: any) => {
+                        const dateA = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
+                        const dateB = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
+                        return dateB - dateA;
+                      })
+                      .slice(0, 3);
+
+                    if (recentDocs.length === 0) {
+                      return (
+                        <p className="text-center text-xs text-slate-500 font-medium py-8">
+                          No tienes documentos subidos recientemente.
+                        </p>
+                      );
+                    }
+
+                    return recentDocs.map((doc: any) => (
+                      <div key={doc.id} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-50">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 flex items-center justify-center text-slate-400 shrink-0">
+                            <FileText className="w-5 h-5" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[11px] font-black text-brand-blue uppercase tracking-tight truncate">{doc.name}</p>
+                            <p className="text-[9px] font-medium text-slate-400">
+                              {doc.submittedAt 
+                                ? `Subido el: ${new Date(doc.submittedAt).toLocaleDateString(locale === 'es' ? 'es-EC' : 'en-US')}` 
+                                : 'No subido'}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-[11px] font-black text-brand-blue uppercase tracking-tight">{doc.name}</p>
-                          <p className="text-[9px] font-medium text-slate-400">{doc.date}</p>
-                        </div>
+                        <span className={cn(
+                          "text-[9px] font-black uppercase tracking-widest shrink-0 ml-2",
+                          doc.status === 'APROBADO_DEFINITIVO' ? "text-emerald-600" :
+                          doc.status === 'APROBADO_TUTOR' ? "text-indigo-600" :
+                          doc.status === 'EN_REVISION_TUTOR' ? "text-amber-600" :
+                          doc.status === 'RECHAZADO' ? "text-rose-600" : "text-slate-400"
+                        )}>
+                          {doc.status === 'APROBADO_DEFINITIVO' ? 'Aprobado Definitivo' :
+                           doc.status === 'APROBADO_TUTOR' ? 'Aprobado Tutor' :
+                           doc.status === 'EN_REVISION_TUTOR' ? 'En Revisión' :
+                           doc.status === 'RECHAZADO' ? 'Rechazado' : doc.status}
+                        </span>
                       </div>
-                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                        PDF
-                      </span>
-                    </div>
-                  ))}
+                    ));
+                  })()}
                 </div>
               </div>
 

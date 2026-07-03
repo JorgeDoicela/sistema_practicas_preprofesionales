@@ -174,6 +174,7 @@ function AdminLogsContent() {
   const [totalPages, setTotalPages] = useState(1);
   const [isLiveEnabled, setIsLiveEnabled] = useState(true);
   const [level, setLevel] = useState(initialLevel);
+  const [category, setCategory] = useState("");
   const [expandedLogs, setExpandedLogs] = useState<Record<string, boolean>>({});
 
   const toggleLogExpand = (id: string) => {
@@ -183,10 +184,12 @@ function AdminLogsContent() {
   const { socket, connected } = useSocket();
   const liveLogsEndRef = useRef<HTMLDivElement>(null);
 
-  const loadLogs = useCallback(async (p: number, lvl: string) => {
+  const loadLogs = useCallback(async (p: number, lvl: string, cat: string) => {
     try {
       setLoading(true);
-      const url = `/system-logs?page=${p}&limit=20${lvl ? `&level=${lvl}` : ""}`;
+      let url = `/system-logs?page=${p}&limit=20`;
+      if (lvl) url += `&level=${lvl}`;
+      if (cat) url += `&category=${cat}`;
       const res: any = await api.get(url);
       const data = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.items) ? res.data.items : (Array.isArray(res.data?.data) ? res.data.data : []));
       setLogs(data);
@@ -199,8 +202,8 @@ function AdminLogsContent() {
   }, []);
 
   useEffect(() => {
-    loadLogs(page, level);
-  }, [page, level, loadLogs]);
+    loadLogs(page, level, category);
+  }, [page, level, category, loadLogs]);
 
   useEffect(() => {
     if (socket && isLiveEnabled) {
@@ -223,7 +226,8 @@ function AdminLogsContent() {
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'AUTH': return <ShieldAlert className="w-4 h-4" />;
+      case 'AUTH': return <ShieldAlert className="w-4 h-4 text-rose-500" />;
+      case 'PRIVACY': return <ShieldAlert className="w-4 h-4 text-[#C5A059]" />;
       case 'HTTP': return <Globe className="w-4 h-4" />;
       case 'SYSTEM': return <Terminal className="w-4 h-4" />;
       default: return <Activity className="w-4 h-4" />;
@@ -370,6 +374,47 @@ function AdminLogsContent() {
                           <ChevronRight className="w-5 h-5" />
                        </button>
                     </div>
+                 </div>
+
+                 {/* Barra de Filtros Históricos */}
+                 <div className="bg-slate-50/50 border-b border-slate-100 p-4 sm:px-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                    <div className="flex flex-wrap gap-4 w-full sm:w-auto">
+                       <div className="flex flex-col gap-1 w-full sm:w-44">
+                          <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Nivel</label>
+                          <select
+                             className="bg-white text-slate-700 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer w-full"
+                             value={level}
+                             onChange={(e) => { setLevel(e.target.value); setPage(1); }}
+                          >
+                             <option value="">TODOS</option>
+                             <option value="INFO">DETALLES (INFO)</option>
+                             <option value="WARN">AVISOS (WARN)</option>
+                             <option value="ERROR">FALLOS (ERROR)</option>
+                          </select>
+                       </div>
+                       
+                       <div className="flex flex-col gap-1 w-full sm:w-44">
+                          <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Categoría</label>
+                          <select
+                             className="bg-white text-slate-700 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer w-full"
+                             value={category}
+                             onChange={(e) => { setCategory(e.target.value); setPage(1); }}
+                          >
+                             <option value="">TODAS</option>
+                             <option value="HTTP">NAVEGACIÓN (HTTP)</option>
+                             <option value="AUTH">AUTENTICACIÓN (AUTH)</option>
+                             <option value="SYSTEM">SISTEMA (SYSTEM)</option>
+                             <option value="PRIVACY">PRIVACIDAD (LOPDP)</option>
+                          </select>
+                       </div>
+                    </div>
+                    
+                    <button 
+                       onClick={() => loadLogs(page, level, category)}
+                       className="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all text-[10px] font-black uppercase tracking-widest text-[#003366] w-full sm:w-auto justify-center shadow-sm font-bold"
+                    >
+                       <HistoryIcon className="w-3.5 h-3.5" /> Recargar
+                    </button>
                  </div>
 
                  <div className="overflow-x-auto">

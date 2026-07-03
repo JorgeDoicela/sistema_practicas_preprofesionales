@@ -204,15 +204,19 @@ export default function AdminSettingsPage() {
     let errorMsg = "";
 
     if (meta.type === "number") {
-      const num = Number(value);
-      if (isNaN(num)) {
-        errorMsg = currentLang === "es" ? "Debe ser un número válido" : "Must be a valid number";
+      if (value === undefined || value === null || String(value).trim() === "") {
+        errorMsg = currentLang === "es" ? "Este campo no puede estar vacío" : "This field cannot be empty";
       } else {
-        if (meta.min !== undefined && num < meta.min) {
-          errorMsg = currentLang === "es" ? `Mínimo valor es ${meta.min}` : `Minimum value is ${meta.min}`;
-        }
-        if (meta.max !== undefined && num > meta.max) {
-          errorMsg = currentLang === "es" ? `Máximo valor es ${meta.max}` : `Maximum value is ${meta.max}`;
+        const num = Number(value);
+        if (isNaN(num)) {
+          errorMsg = currentLang === "es" ? "Debe ser un número válido" : "Must be a valid number";
+        } else {
+          if (meta.min !== undefined && num < meta.min) {
+            errorMsg = currentLang === "es" ? `Mínimo valor es ${meta.min}` : `Minimum value is ${meta.min}`;
+          }
+          if (meta.max !== undefined && num > meta.max) {
+            errorMsg = currentLang === "es" ? `Máximo valor es ${meta.max}` : `Maximum value is ${meta.max}`;
+          }
         }
       }
     } else if (meta.type === "email") {
@@ -382,8 +386,8 @@ export default function AdminSettingsPage() {
 
     const matchesSearch = 
       setting.key.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      friendlyLabel.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      friendlyDesc.toLowerCase().includes(searchTerm.toLowerCase());
+      (friendlyLabel || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (friendlyDesc || "").toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesCategory && matchesSearch;
   });

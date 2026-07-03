@@ -58,19 +58,22 @@ export class CreateUserDto {
 
   @IsOptional()
   @StripControlChars()
+  @Transform(({ value }) => (value === '' ? null : value))
   @MaxLength(10)
   @IsString()
-  cedula?: string;
+  cedula?: string | null;
 
   @IsOptional()
   @StripControlChars()
+  @Transform(({ value }) => (value === '' ? null : value))
   @MaxLength(20)
   @IsString()
-  phone?: string;
+  phone?: string | null;
 
   @IsOptional()
   @StripControlChars()
+  @Transform(({ value }) => (value === '' ? null : value))
   @MaxLength(50)
   @IsString()
-  ciclo?: string;
+  ciclo?: string | null;
 }

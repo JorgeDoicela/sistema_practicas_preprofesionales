@@ -157,31 +157,34 @@ export class DocumentsService {
       });
     }
 
-    // Historial de Versiones: Guardar la versión anterior si existe antes de sobreescribir
-    if (document.filePath) {
-      await this.prisma.documentVersion.create({
-        data: {
-          documentId: id,
-          filePath: document.filePath,
-          observations: document.observations || 'Versión previa reemplazada por nueva carga',
-        }
-      });
-    }
-
-    // Subir archivo
+    // 1. Subir archivo primero (si esto falla, no modificamos la DB)
     const fileName = `documents/${document.internshipId}/${Date.now()}-${file.originalname}`;
     const uploadResult = await this.storageService.upload(fileName, file.buffer, {
         contentType: file.mimetype,
     });
 
-    // Actualizar documento
-    const updatedDocument = await this.prisma.document.update({
-      where: { id },
-      data: {
-        filePath: uploadResult.url,
-        submittedAt: now,
-        status: 'EN_REVISION_TUTOR',
+    // 2. Realizar cambios en la base de datos de manera atómica con una transacción
+    const updatedDocument = await this.prisma.$transaction(async (tx) => {
+      // Historial de Versiones: Guardar la versión anterior si existe antes de sobreescribir
+      if (document.filePath) {
+        await tx.documentVersion.create({
+          data: {
+            documentId: id,
+            filePath: document.filePath,
+            observations: document.observations || 'Versión previa reemplazada por nueva carga',
+          }
+        });
       }
+
+      // Actualizar documento principal
+      return tx.document.update({
+        where: { id },
+        data: {
+          filePath: uploadResult.url,
+          submittedAt: now,
+          status: 'EN_REVISION_TUTOR',
+        }
+      });
     });
 
     // Notificar al tutor (Punto 5 Happy Path)
