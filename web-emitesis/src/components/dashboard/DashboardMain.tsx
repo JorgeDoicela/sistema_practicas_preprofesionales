@@ -707,15 +707,6 @@ export function DashboardMain() {
               </button>
             </>
           )}
-          
-          <div className="hidden sm:flex items-center gap-3 bg-white p-1.5 rounded-2xl shadow-sm border border-slate-100 ml-auto lg:ml-0">
-            <div className="px-4 py-2 flex items-center gap-2">
-              <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", loading ? "bg-amber-400" : error ? "bg-rose-500" : "bg-emerald-500")} />
-              <span className={cn("text-[9px] font-black uppercase tracking-[0.2em] whitespace-nowrap", loading ? "text-amber-600" : error ? "text-rose-600" : "text-emerald-600")}>
-                {loading ? t.dashboard.syncing : error ? t.dashboard.apiError : t.dashboard.dataOk}
-              </span>
-            </div>
-          </div>
         </div>
       </section>
 

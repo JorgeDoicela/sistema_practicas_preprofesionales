@@ -105,8 +105,8 @@ export default function Home() {
                         >
                             {[
                                 { value: "28+", label: t.home.hero.kpis.modules },
-                                { value: "6",   label: t.home.hero.kpis.roles },
-                                { value: "2",   label: t.home.hero.kpis.cron },
+                                { value: "6", label: t.home.hero.kpis.roles },
+                                { value: "2", label: t.home.hero.kpis.cron },
                                 { value: "100%", label: t.home.hero.kpis.traceability },
                             ].map(k => (
                                 <div key={k.label} className="bg-white/8 backdrop-blur border border-white/15 rounded-2xl p-4">
@@ -121,7 +121,7 @@ export default function Home() {
                 {/* tech pills — botton right, only xl */}
                 <div className="absolute bottom-8 right-8 hidden xl:flex gap-2 z-10">
                     {[
-                        { icon: <Radio className="w-3.5 h-3.5" />, label: "Ubicación Satelital" },
+                        { icon: <Radio className="w-3.5 h-3.5" />, label: "Ubicación" },
                         { icon: <Brain className="w-3.5 h-3.5" />, label: "Visión Artificial" },
                         { icon: <Fingerprint className="w-3.5 h-3.5" />, label: "Acceso Seguro" },
                         { icon: <Stamp className="w-3.5 h-3.5" />, label: "Firma Digital" },
@@ -162,14 +162,12 @@ export default function Home() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.1 }}
                                 viewport={{ once: true }}
-                                className={`bg-white rounded-2xl border-t-4 ${
-                                    i === 0 ? "border-blue-500" : i === 1 ? "border-amber-500" : "border-purple-500"
-                                } p-5 sm:p-8 shadow-sm hover:shadow-lg transition-shadow`}
+                                className={`bg-white rounded-2xl border-t-4 ${i === 0 ? "border-blue-500" : i === 1 ? "border-amber-500" : "border-purple-500"
+                                    } p-5 sm:p-8 shadow-sm hover:shadow-lg transition-shadow`}
                             >
                                 <div className="flex items-start justify-between mb-6">
-                                    <div className={`w-12 h-12 flex items-center justify-center ${
-                                        i === 0 ? "text-blue-500" : i === 1 ? "text-amber-500" : "text-purple-500"
-                                    }`}>
+                                    <div className={`w-12 h-12 flex items-center justify-center ${i === 0 ? "text-blue-500" : i === 1 ? "text-amber-500" : "text-purple-500"
+                                        }`}>
                                         {i === 0 ? <MapPin className="w-8 h-8" /> : i === 1 ? <Workflow className="w-8 h-8" /> : <Brain className="w-8 h-8" />}
                                     </div>
                                     <span className="text-5xl font-black text-slate-100 leading-none select-none">{p.num}</span>
@@ -322,24 +320,22 @@ export default function Home() {
                                 transition={{ delay: i * 0.07 }}
                                 viewport={{ once: true }}
                                 whileHover={{ y: -4 }}
-                                className={`bg-white border border-slate-100 border-t-4 ${
-                                    i === 0 ? "border-t-purple-500" :
-                                    i === 1 ? "border-t-sky-600" :
-                                    i === 2 ? "border-t-teal-500" :
-                                    i === 3 ? "border-t-orange-500" :
-                                    i === 4 ? "border-t-amber-500" :
-                                    "border-t-blue-500"
-                                } rounded-2xl p-6 shadow-sm hover:shadow-md transition-all`}
+                                className={`bg-white border border-slate-100 border-t-4 ${i === 0 ? "border-t-purple-500" :
+                                        i === 1 ? "border-t-sky-600" :
+                                            i === 2 ? "border-t-teal-500" :
+                                                i === 3 ? "border-t-orange-500" :
+                                                    i === 4 ? "border-t-amber-500" :
+                                                        "border-t-blue-500"
+                                    } rounded-2xl p-6 shadow-sm hover:shadow-md transition-all`}
                             >
                                 <div className="flex items-center gap-3 mb-4">
-                                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${
-                                        i === 0 ? "from-purple-500 to-indigo-600" :
-                                        i === 1 ? "from-sky-600 to-blue-700" :
-                                        i === 2 ? "from-teal-500 to-emerald-600" :
-                                        i === 3 ? "from-orange-500 to-red-500" :
-                                        i === 4 ? "from-amber-500 to-yellow-500" :
-                                        "from-blue-500 to-cyan-600"
-                                    } text-white flex items-center justify-center`}>
+                                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${i === 0 ? "from-purple-500 to-indigo-600" :
+                                            i === 1 ? "from-sky-600 to-blue-700" :
+                                                i === 2 ? "from-teal-500 to-emerald-600" :
+                                                    i === 3 ? "from-orange-500 to-red-500" :
+                                                        i === 4 ? "from-amber-500 to-yellow-500" :
+                                                            "from-blue-500 to-cyan-600"
+                                        } text-white flex items-center justify-center`}>
                                         {i === 0 ? <UserCog /> : i === 1 ? <ShieldCheck /> : i === 2 ? <GraduationCap /> : i === 3 ? <Building2 /> : i === 4 ? <Briefcase /> : <Users />}
                                     </div>
                                     <h3 className="font-black text-brand-blue text-base leading-tight">{a.role}</h3>

@@ -31,6 +31,9 @@ async function bootstrap() {
     logger: isProduction ? ['error', 'warn'] : ['error', 'warn', 'log'],
   });
 
+  // Habilitar lectura de cabeceras de proxy inverso (Nginx / Cloudflare)
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true, limit: '10mb' }));
 

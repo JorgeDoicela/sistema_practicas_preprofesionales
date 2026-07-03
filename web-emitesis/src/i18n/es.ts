@@ -43,7 +43,7 @@ export const es = {
       title2: "de las",
       titleHighlight: "Prácticas",
       title3: "Preprofesionales.",
-      subtitle: "Sistema de {highlight1} con {highlight2}, ubicación segura en varias sedes, acceso con huella o rostro y firma digital de alta seguridad. Desde la asignación hasta el certificado QR con validez institucional.",
+      subtitle: "Sistema con {highlight2}, ubicación segura en varias sedes, acceso con huella o rostro y firma digital. Desde la asignación hasta el certificado QR.",
       subtitleHighlight1: "Alta Seguridad",
       subtitleHighlight2: "Inteligencia Artificial Nexo",
       cta: "Acceder al Sistema",

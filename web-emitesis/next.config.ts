@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: any = {
   eslint: {
@@ -20,6 +21,11 @@ const nextConfig: any = {
         pathname: '/**',
       },
     ],
+  },
+  turbopack: {
+    resolveAlias: {
+      canvas: "events",
+    },
   },
   webpack: (config: any, { isServer }: any) => {
     const webpack = require("webpack");

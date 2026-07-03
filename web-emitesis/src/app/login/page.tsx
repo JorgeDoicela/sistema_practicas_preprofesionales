@@ -286,26 +286,7 @@ export default function LoginPage() {
                                         ) : t.login.submit}
                                     </button>
 
-                                    {/* Panel de Confianza y Seguridad Enterprise */}
-                                    <div className="pt-6 border-t border-slate-100">
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div className="flex items-center gap-2 p-2.5 rounded-full bg-slate-100/50 border border-slate-200/50">
-                                                <div className="flex h-6 w-6 items-center justify-center rounded-full text-green-600 flex-shrink-0">
-                                                    <Lock className="h-4.5 w-4.5" />
-                                                </div>
-                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight truncate">{t.login.security?.encrypted || 'Conexión Segura'}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2 p-2.5 rounded-full bg-slate-100/50 border border-slate-200/50">
-                                                <div className="flex h-6 w-6 items-center justify-center rounded-full text-blue-600 flex-shrink-0">
-                                                    <Fingerprint className="h-4.5 w-4.5" />
-                                                </div>
-                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight truncate">{t.login.security?.botProtection || 'Protección Anti-Robots'}</span>
-                                            </div>
-                                        </div>
-                                        <p className="mt-3 text-center text-[10px] text-slate-400 font-medium">
-                                            {t.login.security?.standards || 'Sistema monitoreado bajo estándares de seguridad internacional.'}
-                                        </p>
-                                    </div>
+
                                 </form>
                             </>
                         ) : (

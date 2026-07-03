@@ -194,10 +194,10 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 data-tour="sidebar" 
                 style={{ width: isOpen ? `${width}px` : '0px' }}
                 className={cn(
-                    "bg-primary text-white flex flex-col h-screen border-r border-white/10 shadow-2xl transition-[transform,opacity] duration-300 ease-in-out z-[200] lg:relative lg:z-0",
+                    "bg-primary text-white flex flex-col h-screen border-r border-white/10 shadow-2xl transition-all duration-300 ease-in-out z-[200] lg:relative lg:z-0",
 
                     "fixed top-0 left-0",
-                    !isOpen && "-translate-x-full opacity-0",
+                    isOpen ? "translate-x-0 opacity-100 pointer-events-auto" : "-translate-x-full opacity-0 pointer-events-none invisible",
                     isResizing && "transition-none select-none"
                 )}
             >

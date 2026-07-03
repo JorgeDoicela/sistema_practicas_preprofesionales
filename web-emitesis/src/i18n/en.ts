@@ -43,7 +43,7 @@ export const en = {
       title2: "of",
       titleHighlight: "Professional",
       title3: "Internships.",
-      subtitle: "{highlight1} system with {highlight2}, multi-campus geofencing, biometric passkeys and SHA-256 electronic signature. From assignment to verifiable QR certificate.",
+      subtitle: "System with {highlight2}, multi-campus geofencing, biometric access and digital signature. From assignment to QR certificate.",
       subtitleHighlight1: "Enterprise-grade",
       subtitleHighlight2: "Nexo AI",
       cta: "Access the System",
