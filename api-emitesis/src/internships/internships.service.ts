@@ -68,6 +68,23 @@ export class InternshipsService {
           include: { career: true }
         });
         if (!student) throw new BadRequestException('Estudiante no encontrado');
+        if (student.role !== 'ESTUDIANTE') {
+          throw new BadRequestException('El usuario asignado como estudiante debe tener el rol ESTUDIANTE');
+        }
+        if (!student.isActive) {
+          throw new BadRequestException('El estudiante seleccionado no se encuentra activo');
+        }
+
+        const tutor = await tx.user.findUnique({
+          where: { id: tutorId }
+        });
+        if (!tutor) throw new BadRequestException('Tutor no encontrado');
+        if (tutor.role !== 'TUTOR') {
+          throw new BadRequestException('El usuario asignado como tutor debe tener el rol TUTOR');
+        }
+        if (!tutor.isActive) {
+          throw new BadRequestException('El tutor seleccionado no se encuentra activo');
+        }
 
         // RF-CAREER: Carga automática de horas sugeridas por carrera si no se envían
         const FALLBACK_HOURS = 160;
@@ -174,7 +191,7 @@ export class InternshipsService {
         internship.student.fullName,
         internship.company.name,
         startDate,
-        totalHours,
+        internship.totalHours,
         location,
         excelBuffer
       ).catch((err: Error) => {
@@ -188,7 +205,7 @@ export class InternshipsService {
         internship.student.fullName,
         internship.company.name,
         startDate,
-        totalHours,
+        internship.totalHours,
         excelBuffer
       ).catch((err: Error) => {
         console.error('Error al enviar correo de asignación al tutor:', err.message);
@@ -232,6 +249,7 @@ export class InternshipsService {
             orderBy: { checkIn: 'desc' },
             take: 5,
           },
+          evaluations: true,
         },
         orderBy: { createdAt: 'desc' },
       }),

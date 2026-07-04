@@ -9,6 +9,9 @@ export interface EligibilityDetails {
   totalHours: number;
   requiredHours: number;
   hoursMet: boolean;
+  hasAcademica?: boolean;
+  hasEmpresarial?: boolean;
+  missingEvals?: string[];
 }
 
 export interface EligibilityResponse {

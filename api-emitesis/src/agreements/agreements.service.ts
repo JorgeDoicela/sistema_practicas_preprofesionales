@@ -112,6 +112,13 @@ export class AgreementsService {
   }
 
   async findAll(page = 1, limit = 10) {
+    const now = new Date();
+    // Actualización de convenios vencidos en caliente
+    await this.prisma.agreement.updateMany({
+      where: { status: 'Activo', endDate: { lt: now } },
+      data: { status: 'Vencido' },
+    });
+
     const skip = (page - 1) * limit;
     const [items, total] = await Promise.all([
       this.prisma.agreement.findMany({

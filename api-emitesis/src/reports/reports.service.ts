@@ -194,36 +194,45 @@ export class ReportsService {
       };
     });
 
-    const templatePath = fs.existsSync(path.join(__dirname, '..', 'templates', 'global-report.hbs'))
-      ? path.join(__dirname, '..', 'templates', 'global-report.hbs')
-      : path.join(process.cwd(), 'src/templates/global-report.hbs');
+    // Resolve template path safely for both dev and compiled environments
+    const distTemplatePath = path.join(__dirname, '..', 'templates', 'global-report.hbs');
+    const srcTemplatePath = path.join(process.cwd(), 'src', 'templates', 'global-report.hbs');
+    const templatePath = fs.existsSync(distTemplatePath) ? distTemplatePath : srcTemplatePath;
+
     if (!fs.existsSync(templatePath)) {
-        // Fallback or create default if not exists
-        return Buffer.from('Template not found');
+      return Buffer.from('Template not found');
     }
+
     const templateSource = fs.readFileSync(templatePath, 'utf8');
     const template = handlebars.compile(templateSource);
 
     const html = template({
-      date: new Date().toLocaleString(),
+      date: new Date().toLocaleString('es-EC'),
       stats,
       internships: reportData,
     });
 
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+      ],
     });
-    const page = await browser.newPage();
-    await page.setContent(html);
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' }
-    });
-    await browser.close();
-
-    return pdfBuffer;
+    try {
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' },
+      });
+      return pdfBuffer;
+    } finally {
+      await browser.close();
+    }
   }
 
   async exportInternshipAttendanceExcel(internshipId: string) {

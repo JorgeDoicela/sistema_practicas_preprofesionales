@@ -1,5 +1,6 @@
-import { IsString, IsNotEmpty, IsInt, IsDateString, IsOptional, MaxLength, IsUUID, Min, Max } from 'class-validator';
+import { IsString, IsNotEmpty, IsInt, IsDateString, IsOptional, MaxLength, IsUUID, Min, Max, IsEnum } from 'class-validator';
 import { StripControlChars } from '../../common/decorators/strip-control-chars.decorator';
+import { Modalidad } from '@prisma/client';
 
 export class CreateInternshipDto {
   @IsUUID('4', { message: 'studentId debe ser un UUID válido' })
@@ -21,8 +22,8 @@ export class CreateInternshipDto {
   @IsInt()
   @Min(1)
   @Max(2000)
-  @IsNotEmpty()
-  totalHours: number;
+  @IsOptional()
+  totalHours?: number;
 
   @StripControlChars()
   @MaxLength(500)
@@ -41,8 +42,8 @@ export class CreateInternshipDto {
   endDate?: string;
 
   @IsOptional()
-  @IsString()
-  modalidad?: string;
+  @IsEnum(Modalidad, { message: 'modalidad debe ser una modalidad válida (PRESENCIAL, SEMIPRESENCIAL, EN_LINEA, HIBRIDA)' })
+  modalidad?: Modalidad;
 
   // RF-ATT-LOC: Coordenadas iniciales para geocerca
   @IsOptional()

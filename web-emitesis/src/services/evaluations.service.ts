@@ -1,4 +1,4 @@
-import { API_URL } from '@/lib/api-base';
+import { api } from './auth.service';
 
 export interface EvaluationPayload {
   internshipId: string;
@@ -13,48 +13,23 @@ export interface EvaluationPayload {
 
 export const evaluationsService = {
   async createOrUpdate(data: EvaluationPayload) {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/evaluations`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al guardar la evaluación');
-    }
-
-    return response.json();
+    return api.post('/evaluations', data);
   },
 
   async getGrade(internshipId: string): Promise<{ internshipId: string; grade: number }> {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/evaluations/internship/${internshipId}/grade`, {
-      headers: { 'Authorization': `Bearer ${token}` },
-    });
-    if (!response.ok) return { internshipId, grade: 0 };
-    return response.json();
+    try {
+      return await api.get(`/evaluations/internship/${internshipId}/grade`);
+    } catch {
+      return { internshipId, grade: 0 };
+    }
   },
 
   async findByInternship(internshipId: string) {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/evaluations/internship/${internshipId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (response.status === 404) return null;
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al obtener la evaluación');
+    try {
+      return await api.get(`/evaluations/internship/${internshipId}`);
+    } catch (error: any) {
+      if (error.response?.status === 404) return null;
+      throw error;
     }
-
-    return response.json();
   },
 };

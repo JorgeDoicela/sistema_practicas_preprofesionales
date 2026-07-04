@@ -76,7 +76,7 @@ export class AbsencesService {
             tutor: { select: { fullName: true } },
           },
         },
-        reviewedBy: { select: { fullName: true } },
+        reviewedBy: { select: { fullName: true, role: true } },
       },
       orderBy: { createdAt: 'desc' },
     });

@@ -1,4 +1,5 @@
 import { IsString, IsEmail, IsNotEmpty, Length, IsOptional, IsInt, Min, Max } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateAgreementDto {
   // Datos de la Empresa
@@ -49,6 +50,7 @@ export class CreateAgreementDto {
   type?: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   @Max(100)

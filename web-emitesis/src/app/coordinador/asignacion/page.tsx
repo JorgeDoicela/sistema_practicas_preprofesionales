@@ -56,7 +56,17 @@ export default function AsignacionPage() {
   const [agreements, setAgreements] = useState<Agreement[]>([]);
 
   // Form state
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    studentId: string;
+    companyId: string;
+    tutorId: string;
+    startDate: string;
+    endDate: string;
+    totalHours: number | '';
+    modalidad: string;
+    location: string;
+    activityDescription: string;
+  }>({
     studentId: '',
     companyId: '',
     tutorId: '',
@@ -136,7 +146,12 @@ export default function AsignacionPage() {
       const cleanedForm = { ...form };
       Object.keys(cleanedForm).forEach((key) => {
         const k = key as keyof typeof cleanedForm;
-        if (cleanedForm[k] === '') {
+        if (
+          cleanedForm[k] === '' ||
+          cleanedForm[k] === null ||
+          cleanedForm[k] === undefined ||
+          (typeof cleanedForm[k] === 'number' && Number.isNaN(cleanedForm[k]))
+        ) {
           delete cleanedForm[k];
         }
       });
@@ -278,8 +293,11 @@ export default function AsignacionPage() {
                       required
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-12 pr-5 text-sm focus:ring-2 focus:ring-[#003366]/5 outline-none"
                       placeholder={t.coordinator.assignment.totalHoursPlaceholder}
-                      value={form.totalHours}
-                      onChange={(e) => setForm({...form, totalHours: parseInt(e.target.value)})}
+                      value={form.totalHours === '' || Number.isNaN(form.totalHours) ? '' : form.totalHours}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setForm({...form, totalHours: val === '' ? '' as any : parseInt(val)});
+                      }}
                     />
                   </div>
                 </div>

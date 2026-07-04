@@ -88,8 +88,9 @@ function DocumentosContent() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [isAiScanning, setIsAiScanning] = useState(false);
+  const [aiScanningId, setAiScanningId] = useState<string | null>(null);
   const [aiFeedback, setAiFeedback] = useState<{ isValid: boolean, feedback: string } | null>(null);
+  const pendingActionRef = useRef<((code: string) => Promise<void>) | null>(null);
 
   useEffect(() => {
     loadInternships();
@@ -107,7 +108,7 @@ function DocumentosContent() {
       let res;
       if (role === ROLES.TUTOR) {
         res = await internshipsService.findByTutor(user.id);
-      } else if (user.role === ROLES.ESTUDIANTE) {
+      } else if (role === ROLES.ESTUDIANTE) {
         res = await internshipsService.findByStudent(user.id);
       } else {
         const careerId = user.role === 'COORDINADOR' ? user.careerId : undefined;
@@ -177,7 +178,7 @@ function DocumentosContent() {
 
     // --- ESCANEO POR IA (Opcional pero sugerido) ---
     if (!skipAi && !isApproved(docId)) {
-      setIsAiScanning(true);
+      setAiScanningId(docId);
       try {
         const base64 = await getFirstPageAsBase64(file);
         
@@ -192,13 +193,13 @@ function DocumentosContent() {
         if (!result.isValid) {
           setAiFeedback(result);
           setPendingUpload({ id: docId, file });
-          setIsAiScanning(false);
+          setAiScanningId(null);
           return; // Detenemos para mostrar advertencia
         }
       } catch (error) {
         console.error("AI Scan failed:", error);
       } finally {
-        setIsAiScanning(false);
+        setAiScanningId(null);
       }
     }
 
@@ -322,8 +323,6 @@ function DocumentosContent() {
           throw error;
       }
   };
-
-  const pendingActionRef = useRef<((code: string) => Promise<void>) | null>(null);
 
   const filteredInternships = internships.filter(item => {
     const matchesSearch = 
@@ -581,7 +580,7 @@ function DocumentosContent() {
                     </div>
                   )}
 
-                  {isAiScanning && uploadingId === null && (
+                  {aiScanningId === doc.id && (
                     <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center gap-3">
                       <Sparkles className="w-8 h-8 text-[#C5A059] animate-pulse" />
                       <p className="text-[10px] font-black text-[#003366] uppercase tracking-widest">{t.documents.student.scanning}</p>

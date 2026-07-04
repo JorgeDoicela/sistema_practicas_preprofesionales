@@ -138,7 +138,7 @@ export default function RegistrarConvenioPage() {
                 router.push("/coordinador/convenios/list");
             }, 2000);
         } catch (err: any) {
-            setError(err.message || t.common.error);
+            setError(err.response?.data?.message || err.message || t.common.error);
         } finally {
             setIsLoading(false);
         }

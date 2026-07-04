@@ -43,9 +43,8 @@ export default function ReportesPage() {
           console.error("Error parsing user from localStorage", e);
         }
       }
-      const res: any = await reportsService.getGlobalStats(careerId);
-      const data = res?.data || res || null;
-      setStats(data);
+      const stats = await reportsService.getGlobalStats(careerId);
+      setStats(stats ?? null);
     } catch (error) {
       console.error("Error loading stats:", error);
       toast.error(t.common.error || "Error al cargar los datos");

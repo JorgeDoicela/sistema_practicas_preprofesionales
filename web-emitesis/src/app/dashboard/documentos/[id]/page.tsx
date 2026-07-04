@@ -316,10 +316,10 @@ export default function DocumentDetailPage() {
           </div>
           <div className="max-w-md">
             <h2 className="text-2xl font-black text-[#003366] tracking-tight mb-2">
-              Asignación no encontrada
+              {t.common.errors.notFound || "Asignación no encontrada"}
             </h2>
             <p className="text-slate-500 text-sm font-medium leading-relaxed">
-              La práctica o asignación solicitada no existe, ha sido eliminada o no tienes permisos suficientes para visualizarla.
+              {t.common.errors.generic}
             </p>
           </div>
           <button 
@@ -327,7 +327,7 @@ export default function DocumentDetailPage() {
             className="px-8 py-4 bg-[#003366] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#003366]/90 transition-all shadow-lg shadow-blue-900/10 flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Volver a Documentos
+            {t.documents.detail.documentFile}
           </button>
         </div>
       </DashboardLayout>
@@ -371,8 +371,9 @@ export default function DocumentDetailPage() {
                 onClick={async () => {
                   setIsSyncingSigafi(true);
                   try {
-                    const res = await internshipsService.syncSigafi(id as string);
-                    toast.success(`${t.documents.detail.syncSigafi}: ${res.externalData.isEnrolled ? 'Estudiante MATRICULADO' : 'No matriculado'} en ${res.externalData.lastSemester}`);
+                    const res: any = await internshipsService.syncSigafi(id as string);
+                    const ext = res?.externalData;
+                    toast.success(`${t.documents.detail.syncSigafi}: ${ext?.isEnrolled ? 'Matriculado' : 'No matriculado'}${ext?.lastSemester ? ' — ' + ext.lastSemester : ''}`);
                   } catch (e: any) {
                     toast.error(e.message || t.common.errors.generic);
                   } finally {
@@ -405,7 +406,7 @@ export default function DocumentDetailPage() {
                 <div className="space-y-5">
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t.documents.detail.totalHours}</p>
-                    <p className="font-black text-[#003366]">{internship?.totalHours} {t.coordinator.students.kpi.hoursDone ? t.common.date : 'Horas'}</p>
+                    <p className="font-black text-[#003366]">{internship?.totalHours} h</p>
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t.documents.detail.startDate}</p>

@@ -12,6 +12,7 @@ import { Agreement } from "@/types/agreement";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { API_URL } from "@/lib/api-base";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 const statusColor: Record<string, string> = {
   Activo: "text-green-700",
@@ -26,6 +27,7 @@ function daysUntil(dateStr?: string | null): number | null {
 }
 
 export default function ConveniosListPage() {
+  const { t, locale } = useLanguage();
   const [agreements, setAgreements] = useState<Agreement[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("Todos");
@@ -59,6 +61,23 @@ export default function ConveniosListPage() {
     return a.status === "Activo" && d !== null && d <= 30 && d > 0;
   });
 
+  const getFilterLabel = (status: string) => {
+    if (status === "Todos") return t.coordinator.agreements.statusAll;
+    if (status === "Activo") return t.coordinator.agreements.statusActive;
+    if (status === "Histórico") return t.coordinator.agreements.statusHistory;
+    if (status === "Vencido") return t.coordinator.agreements.statusExpired;
+    return status;
+  };
+
+  const getStatusLabel = (status: string) => {
+    if (status === "Activo") return t.coordinator.agreements.statusActive;
+    if (status === "Histórico") return t.coordinator.agreements.statusHistory;
+    if (status === "Vencido") return t.coordinator.agreements.statusExpired;
+    return status;
+  };
+
+  const dateFormat = locale === "es" ? "es-EC" : "en-US";
+
   return (
     <DashboardLayout>
       <div className="max-w-6xl mx-auto py-8 px-4 space-y-8">
@@ -66,10 +85,10 @@ export default function ConveniosListPage() {
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-[#003366] text-[10px] font-bold uppercase tracking-widest mb-4">
-              <FileText size={12} /> Gestión de Convenios
+              <FileText size={12} /> {t.coordinator.agreements.mgmt}
             </div>
-            <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">Convenios Empresariales</h1>
-            <p className="text-slate-500 mt-1">Acuerdos vigentes, históricos y vencidos con entidades receptoras.</p>
+            <h1 className="text-2xl md:text-3xl font-black text-[#003366] tracking-tight">{t.coordinator.agreements.listTitle}</h1>
+            <p className="text-slate-500 mt-1">{t.coordinator.agreements.listSubtitle}</p>
           </div>
           <div className="flex items-center justify-end gap-3 flex-wrap">
             <button onClick={load} className="p-3 rounded-2xl border border-slate-200 text-slate-400 hover:bg-slate-50 transition-all">
@@ -78,7 +97,7 @@ export default function ConveniosListPage() {
             <Link href="/coordinador/convenios"
               data-tour="convenios-new"
               className="flex flex-1 sm:flex-initial min-w-0 items-center justify-center gap-2 bg-[#003366] text-white px-5 sm:px-6 py-3.5 sm:py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:translate-y-[-2px] transition-all">
-              <Plus size={16} /> Nuevo Convenio
+              <Plus size={16} /> {t.coordinator.agreements.newBtn}
             </Link>
           </div>
         </div>
@@ -93,10 +112,12 @@ export default function ConveniosListPage() {
               </div>
               <div>
                 <p className="font-black text-amber-800 text-sm">
-                  {expiringSoon.length} convenio{expiringSoon.length > 1 ? "s" : ""} próximo{expiringSoon.length > 1 ? "s" : ""} a vencer
+                  {expiringSoon.length === 1
+                    ? t.coordinator.agreements.expiringAlert.replace("{count}", String(expiringSoon.length))
+                    : t.coordinator.agreements.expiringAlertPlural.replace("{count}", String(expiringSoon.length))}
                 </p>
                 <p className="text-amber-700 text-xs mt-1">
-                  {expiringSoon.map(a => `${a.company.name} (${daysUntil(a.endDate)} días)`).join(" · ")}
+                  {expiringSoon.map(a => `${a.company.name} (${daysUntil(a.endDate)} ${t.coordinator.agreements.daysLeft})`).join(" · ")}
                 </p>
               </div>
             </motion.div>
@@ -113,7 +134,7 @@ export default function ConveniosListPage() {
                   ? "bg-[#003366] text-white border-[#003366]"
                   : "bg-white text-slate-500 border-slate-200 hover:border-[#003366]/30"
               )}>
-              {status} <span className="ml-1 opacity-60">({count})</span>
+              {getFilterLabel(status)} <span className="ml-1 opacity-60">({count})</span>
             </button>
           ))}
         </div>
@@ -126,13 +147,22 @@ export default function ConveniosListPage() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 text-slate-400">
             <FileText size={48} className="mx-auto mb-4 opacity-30" />
-            <p className="font-bold">No hay convenios en esta categoría</p>
+            <p className="font-bold">{t.coordinator.agreements.noAgreements}</p>
           </div>
         ) : (
           <div className="space-y-4" data-tour="convenios-table">
             {filtered.map(ag => {
               const days = daysUntil(ag.endDate);
               const isExpiringSoon = days !== null && days <= 30 && days > 0 && ag.status === "Activo";
+              
+              const getTypeLabel = (type: string) => {
+                const key = type.toLowerCase();
+                if (key === "general") return t.coordinator.agreements.types.general;
+                if (key === "especifico" || key === "específica") return t.coordinator.agreements.types.specific;
+                if (key === "marco") return t.coordinator.agreements.types.framework;
+                return type;
+              };
+
               return (
                 <motion.div key={ag.id} layout
                   className={cn(
@@ -148,39 +178,43 @@ export default function ConveniosListPage() {
                         <div className="flex items-center gap-3 flex-wrap">
                           <h3 className="font-black text-[#003366] text-base">{ag.company.name}</h3>
                           <span className={cn("text-[10px] font-black uppercase tracking-widest", statusColor[ag.status] || "text-slate-500")}>
-                            {ag.status}
+                            {getStatusLabel(ag.status)}
                           </span>
                           {isExpiringSoon && (
                             <span className="text-[10px] font-black uppercase tracking-widest text-amber-700 animate-pulse">
-                              Vence en {days} días
+                              {t.coordinator.agreements.expiredInDays.replace("{days}", String(days))}
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-slate-400 mt-1">RUC: {ag.company.ruc}{ag.company.city ? ` · ${ag.company.city}` : ""}{ag.company.sector ? ` · ${ag.company.sector}` : ""}</p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          {t.coordinator.agreements.rucShort}: {ag.company.ruc}
+                          {ag.company.city ? ` · ${ag.company.city}` : ""}
+                          {ag.company.sector ? ` · ${ag.company.sector}` : ""}
+                        </p>
 
                         <div className="flex flex-wrap gap-x-6 gap-y-1 mt-3">
                           <div className="flex items-center gap-1.5 text-xs text-slate-500">
                             <Calendar size={12} className="text-[#C5A059]" />
-                            <span>Inicio: {new Date(ag.startDate).toLocaleDateString("es-EC")}</span>
+                            <span>{t.coordinator.agreements.startDateLabel}: {new Date(ag.startDate).toLocaleDateString(dateFormat)}</span>
                           </div>
                           {ag.endDate && (
                             <div className="flex items-center gap-1.5 text-xs text-slate-500">
                               <Clock size={12} className={isExpiringSoon ? "text-amber-500" : "text-[#C5A059]"} />
                               <span className={isExpiringSoon ? "text-amber-600 font-bold" : ""}>
-                                Vence: {new Date(ag.endDate).toLocaleDateString("es-EC")}
+                                {t.coordinator.agreements.endDateLabel}: {new Date(ag.endDate).toLocaleDateString(dateFormat)}
                               </span>
                             </div>
                           )}
                           {ag.maxInterns && (
                             <div className="flex items-center gap-1.5 text-xs text-slate-500">
                               <Users size={12} className="text-[#C5A059]" />
-                              <span>Cupos: {ag.maxInterns}</span>
+                              <span>{t.coordinator.agreements.slotsLabel}: {ag.maxInterns}</span>
                             </div>
                           )}
                           {ag.type && (
                             <div className="flex items-center gap-1.5 text-xs text-slate-500">
                               <FileText size={12} className="text-[#C5A059]" />
-                              <span>{ag.type}</span>
+                              <span>{getTypeLabel(ag.type)}</span>
                             </div>
                           )}
                         </div>
@@ -194,7 +228,7 @@ export default function ConveniosListPage() {
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 text-[#003366] text-[10px] font-black uppercase tracking-widest hover:bg-[#003366] hover:text-white transition-all border border-slate-200 flex-shrink-0"
                       >
-                        <ExternalLink size={13} /> Ver PDF
+                        <ExternalLink size={13} /> {t.coordinator.agreements.viewPdf}
                       </a>
                     )}
                   </div>

@@ -80,6 +80,10 @@ export default function GestionEstudiantesPage() {
   const [statusReason, setStatusReason] = useState("");
   const [changingStatus, setChangingStatus] = useState(false);
 
+  // Estados 2FA y Seguridad
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+  const [isTwoFactorRequired, setIsTwoFactorRequired] = useState(false);
+
   const reviewAnnotationsRef = useRef<PdfReviewAnnotationsPayload>({ version: 1, items: [] });
   const handleReviewAnnotationsChange = useCallback((p: PdfReviewAnnotationsPayload) => {
     reviewAnnotationsRef.current = p;
@@ -90,7 +94,12 @@ export default function GestionEstudiantesPage() {
       setLoading(true);
       // Pasar careerId del coordinador para aislamiento de datos (obligatorio en el backend)
       const userStr = localStorage.getItem("user");
-      const careerId = userStr ? (JSON.parse(userStr) as Record<string, unknown>).careerId as string | undefined : undefined;
+      const user = userStr ? JSON.parse(userStr) : null;
+      const careerId = user ? user.careerId : undefined;
+      
+      // Detectar si el usuario coordinador tiene 2FA habilitado
+      setIsTwoFactorRequired(!!user?.isTwoFactorEnabled);
+
       const res: any = await internshipsService.findAll(1, 200, careerId);
       const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
       setInternships(list);
@@ -103,13 +112,27 @@ export default function GestionEstudiantesPage() {
 
   const loadInternshipDetails = async (id: string, f?: { startDate: string, endDate: string }) => {
     try {
-      const [summary, history, eligibility] = await Promise.all([
+      const [summaryRes, historyRes, eligibilityRes] = await Promise.allSettled([
         attendancesService.getSummary(id),
         attendancesService.findByInternship(id, f?.startDate, f?.endDate),
         certificationService.checkEligibility(id)
       ]);
-      setAttendanceData(prev => ({ ...prev, [id]: { summary, history } }));
-      setEligibilityData(prev => ({ ...prev, [id]: eligibility }));
+      
+      const summary = summaryRes.status === 'fulfilled' ? summaryRes.value : null;
+      const history = historyRes.status === 'fulfilled' ? historyRes.value : [];
+      const eligibility = eligibilityRes.status === 'fulfilled' ? eligibilityRes.value : null;
+
+      setAttendanceData(prev => ({ 
+        ...prev, 
+        [id]: { 
+          summary: summary || prev[id]?.summary || { totalHours: 0, requiredHours: 0, progressPercentage: 0 }, 
+          history: Array.isArray(history) ? history : [] 
+        } 
+      }));
+      
+      if (eligibility) {
+        setEligibilityData(prev => ({ ...prev, [id]: eligibility }));
+      }
     } catch (error) {
       console.error("Error loading details:", error);
     }
@@ -134,6 +157,7 @@ export default function GestionEstudiantesPage() {
   const handleReviewClick = async (doc: any, internshipId: string) => {
     setSelectedDoc({ ...doc, internshipId });
     setObservations(doc.observations || "");
+    setTwoFactorCode(""); // Reiniciar código 2FA
     reviewAnnotationsRef.current = parseReviewAnnotations(doc.reviewAnnotations);
     setIsReviewDrawerOpen(true);
     
@@ -155,14 +179,19 @@ export default function GestionEstudiantesPage() {
       return;
     }
 
+    if (isTwoFactorRequired && !twoFactorCode.trim()) {
+      toast.error("El código de doble factor (2FA) es obligatorio para completar esta acción.");
+      return;
+    }
+
     setSaving(true);
     try {
       await documentsService.coordinatorReviewDocument(selectedDoc.id, {
         status,
         observations,
         annotations: reviewAnnotationsRef.current,
-      });
-      toast.success(status === 'APROBADO_DEFINITIVO' ? t.common.success.generic : t.common.success.generic); // Or specific ones if added
+      }, twoFactorCode);
+      toast.success(status === 'APROBADO_DEFINITIVO' ? t.common.success.generic : t.common.success.generic);
       
       // Recargar datos para actualizar elegibilidad
       await loadData();
@@ -173,7 +202,7 @@ export default function GestionEstudiantesPage() {
       
       setIsReviewDrawerOpen(false);
     } catch (error: any) {
-      toast.error(error.message || t.common.errors.generic);
+      toast.error(error.response?.data?.message || error.message || t.common.errors.generic);
     } finally {
       setSaving(false);
     }
@@ -385,6 +414,23 @@ export default function GestionEstudiantesPage() {
                       </p>
                     </div>
                   </div>
+
+                  {isTwoFactorRequired && (
+                    <div className="space-y-2 mt-2 p-4 bg-slate-50 border border-slate-100 rounded-2xl">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[#003366] flex items-center gap-1.5">
+                        <Zap className="w-3.5 h-3.5 text-[#C5A059] animate-pulse" />
+                        Código de Seguridad 2FA <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={6}
+                        value={twoFactorCode}
+                        onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
+                        placeholder="Ej. 123456"
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-bold text-center tracking-[0.3em] outline-none focus:border-[#003366] transition-all"
+                      />
+                    </div>
+                  )}
 
                   {/* Historial de Versiones */}
                   <div className="mt-4 flex flex-col gap-3">
@@ -718,11 +764,11 @@ function StudentInternshipCard({
                     <div className="space-y-4 md:border-r border-slate-100 md:pr-4">
                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.coordinator.students.kpi.docs}</h4>
                        <div className="flex items-end gap-3">
-                          <span className="text-2xl md:text-3xl font-black text-[#003366]">{eligibility.details.approvedDocsCount < 7 ? (
+                          <span className="text-2xl md:text-3xl font-black text-[#003366]">{eligibility.details.approvedDocsCount < (eligibility.details.totalRequiredDocs || 7) ? (
                              <span className="text-rose-500">{eligibility.details.approvedDocsCount}</span>
                           ) : (
-                             <span className="text-emerald-500">7</span>
-                          )}/7</span>
+                             <span className="text-emerald-500">{eligibility.details.totalRequiredDocs || 7}</span>
+                          )}/{eligibility.details.totalRequiredDocs || 7}</span>
                           <span className="text-[10px] font-bold text-slate-400 mb-2 uppercase">{t.coordinator.students.kpi.approved}</span>
                        </div>
                        <p className="text-[11px] font-medium text-slate-500 leading-tight">
@@ -730,6 +776,23 @@ function StudentInternshipCard({
                             ? t.coordinator.students.kpi.pending.replace("{list}", eligibility.details.missingDocs.join(', '))
                             : t.coordinator.students.kpi.allApproved}
                        </p>
+                       <div className="mt-3 pt-3 border-t border-slate-100 space-y-1">
+                          <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Evaluaciones Obligatorias</h5>
+                          <div className="flex gap-4">
+                            <span className={cn(
+                              "text-[10px] font-bold flex items-center gap-1",
+                              eligibility.details.hasAcademica ? "text-emerald-600" : "text-rose-500"
+                            )}>
+                              {eligibility.details.hasAcademica ? "✓ Académica" : "✗ Académica"}
+                            </span>
+                            <span className={cn(
+                              "text-[10px] font-bold flex items-center gap-1",
+                              eligibility.details.hasEmpresarial ? "text-emerald-600" : "text-rose-500"
+                            )}>
+                              {eligibility.details.hasEmpresarial ? "✓ Empresarial" : "✗ Empresarial"}
+                            </span>
+                          </div>
+                       </div>
                     </div>
 
                     <div className="space-y-4 md:border-r border-slate-100 md:pr-4 md:pl-4">

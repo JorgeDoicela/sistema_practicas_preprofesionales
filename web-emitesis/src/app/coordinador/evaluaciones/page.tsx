@@ -21,7 +21,6 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { internshipsService } from "@/services/internships.service";
-import { evaluationsService } from "@/services/evaluations.service";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { toast } from "sonner";
 
@@ -97,49 +96,39 @@ export default function EvaluacionesPage() {
 
       const res: any = await internshipsService.findAll(1, 200, careerId);
       const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
-      const rows: EvalResult[] = await Promise.all(
-        list.map(async (i: any) => {
-          let evaluation: EvalResult["evaluation"] = null;
-          try {
-            const evRes: any = await evaluationsService.findByInternship(i.id);
-            // Desempaquetado industrial de la respuesta
-            const evList = evRes?.data
-              ? (Array.isArray(evRes.data) ? evRes.data : [evRes.data])
-              : (Array.isArray(evRes) ? evRes : []);
-            const ev = evList.find((item: any) => item.type === "EMPRESARIAL") ?? null;
+      const rows: EvalResult[] = list.map((i: any) => {
+        let evaluation: EvalResult["evaluation"] = null;
+        const evList = Array.isArray(i.evaluations) ? i.evaluations : [];
+        const ev = evList.find((item: any) => item.type === "EMPRESARIAL") ?? null;
 
-            if (ev) {
-              const p = Number(ev.punctuality) || 0;
-              const tw = Number(ev.teamwork) || 0;
-              const ts = Number(ev.technicalSkills) || 0;
-              const pr = Number(ev.proactivity) || 0;
-              const at = Number(ev.attitude) || 0;
-              
-              const total = p + tw + ts + pr + at;
-              evaluation = {
-                punctuality: p,
-                teamwork: tw,
-                technicalSkills: ts,
-                proactivity: pr,
-                attitude: at,
-                observations: ev.observations,
-                total,
-                percentage: Math.round((total / 25) * 100),
-              };
-            }
-          } catch (err) {
-            console.error(`Error loading evaluation for ${i.id}:`, err);
-          }
-          return {
-            internshipId: i.id,
-            studentName: i.student?.fullName ?? "—",
-            companyName: i.company?.name ?? "—",
-            tutorName: i.tutor?.fullName ?? "—",
-            status: i.status ?? "—",
-            evaluation,
+        if (ev) {
+          const p = Number(ev.punctuality) || 0;
+          const tw = Number(ev.teamwork) || 0;
+          const ts = Number(ev.technicalSkills) || 0;
+          const pr = Number(ev.proactivity) || 0;
+          const at = Number(ev.attitude) || 0;
+          
+          const total = p + tw + ts + pr + at;
+          evaluation = {
+            punctuality: p,
+            teamwork: tw,
+            technicalSkills: ts,
+            proactivity: pr,
+            attitude: at,
+            observations: ev.observations,
+            total,
+            percentage: Math.round((total / 25) * 100),
           };
-        }),
-      );
+        }
+        return {
+          internshipId: i.id,
+          studentName: i.student?.fullName ?? "—",
+          companyName: i.company?.name ?? "—",
+          tutorName: i.tutor?.fullName ?? "—",
+          status: i.status ?? "—",
+          evaluation,
+        };
+      });
       setResults(rows);
     } catch (error) {
       console.error("Error cargando evaluaciones:", error);
@@ -238,165 +227,178 @@ export default function EvaluacionesPage() {
                 </p>
               </div>
             ) : (
-              filtered.map((r, idx) => (
-                <motion.div
-                  key={r.internshipId}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.04 }}
-                  className={cn(
-                    "bg-white rounded-[2rem] border shadow-sm transition-all overflow-hidden",
-                    r.evaluation ? "border-slate-200 hover:shadow-md" : "border-dashed border-slate-200 opacity-80",
-                  )}
-                >
-                  <button
-                    onClick={() =>
-                      setExpandedId(expandedId === r.internshipId ? null : r.internshipId)
-                    }
-                    className="w-full p-7 flex flex-col md:flex-row md:items-center gap-5 text-left"
-                  >
-                    {/* Avatar */}
-                    <div className="w-14 h-14 rounded-[1.5rem] bg-[#003366]/5 flex items-center justify-center text-xl font-black text-[#003366] shrink-0">
-                      {r.studentName.charAt(0)}
-                    </div>
+              filtered.map((r, idx) => {
+                const statusMap: Record<string, string> = {
+                  "En Proceso": "EN_CURSO",
+                  "Activo": "EN_CURSO",
+                  "Finalizado": "FINALIZADA",
+                  "Finalizada": "FINALIZADA",
+                  "PENDIENTE": "PENDIENTE",
+                  "Pendiente": "PENDIENTE",
+                };
+                const normalizedStatus = statusMap[r.status] || r.status;
+                const statusLabel = (t.tutor.internshipStatus as any)[normalizedStatus] || r.status;
 
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-black text-[#003366] truncate">{r.studentName}</h3>
-                      <div className="flex flex-wrap gap-4 mt-1">
-                        <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                          <Building2 className="w-3 h-3" />
-                          {r.companyName}
-                        </span>
-                        <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                          <GraduationCap className="w-3 h-3" />
-                          {r.tutorName}
-                        </span>
-                        <span
-                          className={cn(
-                            "text-[9px] font-black uppercase tracking-widest",
-                            r.status === "Finalizado"
-                              ? "text-emerald-700"
-                              : "text-amber-700",
-                          )}
-                        >
-                          {(t.tutor.internshipStatus as any)[r.status] || r.status}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Estado evaluación */}
-                    <div className="flex items-center gap-4 shrink-0">
-                      {r.evaluation ? (
-                        <>
-                          <PercentageBadge pct={r.evaluation.percentage} />
-                          <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            {t.coordinator.evaluations.status.evaluated}
-                          </div>
-                        </>
-                      ) : (
-                        <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
-                          <Clock className="w-3.5 h-3.5" />
-                          {t.coordinator.evaluations.status.notEvaluated}
-                        </div>
-                      )}
-                      {r.evaluation &&
-                        (expandedId === r.internshipId ? (
-                          <ChevronUp className="w-4 h-4 text-slate-400" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4 text-slate-400" />
-                        ))}
-                    </div>
-                  </button>
-
-                  {/* Detalle expandido */}
-                  <AnimatePresence>
-                    {expandedId === r.internshipId && r.evaluation && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden border-t border-slate-100"
-                      >
-                        <div className="p-7 pt-5 grid md:grid-cols-2 gap-8">
-                          {/* Criterios */}
-                           <div className="space-y-4">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                              {t.coordinator.evaluations.detail.criteriaTitle}
-                            </p>
-                            {Object.entries(t.coordinator.evaluations.criteria).map(([key, label]) => (
-                              <div key={key} className="flex items-center justify-between">
-                                <span className="text-[11px] font-bold text-slate-600">{label as string}</span>
-                                <StarRow
-                                  score={
-                                    (r.evaluation as unknown as Record<string, number>)[key]
-                                  }
-                                />
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Resumen + observaciones */}
-                           <div className="space-y-4">
-                            <div className="bg-slate-50 rounded-[1.5rem] p-6 border border-slate-100">
-                              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-3">
-                                {t.coordinator.evaluations.detail.globalScore}
-                              </p>
-                              <div className="flex items-end gap-2 mb-3">
-                                <span className="text-2xl md:text-4xl font-black text-[#003366]">
-                                  {r.evaluation.total}
-                                </span>
-                                <span className="text-xl font-black text-slate-300 mb-1">/ 25</span>
-                              </div>
-                              <div className="h-2.5 bg-slate-200 rounded-full overflow-hidden">
-                                <motion.div
-                                  initial={{ width: 0 }}
-                                  animate={{ width: `${r.evaluation.percentage}%` }}
-                                  className={cn(
-                                    "h-full rounded-full",
-                                    r.evaluation.percentage >= 80
-                                      ? "bg-emerald-500"
-                                      : r.evaluation.percentage >= 60
-                                        ? "bg-amber-400"
-                                        : "bg-rose-500",
-                                  )}
-                                />
-                              </div>
-                              <p
-                                className={cn(
-                                  "text-[9px] font-black uppercase tracking-widest mt-2",
-                                  r.evaluation.percentage >= 80
-                                    ? "text-emerald-600"
-                                    : r.evaluation.percentage >= 60
-                                      ? "text-amber-600"
-                                      : "text-rose-600",
-                                )}
-                               >
-                                {r.evaluation.percentage >= 80
-                                  ? t.coordinator.evaluations.performance.outstanding
-                                  : r.evaluation.percentage >= 60
-                                    ? t.coordinator.evaluations.performance.acceptable
-                                    : t.coordinator.evaluations.performance.improving}
-                              </p>
-                            </div>
-                             {r.evaluation.observations && (
-                              <div className="bg-amber-50/50 rounded-[1.5rem] p-5 border border-amber-100">
-                                <p className="text-[9px] font-black uppercase tracking-widest text-amber-700 mb-2">
-                                  {t.coordinator.evaluations.detail.observationsLabel}
-                                </p>
-                                <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
-                                  {r.evaluation.observations}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </motion.div>
+                return (
+                  <motion.div
+                    key={r.internshipId}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.04 }}
+                    className={cn(
+                      "bg-white rounded-[2rem] border shadow-sm transition-all overflow-hidden",
+                      r.evaluation ? "border-slate-200 hover:shadow-md" : "border-dashed border-slate-200 opacity-80",
                     )}
-                  </AnimatePresence>
-                </motion.div>
-              ))
+                  >
+                    <button
+                      onClick={() =>
+                        setExpandedId(expandedId === r.internshipId ? null : r.internshipId)
+                      }
+                      className="w-full p-7 flex flex-col md:flex-row md:items-center gap-5 text-left"
+                    >
+                      {/* Avatar */}
+                      <div className="w-14 h-14 rounded-[1.5rem] bg-[#003366]/5 flex items-center justify-center text-xl font-black text-[#003366] shrink-0">
+                        {r.studentName.charAt(0)}
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base font-black text-[#003366] truncate">{r.studentName}</h3>
+                        <div className="flex flex-wrap gap-4 mt-1">
+                          <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <Building2 className="w-3 h-3" />
+                            {r.companyName}
+                          </span>
+                          <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <GraduationCap className="w-3 h-3" />
+                            {r.tutorName}
+                          </span>
+                          <span
+                            className={cn(
+                              "text-[9px] font-black uppercase tracking-widest",
+                              normalizedStatus === "FINALIZADA"
+                                ? "text-emerald-700"
+                                : "text-amber-700",
+                            )}
+                          >
+                            {statusLabel}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Estado evaluación */}
+                      <div className="flex items-center gap-4 shrink-0">
+                        {r.evaluation ? (
+                          <>
+                            <PercentageBadge pct={r.evaluation.percentage} />
+                            <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              {t.coordinator.evaluations.status.evaluated}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
+                            <Clock className="w-3.5 h-3.5" />
+                            {t.coordinator.evaluations.status.notEvaluated}
+                          </div>
+                        )}
+                        {r.evaluation &&
+                          (expandedId === r.internshipId ? (
+                            <ChevronUp className="w-4 h-4 text-slate-400" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-slate-400" />
+                          ))}
+                      </div>
+                    </button>
+
+                    {/* Detalle expandido */}
+                    <AnimatePresence>
+                      {expandedId === r.internshipId && r.evaluation && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden border-t border-slate-100"
+                        >
+                          <div className="p-7 pt-5 grid md:grid-cols-2 gap-8">
+                            {/* Criterios */}
+                            <div className="space-y-4">
+                              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                                {t.coordinator.evaluations.detail.criteriaTitle}
+                              </p>
+                              {Object.entries(t.coordinator.evaluations.criteria).map(([key, label]) => (
+                                <div key={key} className="flex items-center justify-between">
+                                  <span className="text-[11px] font-bold text-slate-600">{label as string}</span>
+                                  <StarRow
+                                    score={
+                                      (r.evaluation as unknown as Record<string, number>)[key]
+                                    }
+                                  />
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Resumen + observaciones */}
+                            <div className="space-y-4">
+                              <div className="bg-slate-50 rounded-[1.5rem] p-6 border border-slate-100">
+                                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-3">
+                                  {t.coordinator.evaluations.detail.globalScore}
+                                </p>
+                                <div className="flex items-end gap-2 mb-3">
+                                  <span className="text-2xl md:text-4xl font-black text-[#003366]">
+                                    {r.evaluation.total}
+                                  </span>
+                                  <span className="text-xl font-black text-slate-300 mb-1">/ 25</span>
+                                </div>
+                                <div className="h-2.5 bg-slate-200 rounded-full overflow-hidden">
+                                  <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${r.evaluation.percentage}%` }}
+                                    className={cn(
+                                      "h-full rounded-full",
+                                      r.evaluation.percentage >= 80
+                                        ? "bg-emerald-500"
+                                        : r.evaluation.percentage >= 60
+                                          ? "bg-amber-400"
+                                          : "bg-rose-500",
+                                    )}
+                                  />
+                                </div>
+                                <p
+                                  className={cn(
+                                    "text-[9px] font-black uppercase tracking-widest mt-2",
+                                    r.evaluation.percentage >= 80
+                                      ? "text-emerald-600"
+                                      : r.evaluation.percentage >= 60
+                                        ? "text-amber-600"
+                                        : "text-rose-600",
+                                  )}
+                                >
+                                  {r.evaluation.percentage >= 80
+                                    ? t.coordinator.evaluations.performance.outstanding
+                                    : r.evaluation.percentage >= 60
+                                      ? t.coordinator.evaluations.performance.acceptable
+                                      : t.coordinator.evaluations.performance.improving}
+                                </p>
+                              </div>
+                              {r.evaluation.observations && (
+                                <div className="bg-amber-50/50 rounded-[1.5rem] p-5 border border-amber-100">
+                                  <p className="text-[9px] font-black uppercase tracking-widest text-amber-700 mb-2">
+                                    {t.coordinator.evaluations.detail.observationsLabel}
+                                  </p>
+                                  <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+                                    {r.evaluation.observations}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })
             )}
           </div>
         )}

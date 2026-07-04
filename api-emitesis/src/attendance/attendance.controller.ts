@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, UseGuards, Req, Param, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Req, Param, Query, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AttendanceService } from './attendance.service';
 import { RegisterAttendanceDto } from './dto/register-attendance.dto';
@@ -34,9 +34,10 @@ export class AttendanceController {
   @Roles(Role.TUTOR, Role.COORDINADOR, Role.ESTUDIANTE, Role.EMPRESA)
   findByInternship(
     @Param('id') id: string,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
     @Req() req: any
   ) {
-    const { startDate, endDate } = req.query;
     return this.attendanceService.findByInternship(id, startDate, endDate, req.user);
   }
 
