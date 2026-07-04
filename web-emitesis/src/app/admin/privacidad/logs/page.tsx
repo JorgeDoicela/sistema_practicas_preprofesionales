@@ -188,7 +188,7 @@ export default function LopdpLogsPage() {
                       log.user?.role === 'COORDINADOR' ? "text-blue-600" :
                       "text-slate-600"
                     )}>
-                      {log.user?.role || 'ESTUDIANTE'}
+                      {t.sidebar.roles[log.user?.role as keyof typeof t.sidebar.roles] || log.user?.role || 'ESTUDIANTE'}
                     </span>
                   </td>
                 </motion.tr>

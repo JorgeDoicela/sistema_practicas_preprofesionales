@@ -6,8 +6,9 @@ export const internshipsService = {
   },
 
   async findAll(page = 1, limit = 20, careerId?: string) {
-    const q = careerId ? `?careerId=${careerId}` : "";
-    return api.get(`/internships${q}`);
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    if (careerId) params.append('careerId', careerId);
+    return api.get(`/internships?${params.toString()}`);
   },
 
   async findByTutor(tutorId: string) {

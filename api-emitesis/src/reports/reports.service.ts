@@ -129,23 +129,25 @@ export class ReportsService {
 
     for (const i of internships) {
       let minutes = 0;
-      i.attendances.forEach(a => {
-        if (a.checkIn && a.checkOut) {
-          minutes += Math.floor((a.checkOut.getTime() - a.checkIn.getTime()) / 60000);
-        }
-      });
+      if (i.attendances) {
+        i.attendances.forEach(a => {
+          if (a.checkIn && a.checkOut) {
+            minutes += Math.floor((a.checkOut.getTime() - a.checkIn.getTime()) / 60000);
+          }
+        });
+      }
       const completed = Number((minutes / 60).toFixed(2));
       const progress = i.totalHours > 0 ? ((completed / i.totalHours) * 100).toFixed(1) + '%' : '0%';
 
       worksheet.addRow({
-        student: i.student.fullName,
-        company: i.company.name,
-        tutor: i.tutor.fullName,
+        student: i.student?.fullName ?? '—',
+        company: i.company?.name ?? '—',
+        tutor: i.tutor?.fullName ?? 'No asignado',
         status: i.status,
         planned: i.totalHours,
         completed: completed,
         progress: progress,
-        start: i.startDate.toLocaleDateString(),
+        start: i.startDate ? i.startDate.toLocaleDateString() : '—',
       });
     }
 
@@ -174,15 +176,17 @@ export class ReportsService {
 
     const reportData = internships.map(i => {
       let minutes = 0;
-      i.attendances.forEach(a => {
-        if (a.checkIn && a.checkOut) {
-          minutes += Math.floor((a.checkOut.getTime() - a.checkIn.getTime()) / 60000);
-        }
-      });
+      if (i.attendances) {
+        i.attendances.forEach(a => {
+          if (a.checkIn && a.checkOut) {
+            minutes += Math.floor((a.checkOut.getTime() - a.checkIn.getTime()) / 60000);
+          }
+        });
+      }
       const completed = Number((minutes / 60).toFixed(2));
       return {
-        student: i.student.fullName,
-        company: i.company.name,
+        student: i.student?.fullName ?? '—',
+        company: i.company?.name ?? '—',
         status: i.status,
         planned: i.totalHours,
         completed: completed,

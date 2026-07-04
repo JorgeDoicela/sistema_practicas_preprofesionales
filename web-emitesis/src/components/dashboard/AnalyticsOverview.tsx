@@ -48,17 +48,19 @@ export function AnalyticsOverview({ stats }: AnalyticsProps) {
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height={256}>
             <BarChart data={docData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
               <XAxis 
                 dataKey="name" 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fontSize: 10, fontWeight: 700, fill: "#94a3b8" }}
+                tick={{ fontSize: 10, fontWeight: 700, fill: "var(--muted-foreground)" }}
               />
               <YAxis hide />
               <Tooltip 
-                cursor={{ fill: '#f8fafc' }}
-                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                cursor={{ fill: 'var(--accent)' }}
+                contentStyle={{ backgroundColor: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', color: 'var(--foreground)', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)' }}
+                itemStyle={{ color: 'var(--foreground)', fontSize: '12px', fontWeight: 600 }}
+                labelStyle={{ color: 'var(--muted-foreground)', fontSize: '10px', fontWeight: 700 }}
               />
               <Bar dataKey="value" radius={[10, 10, 10, 10]} barSize={40}>
                 {docData.map((entry, index) => (
@@ -91,7 +93,9 @@ export function AnalyticsOverview({ stats }: AnalyticsProps) {
                 ))}
               </Pie>
               <Tooltip 
-                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                contentStyle={{ backgroundColor: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', color: 'var(--foreground)', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)' }}
+                itemStyle={{ color: 'var(--foreground)', fontSize: '12px', fontWeight: 600 }}
+                labelStyle={{ color: 'var(--muted-foreground)', fontSize: '10px', fontWeight: 700 }}
               />
             </PieChart>
           </ResponsiveContainer>

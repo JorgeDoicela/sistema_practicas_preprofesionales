@@ -162,11 +162,14 @@ export default function AdminHealthPage() {
                         <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 700}} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 700}} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                    <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 700, fill: "var(--muted-foreground)"}} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 700, fill: "var(--muted-foreground)"}} />
                     <Tooltip 
-                      contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                      cursor={{ fill: 'var(--accent)' }}
+                      contentStyle={{ backgroundColor: 'var(--card)', borderRadius: '1rem', border: '1px solid var(--border)', color: 'var(--foreground)', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)' }}
+                      itemStyle={{ color: 'var(--foreground)', fontSize: '12px', fontWeight: 600 }}
+                      labelStyle={{ color: 'var(--muted-foreground)', fontSize: '10px', fontWeight: 700 }}
                     />
                     <Area type="monotone" dataKey="avgLatency" name={t.admin.health.latencyMs} stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorLatency)" />
                   </AreaChart>
@@ -186,9 +189,14 @@ export default function AdminHealthPage() {
                 {isMounted && (
                   <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={series}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 700}} />
-                    <Tooltip contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                    <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 700, fill: "var(--muted-foreground)"}} />
+                    <Tooltip 
+                      cursor={{ fill: 'var(--accent)' }}
+                      contentStyle={{ backgroundColor: 'var(--card)', borderRadius: '1rem', border: '1px solid var(--border)', color: 'var(--foreground)', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)' }}
+                      itemStyle={{ color: 'var(--foreground)', fontSize: '12px', fontWeight: 600 }}
+                      labelStyle={{ color: 'var(--muted-foreground)', fontSize: '10px', fontWeight: 700 }}
+                    />
                     <Bar dataKey="total" name={t.admin.health.requests} fill="#003366" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="errors" name={t.admin.health.errors} fill="#ef4444" radius={[4, 4, 0, 0]} />
                   </BarChart>

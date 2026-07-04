@@ -30,7 +30,7 @@ interface AICopilotProps {
 }
 
 export function AICopilot({ user, internship }: AICopilotProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
   const [messages, setMessages] = useState<Message[]>([
@@ -75,11 +75,18 @@ export function AICopilot({ user, internship }: AICopilotProps) {
       const isManagementRole = [ROLES.ADMIN, ROLES.COORDINADOR, ROLES.TUTOR].includes(user?.role);
     
       const context = isManagementRole 
-        ? `Usuario: ${user?.fullName} (${user?.role}). Rol de Gestión: Acceso a normativas, reglamentos de prácticas e indicadores de riesgo de estudiantes. Foco: Auditoría y cumplimiento.`
-        : `Usuario: ${user?.fullName} (${user?.role}). Práctica: ${internship?.company?.name || 'Ninguna'}. Foco: Seguimiento de actividades y documentos del estudiante.
-        ${t.nexo.context.status}: ${internship?.status || "N/A"}
-        ${t.nexo.context.docs}: ${internship?.documents?.length || 0}
-        ${t.nexo.context.hours}: ${internship?.totalHours || 0}`;
+        ? (locale === 'es'
+          ? `Usuario: ${user?.fullName} (${user?.role}). Rol de Gestión: Acceso a normativas, reglamentos de prácticas e indicadores de riesgo de estudiantes. Foco: Auditoría y cumplimiento.`
+          : `User: ${user?.fullName} (${user?.role}). Management Role: Access to regulations, internship rules, and student risk indicators. Focus: Audit and compliance.`)
+        : (locale === 'es'
+          ? `Usuario: ${user?.fullName} (${user?.role}). Práctica: ${internship?.company?.name || 'Ninguna'}. Foco: Seguimiento de actividades y documentos del estudiante.
+            ${t.nexo.context.status}: ${internship?.status || "N/A"}
+            ${t.nexo.context.docs}: ${internship?.documents?.length || 0}
+            ${t.nexo.context.hours}: ${internship?.totalHours || 0}`
+          : `User: ${user?.fullName} (${user?.role}). Internship: ${internship?.company?.name || 'None'}. Focus: Monitoring activities and student documents.
+            ${t.nexo.context.status}: ${internship?.status || "N/A"}
+            ${t.nexo.context.docs}: ${internship?.documents?.length || 0}
+            ${t.nexo.context.hours}: ${internship?.totalHours || 0}`);
 
       const answer = await aiService.askQuestion(userMsg.text, context);
       
@@ -138,7 +145,9 @@ export function AICopilot({ user, internship }: AICopilotProps) {
                   <Bot className="w-9 h-9 text-[#C5A059]" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-black tracking-tight">Nexo - Apoyo Institucional</h4>
+                  <h4 className="text-lg font-black tracking-tight">
+                    {locale === 'es' ? "Nexo - Apoyo Institucional" : "Nexo - Institutional Support"}
+                  </h4>
                   <div className="flex items-center gap-1.5">
                     <div className={cn(
                       "w-1.5 h-1.5 rounded-full",

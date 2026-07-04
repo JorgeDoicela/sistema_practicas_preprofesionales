@@ -59,22 +59,22 @@ export class ExportService {
         }
       });
       const doneHours = Number((totalMinutes / 60).toFixed(2));
-      const approvedDocs = i.documents.filter((d) => d.status === 'APROBADO_DEFINITIVO').length;
+      const approvedDocs = i.documents ? i.documents.filter((d) => d.status === 'APROBADO_DEFINITIVO').length : 0;
       const progress = i.totalHours > 0 ? (doneHours / i.totalHours) * 100 : 0;
 
       worksheet.addRow({
         id: i.id.substring(0, 8).toUpperCase(),
-        student: i.student.fullName,
-        student_email: i.student.email,
-        company: i.company.name,
-        tutor: i.tutor.fullName,
-        start_date: i.startDate.toLocaleDateString(),
+        student: i.student?.fullName ?? '—',
+        student_email: i.student?.email ?? '—',
+        company: i.company?.name ?? '—',
+        tutor: i.tutor?.fullName ?? 'No asignado',
+        start_date: i.startDate ? i.startDate.toLocaleDateString() : '—',
         status: i.status,
         req_hours: i.totalHours,
         done_hours: doneHours,
         progress: `${progress.toFixed(1)}%`,
-        docs_ok: `${approvedDocs} / ${i.documents.length}`,
-        location: i.location,
+        docs_ok: i.documents ? `${approvedDocs} / ${i.documents.length}` : '0 / 0',
+        location: i.location ?? '—',
       });
     });
 

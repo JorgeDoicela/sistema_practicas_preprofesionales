@@ -206,6 +206,7 @@
   .text-gradient {
     background: linear-gradient(135deg, var(--color-brand-blue) 0%, var(--color-brand-gold) 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
@@ -353,12 +354,28 @@
 .dark .bg-slate-100                 { background-color: var(--muted) !important; }
 .dark .bg-slate-200                 { background-color: var(--muted) !important; }
 
+/* Soporte para clases con opacidad en modo oscuro (excluye modificadores como hover: o lg:) */
+.dark [class^="bg-white/"],
+.dark [class*=" bg-white/"]          { background-color: rgba(22, 29, 47, 0.65) !important; }
+
+.dark [class^="bg-slate-50/"],
+.dark [class*=" bg-slate-50/"]       { background-color: rgba(11, 17, 33, 0.5) !important; }
+
+.dark [class^="bg-slate-100/"],
+.dark [class*=" bg-slate-100/"]      { background-color: rgba(30, 41, 59, 0.5) !important; }
+
 .dark .text-slate-900               { color: var(--foreground) !important; }
 .dark .text-slate-800               { color: var(--muted-foreground) !important; }
 .dark .text-brand-blue              { color: #38BDF8 !important; }
 
-.dark .border-slate-100             { border-color: var(--border) !important; }
-.dark .border-slate-200             { border-color: var(--border) !important; }
+.dark .border-slate-100,
+.dark [class*="border-slate-100"]   { border-color: var(--border) !important; }
+.dark .border-slate-200,
+.dark [class*="border-slate-200"]   { border-color: var(--border) !important; }
+.dark .border-slate-300,
+.dark [class*="border-slate-300"]   { border-color: var(--border) !important; }
+.dark .border-slate-400,
+.dark [class*="border-slate-400"]   { border-color: var(--border) !important; }
 
 .dark .min-h-screen                 { background-color: var(--background) !important; }
 
@@ -372,5 +389,6 @@
 .dark .bg-emerald-50, .dark .bg-emerald-500\/10 { background-color: rgba(52, 211, 153, 0.15) !important; }
 .dark .bg-amber-50, .dark .bg-amber-500\/10   { background-color: rgba(251, 191, 36, 0.15) !important; }
 .dark .bg-rose-50, .dark .bg-rose-500\/10     { background-color: rgba(251, 113, 133, 0.15) !important; }
+
 
 

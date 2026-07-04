@@ -672,7 +672,7 @@ export function DashboardMain() {
             </span>
           </h2>
           <p className="text-slate-500 font-medium mt-1 text-sm">
-            Aquí tienes un resumen de la actividad en tu cuenta.
+            {t.dashboard.subtitle}
           </p>
 
         </div>
@@ -823,14 +823,14 @@ export function DashboardMain() {
               >
                 <div className="flex flex-col h-full justify-between gap-8">
                   <div>
-                    <h3 className="text-lg font-black text-brand-blue uppercase tracking-tight mb-6">Resumen de tu práctica</h3>
+                    <h3 className="text-lg font-black text-brand-blue uppercase tracking-tight mb-6">{t.dashboard.practiceSummary}</h3>
                     <div className="grid grid-cols-2 gap-y-6 gap-x-12">
                       <div className="space-y-1">
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.common.company}</p>
                         <p className="text-sm font-black text-brand-blue">{internships[0]?.company?.name || "ISTPET"}</p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Modalidad de práctica</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.dashboard.modalidadLabel}</p>
                         <p className="text-sm font-black text-brand-blue uppercase tracking-wider text-xs">
                           {internships[0]?.modalidad || "—"}
                         </p>
@@ -844,7 +844,7 @@ export function DashboardMain() {
                         </p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fin estimado</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.dashboard.estimatedEnd}</p>
                         <p className="text-sm font-black text-brand-blue">
                           {internships[0]?.endDate 
                             ? new Date(internships[0].endDate).toLocaleDateString(locale === 'es' ? 'es-EC' : 'en-US') 
@@ -857,7 +857,7 @@ export function DashboardMain() {
                   <div className="flex flex-col sm:flex-row items-center gap-6 pt-4 border-t border-slate-50">
                     <div className="flex-1 w-full">
                        <div className="flex items-center justify-between mb-2">
-                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Progreso general</p>
+                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.dashboard.generalProgress}</p>
                          <span className="text-sm font-black text-brand-gold">
                            {attendanceSummary?.progressPercentage ?? 0}%
                          </span>
@@ -873,7 +873,7 @@ export function DashboardMain() {
                       href="/dashboard/asistencia"
                       className="px-6 py-2.5 border-2 border-brand-blue text-brand-blue rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-blue hover:text-white transition-all text-center sm:shrink-0"
                     >
-                      Ver detalles
+                      {t.dashboard.viewDetails}
                     </Link>
                   </div>
                 </div>
@@ -884,52 +884,57 @@ export function DashboardMain() {
                 data-tour="dashboard-hours-card"
               >
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-black text-brand-blue uppercase tracking-tight">Próximos trámites</h3>
+                  <h3 className="text-lg font-black text-brand-blue uppercase tracking-tight">{t.dashboard.upcomingProcedures}</h3>
                 </div>
                 <div className="space-y-4">
                   {(() => {
                     const pendingDocs = (internships[0]?.documents ?? [])
-                      .filter((d: any) => d.status === 'PENDIENTE' || d.status === 'RECHAZADO')
+                      .filter((d: any) => d.status === 'PENDIENTE' || d.status.includes('RECHAZADO'))
                       .slice(0, 3);
                     
                     if (pendingDocs.length === 0) {
                       return (
                         <p className="text-center text-xs text-slate-500 font-medium py-8">
-                          ¡Estás al día! No tienes trámites pendientes de entrega.
+                          {t.dashboard.upToDateDocs}
                         </p>
                       );
                     }
 
-                    return pendingDocs.map((doc: any) => (
-                      <div key={doc.id} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-50">
-                        <div className="flex items-center gap-3 animate-fade-in">
-                          <div className="w-8 h-8 flex items-center justify-center text-slate-400 shrink-0">
-                            <FileText className="w-5 h-5" />
+                    return pendingDocs.map((doc: any) => {
+                      const isRejected = doc.status.includes('RECHAZADO');
+                      const statusText = t.tutor.documentStatus[doc.status as keyof typeof t.tutor.documentStatus] || doc.status;
+                      
+                      return (
+                        <div key={doc.id} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-50">
+                          <div className="flex items-center gap-3 animate-fade-in">
+                            <div className="w-8 h-8 flex items-center justify-center text-slate-400 shrink-0">
+                              <FileText className="w-5 h-5" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[11px] font-black text-brand-blue uppercase tracking-tight truncate">{doc.name}</p>
+                              <p className="text-[9px] font-medium text-slate-400">
+                                {doc.dueDate 
+                                  ? t.dashboard.limitLabel.replace('{date}', new Date(doc.dueDate).toLocaleDateString(locale === 'es' ? 'es-EC' : 'en-US'))
+                                  : t.dashboard.noLimit}
+                              </p>
+                            </div>
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-[11px] font-black text-brand-blue uppercase tracking-tight truncate">{doc.name}</p>
-                            <p className="text-[9px] font-medium text-slate-400">
-                              {doc.dueDate 
-                                ? `Límite: ${new Date(doc.dueDate).toLocaleDateString(locale === 'es' ? 'es-EC' : 'en-US')}` 
-                                : 'Sin fecha límite'}
-                            </p>
-                          </div>
+                          <span className={cn(
+                            "text-[9px] font-black uppercase tracking-widest shrink-0 ml-2",
+                            isRejected ? "text-rose-500" : "text-brand-gold"
+                          )}>
+                            {statusText}
+                          </span>
                         </div>
-                        <span className={cn(
-                          "text-[9px] font-black uppercase tracking-widest shrink-0 ml-2",
-                          doc.status === 'RECHAZADO' ? "text-rose-500" : "text-brand-gold"
-                        )}>
-                          {doc.status === 'RECHAZADO' ? 'Rechazado' : 'Pendiente'}
-                        </span>
-                      </div>
-                    ));
+                      );
+                    });
                   })()}
                 </div>
                 <Link 
                   href="/dashboard/documentos" 
                   className="block text-center mt-6 text-[10px] font-black text-brand-blue uppercase tracking-widest hover:underline"
                 >
-                  Ver todos los trámites
+                  {t.dashboard.viewAllProcedures}
                 </Link>
               </div>
             </section>
@@ -938,7 +943,7 @@ export function DashboardMain() {
           {appRole === ROLES.ESTUDIANTE && internships.length > 0 && (
             <section className="grid md:grid-cols-3 gap-6 md:gap-8 mt-12">
               <div className="md:col-span-2 bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
-                <h3 className="text-lg font-black text-brand-blue uppercase tracking-tight mb-6">Documentos recientes</h3>
+                <h3 className="text-lg font-black text-brand-blue uppercase tracking-tight mb-6">{t.dashboard.recentDocsTitle}</h3>
                 <div className="space-y-4">
                   {(() => {
                     const recentDocs = (internships[0]?.documents ?? [])
@@ -953,52 +958,57 @@ export function DashboardMain() {
                     if (recentDocs.length === 0) {
                       return (
                         <p className="text-center text-xs text-slate-500 font-medium py-8">
-                          No tienes documentos subidos recientemente.
+                          {t.dashboard.noRecentDocs}
                         </p>
                       );
                     }
 
-                    return recentDocs.map((doc: any) => (
-                      <div key={doc.id} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-50">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 flex items-center justify-center text-slate-400 shrink-0">
-                            <FileText className="w-5 h-5" />
+                    return recentDocs.map((doc: any) => {
+                      const isRejected = doc.status.includes('RECHAZADO');
+                      const statusColor = doc.status === 'APROBADO_DEFINITIVO' ? "text-emerald-600" :
+                                          doc.status === 'APROBADO_TUTOR' ? "text-indigo-600" :
+                                          doc.status === 'EN_REVISION_TUTOR' ? "text-amber-600" :
+                                          isRejected ? "text-rose-600" : "text-slate-400";
+                      const statusText = t.tutor.documentStatus[doc.status as keyof typeof t.tutor.documentStatus] || doc.status;
+
+                      return (
+                        <div key={doc.id} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-50">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 flex items-center justify-center text-slate-400 shrink-0">
+                              <FileText className="w-5 h-5" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[11px] font-black text-brand-blue uppercase tracking-tight truncate">{doc.name}</p>
+                              <p className="text-[9px] font-medium text-slate-400">
+                                {doc.submittedAt 
+                                  ? t.dashboard.uploadedLabel.replace('{date}', new Date(doc.submittedAt).toLocaleDateString(locale === 'es' ? 'es-EC' : 'en-US'))
+                                  : t.dashboard.notUploaded}
+                              </p>
+                            </div>
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-[11px] font-black text-brand-blue uppercase tracking-tight truncate">{doc.name}</p>
-                            <p className="text-[9px] font-medium text-slate-400">
-                              {doc.submittedAt 
-                                ? `Subido el: ${new Date(doc.submittedAt).toLocaleDateString(locale === 'es' ? 'es-EC' : 'en-US')}` 
-                                : 'No subido'}
-                            </p>
-                          </div>
+                          <span className={cn(
+                            "text-[9px] font-black uppercase tracking-widest shrink-0 ml-2",
+                            statusColor
+                          )}>
+                            {statusText}
+                          </span>
                         </div>
-                        <span className={cn(
-                          "text-[9px] font-black uppercase tracking-widest shrink-0 ml-2",
-                          doc.status === 'APROBADO_DEFINITIVO' ? "text-emerald-600" :
-                          doc.status === 'APROBADO_TUTOR' ? "text-indigo-600" :
-                          doc.status === 'EN_REVISION_TUTOR' ? "text-amber-600" :
-                          doc.status === 'RECHAZADO' ? "text-rose-600" : "text-slate-400"
-                        )}>
-                          {doc.status === 'APROBADO_DEFINITIVO' ? 'Aprobado Definitivo' :
-                           doc.status === 'APROBADO_TUTOR' ? 'Aprobado Tutor' :
-                           doc.status === 'EN_REVISION_TUTOR' ? 'En Revisión' :
-                           doc.status === 'RECHAZADO' ? 'Rechazado' : doc.status}
-                        </span>
-                      </div>
-                    ));
+                      );
+                    });
                   })()}
                 </div>
               </div>
 
               <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-black text-brand-blue uppercase tracking-tight">Calendario</h3>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mayo 2024</span>
+                  <h3 className="text-lg font-black text-brand-blue uppercase tracking-tight">{t.dashboard.calendar}</h3>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    {new Date().toLocaleDateString(locale === 'es' ? 'es-EC' : 'en-US', { month: 'long', year: 'numeric' })}
+                  </span>
                 </div>
                 {/* Placeholder simple para el calendario mockup */}
                 <div className="grid grid-cols-7 gap-2 text-center">
-                  {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(d => (
+                  {t.dashboard.calendarDays.map(d => (
                     <span key={d} className="text-[9px] font-bold text-slate-300 uppercase">{d}</span>
                   ))}
                   {[29, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(n => (
@@ -1019,22 +1029,26 @@ export function DashboardMain() {
                 <motion.div 
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  className="bg-indigo-50 border border-indigo-100 rounded-[2.5rem] p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm"
+                  className="bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 rounded-[2.5rem] p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm"
                 >
                   <div className="flex items-center gap-6 text-center md:text-left flex-col md:flex-row">
-                    <div className="w-16 h-16 flex items-center justify-center text-indigo-600 shrink-0">
+                    <div className="w-16 h-16 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
                       <FileStack className="w-10 h-10" />
                     </div>
                     <div>
-                      <h4 className="text-xl font-black text-indigo-900 tracking-tight">Control de Gestión</h4>
-                      <p className="text-sm text-indigo-700/70 font-medium">Hay <span className="font-black text-indigo-600">{globalStats.pendingDocs} documentos</span> esperando su validación técnica.</p>
+                      <h4 className="text-xl font-black text-indigo-900 dark:text-indigo-100 tracking-tight">{t.dashboard.managementControl}</h4>
+                      <p className="text-sm text-indigo-700/70 dark:text-indigo-300/70 font-medium">
+                        {locale === 'es' 
+                          ? `Hay ${globalStats.pendingDocs} ${t.dashboard.technicalValidationNotice}` 
+                          : `There are ${globalStats.pendingDocs} ${t.dashboard.technicalValidationNotice}`}
+                      </p>
                     </div>
                   </div>
                   <Link 
                     href="/dashboard/documentos"
                     className="px-10 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 active:scale-95"
                   >
-                    Revisar Expedientes
+                    {t.dashboard.reviewRecords}
                   </Link>
                 </motion.div>
                )}
@@ -1092,21 +1106,21 @@ export function DashboardMain() {
 
                     <div className="lg:col-span-2 grid sm:grid-cols-3 gap-6">
                       <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl transition-all cursor-default">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Completadas</p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">{t.dashboard.completed}</p>
                         <p className="text-3xl font-black text-[#003366]">{globalStats.completedInternships}</p>
                         <div className="w-full h-1 bg-emerald-100 rounded-full mt-3 overflow-hidden">
                             <div className="h-full bg-emerald-500 w-[40%]" />
                         </div>
                       </div>
                       <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl transition-all cursor-default">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">En ejecución</p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">{t.dashboard.running}</p>
                         <p className="text-3xl font-black text-[#003366]">{globalStats.activeInternships}</p>
                         <div className="w-full h-1 bg-blue-100 rounded-full mt-3 overflow-hidden">
                             <div className="h-full bg-blue-500 w-[70%]" />
                         </div>
                       </div>
                       <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl transition-all cursor-default">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Alumnos</p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">{t.dashboard.totalStudentsLabel}</p>
                         <p className="text-3xl font-black text-[#003366]">{globalStats.totalStudents}</p>
                         <div className="w-full h-1 bg-amber-100 rounded-full mt-3 overflow-hidden">
                             <div className="h-full bg-amber-500 w-[100%]" />
@@ -1134,14 +1148,14 @@ export function DashboardMain() {
                     <div className="p-2.5 text-indigo-600">
                       <PieChart className="w-6 h-6" />
                     </div>
-                    <h3 className="text-xl font-black text-indigo-900 uppercase tracking-tight">Salud del Sistema</h3>
+                    <h3 className="text-xl font-black text-indigo-900 uppercase tracking-tight">{t.dashboard.systemHealth}</h3>
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                     <div className="space-y-8">
                       <div>
                         <div className="flex justify-between mb-2 text-[10px] font-black uppercase tracking-widest">
-                          <span className="text-slate-400">Distribución de Usuarios</span>
+                          <span className="text-slate-400">{t.dashboard.userDistribution}</span>
                         </div>
                         <div className="space-y-3">
                           {adminStats.rolesDistribution.map((item) => (
@@ -1166,14 +1180,14 @@ export function DashboardMain() {
                        <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col justify-center">
                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">{t.stats.avgLatency}</p>
                           <p className="text-3xl font-black text-indigo-900">{Math.round(adminStats.avgResponseTime)}ms</p>
-                          <p className="text-[9px] text-emerald-500 font-bold mt-1">ÓPTIMO</p>
+                          <p className="text-[9px] text-emerald-500 font-bold mt-1">{t.dashboard.optimal}</p>
                        </div>
                        <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col justify-center">
-                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Errores/24h</p>
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">{t.dashboard.errors24h}</p>
                           <p className={cn("text-3xl font-black", adminStats.counters.errorsToday > 0 ? "text-rose-600" : "text-emerald-600")}>
                             {adminStats.counters.errorsToday}
                           </p>
-                          <p className="text-[9px] text-slate-400 font-bold mt-1">PROMEDIO ESTABLE</p>
+                          <p className="text-[9px] text-slate-400 font-bold mt-1">{t.dashboard.stableAverage}</p>
                        </div>
                     </div>
                   </div>

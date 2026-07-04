@@ -30,7 +30,7 @@ interface ArcoRequest {
 }
 
 export function PrivacyAdminView() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [requests, setRequests] = useState<ArcoRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
@@ -54,6 +54,14 @@ export function PrivacyAdminView() {
   useEffect(() => {
     loadRequests();
   }, [loadRequests]);
+
+  useEffect(() => {
+    if (selectedRequest) {
+      setResponseMsg(selectedRequest.response || "");
+    } else {
+      setResponseMsg("");
+    }
+  }, [selectedRequest]);
 
   const handleRespond = async (status: string) => {
     if (!selectedRequest || !responseMsg.trim()) {
@@ -234,7 +242,7 @@ export function PrivacyAdminView() {
                       </td>
                       <td className="px-6 py-6">
                         <span className="inline-flex items-center text-slate-400 text-[10px] font-black tracking-widest uppercase">
-                          {req.type}
+                          {t.admin.privacy.arcoTypes?.[req.type as keyof typeof t.admin.privacy.arcoTypes] || req.type}
                         </span>
                       </td>
                       <td className="px-6 py-6">
@@ -242,7 +250,7 @@ export function PrivacyAdminView() {
                       </td>
                       <td className="px-6 py-6 text-center">
                          <p className="text-xs font-medium text-slate-600">
-                           {new Date(req.createdAt).toLocaleDateString()}
+                           {new Date(req.createdAt).toLocaleDateString(locale === 'es' ? 'es-EC' : 'en-US')}
                          </p>
                       </td>
                       <td className="px-8 py-6 text-right">
@@ -304,7 +312,9 @@ export function PrivacyAdminView() {
                       </div>
                       <div>
                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.admin.privacy.modalTypeLabel}</p>
-                        <p className="text-sm font-bold text-slate-700">{selectedRequest.type}</p>
+                        <p className="text-sm font-bold text-slate-700">
+                          {t.admin.privacy.arcoTypes?.[selectedRequest.type as keyof typeof t.admin.privacy.arcoTypes] || selectedRequest.type}
+                        </p>
                       </div>
                     </div>
                     <div>

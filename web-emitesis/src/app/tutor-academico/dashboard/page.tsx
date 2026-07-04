@@ -194,9 +194,11 @@ export default function TutorAcademicoDashboardPage() {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip 
-                      contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                    />
+                     <Tooltip 
+                       contentStyle={{ backgroundColor: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', color: 'var(--foreground)', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)' }}
+                       itemStyle={{ color: 'var(--foreground)', fontSize: '12px', fontWeight: 600 }}
+                       labelStyle={{ color: 'var(--muted-foreground)', fontSize: '10px', fontWeight: 700 }}
+                     />
                     <Legend verticalAlign="bottom" height={36}/>
                   </PieChart>
                 </ResponsiveContainer>
