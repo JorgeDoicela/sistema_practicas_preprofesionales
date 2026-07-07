@@ -64,7 +64,7 @@ export function ProfileView() {
       }
     })();
     return () => { cancelled = true; };
-  }, [t.profile.errorLoading]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const openEdit = () => {
     setEditName(profile?.fullName ?? "");
@@ -354,7 +354,7 @@ export function ProfileView() {
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-[#003366] transition-all text-sm font-medium"
-                    placeholder="Tu nombre completo"
+                    placeholder={t.profile.namePlaceholder}
                   />
                 </div>
 

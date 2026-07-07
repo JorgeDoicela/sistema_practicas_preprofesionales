@@ -1005,6 +1005,7 @@ export const en = {
     editProfile: "Edit profile",
     accountData: "Account Data",
     fullName: "Full Name",
+    namePlaceholder: "Your full name",
     institutionalEmail: "Institutional Email",
     accountStatus: "Account Status",
     memberSince: "Member Since",

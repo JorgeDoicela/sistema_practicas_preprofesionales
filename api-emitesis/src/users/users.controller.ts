@@ -18,6 +18,7 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateMeDto } from './dto/update-me.dto';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
 import { RolesGuard } from '../auth/strategies/roles.guard';
 import { TwoFactorGuard } from '../auth/strategies/two-factor.guard';
@@ -85,11 +86,11 @@ export class UsersController {
   )
   updateMe(
     @Req() req: { user: { userId: string } },
-    @Body() body: { fullName?: string; password?: string },
+    @Body() body: UpdateMeDto,
   ) {
     const allowed: { fullName?: string; password?: string } = {};
     if (body.fullName?.trim()) allowed.fullName = body.fullName.trim();
-    if (body.password?.trim()) allowed.password = body.password.trim();
+    if (body.password) allowed.password = body.password;
     return this.usersService.update(req.user.userId, allowed, req.user.userId);
   }
 

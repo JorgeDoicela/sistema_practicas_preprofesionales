@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Shield, Smartphone, CheckCircle, XCircle, AlertCircle, Loader2, ArrowLeft } from "lucide-react";
+import { Shield, Smartphone, XCircle, AlertCircle, Loader2, ArrowLeft } from "lucide-react";
 import { authService } from "@/services/auth.service";
 import Image from "next/image";
 import Cookies from "js-cookie";
@@ -22,22 +22,55 @@ export default function ConfigurationPage() {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        const parsed = JSON.parse(storedUser);
+        // Garantizar que isTwoFactorEnabled sea siempre booleano
+        setUser({ ...parsed, isTwoFactorEnabled: parsed.isTwoFactorEnabled === true });
+      } catch {
+        // Si el JSON está corrupto, limpiar sesión inválida
+        localStorage.removeItem("user");
+      }
     }
   }, []);
+
+  /** Persiste el usuario actualizado tanto en localStorage como en cookie */
+  const persistUser = (updatedUser: Record<string, unknown>) => {
+    const serialized = JSON.stringify(updatedUser);
+    localStorage.setItem("user", serialized);
+    Cookies.set("user", serialized, {
+      expires: 1,
+      secure: typeof window !== "undefined" && window.location.protocol === "https:",
+      sameSite: "strict",
+      path: "/",
+    });
+    setUser(updatedUser);
+  };
+
+  /** Filtra el input para aceptar solo dígitos numéricos */
+  const handleCodeChange = (val: string) => {
+    const digits = val.replace(/\D/g, "").slice(0, 6);
+    setCode(digits);
+    if (error) setError(null);
+  };
+
+  const handleDisableCodeChange = (val: string) => {
+    const digits = val.replace(/\D/g, "").slice(0, 6);
+    setDisableCode(digits);
+    if (error) setError(null);
+  };
 
   const handleStartSetup = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      console.log("[2FA Frontend] Iniciando generación de 2FA...");
       const data = await authService.generate2FA();
-      console.log("[2FA Frontend] QR generado con éxito");
-      setQrCode(data.qrCodeDataURL);
+      setQrCode((data as any).qrCodeDataURL);
       setStep("setup");
     } catch (err: any) {
-      console.error("[2FA Frontend] Error al generar QR:", err);
-      const errMsg = err.message || "Error al generar código QR";
+      const errMsg =
+        err.response?.data?.message ||
+        err.message ||
+        "Error al generar el código QR. Intenta de nuevo.";
       setError(errMsg);
       toast.error(errMsg);
     } finally {
@@ -46,24 +79,20 @@ export default function ConfigurationPage() {
   };
 
   const handleVerifyAndEnable = async () => {
+    if (code.length !== 6) return;
     setIsLoading(true);
     setError(null);
     try {
-      console.log("[2FA Frontend] Verificando código:", code);
       await authService.turnOn2FA(code);
-      console.log("[2FA Frontend] 2FA Activado en servidor");
-      
-      const updatedUser = { ...user, isTwoFactorEnabled: true };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      Cookies.set("user", JSON.stringify(updatedUser), { expires: 1, secure: typeof window !== 'undefined' && window.location.protocol === 'https:', sameSite: "strict", path: "/" });
-      
-      setUser(updatedUser);
+      persistUser({ ...user, isTwoFactorEnabled: true });
       setStep("status");
       setCode("");
       toast.success("Autenticación de Dos Factores activada con éxito.");
     } catch (err: any) {
-      console.error("[2FA Frontend] Error en la activación:", err);
-      const errMsg = err.message || "Código de verificación inválido";
+      const errMsg =
+        err.response?.data?.message ||
+        err.message ||
+        "Código de verificación inválido o expirado.";
       setError(errMsg);
       toast.error(errMsg);
     } finally {
@@ -72,24 +101,20 @@ export default function ConfigurationPage() {
   };
 
   const handleVerifyAndDisable = async () => {
+    if (disableCode.length !== 6) return;
     setIsLoading(true);
     setError(null);
     try {
-      console.log("[2FA Frontend] Desactivando 2FA con código:", disableCode);
       await authService.turnOff2FA(disableCode);
-      console.log("[2FA Frontend] 2FA Desactivado en servidor");
-      
-      const updatedUser = { ...user, isTwoFactorEnabled: false };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      Cookies.set("user", JSON.stringify(updatedUser), { expires: 1, secure: typeof window !== 'undefined' && window.location.protocol === 'https:', sameSite: "strict", path: "/" });
-      
-      setUser(updatedUser);
+      persistUser({ ...user, isTwoFactorEnabled: false });
       setStep("status");
       setDisableCode("");
       toast.success("La Autenticación de Dos Factores ha sido desactivada.");
     } catch (err: any) {
-      console.error("[2FA Frontend] Error en la desactivación:", err);
-      const errMsg = err.message || "Código de verificación inválido";
+      const errMsg =
+        err.response?.data?.message ||
+        err.message ||
+        "Código de verificación inválido o expirado.";
       setError(errMsg);
       toast.error(errMsg);
     } finally {
@@ -107,7 +132,7 @@ export default function ConfigurationPage() {
           </header>
 
           <div className="space-y-6">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
@@ -123,8 +148,8 @@ export default function ConfigurationPage() {
                     <div>
                       <h2 className="text-xl font-black text-[#003366] tracking-tight">Verificación en Dos Pasos (2FA)</h2>
                       <p className="text-slate-500 text-xs mt-1">
-                        {user.isTwoFactorEnabled 
-                          ? "Tu cuenta está protegida con una capa adicional de seguridad avanzada." 
+                        {user.isTwoFactorEnabled
+                          ? "Tu cuenta está protegida con una capa adicional de seguridad avanzada."
                           : "Añade una capa de seguridad extra usando una aplicación de autenticación."}
                       </p>
                     </div>
@@ -138,7 +163,7 @@ export default function ConfigurationPage() {
 
                 <AnimatePresence mode="wait">
                   {step === "status" && (
-                    <motion.div 
+                    <motion.div
                       key="status"
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -161,8 +186,16 @@ export default function ConfigurationPage() {
                         </div>
                       </div>
 
+                      {/* Error inline al fallar generateQR desde el paso status */}
+                      {error && (
+                        <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-xs font-bold flex items-center justify-center gap-2">
+                          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                          {error}
+                        </div>
+                      )}
+
                       {!user.isTwoFactorEnabled ? (
-                        <button 
+                        <button
                           onClick={handleStartSetup}
                           disabled={isLoading}
                           className="inline-flex items-center gap-3 bg-[#003366] text-white px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:translate-y-[-2px] transition-all disabled:opacity-50 disabled:translate-y-0 cursor-pointer"
@@ -171,7 +204,7 @@ export default function ConfigurationPage() {
                           Activar ahora
                         </button>
                       ) : (
-                        <button 
+                        <button
                           onClick={() => { setStep("disable"); setError(null); }}
                           disabled={isLoading}
                           className="inline-flex items-center gap-3 bg-white border border-red-100 text-red-500 px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-red-50 transition-all disabled:opacity-50 cursor-pointer"
@@ -184,15 +217,15 @@ export default function ConfigurationPage() {
                   )}
 
                   {step === "setup" && (
-                    <motion.div 
+                    <motion.div
                       key="setup"
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -15 }}
                       className="space-y-6"
                     >
-                      <button 
-                        onClick={() => { setStep("status"); setError(null); setCode(""); }} 
+                      <button
+                        onClick={() => { setStep("status"); setError(null); setCode(""); }}
                         className="flex items-center gap-2 text-slate-400 hover:text-[#003366] transition-colors mb-4 group"
                       >
                         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -202,12 +235,12 @@ export default function ConfigurationPage() {
                       <div className="flex flex-col md:flex-row gap-12 items-start">
                         <div className="bg-white p-6 rounded-[2.5rem] shadow-inner border-2 border-slate-50 flex-shrink-0 mx-auto md:mx-0">
                           {qrCode ? (
-                            <Image src={qrCode} alt="QR Setup" width={220} height={220} className="rounded-2xl" />
+                            <Image src={qrCode} alt="Código QR para configurar 2FA" width={220} height={220} className="rounded-2xl" />
                           ) : (
                             <div className="w-[220px] h-[220px] bg-slate-50 animate-pulse rounded-2xl" />
                           )}
                         </div>
-                        
+
                         <div className="flex-1 space-y-6 w-full">
                           <div className="p-5 bg-blue-50/50 border border-blue-100 rounded-2xl">
                             <p className="text-[11px] text-[#003366] font-bold leading-relaxed">
@@ -217,13 +250,19 @@ export default function ConfigurationPage() {
 
                           <div className="space-y-4">
                             <div>
-                              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1 block mb-2">Código de Verificación</label>
-                              <input 
-                                type="text" 
+                              <label htmlFor="totp-enable-code" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1 block mb-2">
+                                Código de Verificación
+                              </label>
+                              <input
+                                id="totp-enable-code"
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
                                 maxLength={6}
                                 value={code}
-                                onChange={(e) => setCode(e.target.value)}
+                                onChange={(e) => handleCodeChange(e.target.value)}
                                 placeholder="000000"
+                                autoComplete="one-time-code"
                                 className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-sm focus:ring-2 focus:ring-blue-900/5 outline-none font-bold tracking-[0.5em] text-center"
                               />
                             </div>
@@ -235,7 +274,7 @@ export default function ConfigurationPage() {
                               </div>
                             )}
 
-                            <button 
+                            <button
                               onClick={handleVerifyAndEnable}
                               disabled={isLoading || code.length < 6}
                               className="w-full bg-[#C5A059] text-white py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:translate-y-[-2px] transition-all disabled:opacity-50 disabled:translate-y-0 cursor-pointer"
@@ -249,15 +288,15 @@ export default function ConfigurationPage() {
                   )}
 
                   {step === "disable" && (
-                    <motion.div 
+                    <motion.div
                       key="disable"
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -15 }}
                       className="space-y-6"
                     >
-                      <button 
-                        onClick={() => { setStep("status"); setError(null); setDisableCode(""); }} 
+                      <button
+                        onClick={() => { setStep("status"); setError(null); setDisableCode(""); }}
                         className="flex items-center gap-2 text-slate-400 hover:text-red-500 transition-colors mb-4 group"
                       >
                         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -268,7 +307,7 @@ export default function ConfigurationPage() {
                         <div className="bg-red-50 p-6 rounded-[2.5rem] shadow-inner border border-red-100/50 flex-shrink-0 mx-auto md:mx-0 flex items-center justify-center w-[220px] h-[220px]">
                           <Shield className="w-20 h-20 text-red-500 animate-pulse" />
                         </div>
-                        
+
                         <div className="flex-1 space-y-6 w-full">
                           <div className="p-5 bg-red-50/50 border border-red-100 rounded-2xl">
                             <h4 className="text-xs font-black uppercase tracking-widest text-red-700 mb-1">Confirmar desactivación de 2FA</h4>
@@ -279,13 +318,19 @@ export default function ConfigurationPage() {
 
                           <div className="space-y-4">
                             <div>
-                              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1 block mb-2">Código de Verificación Actual</label>
-                              <input 
-                                type="text" 
+                              <label htmlFor="totp-disable-code" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1 block mb-2">
+                                Código de Verificación Actual
+                              </label>
+                              <input
+                                id="totp-disable-code"
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
                                 maxLength={6}
                                 value={disableCode}
-                                onChange={(e) => setDisableCode(e.target.value)}
+                                onChange={(e) => handleDisableCodeChange(e.target.value)}
                                 placeholder="000000"
+                                autoComplete="one-time-code"
                                 className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-sm focus:ring-2 focus:ring-red-500/10 outline-none font-bold tracking-[0.5em] text-center"
                               />
                             </div>
@@ -297,7 +342,7 @@ export default function ConfigurationPage() {
                               </div>
                             )}
 
-                            <button 
+                            <button
                               onClick={handleVerifyAndDisable}
                               disabled={isLoading || disableCode.length < 6}
                               className="w-full bg-red-600 text-white py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:bg-red-700 hover:translate-y-[-2px] transition-all disabled:opacity-50 disabled:translate-y-0 cursor-pointer"
@@ -315,13 +360,13 @@ export default function ConfigurationPage() {
 
             <div className="p-5 md:p-8 bg-slate-100/50 rounded-[2rem] border border-dashed border-slate-200 animate-in fade-in duration-500 delay-150">
                <div className="flex items-start gap-4">
-                  <AlertCircle className="w-5 h-5 text-[#003366] flex-shrink-0 mt-1" />
-                  <div>
-                     <h4 className="text-[10px] font-black uppercase tracking-widest text-[#003366] mb-1">Nota importante sobre recuperación</h4>
-                     <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
-                       Asegúrate de mantener el acceso a tu dispositivo de autenticación. Si pierdes el acceso y no tienes configurados métodos de recuperación alternativos, deberás contactar con soporte técnico para restablecer tu cuenta.
-                     </p>
-                  </div>
+                 <AlertCircle className="w-5 h-5 text-[#003366] flex-shrink-0 mt-1" />
+                 <div>
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-[#003366] mb-1">Nota importante sobre recuperación</h4>
+                    <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+                      Asegúrate de mantener el acceso a tu dispositivo de autenticación. Si pierdes el acceso y no tienes configurados métodos de recuperación alternativos, deberás contactar con soporte técnico para restablecer tu cuenta.
+                    </p>
+                 </div>
                </div>
             </div>
 

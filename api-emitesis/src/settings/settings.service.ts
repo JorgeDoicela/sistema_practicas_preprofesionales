@@ -131,6 +131,10 @@ export class SettingsService implements OnModuleInit {
   }
 
   async update(key: string, dto: UpdateSettingDto) {
+    const exists = await this.prisma.systemSetting.findUnique({ where: { key } });
+    if (!exists) {
+      throw new NotFoundException(`Configuración '${key}' no encontrada`);
+    }
     return this.prisma.systemSetting.update({
       where: { key },
       data: dto,

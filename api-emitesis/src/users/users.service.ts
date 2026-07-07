@@ -297,6 +297,8 @@ export class UsersService {
         role: true,
         isActive: true,
         createdAt: true,
+        companyId: true,
+        isTwoFactorEnabled: true,
         cedula: true,
         phone: true,
         ciclo: true,
