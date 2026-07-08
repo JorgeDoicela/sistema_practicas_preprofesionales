@@ -1344,6 +1344,7 @@ export const en = {
       noInterns: "You don't have assigned interns yet.",
       planned: "planned",
       completed: "completed",
+      historyLimit: "Showing last 10 records",
     },
   },
 
@@ -1475,6 +1476,11 @@ export const en = {
       EN_CURSO: "In Progress",
       FINALIZADA: "Finished",
       PENDIENTE: "Pending",
+      "En Proceso": "In Progress",
+      "Activo": "In Progress",
+      "Finalizado": "Finished",
+      "Suspendida": "Suspended",
+      "Retirada": "Withdrawn",
     },
     documentStatus: {
       PENDIENTE: "Pending",
@@ -2171,7 +2177,14 @@ export const en = {
         noInterns: "No interns assigned yet",
         adjustSearch: "Adjust search term.",
         assignHint: "When the coordinator assigns interns to your company, they will appear here.",
-      }
+      },
+      presence: {
+        title: "Live Presence",
+        subtitle: "Real-time presence control",
+        empty: "No one at facilities",
+        hint: "* Students with active check-in verified by biometrics and GPS at the assigned site.",
+        verified: "Verified location",
+      },
     },
     card: {
       start: "Start",

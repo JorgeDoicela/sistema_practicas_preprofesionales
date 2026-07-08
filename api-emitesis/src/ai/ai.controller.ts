@@ -76,7 +76,7 @@ export class AiController {
 
   /** Verificar si el servicio de IA está disponible */
   @Get('status')
-  @Roles(Role.ESTUDIANTE, Role.ADMIN, Role.COORDINADOR, Role.TUTOR)
+  @Roles(Role.ESTUDIANTE, Role.ADMIN, Role.COORDINADOR, Role.TUTOR, Role.EMPRESA)
   getStatus() {
     return { available: this.aiService.isAvailable };
   }
@@ -99,7 +99,7 @@ export class AiController {
    * RF-AI-01: Endpoint de consulta para el Copilot de Estudiantes.
    */
   @Post('ask')
-  @Roles(Role.ESTUDIANTE)
+  @Roles(Role.ESTUDIANTE, Role.ADMIN, Role.COORDINADOR, Role.TUTOR, Role.EMPRESA)
   async ask(@Body() body: AskDto) {
     const answer = await this.aiService.askQuestion(
       body.context,

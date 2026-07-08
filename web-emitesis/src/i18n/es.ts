@@ -1265,6 +1265,7 @@ export const es = {
       noInterns: "Sin pasantes asignados",
       planned: "planificadas",
       completed: "completado",
+      historyLimit: "Mostrando últimos 10 registros",
     },
   },
 
@@ -1396,6 +1397,11 @@ export const es = {
       EN_CURSO: "En Ejecución",
       FINALIZADA: "Finalizada",
       PENDIENTE: "Pendiente de Inicio",
+      "En Proceso": "En Ejecución",
+      "Activo": "En Ejecución",
+      "Finalizado": "Finalizada",
+      "Suspendida": "Suspendida",
+      "Retirada": "Retirada",
     },
     documentStatus: {
       PENDIENTE: "Pendiente",
@@ -2087,7 +2093,14 @@ export const es = {
         noInterns: "No hay pasantes asignados aún",
         adjustSearch: "Ajusta el término de búsqueda.",
         assignHint: "Cuando el coordinador asigne pasantes a tu empresa aparecerán aquí.",
-      }
+      },
+      presence: {
+        title: "Presencia en Vivo",
+        subtitle: "Control de planta actual",
+        empty: "Nadie en instalaciones",
+        hint: "* Estudiantes con check-in activo verificado mediante biometría y GPS en la sede asignada.",
+        verified: "Ubicación verificada",
+      },
     },
     card: {
       start: "Inicio",

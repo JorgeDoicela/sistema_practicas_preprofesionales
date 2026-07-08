@@ -251,7 +251,7 @@ export class AttendanceService {
     if (actor && actor.role !== 'ADMIN' && actor.role !== 'COORDINADOR') {
       const isStudentOwner = internship.studentId === actor.id;
       const isTutorOwner = internship.tutorId === actor.id;
-      const isCompanyOwner = internship.companyId === actor.companyId;
+      const isCompanyOwner = !!actor.companyId && internship.companyId === actor.companyId;
       if (!isStudentOwner && !isTutorOwner && !isCompanyOwner) {
         throw new ForbiddenException('No tienes permiso para ver asistencias de esta práctica.');
       }
@@ -287,7 +287,7 @@ export class AttendanceService {
     if (actor && actor.role !== 'ADMIN' && actor.role !== 'COORDINADOR') {
       const isStudentOwner = internship.studentId === actor.id;
       const isTutorOwner = internship.tutorId === actor.id;
-      const isCompanyOwner = internship.companyId === actor.companyId;
+      const isCompanyOwner = !!actor.companyId && internship.companyId === actor.companyId;
       if (!isStudentOwner && !isTutorOwner && !isCompanyOwner) {
         throw new ForbiddenException('No tienes permiso para ver el resumen de esta práctica.');
       }

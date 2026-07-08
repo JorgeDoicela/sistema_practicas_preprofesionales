@@ -17,6 +17,7 @@ import {
   Calendar,
   Award,
   FlaskConical,
+  AlertCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -33,17 +34,19 @@ export default function EmpresaDashboardPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
       const userStr = localStorage.getItem("user");
       if (!userStr) return;
-      const user = JSON.parse(userStr);
+      let user = JSON.parse(userStr);
       if (!user.companyId) {
         const profile = await usersService.getProfile();
-        const normalized = { ...user, ...profile };
-        localStorage.setItem("user", JSON.stringify(normalized));
-        user.companyId = normalized.companyId;
+        user = { ...user, ...profile };
+        localStorage.setItem("user", JSON.stringify(user));
       }
       setCompanyName(user.fullName || "");
 
@@ -55,12 +58,13 @@ export default function EmpresaDashboardPage() {
       const res: any = await internshipsService.findByCompany(user.companyId);
       const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
       setInternships(list);
-    } catch (error) {
-      console.error("Error cargando datos empresa:", error);
+    } catch (err: any) {
+      console.error("Error cargando datos empresa:", err);
+      setError(err.message || t.common.error || "Error al cargar los datos");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     loadData();
@@ -161,6 +165,24 @@ export default function EmpresaDashboardPage() {
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                   {t.empresa.dashboard.list.loading}
                 </p>
+              </div>
+            ) : error ? (
+              <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-dashed border-red-200 p-10 sm:p-16 md:p-20 text-center">
+                <div className="w-20 h-20 bg-rose-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                  <AlertCircle className="w-10 h-10 text-rose-500" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-2">
+                  {t.common.error}
+                </h3>
+                <p className="text-slate-400 text-sm mb-6">
+                  {error}
+                </p>
+                <button
+                  onClick={loadData}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#003366] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#004488] transition-all shadow-md active:scale-95"
+                >
+                  {t.common.retry}
+                </button>
               </div>
             ) : filtered.length === 0 ? (
               <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-dashed border-slate-200 p-10 sm:p-16 md:p-20 text-center">

@@ -31,10 +31,11 @@ interface RowState {
   summary: any | null;
   history: any[];
   loadingDetail: boolean;
+  detailsLoaded?: boolean;
 }
 
 export default function EmpresaAsistenciaPage() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [rows, setRows] = useState<RowState[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,7 +44,7 @@ export default function EmpresaAsistenciaPage() {
   const loadBase = useCallback(async () => {
     try {
       const userStr = localStorage.getItem("user");
-      if (!userStr) return;
+      if (!userStr) { setLoading(false); return; }
       const user = JSON.parse(userStr);
       if (!user.companyId) { setLoading(false); return; }
 
@@ -51,15 +52,35 @@ export default function EmpresaAsistenciaPage() {
       const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
 
       setRows(
-        list.map((i: any) => ({
-          internshipId: i.id,
-          studentName: i.student?.fullName ?? "—",
-          status: i.status ?? "—",
-          totalHours: i.totalHours ?? 0,
-          summary: null,
-          history: [],
-          loadingDetail: false,
-        })),
+        list.map((i: any) => {
+          let totalMinutes = 0;
+          if (Array.isArray(i.attendances)) {
+            i.attendances.forEach((att: any) => {
+              if (att.checkIn && att.checkOut) {
+                const diff = new Date(att.checkOut).getTime() - new Date(att.checkIn).getTime();
+                totalMinutes += Math.floor(diff / (1000 * 60));
+              }
+            });
+          }
+          const computedHours = Number((totalMinutes / 60).toFixed(2));
+
+          return {
+            internshipId: i.id,
+            studentName: i.student?.fullName ?? "—",
+            status: i.status ?? "—",
+            totalHours: i.totalHours ?? 0,
+            summary: {
+              totalHours: computedHours,
+              requiredHours: i.totalHours ?? 0,
+              progressPercentage: i.totalHours > 0 ? Math.min(100, Number(((computedHours / i.totalHours) * 100).toFixed(1))) : 0,
+              remainingHours: Math.max(0, (i.totalHours ?? 0) - computedHours),
+              totalRecords: i.attendances?.length ?? 0,
+            },
+            history: [],
+            loadingDetail: false,
+            detailsLoaded: false,
+          };
+        }),
       );
     } catch (error) {
       console.error("Error cargando pasantes:", error);
@@ -86,7 +107,7 @@ export default function EmpresaAsistenciaPage() {
       setRows((prev) =>
         prev.map((r) =>
           r.internshipId === internshipId
-            ? { ...r, summary, history: history as any[], loadingDetail: false }
+            ? { ...r, summary, history: history as any[], loadingDetail: false, detailsLoaded: true }
             : r,
         ),
       );
@@ -103,7 +124,7 @@ export default function EmpresaAsistenciaPage() {
     if (expandedId === internshipId) { setExpandedId(null); return; }
     setExpandedId(internshipId);
     const row = rows.find((r) => r.internshipId === internshipId);
-    if (row && !row.summary && !row.loadingDetail) loadDetail(internshipId);
+    if (row && !row.detailsLoaded && !row.loadingDetail) loadDetail(internshipId);
   };
 
   const filtered = rows.filter((r) =>
@@ -281,7 +302,7 @@ export default function EmpresaAsistenciaPage() {
                                     {row.history.slice(0, 10).map((h: any) => (
                                       <tr key={h.id} className="hover:bg-slate-50 transition-colors">
                                         <td className="px-5 py-3 font-bold text-[#003366]">
-                                          {new Date(h.checkIn).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+                                          {new Date(h.checkIn).toLocaleDateString(locale === "en" ? "en-US" : "es-ES", { day: "numeric", month: "short" })}
                                         </td>
                                         <td className="px-5 py-3">
                                           <div className="flex items-center gap-1.5 text-emerald-600 font-bold">
@@ -330,7 +351,7 @@ export default function EmpresaAsistenciaPage() {
                                 </table>
                                 {row.history.length > 10 && (
                                   <p className="text-center text-[9px] font-black uppercase tracking-widest text-slate-300 py-3 border-t border-slate-100">
-                                    Mostrando últimos 10 registros
+                                    {t.asistencia.company.historyLimit}
                                   </p>
                                 )}
                               </div>

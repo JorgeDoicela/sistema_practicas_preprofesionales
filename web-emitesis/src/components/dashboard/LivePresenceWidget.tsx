@@ -4,34 +4,38 @@ import React from "react";
 import { motion } from "framer-motion";
 import { User, MapPin, Clock, Radar } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface LivePresenceWidgetProps {
   internships: any[];
 }
 
 export function LivePresenceWidget({ internships }: LivePresenceWidgetProps) {
+  const { t } = useLanguage();
+
   // Filtrar estudiantes con check-in hoy sin check-out
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const safeInternships = Array.isArray(internships) ? internships : [];
 
-  const activeNow = safeInternships.filter((i) => {
+  const activeNow = safeInternships.reduce((acc: any[], i) => {
     const todayAttendance = (i.attendances || []).find((a: any) => {
       const checkDate = new Date(a.checkIn);
       checkDate.setHours(0, 0, 0, 0);
       return checkDate.getTime() === today.getTime() && !a.checkOut;
     });
-    return !!todayAttendance;
-  }).map(i => {
-    const attendance = i.attendances.find((a: any) => !a.checkOut);
-    return {
-      id: i.id,
-      name: i.student?.fullName || "Estudiante",
-      checkIn: attendance.checkIn,
-      locationLabel: attendance.locationLabel || "Ubicación verificada",
-    };
-  });
+
+    if (todayAttendance) {
+      acc.push({
+        id: i.id,
+        name: i.student?.fullName || "Estudiante",
+        checkIn: todayAttendance.checkIn,
+        locationLabel: todayAttendance.locationLabel || t.empresa.dashboard.presence.verified,
+      });
+    }
+    return acc;
+  }, []);
 
   return (
     <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden flex flex-col h-full">
@@ -42,8 +46,8 @@ export function LivePresenceWidget({ internships }: LivePresenceWidgetProps) {
                 <Radar className="w-8 h-8 text-[#C5A059] animate-pulse" />
              </div>
              <div>
-               <h3 className="text-lg font-black tracking-tight">Presencia en Vivo</h3>
-               <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Control de planta actual</p>
+                <h3 className="text-lg font-black tracking-tight">{t.empresa.dashboard.presence.title}</h3>
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-60">{t.empresa.dashboard.presence.subtitle}</p>
              </div>
           </div>
           <div className="px-3 py-1 bg-white/10 rounded-lg">
@@ -56,7 +60,7 @@ export function LivePresenceWidget({ internships }: LivePresenceWidgetProps) {
         {activeNow.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center py-10 opacity-40">
             <User className="w-12 h-12 text-slate-300 mb-2" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nadie en instalaciones</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.empresa.dashboard.presence.empty}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -89,7 +93,7 @@ export function LivePresenceWidget({ internships }: LivePresenceWidgetProps) {
       
       <div className="p-6 bg-slate-50 border-t border-slate-100">
          <p className="text-[9px] font-medium text-slate-400 leading-tight">
-           * Estudiantes con check-in activo verificado mediante biometría y GPS en la sede asignada.
+           {t.empresa.dashboard.presence.hint}
          </p>
       </div>
     </div>
