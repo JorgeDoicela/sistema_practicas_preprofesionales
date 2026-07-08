@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SystemLogsService } from '../system-logs/system-logs.service';
 import * as crypto from 'crypto';
@@ -22,7 +22,17 @@ export class SignatureService {
       include: { internship: { include: { student: true } } }
     });
 
-    if (!document) throw new Error('Documento no encontrado');
+    if (!document) {
+      throw new NotFoundException('Documento no encontrado');
+    }
+
+    if (document.status !== 'APROBADO_TUTOR') {
+      throw new BadRequestException('El documento debe estar aprobado por el tutor antes de ser firmado electrónicamente');
+    }
+
+    if (!document.filePath) {
+      throw new BadRequestException('El documento no contiene ningún archivo subido para firmar');
+    }
 
     // RF-SIG-002: Generar un "Sello de Veracidad" (Hash institucional)
     const signatureKey = crypto

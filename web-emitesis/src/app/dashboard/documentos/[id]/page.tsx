@@ -556,7 +556,8 @@ export default function DocumentDetailPage() {
                          </div>
 
                          <div className="flex flex-wrap items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto sm:shrink-0 sm:ml-auto">
-                           {doc.status === 'EN_REVISION_TUTOR' && (
+                           {((currentUser?.role === 'TUTOR' && doc.status === 'EN_REVISION_TUTOR') ||
+                             (currentUser?.role === 'COORDINADOR' && doc.status === 'APROBADO_TUTOR')) && (
                              <button 
                                onClick={() => handleReviewClick(doc)}
                                className="flex flex-1 sm:flex-initial min-w-0 items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest bg-[#C5A059] text-white hover:bg-[#C5A059]/90 shadow-lg shadow-amber-900/10 active:scale-95 transition-all"

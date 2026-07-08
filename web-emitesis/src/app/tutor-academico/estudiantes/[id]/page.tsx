@@ -14,9 +14,9 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { internshipsService } from "@/services/internships.service";
 import { attendancesService } from "@/services/attendances.service";
 import { documentsService } from "@/services/documents.service";
-import { monitoringService, MonitoringVisitPayload } from "@/services/monitoring.service";
 import { evaluationsService, EvaluationPayload } from "@/services/evaluations.service";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { toast } from "sonner";
 
 export default function StudentDetailPage() {
   const { t } = useLanguage();
@@ -31,6 +31,8 @@ export default function StudentDetailPage() {
   const [evaluations, setEvaluations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [visitToDelete, setVisitToDelete] = useState<string | null>(null);
 
   // Modal states
   const [isVisitModalOpen, setIsVisitModalOpen] = useState(false);
@@ -52,8 +54,10 @@ export default function StudentDetailPage() {
     observations: ''
   });
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (isSilent = false) => {
     try {
+      if (!isSilent) setLoading(true);
+      setError(null);
       const [intData, attData, sumData, docsData, visData, evalData] = await Promise.all([
         internshipsService.findOne(id as string),
         attendancesService.findByInternship(id as string),
@@ -87,8 +91,9 @@ export default function StudentDetailPage() {
           observations: acadEval.observations || ''
         });
       }
-    } catch (error) {
-      console.error("Error loading student data:", error);
+    } catch (err: any) {
+      console.error("Error loading student data:", err);
+      setError(err.message || "Error al conectar con el servidor.");
     } finally {
       setLoading(false);
     }
@@ -110,23 +115,29 @@ export default function StudentDetailPage() {
         observations: newVisit.observations,
         recommendations: newVisit.recommendations || undefined,
       });
-      await loadData();
+      toast.success("Visita de seguimiento registrada con éxito");
+      await loadData(true);
       setIsVisitModalOpen(false);
       setNewVisit({ type: 'PRESENCIAL', date: new Date().toISOString().split('T')[0], location: '', observations: '', recommendations: '' });
     } catch (error: any) {
-      alert(error.message || t.common.errors.generic);
+      toast.error(error.message || t.common.errors.generic);
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDeleteVisit = async (visitId: string) => {
-    if (!confirm(t.tutor.studentDetail.visits.confirmDelete)) return;
+  const confirmDeleteVisit = async () => {
+    if (!visitToDelete) return;
+    setSaving(true);
     try {
-      await monitoringService.deleteVisit(visitId);
-      await loadData();
+      await monitoringService.deleteVisit(visitToDelete);
+      toast.success("Visita de seguimiento eliminada");
+      await loadData(true);
     } catch (error: any) {
-      alert(error.message || t.common.errors.generic);
+      toast.error(error.message || t.common.errors.generic);
+    } finally {
+      setSaving(false);
+      setVisitToDelete(null);
     }
   };
 
@@ -134,7 +145,7 @@ export default function StudentDetailPage() {
     // Validar que todos los campos tengan al menos 1 punto
     const scores = [evalScores.punctuality, evalScores.teamwork, evalScores.technicalSkills, evalScores.proactivity, evalScores.attitude];
     if (scores.some(s => s < 1)) {
-      alert(t.tutor.studentDetail.evaluation.errorEmpty);
+      toast.warning(t.tutor.studentDetail.evaluation.errorEmpty);
       return;
     }
 
@@ -145,12 +156,12 @@ export default function StudentDetailPage() {
         type: 'ACADEMICA',
         ...evalScores
       });
-      await loadData();
-      alert(t.tutor.studentDetail.evaluation.successMsg);
+      await loadData(true);
+      toast.success(t.tutor.studentDetail.evaluation.successMsg);
     } catch (error: any) {
       // Manejar errores de validación que pueden venir como array
       const msg = Array.isArray(error.message) ? error.message.join(', ') : error.message;
-      alert("Error: " + (msg || t.common.errors.generic));
+      toast.error("Error: " + (msg || t.common.errors.generic));
     } finally {
       setSaving(false);
     }
@@ -162,6 +173,26 @@ export default function StudentDetailPage() {
         <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.common.loading}</p>
       </div>
+    );
+  }
+
+  if (error && !internship) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-md mx-auto my-20 text-center space-y-6 bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+          <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 mx-auto">
+            <AlertCircle className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-800">Error al cargar expediente</h2>
+          <p className="text-slate-500 text-sm">{error}</p>
+          <button
+            onClick={() => loadData()}
+            className="px-6 py-3 bg-[#003366] text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-[#004488] transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
+      </DashboardLayout>
     );
   }
 
@@ -340,7 +371,7 @@ export default function StudentDetailPage() {
                               {new Date(visit.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}
                             </span>
                             <button 
-                              onClick={() => handleDeleteVisit(visit.id)}
+                              onClick={() => setVisitToDelete(visit.id)}
                               className="text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -569,6 +600,56 @@ export default function StudentDetailPage() {
                     {t.tutor.studentDetail.visits.save}
                   </button>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {visitToDelete && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+            <motion.div 
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+               onClick={() => setVisitToDelete(null)}
+               className="absolute inset-0 bg-[#003366]/40 backdrop-blur-sm"
+            />
+            <motion.div 
+               initial={{ scale: 0.9, opacity: 0 }}
+               animate={{ scale: 1, opacity: 1 }}
+               exit={{ scale: 0.9, opacity: 0 }}
+               className="relative bg-white rounded-[3rem] w-full max-w-md shadow-2xl overflow-hidden p-8 text-center space-y-6"
+            >
+              <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 mx-auto">
+                <Trash2 className="w-8 h-8" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-black text-[#003366] tracking-tight">
+                  {t.tutor.studentDetail.visits.confirmDelete}
+                </h3>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                  Esta acción no se puede deshacer
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <button 
+                  onClick={() => setVisitToDelete(null)}
+                  disabled={saving}
+                  className="p-4 bg-slate-100 text-[#003366] rounded-2xl font-black uppercase tracking-widest hover:bg-slate-200 transition-all text-xs"
+                >
+                  {t.tutor.studentDetail.visits.cancel}
+                </button>
+                <button 
+                  onClick={confirmDeleteVisit}
+                  disabled={saving}
+                  className="p-4 bg-rose-500 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-rose-600 shadow-lg shadow-rose-900/10 transition-all flex items-center justify-center gap-2 text-xs"
+                >
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                  Eliminar
+                </button>
               </div>
             </motion.div>
           </div>

@@ -45,7 +45,7 @@ export class AbsencesController {
   )
   create(@Req() req: any, @Body() dto: CreateAbsenceDto, @UploadedFile() file?: any) {
     const filePath = file ? `/uploads/absences/${file.filename}` : undefined;
-    return this.absencesService.create(req.user.sub, dto, filePath);
+    return this.absencesService.create(req.user.id, dto, filePath);
   }
 
   @Get('internship/:id')
@@ -57,7 +57,7 @@ export class AbsencesController {
   @Get('pending/tutor')
   @Roles(Role.TUTOR)
   findPendingForTutor(@Req() req: any) {
-    return this.absencesService.findPendingForTutor(req.user.sub);
+    return this.absencesService.findPendingForTutor(req.user.id);
   }
 
   @Get('all')
@@ -69,6 +69,6 @@ export class AbsencesController {
   @Patch(':id/review')
   @Roles(Role.TUTOR, Role.COORDINADOR)
   review(@Param('id') id: string, @Req() req: any, @Body() dto: ReviewAbsenceDto) {
-    return this.absencesService.review(id, req.user.sub, dto);
+    return this.absencesService.review(id, req.user.id, dto, req.user.role);
   }
 }

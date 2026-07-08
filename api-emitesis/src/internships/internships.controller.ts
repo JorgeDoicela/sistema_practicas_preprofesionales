@@ -36,8 +36,8 @@ export class InternshipsController {
 
   @Get('tutor/:id')
   @Roles(Role.TUTOR, Role.ADMIN)
-  findByTutor(@Param('id') id: string) {
-    return this.internshipsService.findByTutor(id);
+  findByTutor(@Param('id') id: string, @Req() req: any) {
+    return this.internshipsService.findByTutor(id, req.user);
   }
 
   @Get('student/:id')
@@ -55,8 +55,8 @@ export class InternshipsController {
   /** RF-ATT-LOC: El tutor académico (o admin/coordinador) configura las ubicaciones permitidas */
   @Patch(':id/locations')
   @Roles(Role.TUTOR, Role.ADMIN, Role.COORDINADOR)
-  updateLocations(@Param('id') id: string, @Body() dto: UpdateLocationsDto) {
-    return this.internshipsService.updateLocations(id, dto.locations);
+  updateLocations(@Param('id') id: string, @Body() dto: UpdateLocationsDto, @Req() req: any) {
+    return this.internshipsService.updateLocations(id, dto.locations, req.user);
   }
 
   @Patch(':id/toggle-test')

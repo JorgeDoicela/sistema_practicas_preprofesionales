@@ -67,8 +67,8 @@ export class DocumentsController {
 
   @Get('internship/:id')
   @Roles(Role.TUTOR, Role.COORDINADOR, Role.ESTUDIANTE)
-  findByInternship(@Param('id') id: string) {
-    return this.documentsService.findByInternship(id);
+  findByInternship(@Param('id') id: string, @Req() req: any) {
+    return this.documentsService.findByInternship(id, req.user);
   }
 
   @Get(':id/versions')

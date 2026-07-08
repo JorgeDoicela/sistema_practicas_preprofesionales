@@ -33,17 +33,21 @@ export default function TutorEstudiantesPage() {
   const [internships, setInternships] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     try {
+      setLoading(true);
+      setError(null);
       const userStr = localStorage.getItem("user");
       if (!userStr) return;
       const user = JSON.parse(userStr);
       const res: any = await internshipsService.findByTutor(user.id);
       const list = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
       setInternships(list);
-    } catch (error: any) {
-      console.error("Error cargando estudiantes del tutor:", error);
+    } catch (err: any) {
+      console.error("Error cargando estudiantes del tutor:", err);
+      setError(err.message || "Error al conectar con el servidor.");
     } finally {
       setLoading(false);
     }
@@ -93,6 +97,26 @@ export default function TutorEstudiantesPage() {
           <div className="flex flex-col items-center justify-center py-40 gap-4">
             <Loader2 className="w-12 h-12 text-[#003366] animate-spin" />
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.common.loading}</p>
+          </div>
+        ) : error ? (
+          <div className="bg-white rounded-[2.5rem] border border-red-100 p-20 text-center space-y-6">
+            <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center mx-auto text-red-500 animate-pulse">
+              <AlertTriangle className="w-10 h-10" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">
+                Error al cargar la información
+              </h3>
+              <p className="text-slate-400 text-sm">
+                {error}
+              </p>
+            </div>
+            <button
+              onClick={() => loadData()}
+              className="px-6 py-3 bg-[#003366] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#004488] transition-all shadow-lg active:scale-95 mx-auto"
+            >
+              Reintentar
+            </button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="bg-white rounded-[2.5rem] border border-dashed border-slate-200 p-20 text-center">

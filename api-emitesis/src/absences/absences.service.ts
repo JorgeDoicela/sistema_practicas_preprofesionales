@@ -82,7 +82,7 @@ export class AbsencesService {
     });
   }
 
-  async review(absenceId: string, reviewerId: string, dto: ReviewAbsenceDto) {
+  async review(absenceId: string, reviewerId: string, dto: ReviewAbsenceDto, reviewerRole: string) {
     const absence = await this.prisma.absence.findUnique({
       where: { id: absenceId },
       include: { internship: { include: { student: true } } },
@@ -90,6 +90,11 @@ export class AbsencesService {
     if (!absence) throw new NotFoundException('Ausencia no encontrada');
     if (absence.status !== 'PENDIENTE') {
       throw new BadRequestException('Esta ausencia ya fue revisada');
+    }
+
+    // Validación de permisos
+    if (reviewerRole === 'TUTOR' && absence.internship.tutorId !== reviewerId) {
+      throw new ForbiddenException('No tienes permiso para revisar esta ausencia');
     }
 
     const updated = await this.prisma.absence.update({

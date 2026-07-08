@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateDocumentDatesDto } from './dto/update-document-dates.dto';
 import { ReviewDocumentDto } from './dto/review-document.dto';
@@ -48,7 +48,25 @@ export class DocumentsService {
     });
   }
 
-  async findByInternship(internshipId: string) {
+  async findByInternship(internshipId: string, actor?: { id: string; role: string; companyId?: string | null }) {
+    const internship = await this.prisma.internship.findUnique({
+      where: { id: internshipId },
+      select: { studentId: true, tutorId: true, companyId: true },
+    });
+
+    if (!internship) {
+      throw new NotFoundException('Asignación no encontrada');
+    }
+
+    if (actor && actor.role !== 'COORDINADOR' && actor.role !== 'ADMIN') {
+      const isOwnerStudent = internship.studentId === actor.id;
+      const isOwnerTutor = internship.tutorId === actor.id;
+      const isOwnerCompany = internship.companyId === actor.companyId;
+      if (!isOwnerStudent && !isOwnerTutor && !isOwnerCompany) {
+        throw new ForbiddenException('No tienes permiso para ver los documentos de esta práctica.');
+      }
+    }
+
     return this.prisma.document.findMany({
       where: { internshipId },
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],

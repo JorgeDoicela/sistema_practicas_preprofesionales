@@ -7,16 +7,11 @@ import {
   CalendarOff, CheckCheck, XCircle, Loader2, AlertCircle, X, Clock, FileText,
 } from "lucide-react";
 import { absencesService, Absence } from "@/services/absences.service";
+import { useLanguage } from "@/providers/LanguageProvider";
 import { cn } from "@/lib/utils";
 
-const ABSENCE_TYPES: Record<string, string> = {
-  ENFERMEDAD: "Enfermedad",
-  PERSONAL: "Motivo personal",
-  LABORAL: "Motivo laboral",
-  OTRA: "Otra",
-};
-
 export default function TutorAusenciasPage() {
+  const { t, locale } = useLanguage();
   const [absences, setAbsences] = useState<Absence[]>([]);
   const [loading, setLoading] = useState(true);
   const [reviewModal, setReviewModal] = useState<Absence | null>(null);
@@ -33,7 +28,7 @@ export default function TutorAusenciasPage() {
       const res: any = await absencesService.findPendingForTutor();
       setAbsences(Array.isArray(res) ? res : []);
     } catch (err: any) {
-      setPageError(err.message || "Error al cargar las ausencias pendientes. Por favor, intente de nuevo.");
+      setPageError(err.message || t.tutor.absences.loadingError);
     } finally {
       setLoading(false);
     }
@@ -47,13 +42,13 @@ export default function TutorAusenciasPage() {
     setError(null);
     try {
       await absencesService.review(reviewModal.id, status, reviewNotes || undefined);
-      setSuccess(`Ausencia ${status === "APROBADA" ? "aprobada" : "rechazada"} correctamente`);
+      setSuccess(status === "APROBADA" ? t.tutor.absences.successApproved : t.tutor.absences.successRejected);
       setReviewModal(null);
       setReviewNotes("");
       load();
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
-      setError(err.message || "Error al procesar la revisión");
+      setError(err.message || t.tutor.absences.errorReview);
     } finally {
       setSaving(false);
     }
@@ -64,10 +59,10 @@ export default function TutorAusenciasPage() {
       <div className="max-w-[1400px] mx-auto py-10 px-4 md:px-8 space-y-10">
         <div>
           <span className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.4em] mb-2 block flex items-center gap-2">
-            <CalendarOff size={12} /> Revisión de Ausencias
+            <CalendarOff size={12} /> {t.tutor.absences.title}
           </span>
-          <h1 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">Ausencias Pendientes</h1>
-          <p className="text-slate-500 font-medium mt-2">Revisa, aprueba o rechaza de forma oficial las justificaciones de tus estudiantes.</p>
+          <h1 className="text-2xl md:text-4xl font-black text-[#003366] tracking-tight">{t.tutor.absences.pendingAbsences}</h1>
+          <p className="text-slate-500 font-medium mt-2">{t.tutor.absences.subtitle}</p>
         </div>
 
         {pageError && (
@@ -75,7 +70,7 @@ export default function TutorAusenciasPage() {
             <AlertCircle size={18} className="text-red-600 animate-bounce" />
             <span>{pageError}</span>
             <button onClick={load} className="ml-auto underline hover:text-red-900 transition-colors uppercase tracking-widest text-[10px] font-black">
-              Reintentar
+              {t.tutor.absences.retry}
             </button>
           </div>
         )}
@@ -96,8 +91,8 @@ export default function TutorAusenciasPage() {
         ) : absences.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm text-slate-400">
             <CheckCheck size={48} className="mx-auto mb-4 opacity-30 text-[#003366]" />
-            <p className="font-bold">Sin ausencias pendientes</p>
-            <p className="text-sm mt-1">Todos los registros de tus estudiantes están al día.</p>
+            <p className="font-bold">{t.tutor.absences.noAbsences}</p>
+            <p className="text-sm mt-1">{t.tutor.absences.noAbsencesDesc}</p>
           </div>
         ) : (
           <div className="space-y-4" data-tour="tutor-ausencias-list">
@@ -119,19 +114,19 @@ export default function TutorAusenciasPage() {
                         )}
                         <span className="flex items-center gap-1.5 px-3 py-1 border rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-50 text-amber-700 border-amber-100/80">
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                          Pendiente de Revisión
+                          {t.tutor.absences.pendingStatus}
                         </span>
                       </div>
 
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-500 font-medium">
                         <span className="flex items-center gap-1">
-                          <span className="font-bold text-[#003366]">Fecha:</span>
-                          {new Date(ab.date).toLocaleDateString("es-EC", { timeZone: "UTC", weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                          <span className="font-bold text-[#003366]">{t.tutor.absences.date}:</span>
+                          {new Date(ab.date).toLocaleDateString(locale === "en" ? "en-US" : "es-EC", { timeZone: "UTC", weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                         </span>
                         <span className="w-1.5 h-1.5 rounded-full bg-slate-200 hidden sm:inline" />
                         <span className="flex items-center gap-1">
-                          <span className="font-bold text-[#003366]">Categoría:</span>
-                          {ABSENCE_TYPES[ab.type] ?? ab.type}
+                          <span className="font-bold text-[#003366]">{t.tutor.absences.category}:</span>
+                          {(t.tutor.absences.categories as any)[ab.type] ?? ab.type}
                         </span>
                       </div>
 
@@ -141,7 +136,7 @@ export default function TutorAusenciasPage() {
                         <div className="pt-1">
                           <a href={ab.filePath} target="_blank" rel="noopener noreferrer"
                             className="inline-flex items-center gap-1.5 text-[#003366] hover:text-[#C5A059] transition-colors uppercase tracking-wider text-[10px] font-black">
-                            <FileText size={14} /> Ver Documento Justificativo
+                            <FileText size={14} /> {t.tutor.absences.viewDoc}
                           </a>
                         </div>
                       )}
@@ -149,7 +144,7 @@ export default function TutorAusenciasPage() {
                   </div>
                   <button onClick={() => { setReviewModal(ab); setReviewNotes(""); setError(null); }}
                     className="w-full md:w-auto flex-shrink-0 px-6 py-3.5 bg-[#003366] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:translate-y-[-1px] hover:bg-[#002244] transition-all shadow-md">
-                    Revisar
+                    {t.tutor.absences.reviewBtn}
                   </button>
                 </div>
               </motion.div>
@@ -167,28 +162,28 @@ export default function TutorAusenciasPage() {
               className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-black text-[#003366]">Revisar Ausencia</h2>
+                  <h2 className="text-xl font-black text-[#003366]">{t.tutor.absences.modalTitle}</h2>
                   <button onClick={() => setReviewModal(null)} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400"><X size={18} /></button>
                 </div>
 
                 <div className="p-4 bg-slate-50 rounded-2xl mb-5 space-y-2">
                   <div>
                     <p className="font-black text-[#003366] text-sm">{reviewModal.internship?.student?.fullName}</p>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Estudiante</p>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{t.tutor.absences.student}</p>
                   </div>
 
                   <div className="flex justify-between items-center text-xs font-semibold pt-1 border-t border-slate-100">
-                    <span className="text-slate-500">Fecha:</span>
-                    <span className="text-[#003366]">{new Date(reviewModal.date).toLocaleDateString("es-EC", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" })}</span>
+                    <span className="text-slate-500">{t.tutor.absences.date}:</span>
+                    <span className="text-[#003366]">{new Date(reviewModal.date).toLocaleDateString(locale === "en" ? "en-US" : "es-EC", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" })}</span>
                   </div>
 
                   <div className="flex justify-between items-center text-xs font-semibold">
-                    <span className="text-slate-500">Categoría:</span>
-                    <span className="text-[#003366]">{ABSENCE_TYPES[reviewModal.type] ?? reviewModal.type}</span>
+                    <span className="text-slate-500">{t.tutor.absences.category}:</span>
+                    <span className="text-[#003366]">{(t.tutor.absences.categories as any)[reviewModal.type] ?? reviewModal.type}</span>
                   </div>
 
                   <div className="pt-2 border-t border-slate-100">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Motivo Reportado</p>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">{t.tutor.absences.reportedReason}</p>
                     <p className="text-sm text-slate-600 leading-relaxed">{reviewModal.reason}</p>
                   </div>
                 </div>
@@ -198,7 +193,7 @@ export default function TutorAusenciasPage() {
                   <div className="mb-5">
                     <a href={reviewModal.filePath} target="_blank" rel="noopener noreferrer"
                       className="w-full py-3 border border-[#003366]/20 text-[#003366] hover:bg-slate-50 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all">
-                      <FileText size={14} /> Ver Documento Justificativo
+                      <FileText size={14} /> {t.tutor.absences.viewDoc}
                     </a>
                   </div>
                 )}
@@ -210,20 +205,20 @@ export default function TutorAusenciasPage() {
                 )}
 
                 <div className="space-y-1.5 mb-5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nota / Comentario (opcional)</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.tutor.absences.commentsLabel}</label>
                   <textarea rows={3} value={reviewNotes} onChange={e => setReviewNotes(e.target.value)}
-                    placeholder="Añade una observación para el estudiante..."
+                    placeholder={t.tutor.absences.commentsPlaceholder}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:border-[#003366] resize-none" />
                 </div>
 
                 <div className="flex gap-3">
                   <button onClick={() => handleReview("APROBADA")} disabled={saving}
                     className="flex-1 bg-emerald-600 text-white rounded-2xl py-3.5 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-emerald-700 transition-all shadow-sm">
-                    {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCheck size={14} />} Aprobar
+                    {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCheck size={14} />} {t.tutor.absences.approveBtn}
                   </button>
                   <button onClick={() => handleReview("RECHAZADA")} disabled={saving}
                     className="flex-1 bg-rose-50 text-rose-600 border border-rose-100 rounded-2xl py-3.5 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-rose-100 transition-all shadow-sm">
-                    <XCircle size={14} /> Rechazar
+                    <XCircle size={14} /> {t.tutor.absences.rejectBtn}
                   </button>
                 </div>
               </div>

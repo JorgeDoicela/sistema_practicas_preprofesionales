@@ -44,11 +44,25 @@ interface StudentAttendance {
 
 // ── Componente principal ───────────────────────────────────────────────────
 export default function TutorAsistenciaPage() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [rows, setRows] = useState<StudentAttendance[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const getStatusLabel = useCallback((status: string) => {
+    switch (status) {
+      case "Activo":
+      case "En Proceso":
+        return t.tutor.internshipStatus?.EN_CURSO ?? status;
+      case "Finalizado":
+        return t.tutor.internshipStatus?.FINALIZADA ?? status;
+      case "Pendiente":
+        return t.tutor.internshipStatus?.PENDIENTE ?? status;
+      default:
+        return status;
+    }
+  }, [t]);
 
   // Modal de ubicaciones
   const [locationModalId, setLocationModalId] = useState<string | null>(null);
@@ -166,27 +180,27 @@ export default function TutorAsistenciaPage() {
     setAddLocError(null);
     
     // Sanitización: Convertir comas a puntos en las coordenadas (común en teclados en español)
-    const sanitizedLat = newLocLat.toString().replace(',', '.');
-    const sanitizedLng = newLocLng.toString().replace(',', '.');
+    const sanitizedLat = (newLocLat || "").toString().replace(',', '.');
+    const sanitizedLng = (newLocLng || "").toString().replace(',', '.');
     
     const lat = parseFloat(sanitizedLat);
     const lng = parseFloat(sanitizedLng);
     const radius = parseInt(newLocRadius, 10);
 
     if (!newLocLabel.trim()) { 
-      setAddLocError("Por favor, asigne un nombre a la sede (ej: Sede Norte)"); 
+      setAddLocError(t.tutor.locationNameError || "Por favor, asigne un nombre a la sede (ej: Sede Norte)"); 
       return; 
     }
     if (isNaN(lat) || lat < -90 || lat > 90) { 
-      setAddLocError("La latitud debe ser un número entre -90 y 90"); 
+      setAddLocError(t.tutor.latitudeError || "La latitud debe ser un número entre -90 y 90"); 
       return; 
     }
     if (isNaN(lng) || lng < -180 || lng > 180) { 
-      setAddLocError("La longitud debe ser un número entre -180 y 180"); 
+      setAddLocError(t.tutor.longitudeError || "La longitud debe ser un número entre -180 y 180"); 
       return; 
     }
     if (isNaN(radius) || radius < 50 || radius > 5000) { 
-      setAddLocError("El radio debe estar entre 50m y 5000m"); 
+      setAddLocError(t.tutor.radiusError || "El radio debe estar entre 50m y 5000m"); 
       return; 
     }
 
@@ -321,7 +335,7 @@ export default function TutorAsistenciaPage() {
                           "text-[9px] font-black uppercase tracking-widest",
                           row.status === "Finalizado" ? "text-emerald-700" : "text-amber-700",
                         )}>
-                          {row.status}
+                          {getStatusLabel(row.status)}
                         </span>
                         {/* Badge de ubicaciones */}
                         <span className={cn(
@@ -450,7 +464,7 @@ export default function TutorAsistenciaPage() {
                                     {row.history.slice(0, 15).map((h: any) => (
                                       <tr key={h.id} className="hover:bg-slate-50 transition-colors">
                                         <td className="px-5 py-3 font-bold text-[#003366]">
-                                          {new Date(h.checkIn).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+                                          {new Date(h.checkIn).toLocaleDateString(locale === "es" ? "es-ES" : "en-US", { day: "numeric", month: "short" })}
                                         </td>
                                         <td className="px-5 py-3">
                                           <div className="flex items-center gap-1.5 text-emerald-600 font-bold">
@@ -501,7 +515,7 @@ export default function TutorAsistenciaPage() {
                                 </table>
                                 {row.history.length > 15 && (
                                   <p className="text-center text-[9px] font-black uppercase tracking-widest text-slate-300 py-3 border-t border-slate-100">
-                                    Mostrando los últimos 15 registros
+                                    {t.tutor.showingLastRecords || "Mostrando los últimos 15 registros"}
                                   </p>
                                 )}
                               </div>

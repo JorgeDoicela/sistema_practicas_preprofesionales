@@ -266,7 +266,12 @@ export class InternshipsService {
     };
   }
 
-  async findByTutor(tutorId: string) {
+  async findByTutor(tutorId: string, actor?: { id: string; role: string }) {
+    // OWASP A01: Un tutor solo puede ver sus propios pasantes
+    if (actor && actor.role === 'TUTOR' && actor.id !== tutorId) {
+      throw new ForbiddenException('No tienes permiso para consultar pasantes de otro tutor.');
+    }
+
     return this.prisma.internship.findMany({
       where: { tutorId },
       include: {
@@ -323,9 +328,18 @@ export class InternshipsService {
   }
 
   /** RF-ATT-LOC: Guardar la lista de ubicaciones permitidas para asistencia */
-  async updateLocations(id: string, locations: { label: string; lat: number; lng: number; radiusM?: number }[]) {
+  async updateLocations(
+    id: string,
+    locations: { label: string; lat: number; lng: number; radiusM?: number }[],
+    actor?: { id: string; role: string },
+  ) {
     const internship = await this.prisma.internship.findUnique({ where: { id } });
     if (!internship) throw new NotFoundException('Asignación no encontrada');
+
+    // OWASP A01: Un tutor solo puede configurar ubicaciones de su propio pasante
+    if (actor && actor.role === 'TUTOR' && internship.tutorId !== actor.id) {
+      throw new ForbiddenException('No tienes permiso para modificar las ubicaciones de esta práctica.');
+    }
 
     // También actualizar lat/lng principal con la primera ubicación para retrocompatibilidad
     const primary = locations[0];
