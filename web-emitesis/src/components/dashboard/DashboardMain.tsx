@@ -1139,6 +1139,7 @@ export function DashboardMain() {
             <div className="space-y-6 mb-12">
               <section 
                 className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 shadow-2xl shadow-slate-200/50 border border-slate-50 relative overflow-hidden group"
+                data-tour="dashboard-analytics"
               >
                 <div className="absolute top-0 right-0 p-8 opacity-5">
                   <BarChart3 className="w-32 h-32 text-indigo-900" />

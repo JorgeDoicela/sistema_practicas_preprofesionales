@@ -19,8 +19,8 @@ function roleLabel(role: Role): string {
  * El sistema busca coincidencias en la URL para ofrecer ayuda específica.
  */
 export function getDashboardTourSteps(role: Role, pathname: string): TourStep[] {
-  // 1. Ayuda específica para el TABLERO PRINCIPAL
-  if (pathname === "/dashboard" || pathname.endsWith("/dashboard")) {
+  // 1. Ayuda específica para el TABLERO PRINCIPAL (Admin / Coordinador)
+  if (pathname === "/dashboard" && (role === "ADMIN" || role === "COORDINADOR")) {
     return [
       {
         id: "dash-stats",
@@ -37,8 +37,10 @@ export function getDashboardTourSteps(role: Role, pathname: string): TourStep[] 
       {
         id: "dash-analytics",
         selector: '[data-tour="dashboard-analytics"]',
-        title: "Analíticas de Gestión",
-        getDescription: () => "Gráficos detallados sobre la distribución de prácticas y cumplimiento académico. Pase el cursor sobre las barras para ver datos exactos.",
+        title: role === 'ADMIN' ? "Métricas de Infraestructura" : "Analíticas de Gestión",
+        getDescription: (rl) => rl === 'ADMIN'
+          ? "Gráficos detallados sobre la latencia del sistema, volumen de errores y distribución de roles. Monitoree la estabilidad del sistema."
+          : "Gráficos detallados sobre la distribución de prácticas y cumplimiento académico. Pase el cursor sobre las barras para ver datos exactos.",
       }
     ];
   }
@@ -68,7 +70,7 @@ export function getDashboardTourSteps(role: Role, pathname: string): TourStep[] 
   }
 
   // 3. Ayuda específica para ASISTENCIA (Estudiantes/Tutores)
-  if (pathname.includes("/asistencia")) {
+  if (pathname.includes("/asistencia") && !pathname.includes("/empresa") && !pathname.includes("/tutor-academico") && !pathname.includes("/dashboard")) {
     return [
       {
         id: "att-radar",
@@ -122,7 +124,7 @@ export function getDashboardTourSteps(role: Role, pathname: string): TourStep[] 
   }
 
   // 5. Ayuda específica para DOCUMENTOS
-  if (pathname.includes("/documentos")) {
+  if (pathname.includes("/documentos") && !(pathname === "/dashboard/documentos" && role === "ESTUDIANTE")) {
     const steps: TourStep[] = [
       {
         id: "docs-list",

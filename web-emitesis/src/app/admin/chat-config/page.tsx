@@ -258,7 +258,12 @@ export default function ChatConfigPage() {
     setLoading(true);
     try {
       const data = await chatConfigService.getPermissions() as unknown as ChatPermission[];
-      setPermissions(data);
+      if (Array.isArray(data)) {
+        setPermissions(data);
+      } else {
+        setPermissions([]);
+        showToast("error", "Error: La respuesta no es un listado válido.");
+      }
     } catch {
       showToast("error", t.common.error);
     } finally {
@@ -282,13 +287,14 @@ export default function ChatConfigPage() {
     setToggling(key);
     try {
       await chatConfigService.updatePermission(fromRole, toRole, !current);
-      setPermissions(prev =>
-        prev.map(p => {
+      setPermissions(prev => {
+        const arr = Array.isArray(prev) ? prev : [];
+        return arr.map(p => {
           const same = p.fromRole === fromRole && p.toRole === toRole;
           const rev = p.fromRole === toRole && p.toRole === fromRole;
           return same || rev ? { ...p, isEnabled: !current } : p;
-        }),
-      );
+        });
+      });
       showToast(
         "success",
         `${t.chatConfig.title}: ${ROLE_META[fromRole].label} ↔ ${ROLE_META[toRole].label}`,
@@ -304,16 +310,17 @@ export default function ChatConfigPage() {
     setLoading(true);
     try {
       await chatConfigService.updatePermissionsBulk(items);
-      setPermissions(prev =>
-        prev.map(p => {
+      setPermissions(prev => {
+        const arr = Array.isArray(prev) ? prev : [];
+        return arr.map(p => {
           const match = items.find(
             item =>
               (item.fromRole === p.fromRole && item.toRole === p.toRole) ||
               (item.fromRole === p.toRole && item.toRole === p.fromRole)
           );
           return match ? { ...p, isEnabled: match.isEnabled } : p;
-        })
-      );
+        });
+      });
       showToast("success", "Permisos actualizados correctamente.");
     } catch {
       showToast("error", "Error al actualizar los permisos.");
@@ -343,7 +350,8 @@ export default function ChatConfigPage() {
 
   const pairs: { fromRole: Role; toRole: Role; isEnabled: boolean }[] = [];
   const seen = new Set<string>();
-  for (const p of permissions) {
+  const safePermissions = Array.isArray(permissions) ? permissions : [];
+  for (const p of safePermissions) {
     const key = pairKey(p.fromRole, p.toRole);
     if (!seen.has(key)) {
       seen.add(key);
