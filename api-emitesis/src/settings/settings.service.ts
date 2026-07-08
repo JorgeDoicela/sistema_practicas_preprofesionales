@@ -94,6 +94,18 @@ export class SettingsService implements OnModuleInit {
         description: 'Periodo (en días) antes de que los mensajes de chat sean purgados permanentemente según normativas de privacidad.',
         category: 'CHAT',
       },
+      {
+        key: 'eval_weight_business',
+        value: '0.5',
+        description: 'Peso de la evaluación empresarial (0.0 a 1.0) en la nota final ponderada.',
+        category: 'GENERAL',
+      },
+      {
+        key: 'eval_weight_academic',
+        value: '0.5',
+        description: 'Peso de la evaluación académica (0.0 a 1.0) en la nota final ponderada.',
+        category: 'GENERAL',
+      },
     ];
 
     for (const setting of defaultSettings) {

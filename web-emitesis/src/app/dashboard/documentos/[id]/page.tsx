@@ -146,7 +146,7 @@ export default function DocumentDetailPage() {
 
   const handleSaveDates = async () => {
     if (!startDate || !dueDate) return;
-    if (new Date(startDate) > new Date(dueDate)) {
+    if (new Date(startDate) >= new Date(dueDate)) {
       toast.error(t.documents.detail.errors.invalidDateRange);
       return;
     }
@@ -211,6 +211,7 @@ export default function DocumentDetailPage() {
             await documentsService.signDocument(selectedDoc.id, "Aprobación institucional", code);
           };
           setIs2faModalOpen(true);
+          setIsSigning(false);
           return;
       }
       await documentsService.signDocument(selectedDoc.id, "Aprobación institucional");
@@ -373,7 +374,7 @@ export default function DocumentDetailPage() {
                   try {
                     const res: any = await internshipsService.syncSigafi(id as string);
                     const ext = res?.externalData;
-                    toast.success(`${t.documents.detail.syncSigafi}: ${ext?.isEnrolled ? 'Matriculado' : 'No matriculado'}${ext?.lastSemester ? ' — ' + ext.lastSemester : ''}`);
+                    toast.success(`${t.documents.detail.syncSigafi}: ${ext?.isEnrolled ? t.documents.detail.enrolled : t.documents.detail.notEnrolled}${ext?.lastSemester ? ' — ' + ext.lastSemester : ''}`);
                   } catch (e: any) {
                     toast.error(e.message || t.common.errors.generic);
                   } finally {
@@ -864,6 +865,8 @@ export default function DocumentDetailPage() {
             pendingActionRef.current = null;
         }}
         onConfirm={handle2faConfirm}
+        title={t.documents.modal2fa.titleDefault}
+        description={t.documents.modal2fa.descDefault}
       />
       </div>
     </DashboardLayout>

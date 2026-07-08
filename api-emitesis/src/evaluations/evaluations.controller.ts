@@ -30,8 +30,8 @@ export class EvaluationsController {
 
   @Get('internship/:id/grade')
   @Roles(Role.ESTUDIANTE, Role.TUTOR, Role.COORDINADOR)
-  async getInternshipGrade(@Param('id') id: string) {
-    const grade = await this.evaluationsService.calculateInternshipGrade(id);
+  async getInternshipGrade(@Param('id') id: string, @Req() req: any) {
+    const grade = await this.evaluationsService.calculateInternshipGrade(id, req.user);
     return { internshipId: id, grade };
   }
 }

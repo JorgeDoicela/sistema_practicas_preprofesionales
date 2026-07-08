@@ -15,6 +15,7 @@ import { internshipsService } from "@/services/internships.service";
 import { attendancesService } from "@/services/attendances.service";
 import { documentsService } from "@/services/documents.service";
 import { evaluationsService, EvaluationPayload } from "@/services/evaluations.service";
+import { monitoringService, MonitoringVisitPayload } from "@/services/monitoring.service";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { toast } from "sonner";
 
@@ -521,7 +522,7 @@ export default function StudentDetailPage() {
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">{t.tutor.studentDetail.visits.type}</label>
                   <div className="grid grid-cols-2 gap-4">
                     <button 
-                      onClick={() => setNewVisit(prev => ({ ...prev, type: 'PRESENCIAL' }))}
+                      onClick={() => setNewVisit({ ...newVisit, type: 'PRESENCIAL' })}
                       className={cn(
                         "p-4 rounded-3xl border-2 transition-all flex flex-col items-center gap-2",
                         newVisit.type === 'PRESENCIAL' ? "bg-blue-50 border-[#003366] text-[#003366]" : "bg-white border-slate-100 text-slate-400"
@@ -531,7 +532,7 @@ export default function StudentDetailPage() {
                       <span className="text-[10px] font-black uppercase">{t.tutor.studentDetail.visits.presencial}</span>
                     </button>
                     <button 
-                      onClick={() => setNewVisit(prev => ({ ...prev, type: 'VIRTUAL' }))}
+                      onClick={() => setNewVisit({ ...newVisit, type: 'VIRTUAL' })}
                       className={cn(
                         "p-4 rounded-3xl border-2 transition-all flex flex-col items-center gap-2",
                         newVisit.type === 'VIRTUAL' ? "bg-blue-50 border-[#003366] text-[#003366]" : "bg-white border-slate-100 text-slate-400"
@@ -548,7 +549,7 @@ export default function StudentDetailPage() {
                   <input 
                     type="date"
                     value={newVisit.date}
-                    onChange={(e) => setNewVisit(prev => ({ ...prev, date: e.target.value }))}
+                    onChange={(e) => setNewVisit({ ...newVisit, date: e.target.value })}
                     className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-[#003366] transition-all font-bold text-[#003366]"
                   />
                 </div>
@@ -558,7 +559,7 @@ export default function StudentDetailPage() {
                   <input
                     type="text"
                     value={newVisit.location ?? ''}
-                    onChange={(e) => setNewVisit(prev => ({ ...prev, location: e.target.value }))}
+                    onChange={(e) => setNewVisit({ ...newVisit, location: e.target.value })}
                     placeholder={t.tutor.studentDetail.visits.locationPlaceholder}
                     className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-[#003366] transition-all text-sm font-medium"
                   />
@@ -568,7 +569,7 @@ export default function StudentDetailPage() {
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">{t.tutor.studentDetail.visits.observations}</label>
                   <textarea 
                     value={newVisit.observations}
-                    onChange={(e) => setNewVisit(prev => ({ ...prev, observations: e.target.value }))}
+                    onChange={(e) => setNewVisit({ ...newVisit, observations: e.target.value })}
                     placeholder={t.tutor.studentDetail.visits.observationsPlaceholder}
                     className="w-full min-h-[120px] p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-[#003366] transition-all text-sm font-medium italic"
                   />
@@ -578,7 +579,7 @@ export default function StudentDetailPage() {
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">{t.tutor.studentDetail.visits.recommendations}</label>
                   <textarea
                     value={newVisit.recommendations ?? ''}
-                    onChange={(e) => setNewVisit(prev => ({ ...prev, recommendations: e.target.value }))}
+                    onChange={(e) => setNewVisit({ ...newVisit, recommendations: e.target.value })}
                     placeholder={t.tutor.studentDetail.visits.recommendationsPlaceholder}
                     className="w-full min-h-[80px] p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-[#003366] transition-all text-sm font-medium italic"
                   />

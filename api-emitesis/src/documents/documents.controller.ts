@@ -27,20 +27,20 @@ export class DocumentsController {
   @Post(':id/comments')
   @Roles(Role.TUTOR, Role.COORDINADOR, Role.ESTUDIANTE)
   addComment(@Param('id') id: string, @Body() body: { content: string }, @Req() req: any) {
-    return this.documentCommentsService.create(id, req.user.id, body.content);
+    return this.documentCommentsService.create(id, req.user.id, req.user.role, body.content);
   }
 
   @Get(':id/comments')
   @Roles(Role.TUTOR, Role.COORDINADOR, Role.ESTUDIANTE)
-  findComments(@Param('id') id: string) {
-    return this.documentCommentsService.findByDocument(id);
+  findComments(@Param('id') id: string, @Req() req: any) {
+    return this.documentCommentsService.findByDocument(id, req.user.id, req.user.role);
   }
 
   @Patch(':id/sign')
   @Roles(Role.COORDINADOR)
   @UseGuards(TwoFactorGuard)
   signDocument(@Param('id') id: string, @Body() body: { reason: string }, @Req() req: any) {
-    return this.signatureService.signDocument(id, req.user.id, body.reason);
+    return this.signatureService.signDocument(id, req.user.id, body.reason, req.user.careerId);
   }
 
   @Patch(':id/review')
@@ -62,7 +62,7 @@ export class DocumentsController {
     @Body() reviewDto: ReviewDocumentDto,
     @Req() req: any,
   ) {
-    return this.documentsService.reviewByCoordinator(id, reviewDto, req.user.id);
+    return this.documentsService.reviewByCoordinator(id, reviewDto, req.user.id, req.user.careerId);
   }
 
   @Get('internship/:id')
@@ -83,8 +83,9 @@ export class DocumentsController {
   updateDates(
     @Param('id') id: string,
     @Body() updateDocumentDatesDto: UpdateDocumentDatesDto,
+    @Req() req: any,
   ) {
-    return this.documentsService.updateDates(id, updateDocumentDatesDto);
+    return this.documentsService.updateDates(id, updateDocumentDatesDto, req.user);
   }
 
   @Get(':id/template')
@@ -135,7 +136,7 @@ export class DocumentsController {
   @Patch(':id/delete-file')
   @Roles(Role.ESTUDIANTE, Role.COORDINADOR)
   @UseGuards(TwoFactorGuard)
-  deleteFile(@Param('id') id: string) {
-    return this.documentsService.deleteDocumentFile(id);
+  deleteFile(@Param('id') id: string, @Req() req: any) {
+    return this.documentsService.deleteDocumentFile(id, req.user);
   }
 }

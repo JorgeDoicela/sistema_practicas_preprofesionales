@@ -50,8 +50,8 @@ export class AbsencesController {
 
   @Get('internship/:id')
   @Roles(Role.ESTUDIANTE, Role.TUTOR, Role.COORDINADOR)
-  findByInternship(@Param('id') id: string) {
-    return this.absencesService.findByInternship(id);
+  findByInternship(@Param('id') id: string, @Req() req: any) {
+    return this.absencesService.findByInternship(id, req.user.id, req.user.role);
   }
 
   @Get('pending/tutor')

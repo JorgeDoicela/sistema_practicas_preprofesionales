@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, UseGuards, Req, Query, ParseIntPipe, DefaultValuePipe } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, UseGuards, Req, Query, ParseIntPipe, DefaultValuePipe, ForbiddenException } from '@nestjs/common';
 import { InternshipsService } from './internships.service';
 import { CreateInternshipDto } from './dto/create-internship.dto';
 import { UpdateLocationsDto } from './dto/update-locations.dto';
@@ -42,7 +42,10 @@ export class InternshipsController {
 
   @Get('student/:id')
   @Roles(Role.ESTUDIANTE, Role.ADMIN)
-  findByStudent(@Param('id') id: string) {
+  findByStudent(@Param('id') id: string, @Req() req: any) {
+    if (req.user.role === Role.ESTUDIANTE && req.user.id !== id) {
+      throw new ForbiddenException('No tienes permiso para consultar asignaciones de otro estudiante.');
+    }
     return this.internshipsService.findByStudent(id);
   }
 

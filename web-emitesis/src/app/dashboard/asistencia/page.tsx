@@ -78,6 +78,7 @@ export default function AsistenciaPage() {
   const [modalError, setModalError] = useState<string | null>(null);
   const [capturedPhotoBlob, setCapturedPhotoBlob] = useState<Blob | null>(null);
   const [capturedPhotoUrl, setCapturedPhotoUrl] = useState<string | null>(null);
+  const [checkoutDescription, setCheckoutDescription] = useState("");
 
   // RF-17: Fotos de actividades
   const [activityPhotos, setActivityPhotos] = useState<ActivityPhotoItem[]>([]);
@@ -243,6 +244,7 @@ export default function AsistenciaPage() {
     setGpsStatusText("");
     setLastGpsAccuracy(null);
     setCameraFacing("user");
+    setCheckoutDescription("");
     camera.reset();
     webAuthn.reset();
     setModalOpen(true);
@@ -292,6 +294,10 @@ export default function AsistenciaPage() {
 
   // ── Paso 1: Capturar foto ────────────────────────────────────────────────
   const handleCapturePhoto = async () => {
+    if (modalAction === "OUT" && !checkoutDescription.trim()) {
+      setModalError(t.asistencia.modal.checkoutDescriptionRequired);
+      return;
+    }
     if (!videoRef.current) return;
     const blob = await camera.captureAsync();
     if (blob) {
@@ -363,6 +369,7 @@ export default function AsistenciaPage() {
       const attendanceData = {
         lat: coords.lat,
         lng: coords.lng,
+        ...(modalAction === "OUT" && { activityDescription: checkoutDescription }),
       };
 
       if (modalAction === "IN") {
@@ -617,14 +624,14 @@ export default function AsistenciaPage() {
           viewerHint ? (
             <div className="bg-slate-50 p-12 rounded-[2.5rem] text-center border border-slate-200">
               <Info className="w-16 h-16 text-[#003366] mx-auto mb-6" />
-              <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">Vista de estudiante</h3>
+              <h3 className="text-xl font-black text-[#003366] uppercase tracking-tight">{t.asistencia.student.viewTitle}</h3>
               <p className="text-slate-600 mt-3 font-medium max-w-lg mx-auto leading-relaxed">{viewerHint}</p>
             </div>
           ) : (
             <div className="bg-amber-50 p-12 rounded-[2.5rem] text-center border border-amber-100">
               <AlertCircle className="w-16 h-16 text-amber-500 mx-auto mb-6" />
-              <h3 className="text-xl font-black text-amber-900 uppercase">Sin Asignación Activa</h3>
-              <p className="text-amber-700 mt-2 font-medium">No puedes registrar asistencia sin una práctica en proceso.</p>
+              <h3 className="text-xl font-black text-amber-900 uppercase">{t.asistencia.student.noAssignment}</h3>
+              <p className="text-amber-700 mt-2 font-medium">{t.asistencia.student.noAssignmentDesc}</p>
             </div>
           )
         ) : (
@@ -831,7 +838,7 @@ export default function AsistenciaPage() {
                       onClick={() => { setFilters({ startDate: "", endDate: "" }); loadData({ startDate: "", endDate: "" }); }}
                       className="px-4 py-2 text-slate-400 hover:text-[#003366] text-[10px] font-black uppercase tracking-widest h-[38px]"
                     >
-                      Limpiar
+                      {t.common.clear}
                     </button>
                   )}
                 </form>
@@ -841,7 +848,7 @@ export default function AsistenciaPage() {
                 {history.length === 0 ? (
                   <div className="py-20 text-center space-y-4">
                     <Calendar className="w-12 h-12 text-slate-200 mx-auto" />
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Sin registros</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.asistencia.history.noRecords}</p>
                   </div>
                 ) : (
                   history.map((record) => (
@@ -878,7 +885,7 @@ export default function AsistenciaPage() {
               <div className="bg-[#003366] p-6 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.3em]">
-                    {modalAction === "IN" ? "Registrar Entrada" : "Registrar Salida"}
+                    {modalAction === "IN" ? t.asistencia.actions.markIn : t.asistencia.actions.markOut}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
                     {modalStep === "photo"      && <Camera     className="w-5 h-5 text-white/70" />}
@@ -887,11 +894,11 @@ export default function AsistenciaPage() {
                     {modalStep === "done"       && <CheckCircle2 className="w-5 h-5 text-emerald-300" />}
                     {modalStep === "error"      && <AlertCircle  className="w-5 h-5 text-rose-300" />}
                     <p className="text-white font-black text-lg">
-                      {modalStep === "photo"      && "Paso 1 — Foto"}
-                      {modalStep === "biometric"  && "Paso 2 — Verificación"}
-                      {modalStep === "submitting" && "Registrando…"}
-                      {modalStep === "done"       && "¡Registrado!"}
-                      {modalStep === "error"      && "No se pudo registrar"}
+                      {modalStep === "photo"      && t.asistencia.modal.stepPhoto}
+                      {modalStep === "biometric"  && t.asistencia.modal.stepBiometric}
+                      {modalStep === "submitting" && t.asistencia.modal.stepSubmitting}
+                      {modalStep === "done"       && t.asistencia.modal.stepDone}
+                      {modalStep === "error"      && t.asistencia.modal.stepError}
                     </p>
                   </div>
                 </div>
@@ -920,7 +927,7 @@ export default function AsistenciaPage() {
                 {modalStep === "photo" && (
                   <div className="space-y-4">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">
-                      Toma una foto para verificar tu presencia
+                      {t.asistencia.modal.stepPhotoDesc}
                     </p>
 
                     {/* Video + overlay de carga */}
@@ -940,7 +947,7 @@ export default function AsistenciaPage() {
                       {camera.state === "opening" && (
                         <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-3">
                           <Loader2 className="w-8 h-8 text-white animate-spin" />
-                          <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest">Iniciando cámara…</p>
+                          <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest">{t.asistencia.modal.cameraStarting}</p>
                         </div>
                       )}
                       {/* Botón cambio de cámara encima del video */}
@@ -952,12 +959,34 @@ export default function AsistenciaPage() {
                             setCameraFacing((f) => (f === "user" ? "environment" : "user"));
                           }}
                           className="absolute top-2 right-2 w-9 h-9 bg-black/50 hover:bg-black/70 text-white rounded-xl flex items-center justify-center transition-colors"
-                          title={cameraFacing === "user" ? "Cambiar a cámara trasera" : "Cambiar a cámara frontal"}
+                          title={cameraFacing === "user" ? t.asistencia.modal.switchBackCamera : t.asistencia.modal.switchFrontCamera}
                         >
                           <SwitchCamera className="w-4 h-4" />
                         </button>
                       )}
                     </div>
+
+                    {modalAction === "OUT" && (
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-[#003366] uppercase tracking-widest block">
+                          {t.asistencia.modal.checkoutDescriptionLabel}
+                        </label>
+                        <textarea
+                          value={checkoutDescription}
+                          onChange={(e) => setCheckoutDescription(e.target.value)}
+                          placeholder={t.asistencia.modal.checkoutDescriptionPlaceholder}
+                          rows={3}
+                          className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-xs text-[#003366] font-medium focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                        />
+                      </div>
+                    )}
+
+                    {modalError && (
+                      <div className="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start gap-3 text-rose-600">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                        <p className="text-[10px] font-bold leading-relaxed">{modalError}</p>
+                      </div>
+                    )}
 
                     <button
                       onClick={handleCapturePhoto}
@@ -965,7 +994,7 @@ export default function AsistenciaPage() {
                       className="w-full py-4 bg-[#003366] text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-[#004488] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-3"
                     >
                       <Camera className="w-5 h-5" />
-                      Capturar Foto
+                      {t.asistencia.modal.capturePhoto}
                     </button>
 
                     {camera.state === "error" && (
@@ -977,7 +1006,7 @@ export default function AsistenciaPage() {
                         className="w-full py-3 border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
                       >
                         <RefreshCw className="w-3.5 h-3.5" />
-                        Reintentar cámara
+                        {t.asistencia.modal.retryCamera}
                       </button>
                     )}
                   </div>
@@ -998,8 +1027,8 @@ export default function AsistenciaPage() {
                           alt="Foto capturada para asistencia"
                         />
                         <div>
-                          <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Foto lista</p>
-                          <p className="text-[9px] text-emerald-600">Verificando identidad…</p>
+                          <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">{t.asistencia.modal.photoReady}</p>
+                          <p className="text-[9px] text-emerald-600">{t.asistencia.modal.verifyingIdentity}</p>
                         </div>
                       </div>
                     )}
@@ -1033,7 +1062,7 @@ export default function AsistenciaPage() {
 
                       <div className="text-center px-6">
                         <p className="text-xs font-black text-blue-900 uppercase tracking-widest mb-1">
-                          {webAuthn.state === "registering" ? "Creando credencial segura" : "Iniciando verificación"}
+                          {webAuthn.state === "registering" ? t.asistencia.modal.creatingCredential : t.asistencia.modal.startingVerification}
                         </p>
                         <p className="text-[10px] font-bold text-blue-700 opacity-80 leading-relaxed">
                           {t.asistencia.modal.biometricHint}
@@ -1295,7 +1324,7 @@ export default function AsistenciaPage() {
                       </div>
                       {aiAvailable && (
                         <p className="text-[9px] text-slate-400 font-bold px-1">
-                          Agente IA disponible — analiza la imagen y sugiere una descripción automáticamente
+                          {t.asistencia.activityPhotos.aiAvailableHint}
                         </p>
                       )}
                     </div>
@@ -1385,7 +1414,6 @@ function HistoryRow({ record, expanded, onToggle }: {
             {record.distanceKm ? `${((record.distanceKm as number) * 1000).toFixed(0)}m` : "N/A"}
           </div>
           {/* Indicadores de foto */}
-          {!!record.checkInPhoto && <div className="w-2 h-2 rounded-full bg-emerald-400" title="Foto de entrada" />}
           {!!record.checkInPhoto && <div className="w-2 h-2 rounded-full bg-emerald-400" title={t.asistencia.modal.checkInPhoto} />}
           {!!record.checkOutPhoto && <div className="w-2 h-2 rounded-full bg-rose-400" title={t.asistencia.modal.checkOutPhoto} />}
           {expanded ? <ChevronUp className="w-4 h-4 text-slate-300" /> : <ChevronDown className="w-4 h-4 text-slate-300" />}

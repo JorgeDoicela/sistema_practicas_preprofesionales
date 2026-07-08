@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsDateString, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsDateString, IsOptional, IsIn } from 'class-validator';
 
 export class CreateAbsenceDto {
   @IsDateString()
@@ -15,7 +15,7 @@ export class CreateAbsenceDto {
 }
 
 export class ReviewAbsenceDto {
-  @IsString()
+  @IsIn(['APROBADA', 'RECHAZADA'])
   @IsNotEmpty()
   status: string; // APROBADA | RECHAZADA
 

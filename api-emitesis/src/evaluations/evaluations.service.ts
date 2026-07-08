@@ -102,21 +102,42 @@ export class EvaluationsService {
   /**
    * Calcula la calificación final ponderada de una pasantía
    */
-  async calculateInternshipGrade(internshipId: string) {
+  async calculateInternshipGrade(
+    internshipId: string,
+    actor?: { id: string; role: string; companyId?: string | null },
+  ) {
+    const internship = await this.prisma.internship.findUnique({
+      where: { id: internshipId },
+      select: { studentId: true, tutorId: true, companyId: true },
+    });
+
+    if (!internship) {
+      throw new NotFoundException('Internship no encontrado');
+    }
+
+    if (actor && actor.role !== 'COORDINADOR' && actor.role !== 'ADMIN') {
+      const isOwnerStudent = internship.studentId === actor.id;
+      const isOwnerTutor = internship.tutorId === actor.id;
+      const isOwnerCompany = internship.companyId === actor.companyId;
+      if (!isOwnerStudent && !isOwnerTutor && !isOwnerCompany) {
+        throw new ForbiddenException('No tienes permiso para consultar la calificación de esta práctica.');
+      }
+    }
+
     const evals = await this.prisma.evaluation.findMany({
       where: { internshipId, status: 'COMPLETADO' }
     });
 
     if (evals.length === 0) return 0;
 
-    const weightBusiness = await this.settings.getNumberValue('EVAL_WEIGHT_BUSINESS', 0.5);
-    const weightAcademic = await this.settings.getNumberValue('EVAL_WEIGHT_ACADEMIC', 0.5);
+    const weightBusiness = await this.settings.getNumberValue('eval_weight_business', 0.5);
+    const weightAcademic = await this.settings.getNumberValue('eval_weight_academic', 0.5);
 
     let totalScore = 0;
     
     evals.forEach(ev => {
-      // Promedio simple de los 5 criterios (escala 0-10 o 0-100)
-      const avg = (ev.punctuality + ev.teamwork + ev.technicalSkills + ev.proactivity + ev.attitude) / 5;
+      // Promedio simple de los 5 criterios (escala 1-5), escalado a base 10 (multiplicado por 2)
+      const avg = ((ev.punctuality + ev.teamwork + ev.technicalSkills + ev.proactivity + ev.attitude) / 5) * 2;
       
       if (ev.type === 'EMPRESARIAL') {
         totalScore += avg * weightBusiness;

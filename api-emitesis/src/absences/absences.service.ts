@@ -17,7 +17,10 @@ export class AbsencesService {
     });
     if (!internship) throw new BadRequestException('No tienes una práctica activa');
 
-    const absenceDate = new Date(dto.date);
+    // Normalizar la fecha a UTC 00:00:00.000Z para evitar discrepancias de zona horaria
+    const datePart = dto.date.split('T')[0];
+    const absenceDate = new Date(`${datePart}T00:00:00.000Z`);
+
     const existing = await this.prisma.absence.findFirst({
       where: { internshipId: internship.id, date: absenceDate },
     });
@@ -38,7 +41,7 @@ export class AbsencesService {
     await this.notifications.createInApp(
       internship.tutorId,
       'Nueva Ausencia Justificada',
-      `El estudiante tiene una ausencia pendiente de revisión para el ${absenceDate.toLocaleDateString('es-EC')}.`,
+      `El estudiante tiene una ausencia pendiente de revisión para el ${absenceDate.toLocaleDateString('es-EC', { timeZone: 'UTC' })}.`,
       'WARNING',
       '/tutor-academico/ausencias',
     );
@@ -46,7 +49,20 @@ export class AbsencesService {
     return absence;
   }
 
-  async findByInternship(internshipId: string) {
+  async findByInternship(internshipId: string, userId: string, userRole: string) {
+    const internship = await this.prisma.internship.findUnique({
+      where: { id: internshipId },
+    });
+    if (!internship) throw new NotFoundException('Práctica no encontrada');
+
+    // Validar permisos basados en el rol (IDOR mitigation)
+    if (userRole === 'ESTUDIANTE' && internship.studentId !== userId) {
+      throw new ForbiddenException('No tienes permiso para ver estas ausencias');
+    }
+    if (userRole === 'TUTOR' && internship.tutorId !== userId) {
+      throw new ForbiddenException('No tienes permiso para ver estas ausencias');
+    }
+
     return this.prisma.absence.findMany({
       where: { internshipId },
       include: { reviewedBy: { select: { fullName: true, role: true } } },

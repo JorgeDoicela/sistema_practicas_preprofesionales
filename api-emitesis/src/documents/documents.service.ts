@@ -18,7 +18,7 @@ export class DocumentsService {
     private notificationsService: NotificationsService,
   ) {}
 
-  async updateDates(id: string, dto: UpdateDocumentDatesDto) {
+  async updateDates(id: string, dto: UpdateDocumentDatesDto, actor?: { id: string; role: string; careerId?: string | null }) {
     const { startDate, dueDate } = dto;
 
     // RF-DOC-001: Validación de fechas
@@ -27,7 +27,8 @@ export class DocumentsService {
     }
 
     const document = await this.prisma.document.findUnique({
-      where: { id }
+      where: { id },
+      include: { internship: true }
     });
 
     if (!document) {
@@ -39,6 +40,21 @@ export class DocumentsService {
       throw new BadRequestException('No se pueden modificar las fechas de un documento ya aprobado definitivamente');
     }
 
+    // Permisos
+    if (actor && actor.role !== 'ADMIN') {
+      if (actor.role === 'COORDINADOR') {
+        if (actor.careerId && document.internship.careerId !== actor.careerId) {
+          throw new ForbiddenException('No tienes permiso para modificar las fechas de un documento de otra carrera');
+        }
+      } else if (actor.role === 'TUTOR') {
+        if (document.internship.tutorId !== actor.id) {
+          throw new ForbiddenException('No tienes permiso para modificar las fechas de este documento.');
+        }
+      } else {
+        throw new ForbiddenException('No tienes permiso para modificar las fechas de este documento.');
+      }
+    }
+
     return this.prisma.document.update({
       where: { id },
       data: {
@@ -48,22 +64,28 @@ export class DocumentsService {
     });
   }
 
-  async findByInternship(internshipId: string, actor?: { id: string; role: string; companyId?: string | null }) {
+  async findByInternship(internshipId: string, actor?: { id: string; role: string; companyId?: string | null; careerId?: string | null }) {
     const internship = await this.prisma.internship.findUnique({
       where: { id: internshipId },
-      select: { studentId: true, tutorId: true, companyId: true },
+      select: { studentId: true, tutorId: true, companyId: true, careerId: true },
     });
 
     if (!internship) {
       throw new NotFoundException('Asignación no encontrada');
     }
 
-    if (actor && actor.role !== 'COORDINADOR' && actor.role !== 'ADMIN') {
-      const isOwnerStudent = internship.studentId === actor.id;
-      const isOwnerTutor = internship.tutorId === actor.id;
-      const isOwnerCompany = internship.companyId === actor.companyId;
-      if (!isOwnerStudent && !isOwnerTutor && !isOwnerCompany) {
-        throw new ForbiddenException('No tienes permiso para ver los documentos de esta práctica.');
+    if (actor && actor.role !== 'ADMIN') {
+      if (actor.role === 'COORDINADOR') {
+        if (actor.careerId && internship.careerId !== actor.careerId) {
+          throw new ForbiddenException('No tienes permiso para ver los documentos de esta práctica.');
+        }
+      } else {
+        const isOwnerStudent = internship.studentId === actor.id;
+        const isOwnerTutor = internship.tutorId === actor.id;
+        const isOwnerCompany = internship.companyId === actor.companyId;
+        if (!isOwnerStudent && !isOwnerTutor && !isOwnerCompany) {
+          throw new ForbiddenException('No tienes permiso para ver los documentos de esta práctica.');
+        }
       }
     }
 
@@ -288,7 +310,7 @@ export class DocumentsService {
     return updatedDoc;
   }
 
-  async reviewByCoordinator(id: string, reviewDto: ReviewDocumentDto, coordinatorId: string) {
+  async reviewByCoordinator(id: string, reviewDto: ReviewDocumentDto, coordinatorId: string, careerId?: string | null) {
     const document = await this.prisma.document.findUnique({
       where: { id },
       include: {
@@ -305,6 +327,11 @@ export class DocumentsService {
       throw new NotFoundException('Documento no encontrado');
     }
 
+    // Regla de Negocio: Validar carrera del coordinador si aplica
+    if (careerId && document.internship.careerId !== careerId) {
+      throw new ForbiddenException('No tienes permiso para revisar documentos de otra carrera');
+    }
+
     // Regla de Negocio: Solo documentos aprobados por el tutor (Excepción A1)
     if (document.status !== 'APROBADO_TUTOR') {
       throw new BadRequestException('El coordinador solo puede revisar documentos previamente aprobados por el tutor');
@@ -313,6 +340,11 @@ export class DocumentsService {
     // Regla de Negocio: Observaciones obligatorias si hay rechazo (Excepción A2)
     if (reviewDto.status === 'RECHAZADO_COORDINADOR' && !reviewDto.observations?.trim()) {
       throw new BadRequestException('Las observaciones del coordinador son obligatorias para rechazar el documento');
+    }
+
+    // Validar status permitido para coordinador
+    if (reviewDto.status !== 'APROBADO_DEFINITIVO' && reviewDto.status !== 'RECHAZADO_COORDINADOR') {
+      throw new BadRequestException('Estado inválido para revisión de coordinador');
     }
 
     const updatedDoc = await this.prisma.document.update({
@@ -359,9 +391,20 @@ export class DocumentsService {
     return updatedDoc;
   }
 
-  async deleteDocumentFile(id: string) {
-    const document = await this.prisma.document.findUnique({ where: { id } });
+  async deleteDocumentFile(id: string, actor?: { id: string; role: string }) {
+    const document = await this.prisma.document.findUnique({ 
+      where: { id },
+      include: { internship: true }
+    });
     if (!document) throw new NotFoundException('Documento no encontrado');
+
+    // Validar permisos
+    if (actor && actor.role !== 'COORDINADOR' && actor.role !== 'ADMIN') {
+      if (actor.role === 'ESTUDIANTE' && document.internship.studentId !== actor.id) {
+        throw new ForbiddenException('No tienes permiso para eliminar el archivo de este documento.');
+      }
+    }
+
     if (document.status === 'APROBADO_DEFINITIVO') {
       throw new BadRequestException('No se puede eliminar el archivo de un documento aprobado definitivamente');
     }

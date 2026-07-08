@@ -1,4 +1,4 @@
-import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SystemLogsService } from '../system-logs/system-logs.service';
 import * as crypto from 'crypto';
@@ -16,7 +16,7 @@ export class SignatureService {
    * Simula la orquestación de una firma electrónica institucional.
    * En producción, esto se conectaría con un HSM o servicio de firma PKCS#12.
    */
-  async signDocument(documentId: string, signerId: string, reason: string) {
+  async signDocument(documentId: string, signerId: string, reason: string, careerId?: string | null) {
     const document = await this.prisma.document.findUnique({
       where: { id: documentId },
       include: { internship: { include: { student: true } } }
@@ -24,6 +24,11 @@ export class SignatureService {
 
     if (!document) {
       throw new NotFoundException('Documento no encontrado');
+    }
+
+    // RF-SIG-001: Validar carrera del coordinador si aplica
+    if (careerId && document.internship.careerId !== careerId) {
+      throw new ForbiddenException('No tienes permiso para firmar documentos de otra carrera');
     }
 
     if (document.status !== 'APROBADO_TUTOR') {

@@ -40,6 +40,15 @@ import dynamic from "next/dynamic";
 import { parseReviewAnnotations } from "@/lib/pdf-review-annotations";
 import { toast } from "sonner";
 
+const PdfViewerLoading = () => {
+  const { t } = useLanguage();
+  return (
+    <div className="flex min-h-[400px] items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-sm text-slate-500">
+      {t.documents.detail.pdfViewerLoading}
+    </div>
+  );
+};
+
 const DocumentPdfReviewViewer = dynamic(
   () =>
     import("@/components/documents/DocumentPdfReviewEditor").then((m) => ({
@@ -47,11 +56,7 @@ const DocumentPdfReviewViewer = dynamic(
     })),
   {
     ssr: false,
-    loading: () => (
-      <div className="flex min-h-[400px] items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-sm text-slate-500">
-        Cargando visor de correcciones...
-      </div>
-    ),
+    loading: () => <PdfViewerLoading />,
   },
 );
 
@@ -562,7 +567,7 @@ function DocumentosContent() {
                           className="col-span-2 py-4 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest bg-blue-50 text-[#003366] hover:bg-blue-100 transition-all active:scale-[0.98] border border-blue-100 mt-2"
                         >
                            <Search className="w-3.5 h-3.5" />
-                           Visualizar con correcciones
+                           {t.documents.student.viewCorrections}
                         </button>
                       )}
 
@@ -597,24 +602,24 @@ function DocumentosContent() {
                   )}
 
                   {/* Retroalimentación del Tutor (Feedback) */}
-                  {(doc.status === 'RECHAZADO_TUTOR' || doc.status === 'RECHAZADO_COORDINADOR') && doc.observations && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="mt-6 p-5 bg-rose-50 rounded-[1.5rem] border border-rose-100 relative group/feedback"
-                    >
-                      <div className="absolute -top-3 left-6 px-3 py-1 bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest rounded-lg shadow-sm">
-                        Retroalimentación
-                      </div>
-                      <p className="text-xs text-rose-800 font-medium leading-relaxed italic">
-                        &quot;{doc.observations}&quot;
-                      </p>
-                      <div className="mt-3 flex items-center gap-2">
-                         <div className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
-                         <span className="text-[9px] font-black text-rose-400 uppercase tracking-widest">Corregir para re-envío</span>
-                      </div>
-                    </motion.div>
-                  )}
+                      {(doc.status === 'RECHAZADO_TUTOR' || doc.status === 'RECHAZADO_COORDINADOR') && doc.observations && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mt-6 p-5 bg-rose-50 rounded-[1.5rem] border border-rose-100 relative group/feedback"
+                        >
+                          <div className="absolute -top-3 left-6 px-3 py-1 bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest rounded-lg shadow-sm">
+                            {t.documents.student.feedback}
+                          </div>
+                          <p className="text-xs text-rose-800 font-medium leading-relaxed italic">
+                            &quot;{doc.observations}&quot;
+                          </p>
+                          <div className="mt-3 flex items-center gap-2">
+                             <div className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
+                             <span className="text-[9px] font-black text-rose-400 uppercase tracking-widest">{t.documents.student.correctForResubmit}</span>
+                          </div>
+                        </motion.div>
+                      )}
                 </motion.div>
               );
             })}
@@ -826,7 +831,7 @@ function DocumentosContent() {
                      </div>
                      <div>
                         <h3 className="text-xl font-black text-[#003366] tracking-tight">{viewingDoc.name}</h3>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Visor de correcciones de auditoría</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{t.documents.detail.auditReviewViewer}</p>
                      </div>
                   </div>
                   <button 
@@ -849,7 +854,7 @@ function DocumentosContent() {
                   <div className="flex items-center gap-3">
                      <div className="w-2 h-2 rounded-full bg-[#C5A059] animate-pulse" />
                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                        Revisa los elementos resaltados en el documento
+                        {t.documents.detail.reviewHighlightedElements}
                      </p>
                   </div>
                   <a 
@@ -858,7 +863,7 @@ function DocumentosContent() {
                     className="px-8 py-4 bg-[#003366] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#003366]/90 transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2"
                   >
                      <Download className="w-4 h-4" />
-                     Descargar original
+                     {t.documents.detail.downloadOriginal}
                   </a>
                </div>
             </motion.div>

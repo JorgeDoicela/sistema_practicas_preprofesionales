@@ -11,7 +11,7 @@ export const attendancesService = {
   },
 
   /** RF-13 + RF-15: Registrar salida con coordenadas GPS y URL de foto */
-  async checkOut(coords: { lat: number; lng: number; checkOutPhotoUrl?: string }) {
+  async checkOut(coords: { lat: number; lng: number; checkOutPhotoUrl?: string; activityDescription?: string }) {
     return api.post('/attendance/check-out', coords);
   },
 
