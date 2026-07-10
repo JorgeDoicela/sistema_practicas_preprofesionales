@@ -70,25 +70,7 @@ export function AICopilot({ user, internship }: AICopilotProps) {
     setIsTyping(true);
 
     try {
-      // Construir contexto para la IA
-      const ROLES = { ADMIN: 'ADMIN', COORDINADOR: 'COORDINADOR', TUTOR: 'TUTOR' };
-      const isManagementRole = [ROLES.ADMIN, ROLES.COORDINADOR, ROLES.TUTOR].includes(user?.role);
-    
-      const context = isManagementRole 
-        ? (locale === 'es'
-          ? `Usuario: ${user?.fullName} (${user?.role}). Rol de Gestión: Acceso a normativas, reglamentos de prácticas e indicadores de riesgo de estudiantes. Foco: Auditoría y cumplimiento.`
-          : `User: ${user?.fullName} (${user?.role}). Management Role: Access to regulations, internship rules, and student risk indicators. Focus: Audit and compliance.`)
-        : (locale === 'es'
-          ? `Usuario: ${user?.fullName} (${user?.role}). Práctica: ${internship?.company?.name || 'Ninguna'}. Foco: Seguimiento de actividades y documentos del estudiante.
-            ${t.nexo.context.status}: ${internship?.status || "N/A"}
-            ${t.nexo.context.docs}: ${internship?.documents?.length || 0}
-            ${t.nexo.context.hours}: ${internship?.totalHours || 0}`
-          : `User: ${user?.fullName} (${user?.role}). Internship: ${internship?.company?.name || 'None'}. Focus: Monitoring activities and student documents.
-            ${t.nexo.context.status}: ${internship?.status || "N/A"}
-            ${t.nexo.context.docs}: ${internship?.documents?.length || 0}
-            ${t.nexo.context.hours}: ${internship?.totalHours || 0}`);
-
-      const answer = await aiService.askQuestion(userMsg.text, context);
+      const answer = await aiService.askQuestion(userMsg.text);
       
       const assistantMsg: Message = {
         id: (Date.now() + 1).toString(),

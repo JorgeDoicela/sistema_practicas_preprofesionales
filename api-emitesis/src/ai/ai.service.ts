@@ -1,13 +1,17 @@
 import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
   private openai: OpenAI | null = null;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
     if (apiKey && apiKey !== 'sk-placeholder' && apiKey.startsWith('sk-')) {
       this.openai = new OpenAI({ apiKey });
@@ -106,6 +110,39 @@ export class AiService {
     });
 
     return response.choices[0]?.message?.content?.trim() || 'No pude procesar tu consulta en este momento.';
+  }
+
+  /**
+   * Resuelve el contexto del estudiante o usuario de forma segura en el backend
+   * y responde utilizando el motor de IA. Evita inyecciones desde el cliente.
+   */
+  async askQuestionSecure(
+    userId: string,
+    role: string,
+    fullName: string,
+    question: string,
+  ): Promise<string> {
+    const isManagementRole = ['ADMIN', 'COORDINADOR', 'TUTOR'].includes(role);
+    let context = '';
+
+    if (isManagementRole) {
+      context = `Usuario: ${fullName} (${role}). Rol de Gestión: Acceso a normativas, reglamentos de prácticas e indicadores de riesgo de estudiantes. Foco: Auditoría y cumplimiento.`;
+    } else {
+      // Intentar obtener la práctica (internship) del estudiante o empresa
+      const internship = await this.prisma.internship.findFirst({
+        where: role === 'ESTUDIANTE' 
+          ? { studentId: userId } 
+          : { company: { users: { some: { id: userId } } } },
+        include: { company: true, documents: true },
+      });
+
+      context = `Usuario: ${fullName} (${role}). Práctica: ${internship?.company?.name || 'Ninguna'}. Foco: Seguimiento de actividades y documentos.
+        Estado: ${internship?.status || 'N/A'}
+        Documentos cargados: ${internship?.documents?.length || 0}
+        Horas totales: ${internship?.totalHours || 0}`;
+    }
+
+    return this.askQuestion(context, question);
   }
 
   /**

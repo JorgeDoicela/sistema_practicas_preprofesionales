@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Post, Param, Body, UseGuards, Res, UseInterceptors, UploadedFile, Req, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Patch, Post, Param, Body, UseGuards, Res, UseInterceptors, UploadedFile, Req, BadRequestException, ForbiddenException } from '@nestjs/common';
 import type { Response } from 'express';
 
 import { DocumentsService } from './documents.service';
@@ -9,7 +9,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { RolesGuard } from '../auth/strategies/roles.guard';
 import { Roles } from '../auth/strategies/roles.decorator';
 import { Role } from '@prisma/client';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { createReadStream } from 'fs';
 import { TwoFactorGuard } from '../auth/strategies/two-factor.guard';
 import { SignatureService } from '../core/signature.service';
@@ -97,7 +97,14 @@ export class DocumentsController {
       return res.redirect(url);
     }
 
-    const file = createReadStream(join(process.cwd(), 'uploads/templates', fileName));
+    const basePath = resolve(process.cwd(), 'uploads/templates');
+    const targetPath = resolve(basePath, fileName);
+
+    if (!targetPath.startsWith(basePath)) {
+      throw new ForbiddenException('Intento de Path Traversal bloqueado.');
+    }
+
+    const file = createReadStream(targetPath);
     res.set({
       'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'Content-Disposition': `attachment; filename="${fileName}"`,

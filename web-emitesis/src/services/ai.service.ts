@@ -38,8 +38,11 @@ export const aiService = {
   /**
    * RF-AI-01: Enviar consulta al asistente contextual de prácticas.
    */
-  async askQuestion(question: string, context: string): Promise<string> {
-    const data = await api.post<{ answer: string }>('/ai/ask', { question, context });
+  async askQuestion(question: string, context?: string): Promise<string> {
+    const data = await api.post<{ answer: string }>('/ai/ask', { 
+      question, 
+      ...(context && { context }),
+    });
     return data?.answer || 'No se pudo obtener una respuesta.';
   },
 

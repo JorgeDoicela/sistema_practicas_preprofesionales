@@ -14,8 +14,12 @@ export class TwoFactorGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    // Si el usuario no tiene 2FA activado, permitimos la acción por ahora (según requerimiento de ser opcional)
-    if (!user || !user.isTwoFactorEnabled) {
+    if (!user) {
+      return true;
+    }
+
+    const is2faEnabled = await this.authService.isTwoFactorEnabled(user.userId);
+    if (!is2faEnabled) {
       return true;
     }
 

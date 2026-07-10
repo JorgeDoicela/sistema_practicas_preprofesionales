@@ -29,7 +29,13 @@ export class StorageService {
   }
 
   async upload(filePath: string, data: string | Buffer, _options?: { contentType?: string }): Promise<StorageUploadResult> {
-    const fullPath = path.join(this.uploadDir, filePath);
+    const fullPath = path.resolve(this.uploadDir, filePath);
+    const baseResolved = path.resolve(this.uploadDir);
+
+    if (!fullPath.startsWith(baseResolved)) {
+      throw new Error('Intento de Path Traversal detectado y bloqueado');
+    }
+
     await this.ensureDir(path.dirname(fullPath));
 
     const buffer = typeof data === 'string' ? Buffer.from(data) : data;

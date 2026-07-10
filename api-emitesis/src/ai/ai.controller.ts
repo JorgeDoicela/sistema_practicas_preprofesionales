@@ -22,8 +22,8 @@ class AskDto {
   question: string;
 
   @IsString()
-  @IsNotEmpty()
-  context: string;
+  @IsOptional()
+  context?: string;
 }
 
 class PreVerifyDto {
@@ -100,12 +100,15 @@ export class AiController {
    */
   @Post('ask')
   @Roles(Role.ESTUDIANTE, Role.ADMIN, Role.COORDINADOR, Role.TUTOR, Role.EMPRESA)
-  async ask(@Body() body: AskDto) {
-    const answer = await this.aiService.askQuestion(
-      body.context,
-      body.question,
-    );
-    return { answer };
+  async ask(@Body() body: AskDto, @Req() req: any) {
+    return {
+      answer: await this.aiService.askQuestionSecure(
+        req.user.userId,
+        req.user.role,
+        req.user.fullName,
+        body.question,
+      ),
+    };
   }
 
   /**

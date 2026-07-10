@@ -13,6 +13,7 @@ import { JwtAuthGuard } from './strategies/jwt-auth.guard';
 import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { TwoFactorCodeDto } from './dto/two-factor.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('2FA')
 @Controller('auth/2fa')
@@ -91,6 +92,7 @@ export class TwoFactorAuthController {
   }
 
   @Post('authenticate')
+  @Throttle({ global: { limit: 5, ttl: 300000 } })
   @ApiOperation({ summary: 'Valida el código 2FA durante el inicio de sesión' })
   async authenticate(@Body() { userId, code }: { userId: string; code: string }) {
     return this.authService.authenticateWith2FA(userId, code);

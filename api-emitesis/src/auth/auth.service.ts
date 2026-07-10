@@ -21,7 +21,13 @@ export class AuthService {
     private configService: ConfigService,
     private emailService: EmailService,
     private twoFactorAuthService: TwoFactorAuthService,
-  ) {}
+  ) {
+    const secret = this.configService.get<string>('JWT_SECRET');
+    const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
+    if (!secret || !refreshSecret) {
+      throw new Error('FATAL: Las variables de entorno JWT_SECRET y/o JWT_REFRESH_SECRET no están configuradas.');
+    }
+  }
 
   private async verifyRecaptcha(token: string) {
     const secretKey = this.configService.get<string>('RECAPTCHA_SECRET_KEY');
@@ -246,7 +252,7 @@ export class AuthService {
         expiresIn: '1h',
       }),
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET') || 'refreshSecretKey',
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
         expiresIn: '7d',
       }),
     ]);
@@ -440,5 +446,13 @@ export class AuthService {
     }
 
     return true;
+  }
+
+  async isTwoFactorEnabled(userId: string): Promise<boolean> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { isTwoFactorEnabled: true },
+    });
+    return user?.isTwoFactorEnabled ?? false;
   }
 }
