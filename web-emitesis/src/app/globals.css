@@ -391,4 +391,50 @@
 .dark .bg-rose-50, .dark .bg-rose-500\/10     { background-color: rgba(251, 113, 133, 0.15) !important; }
 
 
+/* ── Personalización de Barras de Desplazamiento (Scrollbars) Globales ── */
+/* Chrome, Safari, Edge, Opera */
+::-webkit-scrollbar {
+  width: 8px; /* Ancho para barra vertical */
+  height: 8px; /* Alto para barra horizontal */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* Fondo transparente para integrarse con la UI */
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(31, 41, 91, 0.25) !important; /* Color de la marca translúcido */
+  border-radius: 9999px !important; /* Totalmente redondeado */
+  border: 2px solid transparent !important; /* Margen elegante */
+  background-clip: padding-box !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(31, 41, 91, 0.5) !important;
+}
+
+/* Modo Oscuro */
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 9999px !important;
+  border: 2px solid transparent !important;
+  background-clip: padding-box !important;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand-gold) !important; /* Resalta en dorado al pasar el cursor */
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(31, 41, 91, 0.25) transparent;
+}
+
+.dark * {
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+
+
 

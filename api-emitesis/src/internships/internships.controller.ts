@@ -21,7 +21,7 @@ export class InternshipsController {
   }
 
   @Get()
-  @Roles(Role.COORDINADOR)
+  @Roles(Role.COORDINADOR, Role.ADMIN)
   findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,

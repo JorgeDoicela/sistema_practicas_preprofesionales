@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { TwoFactorAuthService } from './two-factor-auth.service';
+import { SettingsService } from '../settings/settings.service';
 import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -21,6 +22,7 @@ export class AuthService {
     private configService: ConfigService,
     private emailService: EmailService,
     private twoFactorAuthService: TwoFactorAuthService,
+    private settingsService: SettingsService,
   ) {
     const secret = this.configService.get<string>('JWT_SECRET');
     const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
@@ -113,12 +115,14 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
+      const maxAttempts = await this.settingsService.getNumberValue('max_login_attempts', 5);
+      const lockoutMinutes = await this.settingsService.getNumberValue('lockout_duration_minutes', 15);
+
       const newFailedAttempts = user.failedAttempts + 1;
       const updateData: Prisma.UserUpdateInput = { failedAttempts: newFailedAttempts };
 
-      if (newFailedAttempts >= 5) {
-        // Bloquear por 15 minutos
-        updateData.lockoutUntil = new Date(Date.now() + 15 * 60 * 1000);
+      if (newFailedAttempts >= maxAttempts) {
+        updateData.lockoutUntil = new Date(Date.now() + lockoutMinutes * 60 * 1000);
       }
 
       await this.prisma.user.update({

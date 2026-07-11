@@ -29,12 +29,6 @@ export class SettingsService implements OnModuleInit {
         category: 'GPS',
       },
       {
-        key: 'session_timeout_seconds',
-        value: '3600',
-        description: 'Periodo de inactividad de sesión (en segundos) antes de desconectar automáticamente al usuario.',
-        category: 'AUTH',
-      },
-      {
         key: 'max_login_attempts',
         value: '5',
         description: 'Número máximo de intentos fallidos permitidos antes de bloquear temporalmente la cuenta.',
@@ -47,30 +41,6 @@ export class SettingsService implements OnModuleInit {
         category: 'AUTH',
       },
       {
-        key: 'webauthn_enabled',
-        value: 'false',
-        description: 'Habilitar soporte y validaciones con huella digital o FaceID para operaciones críticas y accesos.',
-        category: 'AUTH',
-      },
-      {
-        key: 'smtp_host',
-        value: 'smtp.gmail.com',
-        description: 'Dirección del servidor SMTP utilizado para despachar correos institucionales.',
-        category: 'EMAIL',
-      },
-      {
-        key: 'smtp_port',
-        value: '587',
-        description: 'Puerto de conexión para el servidor de correo (ej: 587 para TLS/STARTTLS, 465 para SSL).',
-        category: 'EMAIL',
-      },
-      {
-        key: 'smtp_sender',
-        value: 'no-reply@instituto.edu.ec',
-        description: 'Dirección de correo electrónico que figurará como remitente en las notificaciones automatizadas.',
-        category: 'EMAIL',
-      },
-      {
         key: 'document_max_size_mb',
         value: '10',
         description: 'Límite máximo permitido (en Megabytes) para la subida de documentos PDF en la ventanilla.',
@@ -81,18 +51,6 @@ export class SettingsService implements OnModuleInit {
         value: 'pdf,docx',
         description: 'Formatos de archivo autorizados para la subida de expedientes y registros académicos.',
         category: 'GENERAL',
-      },
-      {
-        key: 'lopdp_version_current',
-        value: '1.0',
-        description: 'Identificador de la política de protección de datos personales activa en el sistema.',
-        category: 'GENERAL',
-      },
-      {
-        key: 'chat_message_retention_days',
-        value: '730',
-        description: 'Periodo (en días) antes de que los mensajes de chat sean purgados permanentemente según normativas de privacidad.',
-        category: 'CHAT',
       },
       {
         key: 'eval_weight_business',

@@ -6,7 +6,6 @@ import { settingsService, SystemSetting } from "@/services/settings.service";
 import { 
   Settings, 
   MapPin, 
-  Mail, 
   ShieldCheck, 
   Save, 
   Loader2, 
@@ -17,7 +16,6 @@ import {
   Search,
   Check,
   AlertCircle,
-  MessageSquare,
   Undo,
   Sliders,
   Sparkles
@@ -31,7 +29,8 @@ interface SettingMeta {
   descEs: string;
   descEn: string;
   type: "text" | "number" | "boolean" | "tags" | "email";
-  suffix?: string;
+  suffixEs?: string;
+  suffixEn?: string;
   min?: number;
   max?: number;
 }
@@ -44,7 +43,8 @@ const SETTINGS_METADATA: Record<string, SettingMeta> = {
     descEs: "Radio máximo permitido (en metros) para que los estudiantes registren su entrada y salida en la sede.",
     descEn: "Maximum permitted radius (in meters) for students to log check-in/out at their location.",
     type: "number",
-    suffix: "metros",
+    suffixEs: "metros",
+    suffixEn: "meters",
     min: 5,
     max: 5000
   },
@@ -54,19 +54,10 @@ const SETTINGS_METADATA: Record<string, SettingMeta> = {
     descEs: "Distancia máxima tolerada (en kilómetros) antes de marcar la asistencia como fuera de rango o irregular.",
     descEn: "Maximum tolerated distance (in kilometers) before marking attendance as out of range or irregular.",
     type: "number",
-    suffix: "km",
+    suffixEs: "km",
+    suffixEn: "km",
     min: 0.1,
     max: 100
-  },
-  session_timeout_seconds: {
-    labelEs: "Tiempo de Expiración de Sesión",
-    labelEn: "Session Timeout Limit",
-    descEs: "Periodo de inactividad de sesión (en segundos) antes de desconectar automáticamente al usuario.",
-    descEn: "Session inactivity duration (in seconds) before automatically logging out the user.",
-    type: "number",
-    suffix: "segundos",
-    min: 60,
-    max: 86400
   },
   max_login_attempts: {
     labelEs: "Intentos de Inicio de Sesión",
@@ -74,7 +65,8 @@ const SETTINGS_METADATA: Record<string, SettingMeta> = {
     descEs: "Número máximo de intentos fallidos permitidos antes de bloquear temporalmente la cuenta.",
     descEn: "Maximum number of failed attempts allowed before temporarily locking the account.",
     type: "number",
-    suffix: "intentos",
+    suffixEs: "intentos",
+    suffixEn: "attempts",
     min: 1,
     max: 20
   },
@@ -84,39 +76,10 @@ const SETTINGS_METADATA: Record<string, SettingMeta> = {
     descEs: "Tiempo (en minutos) que la cuenta permanecerá inactiva tras superar los intentos fallidos.",
     descEn: "Duration (in minutes) that the account will remain locked after exceeding failed attempts.",
     type: "number",
-    suffix: "minutos",
+    suffixEs: "minutos",
+    suffixEn: "minutes",
     min: 1,
     max: 1440
-  },
-  webauthn_enabled: {
-    labelEs: "Autenticación Biométrica (WebAuthn)",
-    labelEn: "Biometric Authentication (WebAuthn)",
-    descEs: "Habilitar soporte y validaciones con huella digital o FaceID para operaciones críticas y accesos.",
-    descEn: "Enable global support and validations with fingerprint or FaceID for critical actions.",
-    type: "boolean"
-  },
-  smtp_host: {
-    labelEs: "Servidor Host SMTP",
-    labelEn: "SMTP Host Server",
-    descEs: "Dirección del servidor SMTP utilizado para despachar correos institucionales.",
-    descEn: "SMTP server address used to dispatch institutional notification emails.",
-    type: "text"
-  },
-  smtp_port: {
-    labelEs: "Puerto SMTP",
-    labelEn: "SMTP Port",
-    descEs: "Puerto de conexión para el servidor de correo (ej: 587 para TLS/STARTTLS, 465 para SSL).",
-    descEn: "Connection port for the email server (e.g. 587 for TLS/STARTTLS, 465 for SSL).",
-    type: "number",
-    min: 1,
-    max: 65535
-  },
-  smtp_sender: {
-    labelEs: "Dirección Remitente de Notificaciones",
-    labelEn: "Notification Sender Address",
-    descEs: "Dirección de correo electrónico que figurará como remitente en las notificaciones automatizadas.",
-    descEn: "Email address that will appear as the sender in automated system notifications.",
-    type: "email"
   },
   document_max_size_mb: {
     labelEs: "Tamaño Máximo de Archivo",
@@ -124,7 +87,8 @@ const SETTINGS_METADATA: Record<string, SettingMeta> = {
     descEs: "Límite máximo permitido (en Megabytes) para la subida de documentos PDF en la ventanilla.",
     descEn: "Maximum allowed file upload size (in Megabytes) for PDF documents in the delivery window.",
     type: "number",
-    suffix: "MB",
+    suffixEs: "MB",
+    suffixEn: "MB",
     min: 1,
     max: 100
   },
@@ -135,22 +99,23 @@ const SETTINGS_METADATA: Record<string, SettingMeta> = {
     descEn: "File extensions authorized for academic records and dossier uploads.",
     type: "tags"
   },
-  lopdp_version_current: {
-    labelEs: "Versión de Política de Datos (LOPDP)",
-    labelEn: "LOPDP Data Policy Version",
-    descEs: "Identificador de la política de protección de datos personales activa en el sistema.",
-    descEn: "Identifier of the active personal data protection policy in the system.",
-    type: "text"
-  },
-  chat_message_retention_days: {
-    labelEs: "Retención de Mensajes del Chat",
-    labelEn: "Chat Message Retention",
-    descEs: "Periodo (en días) antes de que los mensajes de chat sean purgados permanentemente según normativas de privacidad.",
-    descEn: "Period (in days) before chat messages are permanently purged in compliance with privacy regulations.",
+  eval_weight_business: {
+    labelEs: "Peso Evaluación Empresarial",
+    labelEn: "Business Evaluation Weight",
+    descEs: "Factor de ponderación (0.0 a 1.0) de la evaluación empresarial en la nota final. La suma con el peso académico debe ser 1.0.",
+    descEn: "Weighting factor (0.0 to 1.0) for the business evaluation in the final grade. Sum with academic weight must equal 1.0.",
     type: "number",
-    suffix: "días",
-    min: 1,
-    max: 3650
+    min: 0,
+    max: 1
+  },
+  eval_weight_academic: {
+    labelEs: "Peso Evaluación Académica",
+    labelEn: "Academic Evaluation Weight",
+    descEs: "Factor de ponderación (0.0 a 1.0) de la evaluación del tutor académico en la nota final. La suma con el peso empresarial debe ser 1.0.",
+    descEn: "Weighting factor (0.0 to 1.0) for the academic tutor evaluation in the final grade. Sum with business weight must equal 1.0.",
+    type: "number",
+    min: 0,
+    max: 1
   }
 };
 
@@ -331,19 +296,18 @@ export default function AdminSettingsPage() {
   const categories = [
     { id: "ALL", title: locale === "es" ? "Todos" : "All", icon: <Sliders className="w-5 h-5" /> },
     { id: "GPS", title: t.admin.settings.sections.gps, icon: <MapPin className="w-5 h-5" /> },
-    { id: "EMAIL", title: t.admin.settings.sections.email, icon: <Mail className="w-5 h-5" /> },
     { id: "AUTH", title: t.admin.settings.sections.security, icon: <ShieldCheck className="w-5 h-5" /> },
     { id: "GENERAL", title: t.admin.settings.sections.general, icon: <Settings className="w-5 h-5" /> },
-    { id: "CHAT", title: locale === "es" ? "Chat y Mensajería" : "Chat and Messaging", icon: <MessageSquare className="w-5 h-5" /> },
   ];
 
   // Map category code to translations for subheading descriptions
   const getCategoryManagementLabel = (cat: string) => {
-    const lower = cat.toLowerCase();
-    if (lower === "chat") {
-      return locale === "es" ? "Gestión de políticas de comunicación" : "Communication policy management";
-    }
-    return t.admin.settings.sections.resourceManagement.replace("{id}", lower);
+    let friendlyName = cat;
+    if (cat === "GPS") friendlyName = t.admin.settings.sections.gps;
+    if (cat === "AUTH") friendlyName = t.admin.settings.sections.security;
+    if (cat === "GENERAL") friendlyName = t.admin.settings.sections.general;
+
+    return t.admin.settings.sections.resourceManagement.replace("{id}", friendlyName.toLowerCase());
   };
 
   // Tag manager tag remove handler
@@ -376,8 +340,11 @@ export default function AdminSettingsPage() {
     setNewTagInput(prev => ({ ...prev, [settingKey]: "" }));
   };
 
-  // Filtered settings list
+  // Filtered settings list — solo muestra settings con metadata registrada
   const filteredSettings = settings.filter(setting => {
+    // Ocultar settings sin metadata (decorativas, legacy, etc.)
+    if (!SETTINGS_METADATA[setting.key]) return false;
+
     const matchesCategory = activeCategory === "ALL" || setting.category === activeCategory;
     
     const meta = SETTINGS_METADATA[setting.key];
@@ -597,18 +564,15 @@ export default function AdminSettingsPage() {
                         >
                           {/* Label & Description Column */}
                           <div className="lg:col-span-5 space-y-1.5">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider bg-slate-100 px-2.5 py-0.5 rounded-md">
-                                {setting.key}
-                              </span>
-                              {hasDraft && (
+                            {hasDraft && (
+                              <div className="flex items-center gap-2">
                                 <span className="text-[9px] font-black text-brand-gold uppercase tracking-wider flex items-center gap-1 animate-pulse">
                                   <Sliders className="w-2.5 h-2.5" />
                                   {locale === "es" ? "Editado" : "Modified"}
                                 </span>
-                              )}
-                            </div>
-                            <h4 className="text-sm font-black text-brand-blue leading-snug">{friendlyLabel}</h4>
+                              </div>
+                            )}
+                            <h4 className="text-sm font-black text-brand-blue leading-snug cursor-help" title={setting.key}>{friendlyLabel}</h4>
                             <p className="text-xs text-slate-500 font-medium leading-relaxed max-w-lg">{friendlyDesc}</p>
                           </div>
 
@@ -712,9 +676,9 @@ export default function AdminSettingsPage() {
                                           : "border-slate-100 focus:border-brand-gold focus:ring-brand-gold/15"
                                     } rounded-2xl pl-6 pr-16 py-3.5 text-sm font-bold text-brand-blue transition-all outline-none`}
                                   />
-                                  {meta?.suffix && (
+                                                                  {(locale === "es" ? meta?.suffixEs : meta?.suffixEn) && (
                                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400 uppercase tracking-wider bg-white/80 border border-slate-150 px-2 py-1 rounded-lg backdrop-blur-sm pointer-events-none select-none">
-                                      {meta.suffix}
+                                      {locale === "es" ? meta.suffixEs : meta.suffixEn}
                                     </span>
                                   )}
                                 </div>

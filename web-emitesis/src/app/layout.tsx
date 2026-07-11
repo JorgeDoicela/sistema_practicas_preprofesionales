@@ -5,9 +5,13 @@ export const metadata: Metadata = {
     title: "Praxis Hub - Prácticas Preprofesionales",
     description: "Plataforma para la gestión integral de prácticas preprofesionales.",
     icons: {
-        icon: "/images/brand/sin_fondo_png.png",
-        shortcut: "/images/brand/sin_fondo_png.png",
-        apple: "/images/brand/sin_fondo_png.png",
+        icon: [
+            { url: "/favicon-48.png", sizes: "48x48", type: "image/png" },
+            { url: "/favicon-96.png", sizes: "96x96", type: "image/png" },
+            { url: "/favicon-192.png", sizes: "192x192", type: "image/png" },
+        ],
+        shortcut: "/favicon-96.png",
+        apple: "/favicon-192.png",
     },
 
 

@@ -160,11 +160,6 @@ const visitObservations = [
 // ── MAIN ──────────────────────────────────────────────────────────────────
 
 async function main() {
-    if (process.env.NODE_ENV === 'production') {
-        console.error('\n[!] ERROR DE SEGURIDAD: No se permite ejecutar la semilla en el entorno de producción.\n');
-        process.exit(1);
-    }
-
     console.log('\n INICIANDO MASTER SEED v14.0 — ISTPET "Mayor Pedro Traversari"');
     console.log('═══════════════════════════════════════════════════════════\n');
 

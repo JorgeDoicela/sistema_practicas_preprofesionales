@@ -25,7 +25,7 @@ export function Navbar({
 
     const [isOpen, setIsOpen] = useState(false);
     const router = useRouter();
-    const { t } = useLanguage();
+    const { t, locale } = useLanguage();
 
     useEffect(() => {
         const loadUser = () => {
@@ -60,12 +60,12 @@ export function Navbar({
                 <div className="flex items-center gap-3 min-w-0">
                     {onMenuToggle && (
                         <button
-                            onClick={onMenuToggle}
-                            className={cn(
-                                "p-2 rounded-xl bg-slate-50 border border-slate-100 text-[#003366] hover:bg-slate-100 transition-all flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-brand-blue/10 shrink-0",
-                                sidebarOpen ? "lg:hidden" : "flex"
-                            )}
-                            aria-label="Abrir menú"
+                             onClick={onMenuToggle}
+                             className={cn(
+                                 "p-2 rounded-xl bg-slate-50 border border-slate-100 text-[#003366] hover:bg-slate-100 transition-all flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-brand-blue/10 shrink-0",
+                                 sidebarOpen ? "lg:hidden" : "flex"
+                             )}
+                             aria-label={locale === "es" ? "Abrir menú" : "Open menu"}
                         >
                             <Menu className="w-5 h-5" />
                         </button>
@@ -76,7 +76,9 @@ export function Navbar({
                             {t.common?.ecosystemName || "Praxis Hub"}
                         </span>
                         <h1 className="text-sm md:text-base font-black text-[#003366] tracking-tight leading-none truncate max-w-[140px] xs:max-w-[180px] sm:max-w-none">
-                            {user ? `¡Hola de nuevo, ${user.fullName.split(' ')[0]}!` : "Panel de Gestión"}
+                            {user 
+                                ? (locale === "es" ? `¡Hola de nuevo, ${user.fullName.split(' ')[0]}!` : `Welcome back, ${user.fullName.split(' ')[0]}!`)
+                                : (locale === "es" ? "Panel de Gestión" : "Management Panel")}
                         </h1>
                     </div>
                 </div>
@@ -99,7 +101,7 @@ export function Navbar({
                                 {user?.fullName || "Mariana López"}
                             </p>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                {user?.role || "Estudiante"}
+                                {user ? (t.sidebar.roles[user.role as keyof typeof t.sidebar.roles] || user.role) : (locale === "es" ? "Estudiante" : "Student")}
                             </p>
                         </div>
 

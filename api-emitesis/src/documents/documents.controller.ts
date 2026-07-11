@@ -14,6 +14,7 @@ import { createReadStream } from 'fs';
 import { TwoFactorGuard } from '../auth/strategies/two-factor.guard';
 import { SignatureService } from '../core/signature.service';
 import { DocumentCommentsService } from './document-comments.service';
+import { SettingsService } from '../settings/settings.service';
 
 @Controller('documents')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -22,6 +23,7 @@ export class DocumentsController {
     private readonly documentsService: DocumentsService,
     private readonly signatureService: SignatureService,
     private readonly documentCommentsService: DocumentCommentsService,
+    private readonly settingsService: SettingsService,
   ) {}
 
   @Post(':id/comments')
@@ -117,26 +119,38 @@ export class DocumentsController {
   @UseGuards(TwoFactorGuard)
   @UseInterceptors(
     FileInterceptor('file', {
-      fileFilter: (req, file, cb) => {
-        // Regla de Negocio: Solo archivos PDF
-        if (!file.originalname.match(/\.(pdf)$/)) {
-          return cb(new BadRequestException('Solo se permiten archivos en formato PDF'), false);
-        }
-        cb(null, true);
-      },
       limits: {
-        fileSize: 10 * 1024 * 1024, // Regla de Negocio: Máximo 10MB
+        fileSize: 50 * 1024 * 1024, // Límite de seguridad máximo (validación real por settings en el handler)
       },
     }),
   )
-  upload(
+  async upload(
     @Param('id') id: string,
-    @UploadedFile() file: any, // Usamos any aquí para evitar conflictos de tipos de Multer local/global
+    @UploadedFile() file: any,
     @Req() req: any,
   ) {
     if (!file) {
       throw new BadRequestException('El archivo PDF es obligatorio');
     }
+
+    // Leer configuración dinámica de la BD
+    const maxSizeMb = await this.settingsService.getNumberValue('document_max_size_mb', 10);
+    const allowedTypesRaw = await this.settingsService.getValue('allowed_file_types', 'pdf');
+    const allowedExtensions = allowedTypesRaw.split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
+
+    // Validar tamaño
+    if (file.size > maxSizeMb * 1024 * 1024) {
+      throw new BadRequestException(`El archivo supera el límite máximo permitido de ${maxSizeMb}MB.`);
+    }
+
+    // Validar extensión
+    const ext = (file.originalname as string).split('.').pop()?.toLowerCase() ?? '';
+    if (!allowedExtensions.includes(ext)) {
+      throw new BadRequestException(
+        `Tipo de archivo no permitido. Solo se aceptan: ${allowedExtensions.map((e) => `.${e}`).join(', ')}.`,
+      );
+    }
+
     return this.documentsService.uploadDocument(id, file, req.user.id);
   }
 

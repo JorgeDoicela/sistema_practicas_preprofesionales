@@ -166,12 +166,15 @@ export function DashboardMain() {
       }
 
       if (role === ROLES.ADMIN) {
-        const [statsRes, careerList] = await Promise.all([
+        const [statsRes, careerList, allRes] = await Promise.all([
           analyticsService.getStats(),
           settingsService.findAllCareers(),
+          internshipsService.findAll(1, 20),
         ]);
         setAdminStats(statsRes || null);
         setCareers(Array.isArray(careerList) ? careerList : []);
+        const allItems = allRes?.items || (Array.isArray(allRes?.data) ? allRes.data : (Array.isArray(allRes) ? allRes : []));
+        setInternships(allItems);
         return;
       }
 
