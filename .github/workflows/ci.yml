@@ -458,11 +458,11 @@ jobs:
               echo "=== ESTADO DE TODOS LOS CONTENEDORES ==="
               docker ps -a || true
               echo "=== LOGS DE LA BASE DE DATOS (DOCKER LOGS) ==="
-              docker logs emitesis-db-prod || true
+              docker logs --tail 100 emitesis-db-prod || true
               echo "=== LOGS DEL API (DOCKER LOGS) ==="
-              docker logs emitesis-api-prod || true
+              docker logs --tail 100 emitesis-api-prod || true
               echo "=== LOGS DEL WEB (DOCKER LOGS) ==="
-              docker logs emitesis-web-prod || true
+              docker logs --tail 100 emitesis-web-prod || true
               exit 1
             fi
 
