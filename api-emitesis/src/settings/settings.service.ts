@@ -41,6 +41,36 @@ export class SettingsService implements OnModuleInit {
         category: 'AUTH',
       },
       {
+        key: 'session_timeout_seconds',
+        value: '7200',
+        description: 'Tiempo de inactividad antes de cerrar sesión automáticamente (segundos).',
+        category: 'AUTH',
+      },
+      {
+        key: 'webauthn_enabled',
+        value: 'true',
+        description: 'Habilitar autenticación biométrica/WebAuthn para usuarios con credencial registrada.',
+        category: 'AUTH',
+      },
+      {
+        key: 'smtp_host',
+        value: 'smtp.istpet.edu.ec',
+        description: 'Servidor SMTP para envío de correos institucionales.',
+        category: 'EMAIL',
+      },
+      {
+        key: 'smtp_port',
+        value: '587',
+        description: 'Puerto del servidor SMTP.',
+        category: 'EMAIL',
+      },
+      {
+        key: 'smtp_sender',
+        value: 'noreply@istpet.edu.ec',
+        description: 'Dirección de correo remitente para notificaciones automáticas.',
+        category: 'EMAIL',
+      },
+      {
         key: 'document_max_size_mb',
         value: '10',
         description: 'Límite máximo permitido (en Megabytes) para la subida de documentos PDF en la ventanilla.',
@@ -48,9 +78,21 @@ export class SettingsService implements OnModuleInit {
       },
       {
         key: 'allowed_file_types',
-        value: 'pdf,docx',
+        value: 'pdf,docx,jpg,png',
         description: 'Formatos de archivo autorizados para la subida de expedientes y registros académicos.',
         category: 'GENERAL',
+      },
+      {
+        key: 'lopdp_version_current',
+        value: '1.0',
+        description: 'Versión actual de la política de protección de datos LOPDP.',
+        category: 'GENERAL',
+      },
+      {
+        key: 'chat_message_retention_days',
+        value: '730',
+        description: 'Periodo de retención de mensajes de chat antes de su anonimización o purga (días).',
+        category: 'CHAT',
       },
       {
         key: 'eval_weight_business',
