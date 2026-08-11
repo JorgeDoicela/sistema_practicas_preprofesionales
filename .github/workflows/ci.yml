@@ -247,7 +247,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
           # README ops queda en el repo; en VPS solo se copian scripts ejecutables.
-          source: "docker-compose.prod.yml,nginx.conf,scripts/ops/backup-db.sh,scripts/ops/manage-db.sh,scripts/ops/ensure-migrations.sh,certs/origin.pem,certs/origin.key"
+          source: "docker-compose.prod.yml,nginx.conf,scripts/ops/backup-db.sh,scripts/ops/manage-db.sh,scripts/ops/ensure-migrations.sh"
           target: "~/emitesis"
 
       - name: Execute remote deployment commands via SSH
@@ -304,17 +304,12 @@ jobs:
               fi
             done < .env > .env.tmp && mv .env.tmp .env
 
-            sed -i '/^POSTGRES_USER=/d' .env || true
-            sed -i '/^POSTGRES_PASSWORD=/d' .env || true
-            sed -i '/^POSTGRES_DB=/d' .env || true
-            sed -i '/^DATABASE_URL=/d' .env || true
-            sed -i '/^DIRECT_URL=/d' .env || true
-
-            echo "POSTGRES_USER=postgres" >> .env
-            echo "POSTGRES_PASSWORD=EmitesPass2026" >> .env
-            echo "POSTGRES_DB=emitesis_db" >> .env
-            echo "DATABASE_URL=postgresql://postgres:EmitesPass2026@db:5432/emitesis_db?schema=public" >> .env
-            echo "DIRECT_URL=postgresql://postgres:EmitesPass2026@db:5432/emitesis_db?schema=public" >> .env
+            ENV_DB_PASS="${POSTGRES_PASSWORD:-password}"
+            if ! grep -q "^POSTGRES_USER=" .env; then echo "POSTGRES_USER=postgres" >> .env; fi
+            if ! grep -q "^POSTGRES_PASSWORD=" .env; then echo "POSTGRES_PASSWORD=${ENV_DB_PASS}" >> .env; fi
+            if ! grep -q "^POSTGRES_DB=" .env; then echo "POSTGRES_DB=emitesis_db" >> .env; fi
+            if ! grep -q "^DATABASE_URL=" .env; then echo "DATABASE_URL=postgresql://postgres:${ENV_DB_PASS}@db:5432/emitesis_db?schema=public" >> .env; fi
+            if ! grep -q "^DIRECT_URL=" .env; then echo "DIRECT_URL=postgresql://postgres:${ENV_DB_PASS}@db:5432/emitesis_db?schema=public" >> .env; fi
 
             sed -i '/^CORS_ORIGINS=/d' .env || true
             sed -i '/^PUBLIC_APP_URL=/d' .env || true
